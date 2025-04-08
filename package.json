@@ -1,0 +1,39 @@
+{
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build && vite build --ssr",
+        "dev": "vite",
+        "start": "npm-run-all --parallel dev serve",
+        "serve": "php artisan serve",
+        "serve_sharing": "dotenv -e .env -- node -e \"require('child_process').execSync(`php artisan serve --host=${process.env.MY_IP} --port=8000`, { stdio: 'inherit' })\""
+    },
+    "devDependencies": {
+        "@headlessui/react": "^2.2.1",
+        "@inertiajs/react": "^2.0.6",
+        "@tailwindcss/forms": "^0.5.10",
+        "@tailwindcss/postcss": "^4.1.3",
+        "@tailwindcss/vite": "^4.1.3",
+        "@vitejs/plugin-react": "^4.3.4",
+        "axios": "^1.8.4",
+        "concurrently": "^9.1.2",
+        "cross-env": "^7.0.3",
+        "dotenv-cli": "^8.0.0",
+        "laravel-vite-plugin": "^1.2.0",
+        "npm-run-all": "^4.1.5",
+        "postcss": "^8.5.3",
+        "react": "^19.1.0",
+        "react-dom": "^19.1.0",
+        "tailwindcss": "^4.1.3",
+        "vite": "^6.2.5"
+    },
+    "dependencies": {
+        "@radix-ui/react-slot": "^1.2.0",
+        "@radix-ui/react-switch": "^1.1.4",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "lucide-react": "^0.487.0",
+        "tailwind-merge": "^3.2.0",
+        "tw-animate-css": "^1.2.5"
+    }
+}
