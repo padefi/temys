@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\AccessControl\Module;
+use App\Models\ControlAcceso\Module;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -14,14 +14,18 @@ class ModuleSeeder extends Seeder
     public function run(): void
     {
         $modules = [
-            'Afiliados',
-            'Ventas',
-            'Contabilidad',
+            ['key' => 'control-acceso', 'name' => 'Control de Acceso'],
+            ['key' => 'afiliados', 'name' => 'Afiliados'],
+            ['key' => 'compras', 'name' => 'Compras'],
+            ['key' => 'contabilidad', 'name' => 'Contabilidad'],
+            ['key' => 'inventario', 'name' => 'Inventario'],
+            ['key' => 'seccionales', 'name' => 'Seccionales'],
+            ['key' => 'ventas', 'name' => 'Ventas'],
         ];
 
         foreach ($modules as $module)
         {
-            Module::create(['name' => $module]);
+            Module::create(['key' => $module['key'], 'name' => $module['name'], 'guard_name' => 'web']);
         }
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\AccessControl;
+namespace App\Models\ControlAcceso;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

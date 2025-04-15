@@ -2,9 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\AccessControl\Submenu;
+use App\Models\ControlAcceso\Menu;
+use App\Models\ControlAcceso\Submenu;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class SubmenuSeeder extends Seeder
 {
@@ -15,42 +18,69 @@ class SubmenuSeeder extends Seeder
     {
         $submenus = [
             //AFILIADOS
-            'Data entry',
-            'Consulta de afiliados',
+            [
+                ['key' => 'dataEntry', 'name' => 'Data entry'],
+                ['key' => 'consultaAfiliados', 'name' => 'Consulta de afiliados'],
+            ],
+            [
+                //BENEFICIOS
+                ['key' => 'natalidad', 'name' => 'Natalidad'],
+                ['key' => 'lunaDeMiel', 'name' => 'Luna de miel'],
+                ['key' => 'casamiento', 'name' => 'Casamiento'],
+            ],
+            [
+                //ORDENES
+                ['key' => 'cotizaciones', 'name' => 'Cotizaciones'],
+                ['key' => 'ordenes', 'name' => 'Ordenes'],
+                ['key' => 'equiposDeVentas', 'name' => 'Equipos de ventas'],
+            ],
+            [
+                //POR FACTURAR
+                ['key' => 'ordenesAFacturar', 'name' => 'Ordenes a facturar'],
+                ['key' => 'ordenesParaCrearVentasAdicionales', 'name' => 'Ordenes para crear ventas adicionales'],
+            ],
+            [
+                //CLIENTES
+                ['key' => 'consultaDeClientes', 'name' => 'Consulta de clientes'],
+                ['key' => 'notasDeDebito', 'name' => 'Notas de debito'],
+                ['key' => 'notasDeCredito', 'name' => 'Notas de credito'],
+            ],
+            [
+                //PROVEEDORES
+                ['key' => 'consultaDeProveedores', 'name' => 'Consulta de proveedores'],
+                ['key' => 'notasDeDebitoProveedores', 'name' => 'Notas de debito'],
+                ['key' => 'notasDeCreditoProveedores', 'name' => 'Notas de credito'],
 
-            //BENEFICIOS
-            'Natalidad',
-            'Luna de miel',
-            'Casamiento',
-
-            //ORDENES
-            'Cotizaciones',
-            'Ordenes',
-            'Equipos de ventas',
-
-            //POR FACTURAR
-            'Ordenes a facturar',
-            'Ordenes para crear ventas adicionales',
-
-            //CLIENTES
-            'Consulta de clientes',
-            'Notas de debito',
-            'Notas de credito',
-
-            //PROVEEDORES
-            'Consulta de proveedores',
-            'Notas de debito',
-            'Notas de credito',
-
-            //CONTABILIDAD
-            'Consulta de cuentas',
-            'Consulta de asientos',
-            'Consulta de asientos por cuenta',
+            ],
+            [
+                //CONTABILIDAD
+                ['key' => 'consultaDeCuentas', 'name' => 'Consulta de cuentas'],
+                ['key' => 'consultaDeAsientos', 'name' => 'Consulta de asientos'],
+                ['key' => 'consultaDeAsientosPorCuenta', 'name' => 'Consulta de asientos por cuenta'],
+            ],
         ];
 
-        foreach ($submenus as $submenu)
+        $menus = Menu::all();
+
+        try
         {
-            Submenu::create(['name' => $submenu]);
+            foreach ($submenus as $key => $submenu)
+            {
+                foreach ($submenu as $data)
+                {
+                    $result = Submenu::create(['key' => $data['key'], 'name' => $data['name'], 'guard_name' => 'web']);
+                    DB::table('menu_has_submenus')
+                        ->insert([
+                            'submenu_id' => $result->id,
+                            'menu_id' => $menus[$key]->id,
+                        ]);
+                }
+            }
+        }
+        catch (\Throwable $th)
+        {
+            Log::error('Error al asignar el submenú al menú: ' . $th->getMessage());
+            throw $th;
         }
     }
 }

@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('modules', function (Blueprint $table)
         {
             $table->id();
+            $table->string('key')->collation('utf8mb4_general_ci')->unique();
             $table->string('name')->collation('utf8mb4_general_ci')->unique();
+            $table->string('guard_name')->collation('utf8mb4_general_ci');
             $table->timestamps();
         });
 
@@ -51,7 +53,7 @@ return new class extends Migration
             $table->primary(['module_id', 'model_id', 'model_type'], 'model_has_modules_module_model_type_primary');
         });
 
-        Schema::create('model_has_module_rol', function (Blueprint $table)
+        /* Schema::create('model_has_module_rol', function (Blueprint $table)
         {
             $table->unsignedBigInteger('module_id');
             $table->unsignedBigInteger('role_id');
@@ -70,7 +72,7 @@ return new class extends Migration
 
             $table->index(['model_id', 'model_type'], 'model_has_module_rol_model_id_model_type_index');
             $table->primary(['module_id', 'role_id', 'model_id', 'model_type'], 'model_has_module_rol_module_model_type_role_id_primary');
-        });
+        }); */
     }
 
     /**

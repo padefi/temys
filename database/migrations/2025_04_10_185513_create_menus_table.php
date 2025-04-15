@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('menus', function (Blueprint $table)
         {
             $table->id();
+            $table->string('key')->collation('utf8mb4_general_ci');
             $table->string('name')->collation('utf8mb4_general_ci');
+            $table->string('guard_name')->collation('utf8mb4_general_ci');
             $table->timestamps();
         });
 

@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-// use App\Models\AccessControl\User;
+// use App\Models\ControlAcceso\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,20 +13,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        /* User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]); */
-
         $this->call([
             RoleSeeder::class,
             PermissionSeeder::class,
-            RolePermissionSeeder::class,
             ModuleSeeder::class,
             MenuSeeder::class,
             SubmenuSeeder::class,
+            RolePermissionSeeder::class,
+            UserSeeder::class,
         ]);
     }
 }

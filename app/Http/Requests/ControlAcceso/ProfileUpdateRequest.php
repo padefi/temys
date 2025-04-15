@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Requests\AccessControl;
+namespace App\Http\Requests\ControlAcceso;
 
-use App\Models\AccessControl\User;
+use App\Models\ControlAcceso\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

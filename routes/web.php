@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Controllers\AccessControl\ProfileController;
+use App\Http\Controllers\ControlAcceso\ProfileController;
+use App\Models\ControlAcceso\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -19,9 +20,37 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit')->middleware('can:read,' . User::class);
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update')->middleware('can:update,' . User::class);
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy')->middleware('can:avoid,' . User::class);
+
+    /* TO-DO Modulo control accesos */
+    Route::middleware('module:control-acceso')->group(function () {
+    });
+
+    /* TO-DO Modulo afiliados */
+    Route::middleware('module:afiliados')->group(function () {
+    });
+
+    /* TO-DO Modulo compras */
+    Route::middleware('module:compras')->group(function () {
+    });
+
+    /* TO-DO Modulo contabilidad */
+    Route::middleware('module:contabilidad')->group(function () {
+    });
+
+    /* TO-DO Modulo inventario */
+    Route::middleware('module:inventario')->group(function () {
+    });
+
+    /* TO-DO Modulo seccionales */
+    Route::middleware('module:seccionales')->group(function () {
+    });
+
+    /* TO-DO Modulo ventas */
+    Route::middleware('module:ventas')->group(function () {
+    });
 });
 
 require __DIR__.'/auth.php';

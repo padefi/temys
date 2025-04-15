@@ -1,14 +1,14 @@
 <?php
 
-use App\Http\Controllers\AccessControl\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\AccessControl\Auth\ConfirmablePasswordController;
-use App\Http\Controllers\AccessControl\Auth\EmailVerificationNotificationController;
-use App\Http\Controllers\AccessControl\Auth\EmailVerificationPromptController;
-use App\Http\Controllers\AccessControl\Auth\NewPasswordController;
-use App\Http\Controllers\AccessControl\Auth\PasswordController;
-use App\Http\Controllers\AccessControl\Auth\PasswordResetLinkController;
-use App\Http\Controllers\AccessControl\Auth\RegisteredUserController;
-use App\Http\Controllers\AccessControl\Auth\VerifyEmailController;
+use App\Http\Controllers\ControlAcceso\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\ControlAcceso\Auth\ConfirmablePasswordController;
+use App\Http\Controllers\ControlAcceso\Auth\EmailVerificationNotificationController;
+use App\Http\Controllers\ControlAcceso\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\ControlAcceso\Auth\NewPasswordController;
+use App\Http\Controllers\ControlAcceso\Auth\PasswordController;
+use App\Http\Controllers\ControlAcceso\Auth\PasswordResetLinkController;
+use App\Http\Controllers\ControlAcceso\Auth\RegisteredUserController;
+use App\Http\Controllers\ControlAcceso\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
