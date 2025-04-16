@@ -17,6 +17,14 @@ class MenuSeeder extends Seeder
     public function run(): void
     {
         $menus = [
+            //CONTROL DE ACCESO
+            [
+                ['key' => 'usuarios', 'name' => 'Usuarios'],
+                ['key' => 'roles', 'name' => 'Roles'],
+                ['key' => 'modulos', 'name' => 'Modulos'],
+                ['key' => 'menus', 'name' => 'Menus'],
+                ['key' => 'submenus', 'name' => 'Submenus'],
+            ],
             //AFILIADOS
             [
                 ['key' => 'afiliados', 'name' => 'Afiliados'],

@@ -30,7 +30,7 @@ class ModuleMiddleware
 
         $user = Auth::user();
         $modules = explode('|', self::parseStringableParam($params));
-        $moduleIds = Module::whereIn('name', $modules)->pluck('id');
+        $moduleIds = Module::whereIn('key', $modules)->pluck('id');
 
         $hasModule = DB::table('model_has_modules')
             ->where('model_id', $user->id)

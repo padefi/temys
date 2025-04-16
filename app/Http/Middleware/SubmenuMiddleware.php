@@ -30,7 +30,7 @@ class SubmenuMiddleware
 
         $user = Auth::user();
         $submenus = explode('|', self::parseStringableParam($params));
-        $submenusIds = Submenu::whereIn('name', $submenus)->pluck('id');
+        $submenusIds = Submenu::whereIn('key', $submenus)->pluck('id');
 
         $hasSubmenu = DB::table('model_has_submenus')
             ->where('model_id', $user->id)

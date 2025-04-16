@@ -11,7 +11,7 @@
     "require": {
         "php": "^8.3",
         "inertiajs/inertia-laravel": "v2.0.2",
-        "laravel/framework": "v12.9.0",
+        "laravel/framework": "v12.9.2",
         "laravel/sanctum": "v4.0.8",
         "laravel/tinker": "v2.10.1",
         "spatie/laravel-permission": "^6.17.0",

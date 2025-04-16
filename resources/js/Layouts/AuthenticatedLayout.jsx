@@ -3,11 +3,12 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
+import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarSub, MenubarSubContent, MenubarSubTrigger, MenubarTrigger } from "@/components/ui/menubar"
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
-
+    const { modules } = usePage().props;
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
@@ -24,12 +25,50 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
 
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink
+                                {modules && modules.data.length > 0 ? (
+                                    <Menubar>
+                                        {modules.data.map((module) => (
+                                            <MenubarMenu key={module.id + module.name}>
+                                                <MenubarTrigger>{module.name}</MenubarTrigger>
+                                                <MenubarContent>
+                                                    {module.menus && module.menus.length > 0 ? (
+                                                        module.menus.map((menu) => (
+                                                            <Fragment key={menu.id + menu.name}>
+                                                                {menu.submenus && menu.submenus.length > 0 ? (
+                                                                    <MenubarSub>
+                                                                        <MenubarSubTrigger>{menu.name}</MenubarSubTrigger>
+                                                                        <MenubarSubContent>
+                                                                            {menu.submenus.map((submenu) => (
+                                                                                <MenubarItem key={submenu.id + submenu.name} asChild>
+                                                                                    <Link href={submenu.key}>{submenu.name}</Link>
+                                                                                </MenubarItem>
+                                                                            ))}
+                                                                        </MenubarSubContent>
+                                                                    </MenubarSub>
+                                                                ) : (
+                                                                    <MenubarItem key={menu.id + menu.name}>
+                                                                        <Link href={menu.key}>{menu.name}</Link>
+                                                                    </MenubarItem>
+                                                                )}
+                                                            </Fragment>
+                                                        ))
+                                                    ) : (
+                                                        <MenubarItem className="italic">No hay menús disponibles</MenubarItem>
+                                                    )}
+                                                </MenubarContent>
+                                            </MenubarMenu>
+                                        ))
+                                        }
+                                    </Menubar>
+                                ) : (
+                                    <></>
+                                )}
+                                {/* <NavLink
                                     href={route('dashboard')}
                                     active={route().current('dashboard')}
                                 >
                                     Dashboard
-                                </NavLink>
+                                </NavLink> */}
                             </div>
                         </div>
 

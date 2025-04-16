@@ -40,6 +40,30 @@ class UserSeeder extends Seeder
                             'model_type' => $user::class,
                             'model_id' => $user->id,
                         ]);
+
+                    $menus = $module->menus()->get();
+
+                    foreach ($menus as $menu)
+                    {
+                        DB::table('model_has_menus')
+                            ->insert([
+                                'menu_id' => $menu->id,
+                                'model_type' => $user::class,
+                                'model_id' => $user->id,
+                            ]);
+
+                        $submenus = $menu->submenus()->get();
+
+                        foreach ($submenus as $submenu)
+                        {
+                            DB::table('model_has_submenus')
+                                ->insert([
+                                    'submenu_id' => $submenu->id,
+                                    'model_type' => $user::class,
+                                    'model_id' => $user->id,
+                                ]);
+                        }
+                    }
                 }
                 else
                 {

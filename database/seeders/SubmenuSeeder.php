@@ -60,7 +60,10 @@ class SubmenuSeeder extends Seeder
             ],
         ];
 
-        $menus = Menu::all();
+        // $menus = Menu::whereNotIn('key', ['usuarios', 'roles', 'modulos', 'menus', 'submenus'])->get();
+        $menus = Menu::whereDoesntHave('modules', function ($q) {
+            $q->where('key', 'control-acceso');
+        })->get();
 
         try
         {

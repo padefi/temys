@@ -30,7 +30,7 @@ class MenuMiddleware
 
         $user = Auth::user();
         $menus = explode('|', self::parseStringableParam($params));
-        $menusIds = Menu::whereIn('name', $menus)->pluck('id');
+        $menusIds = Menu::whereIn('key', $menus)->pluck('id');
 
         $hasMenu = DB::table('model_has_menus')
             ->where('model_id', $user->id)
