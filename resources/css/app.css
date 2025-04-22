@@ -255,3 +255,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+li::marker {
+  content: none;
+}
