@@ -106,22 +106,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <Link href={route('profile.edit')}>Perfil</Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
-                                <Link method="post" href={route('logout')}>Log Out</Link>
+                                <Link method="post" href={route('logout')} className='cursor-pointer'>Log Out</Link>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
             </nav >
-            {
-                header && (
-                    <header className="bg-white shadow-sm">
-                        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                            {header}
-                        </div>
-                    </header>
-                )
-            }
-
             <main>{children}</main>
         </div >
     );
