@@ -28,7 +28,7 @@ Route::middleware('auth')->group(function () {
     /* TO-DO Modulo control accesos */
     Route::middleware('module:control-acceso')->group(function () {
         Route::middleware('menu:usuarios')->group(function () {
-            Route::get('control-acceso/usuarios', [UsuarioController::class, 'index'])->name('control-acceso.usuarios')->middleware('can:read,' . UsuarioController::class);
+            Route::get('control-acceso/usuarios/usuariosPage', [UsuarioController::class, 'index'])->name('control-acceso.usuarios')->middleware('can:read,' . UsuarioController::class);
             Route::get('control-acceso/roles', [UsuarioController::class, 'index'])->name('control-acceso.roles')->middleware('can:read,' . UsuarioController::class);
             Route::get('control-acceso/modulos', [UsuarioController::class, 'index'])->name('control-acceso.modulos')->middleware('can:read,' . UsuarioController::class);
             Route::get('control-acceso/menus', [UsuarioController::class, 'index'])->name('control-acceso.menus')->middleware('can:read,' . UsuarioController::class);

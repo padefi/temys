@@ -14,7 +14,7 @@ class UsuarioController extends Controller
     {
         $users = User::all();
 
-        return Inertia::render('ControlAcceso/Usuarios', [
+        return Inertia::render('ControlAcceso/Usuarios/UsuariosPage', [
             'users' => UserResource::collection($users),
         ]);
     }
