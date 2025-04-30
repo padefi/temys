@@ -2,7 +2,7 @@ import { ColumnDef, ColumnFiltersState, flexRender, getCoreRowModel, getFiltered
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table"
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 import { Button } from "@/Components/ui/button"
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/Components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select"
 import React from "react"
 
 interface DataTablePaginationProps<TData, TValue> {
@@ -38,7 +38,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTablePaginationP
     return (
         <div>
             <div>
-                <Table className="w-full table-fixed uppercase">
+                <Table className="w-full table-fixed uppercase [&_th]:text-xs [&_th]:lg:text-sm [&_span]:text-xs [&_span]:lg:text-sm [&_th]:truncate [&_td]:truncate">
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>

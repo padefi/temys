@@ -3,13 +3,13 @@ import { Input } from "@/Components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { usePermissions } from "@/composables/permissions";
 import { ColumnDef } from "@tanstack/react-table"
-import { Ban, Funnel, FunnelX, LockKeyhole, Pencil } from "lucide-react";
+import { Ban, Funnel, FunnelX, LockKeyhole, Pencil, Waypoints } from "lucide-react";
 import { ArrowUpDown } from "lucide-react"
 import { useState } from "react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/Components/ui/select"
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
+import { PermisosDialog } from "./Permisos/PermisosDialog";
+
 export type User = {
     id: number;
     name: string;
@@ -196,6 +196,7 @@ export const columns: ColumnDef<User>[] = [
         cell: ({ row }) => {
             const user = row.original
             const { userAuth } = usePermissions();
+            const [isDialogOpen, setIsDialogOpen] = useState(false);
 
             return (
                 userAuth.id !== user.id ? (
@@ -212,6 +213,25 @@ export const columns: ColumnDef<User>[] = [
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
+
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
+                                        onClick={() => setIsDialogOpen(true)}
+                                    >
+                                        <Waypoints className='w-6! h-6! text-emerald-500' />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Permisos</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+
+                        <PermisosDialog open={isDialogOpen} setOpen={setIsDialogOpen} user={user.id} />
 
                         <TooltipProvider>
                             <Tooltip>

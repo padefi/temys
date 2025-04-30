@@ -15,9 +15,11 @@ class MenuResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'name' => $this->name,
             'key' => $this->key,
             'submenus' => SubmenuResource::collection($this->whenLoaded('submenus')),
+            'is_assigned' => $this->when(isset($this->is_assigned), $this->is_assigned),
         ];
     }
 }
