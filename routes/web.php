@@ -32,9 +32,15 @@ Route::middleware('auth')->group(function () {
     Route::middleware('module:control-acceso')->group(function () {
         Route::middleware('menu:usuarios')->group(function () {
             Route::get('control-acceso/usuarios/usuariosPage', [UsuarioController::class, 'index'])->name('control-acceso.usuarios')->middleware('can:read,' . UsuarioController::class);
+            
             Route::get('control-acceso/show-modulos-by-user/{user}', [ModuleController::class, 'showModulesByUser'])->middleware('can:read,' . ModuleController::class);
+            Route::get('control-acceso/managed-modulos-by-user/{user}/{module}', [ModuleController::class, 'managedModulesByUser'])->middleware('can:update,' . ModuleController::class);
+
             Route::get('control-acceso/show-menus-by-user/{user}/{module}', [MenuController::class, 'showMenusByUser'])->middleware('can:read,' . MenuController::class);
+            Route::get('control-acceso/managed-menus-by-user/{user}/{module}/{menu}', [MenuController::class, 'managedMenusByUser'])->middleware('can:read,' . MenuController::class);
+
             Route::get('control-acceso/show-submenus-by-user/{user}/{menu}', [SubmenuController::class, 'showSubmenusByUser'])->middleware('can:read,' . SubmenuController::class);
+            Route::get('control-acceso/managed-submenus-by-user/{user}/{module}/{menu}/{submenu}', [SubmenuController::class, 'managedSubmenusByUser'])->middleware('can:read,' . SubmenuController::class);
         });
 
         Route::get('control-acceso/roles', [UsuarioController::class, 'index'])->name('control-acceso.roles')->middleware('can:read,' . UsuarioController::class);

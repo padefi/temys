@@ -20,7 +20,6 @@ export function PermisosDialog({ open, setOpen, user }: PropsWithChildren<Permis
 
     useEffect(() => {
         setModuleSelected(0);
-        setMenuSelected(0);
     }, [open]);
 
     return (
@@ -28,6 +27,9 @@ export function PermisosDialog({ open, setOpen, user }: PropsWithChildren<Permis
             <DialogContent className="min-w-[calc(100vw-3rem)] min-h-[calc(100vh-5rem)] md:min-w-[calc(100vw-10rem)] md:min-h-[calc(100vh-10rem)] lg:min-w-[calc(100vw-19rem)] lg:min-h-[calc(100vh-19rem)] xl:min-w-[calc(100vw-30rem)] xl:min-h-[calc(100vh-20rem)] 2xl:min-w-[calc(100vw-65rem)] 2xl:min-h-[calc(100vh-30rem)] [&_a]:text-wrap">
                 <DialogHeader>
                     <DialogTitle>Permisos del Usuario</DialogTitle>
+                    <DialogDescription>
+                        <span className="font-semibold">Seleccione los modulos, menus y submenus que desea asignar al usuario.</span>
+                    </DialogDescription>
                 </DialogHeader>
                 <ResizablePanelGroup
                     direction="horizontal"
@@ -42,7 +44,7 @@ export function PermisosDialog({ open, setOpen, user }: PropsWithChildren<Permis
                             <Modulos setModuleSelected={setModuleSelected} setMenuSelected={setMenuSelected} user={user} />
                         </div>
                     </ResizablePanel>
-                    <Separator orientation="vertical" />
+                    <ResizableHandle />
                     <ResizablePanel defaultSize={33}>
                         <div className="flex h-[52px] items-center justify-center">
                             <span className="font-semibold">Menus</span>
@@ -52,14 +54,14 @@ export function PermisosDialog({ open, setOpen, user }: PropsWithChildren<Permis
                             <Menus moduleSelected={moduleSelected} setMenuSelected={setMenuSelected} user={user} />
                         </div>
                     </ResizablePanel>
-                    <Separator orientation="vertical" />
-                    <ResizablePanel defaultSize={33}>
+                    <ResizableHandle />
+                    <ResizablePanel defaultSize={34}>
                         <div className="flex h-[52px] items-center justify-center">
                             <span className="font-semibold">Submenus</span>
                         </div>
                         <Separator />
                         <div className="flex items-center justify-center">
-                            <Submenus menuSelected={menuSelected} user={user} />
+                            <Submenus moduleSelected={moduleSelected} menuSelected={menuSelected} user={user} />
                         </div>
                     </ResizablePanel>
                 </ResizablePanelGroup>

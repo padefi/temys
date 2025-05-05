@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/Components/ui/button";
 import { ScrollArea } from "@/Components/ui/scroll-area"
 import { MinusCircle, PlusCircle } from "lucide-react";
+import { toast } from "sonner";
 
 interface Menu {
     id: number;
@@ -23,29 +24,64 @@ export function Menus({ moduleSelected, setMenuSelected, user }: MenusProps) {
     const [loading, setLoading] = useState(true);
     const [isClicked, setIsClicked] = useState(-1);
 
-    useEffect(() => {
-        const fetchDataMenus = async () => {
-            setIsClicked(-1);
-            setLoading(true);
+    const fetchDataMenus = async () => {
+        setIsClicked(-1);
+        setLoading(true);
 
-            if (moduleSelected === 0) {
-                setDataMenus([]);
+        if (moduleSelected === 0) {
+            setDataMenus([]);
+            return;
+        }
+
+        try {
+            const response = await fetch(`/control-acceso/show-menus-by-user/${user}/${moduleSelected}`);
+            const data = await response.json();
+            setDataMenus(data.data);
+        } catch (error) {
+            console.error("Error al obtener los menús:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchDataMenus();
+    }, [moduleSelected]);
+
+    const toggleMenuAssignment = async (idModule: number, idMenu: number, isAssigned: number) => {
+        try {
+            const response = await fetch(`/control-acceso/managed-menus-by-user/${user}/${idModule}/${idMenu}`);
+            const data = await response.json();
+
+            if (!data.success) {
+                toast.error(data.message);
                 return;
             }
 
-            try {
-                const response = await fetch(`/control-acceso/show-menus-by-user/${user}/${moduleSelected}`);
-                const data = await response.json();
-                setDataMenus(data.data);
-            } catch (error) {
-                console.error("Error al obtener los menús:", error);
-            } finally {
-                setLoading(false);
+            if (data.action === "add") toast.success(data.message);
+            else {
+                setMenuSelected(0);
+                toast.warning(data.message);
+                setTimeout(() => {
+                    setMenuSelected(idMenu);
+                }, 0);
             }
-        };
 
-        fetchDataMenus();
-    }, [moduleSelected]);
+            setDataMenus((prevData) => {
+                if (!prevData) return null;
+
+                return prevData.map((menu) =>
+                    menu.id === idMenu
+                        ? { ...menu, is_assigned: isAssigned }
+                        : menu
+                );
+            });
+
+        } catch (error) {
+            toast.error("Error al cambiar el estado del menú");
+            console.error("Error al cambiar el estado del menú:", error);
+        }
+    };
 
     if (loading) {
         return (
@@ -88,6 +124,7 @@ export function Menus({ moduleSelected, setMenuSelected, user }: MenusProps) {
                                         variant="ghost"
                                         onClick={(e) => {
                                             e.preventDefault();
+                                            toggleMenuAssignment(moduleSelected, menu.id, 1);
                                         }}
                                     >
                                         <PlusCircle className="w-6! h-6! text-emerald-500" />
@@ -98,6 +135,7 @@ export function Menus({ moduleSelected, setMenuSelected, user }: MenusProps) {
                                         variant="ghost"
                                         onClick={(e) => {
                                             e.preventDefault();
+                                            toggleMenuAssignment(moduleSelected, menu.id, 0);
                                         }}
                                     >
                                         <MinusCircle className="w-6! h-6! text-red-400" />

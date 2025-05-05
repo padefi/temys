@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/Components/ui/button";
 import { ScrollArea } from "@/Components/ui/scroll-area"
 import { MinusCircle, PlusCircle } from "lucide-react";
+import { toast } from "sonner";
 
 interface Modulo {
     id: number;
@@ -23,30 +24,63 @@ export function Modulos({ setModuleSelected, setMenuSelected, user }: ModulosPro
     const [loading, setLoading] = useState(true);
     const [isClicked, setIsClicked] = useState(-1);
 
-    useEffect(() => {
-        const fetchDataModulos = async () => {
-            setLoading(true);
-            setIsClicked(-1);
-            setMenuSelected(0);
-            console.log(dataModulos);
-            
-            try {
-                const response = await fetch(`/control-acceso/show-modulos-by-user/${user}`);
-                const data = await response.json();
-                setDataModulos(data.data);
-            } catch (error) {
-                console.error("Error al obtener los módulos:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const fetchDataModulos = async () => {
+        setLoading(true);
+        setIsClicked(-1);
 
+        try {
+            const response = await fetch(`/control-acceso/show-modulos-by-user/${user}`);
+            const data = await response.json();
+            setDataModulos(data.data);
+        } catch (error) {
+            console.error("Error al obtener los módulos:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchDataModulos();
     }, []);
 
+    const toggleModuleAssignment = async (idModule: number, isAssigned: number) => {
+        try {
+            const response = await fetch(`/control-acceso/managed-modulos-by-user/${user}/${idModule}`);
+            const data = await response.json();
+
+            if (!data.success) {
+                toast.error(data.message);
+                return;
+            }
+
+            if (data.action === "add") toast.success(data.message);
+            else {
+                setModuleSelected(0);
+                setMenuSelected(0);
+                toast.warning(data.message);
+                setTimeout(() => {
+                    setModuleSelected(idModule);
+                }, 0);
+            }
+
+            setDataModulos((prevData) => {
+                if (!prevData) return null;
+
+                return prevData.map((modulo) =>
+                    modulo.id === idModule
+                        ? { ...modulo, is_assigned: isAssigned }
+                        : modulo
+                );
+            });
+        } catch (error) {
+            toast.error("Error al cambiar el estado del módulo");
+            console.error("Error al cambiar el estado del módulo:", error);
+        }
+    };
+
     if (loading) {
         return (
-            <div className="flex flex-col space-y-3">
+            <div className="flex flex-col gap-4 py-4">
                 <Skeleton className="h-4 w-[200px]" />
                 <Skeleton className="h-4 w-[200px]" />
                 <Skeleton className="h-4 w-[200px]" />
@@ -68,6 +102,7 @@ export function Modulos({ setModuleSelected, setMenuSelected, user }: ModulosPro
                                         e.preventDefault();
                                         setIsClicked(index);
                                         setModuleSelected(modulo.id);
+                                        setMenuSelected(0);
                                     }}
                                     className={cn(
                                         buttonVariants({ variant: isClicked === index ? "default" : "ghost", size: "sm" }),
@@ -84,6 +119,7 @@ export function Modulos({ setModuleSelected, setMenuSelected, user }: ModulosPro
                                         variant="ghost"
                                         onClick={(e) => {
                                             e.preventDefault();
+                                            toggleModuleAssignment(modulo.id, 1);
                                         }}
                                     >
                                         <PlusCircle className="w-6! h-6! text-emerald-500" />
@@ -94,6 +130,7 @@ export function Modulos({ setModuleSelected, setMenuSelected, user }: ModulosPro
                                         variant="ghost"
                                         onClick={(e) => {
                                             e.preventDefault();
+                                            toggleModuleAssignment(modulo.id, 0);
                                         }}
                                     >
                                         <MinusCircle className="w-6! h-6! text-red-400" />

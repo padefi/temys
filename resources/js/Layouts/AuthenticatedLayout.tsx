@@ -6,6 +6,7 @@ import { Button } from '@/Components/ui/button';
 import { ChevronDown, MenuIcon } from 'lucide-react';
 import { ReactNode, Fragment, PropsWithChildren } from 'react';
 import { usePermissions } from '@/composables/permissions';
+import { Toaster } from '@/Components/ui/sonner';
 
 type Submenu = {
     name: string;
@@ -145,6 +146,7 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
                 </div>
             </nav >
             <main>{children}</main>
+            <Toaster position="top-right" expand={true} richColors />
         </div >
     );
 };

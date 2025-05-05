@@ -36,17 +36,43 @@ class MenuController extends Controller
     {
         $userId = $user->id;
         $menus = Menu::leftJoin('module_has_menus', 'menus.id', '=', 'module_has_menus.menu_id')
-        ->leftJoin('model_has_menus', function ($join) use ($userId) {
-            $join->on('menus.id', '=', 'model_has_menus.menu_id')
-                 ->where('model_has_menus.model_id', '=', $userId);
-        })
-        ->where('module_has_menus.module_id', $module->id) // Verifica que el menú pertenece al módulo
-        ->select(
-            'menus.*',
-            DB::raw('IF(model_has_menus.menu_id IS NOT NULL, true, false) as is_assigned') // Verifica si el menú está asignado al usuario
-        )
-        ->get();
+            ->leftJoin('model_has_menus', function ($join) use ($userId)
+            {
+                $join->on('menus.id', '=', 'model_has_menus.menu_id')
+                    ->where('model_has_menus.model_id', '=', $userId);
+            })
+            ->where('module_has_menus.module_id', $module->id) // Verifica que el menú pertenece al módulo
+            ->select(
+                'menus.*',
+                DB::raw('IF(model_has_menus.menu_id IS NOT NULL, true, false) as is_assigned') // Verifica si el menú está asignado al usuario
+            )
+            ->get();
 
         return MenuResource::collection($menus);
+    }
+
+    public function managedMenusByUser(User $user, Module $module, Menu $menu)
+    {
+        if (!$user->modules()->where('modules.id', $module->id)->exists())
+        {
+            return response()->json(['message' => 'El módulo no está asignado al usuario', 'success' => false]);
+        }
+
+        if (!$module->menus()->where('menus.id', $menu->id)->exists())
+        {
+            return response()->json(['message' => 'El menú no pertenece a dicho módulo', 'success' => false]);
+        }
+
+        if ($user->menus()->where('menus.id', $menu->id)->exists())
+        {
+            $user->menus()->detach($menu->id);
+            DB::table('model_has_submenus')->whereIn('submenu_id', $menu->submenus()->pluck('id'))->delete();
+
+            return response()->json(['message' => 'Menú eliminado con exito', 'action' => 'delete', 'success' => true]);
+        }
+
+        $user->menus()->attach($menu->id, ['model_type' => User::class]);
+
+        return response()->json(['message' => 'Menú agregado con exito', 'action' => 'add', 'success' => true]);
     }
 }
