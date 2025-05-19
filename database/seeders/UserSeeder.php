@@ -24,13 +24,34 @@ class UserSeeder extends Seeder
             'password' => Hash::make('12345678'),
         ])->assignRole('admin');
 
+        for ($i = 1; $i <= 10; $i++)
+        {
+            User::create([
+                'name' => 'Prueba ' . $i,
+                'email' => 'prueba' . $i . '@prueba.com',
+                'password' => Hash::make('12345678'),
+            ])->assignRole('encargado');
+
+            User::create([
+                'name' => 'Prueba ' . $i++,
+                'email' => 'prueba' . $i++ . '@prueba.com',
+                'password' => Hash::make('12345678'),
+            ])->assignRole('auxiliar');
+
+            User::create([
+                'name' => 'Prueba ' . $i++,
+                'email' => 'prueba' . $i++ . '@prueba.com',
+                'password' => Hash::make('12345678'),
+            ])->assignRole('administrativo');
+        }
+
         $enabledModules  = config('module.enabled_modules', []);
 
         try
         {
             foreach ($enabledModules as $moduleName)
             {
-                $module = Module::where('key', $moduleName)->first();
+                $module = Module::where('key', $moduleName['key'])->first();
 
                 if ($module)
                 {

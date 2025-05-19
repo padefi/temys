@@ -16,61 +16,44 @@ class MenuSeeder extends Seeder
      */
     public function run(): void
     {
-        $menus = [
-            //CONTROL DE ACCESO
-            [
-                ['key' => 'usuarios', 'name' => 'Usuarios'],
-                ['key' => 'roles', 'name' => 'Roles'],
-                ['key' => 'modulos', 'name' => 'Modulos'],
-                ['key' => 'menus', 'name' => 'Menus'],
-                ['key' => 'submenus', 'name' => 'Submenus'],
-            ],
-            //AFILIADOS
-            [
-                ['key' => 'afiliados', 'name' => 'Afiliados'],
-                ['key' => 'beneficios', 'name' => 'Beneficios'],
-                ['key' => 'fondoDeSepelio', 'name' => 'Fondo de sepelio'],
-                ['key' => 'pas', 'name' => 'P.A.S.'],
-                ['key' => 'turismo', 'name' => 'Turismo'],
-            ],
-            [
-                //VENTAS
-                ['key' => 'ordenes', 'name' => 'Ordenes'],
-                ['key' => 'porFacturar', 'name' => 'Por facturar'],
-                ['key' => 'productos', 'name' => 'Productos'],
-                ['key' => 'reportes', 'name' => 'Reportes'],
-                ['key' => 'configuracion', 'name' => 'Configuracion'],
-            ],
-            [
-                //CONTABILIDAD
-                ['key' => 'tablero', 'name' => 'Tablero'],
-                ['key' => 'clientes', 'name' => 'Clientes'],
-                ['key' => 'proveedores', 'name' => 'Proveedores'],
-                ['key' => 'contabilidad', 'name' => 'Contabilidad'],
-                ['key' => 'reportes', 'name' => 'Reportes'],
-                ['key' => 'configuracion', 'name' => 'Configuracion'],
-            ],
-        ];
+        $enabledModulesConfig = config('module.enabled_modules', []);
+        $guardName = 'web';
 
-        $modules = Module::all();
+        DB::beginTransaction();
 
         try
         {
-            foreach ($menus as $key => $menu)
+            foreach ($enabledModulesConfig as $moduleConfig)
             {
-                foreach ($menu as $data)
+                $module = Module::firstWhere('key', $moduleConfig['key']);
+                if (!$module)
                 {
-                    $result = Menu::create(['key' => $data['key'], 'name' => $data['name'], 'guard_name' => 'web']);
-                    DB::table('module_has_menus')
-                        ->insert([
-                            'menu_id' => $result->id,
-                            'module_id' => $modules[$key]->id,
+                    Log::warning("Modulo con la key'{$moduleConfig['key']}' no encontrado. Salteando el menú.");
+                }
+
+                if (isset($moduleConfig['menus']) && is_array($moduleConfig['menus']))
+                {
+                    foreach ($moduleConfig['menus'] as $menuConfig)
+                    {
+                        $menu = Menu::create([
+                            'key' => $menuConfig['key'],
+                            'name' => $menuConfig['name'],
+                            'guard_name' => $guardName,
                         ]);
+
+                        DB::table('module_has_menus')->insert([
+                            'menu_id' => $menu->id,
+                            'module_id' => $module->id,
+                        ]);
+                    }
                 }
             }
+
+            DB::commit();
         }
         catch (\Throwable $th)
         {
+            DB::rollBack();
             Log::error('Error al asignar el menú al módulo: ' . $th->getMessage());
             throw $th;
         }

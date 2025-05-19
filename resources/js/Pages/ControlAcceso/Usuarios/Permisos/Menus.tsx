@@ -4,13 +4,14 @@ import { Link } from "@inertiajs/react";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/Components/ui/button";
 import { ScrollArea } from "@/Components/ui/scroll-area"
-import { MinusCircle, PlusCircle } from "lucide-react";
+import { Eye, MinusCircle, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface Menu {
     id: number;
     name: string;
     is_assigned: number;
+    has_submenus: boolean;
 }
 
 interface MenusProps {
@@ -130,16 +131,26 @@ export function Menus({ moduleSelected, setMenuSelected, user }: MenusProps) {
                                         <PlusCircle className="w-6! h-6! text-emerald-500" />
                                     </Button>
                                 ) : (
-                                    <Button
-                                        className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(199,0,54,0.5)]"
-                                        variant="ghost"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            toggleMenuAssignment(moduleSelected, menu.id, 0);
-                                        }}
-                                    >
-                                        <MinusCircle className="w-6! h-6! text-red-400" />
-                                    </Button>
+                                    <div key={menu.id + index} className="flex items-center justify-between">
+                                        {!menu.has_submenus && (
+                                            <Button
+                                                className="hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
+                                                variant="ghost"
+                                            >
+                                                <Eye className="w-6! h-6! text-cyan-400" />
+                                            </Button>
+                                        )}
+                                        <Button
+                                            className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(199,0,54,0.5)]"
+                                            variant="ghost"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                toggleMenuAssignment(moduleSelected, menu.id, 0);
+                                            }}
+                                        >
+                                            <MinusCircle className="w-6! h-6! text-red-400" />
+                                        </Button>
+                                    </div>
                                 )
                                 }
                             </div>

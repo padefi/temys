@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\ControlAcceso\Menu;
+use App\Models\ControlAcceso\Module;
 use App\Models\ControlAcceso\Submenu;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -16,72 +17,61 @@ class SubmenuSeeder extends Seeder
      */
     public function run(): void
     {
-        $submenus = [
-            //AFILIADOS
-            [
-                ['key' => 'dataEntry', 'name' => 'Data entry'],
-                ['key' => 'consultaAfiliados', 'name' => 'Consulta de afiliados'],
-            ],
-            [
-                //BENEFICIOS
-                ['key' => 'natalidad', 'name' => 'Natalidad'],
-                ['key' => 'lunaDeMiel', 'name' => 'Luna de miel'],
-                ['key' => 'casamiento', 'name' => 'Casamiento'],
-            ],
-            [
-                //ORDENES
-                ['key' => 'cotizaciones', 'name' => 'Cotizaciones'],
-                ['key' => 'ordenes', 'name' => 'Ordenes'],
-                ['key' => 'equiposDeVentas', 'name' => 'Equipos de ventas'],
-            ],
-            [
-                //POR FACTURAR
-                ['key' => 'ordenesAFacturar', 'name' => 'Ordenes a facturar'],
-                ['key' => 'ordenesParaCrearVentasAdicionales', 'name' => 'Ordenes para crear ventas adicionales'],
-            ],
-            [
-                //CLIENTES
-                ['key' => 'consultaDeClientes', 'name' => 'Consulta de clientes'],
-                ['key' => 'notasDeDebito', 'name' => 'Notas de debito'],
-                ['key' => 'notasDeCredito', 'name' => 'Notas de credito'],
-            ],
-            [
-                //PROVEEDORES
-                ['key' => 'consultaDeProveedores', 'name' => 'Consulta de proveedores'],
-                ['key' => 'notasDeDebitoProveedores', 'name' => 'Notas de debito'],
-                ['key' => 'notasDeCreditoProveedores', 'name' => 'Notas de credito'],
+        $enabledModulesConfig = config('module.enabled_modules', []);
+        $guardName = 'web';
 
-            ],
-            [
-                //CONTABILIDAD
-                ['key' => 'consultaDeCuentas', 'name' => 'Consulta de cuentas'],
-                ['key' => 'consultaDeAsientos', 'name' => 'Consulta de asientos'],
-                ['key' => 'consultaDeAsientosPorCuenta', 'name' => 'Consulta de asientos por cuenta'],
-            ],
-        ];
-
-        // $menus = Menu::whereNotIn('key', ['usuarios', 'roles', 'modulos', 'menus', 'submenus'])->get();
-        $menus = Menu::whereDoesntHave('modules', function ($q) {
-            $q->where('key', 'control-acceso');
-        })->get();
+        DB::beginTransaction();
 
         try
         {
-            foreach ($submenus as $key => $submenu)
+            foreach ($enabledModulesConfig as $moduleConfig)
             {
-                foreach ($submenu as $data)
+                $module = Module::firstWhere('key', $moduleConfig['key']);
+
+                if (!$module)
                 {
-                    $result = Submenu::create(['key' => $data['key'], 'name' => $data['name'], 'guard_name' => 'web']);
-                    DB::table('menu_has_submenus')
-                        ->insert([
-                            'submenu_id' => $result->id,
-                            'menu_id' => $menus[$key]->id,
-                        ]);
+                    Log::warning("Module with key '{$moduleConfig['key']}' not found when seeding submenus. Skipping its menus.");
+                    continue;
+                }
+
+                if (isset($moduleConfig['menus']) && is_array($moduleConfig['menus']))
+                {
+                    foreach ($moduleConfig['menus'] as $menuConfig)
+                    {
+                        if (isset($menuConfig['submenus']) && is_array($menuConfig['submenus']) && !empty($menuConfig['submenus']))
+                        {
+                            $parentMenu = Menu::firstWhere('key', $menuConfig['key']);
+
+                            if (!$parentMenu)
+                            {
+                                Log::warning("Parent menu with key '{$menuConfig['key']}' not found (for module '{$moduleConfig['key']}'). Cannot seed its submenus.");
+                                continue;
+                            }
+
+                            foreach ($menuConfig['submenus'] as $submenuConfig)
+                            {
+                                $submenu = Submenu::create([
+                                    'key' => $submenuConfig['key'],
+                                    'name' => $submenuConfig['name'],
+                                    'guard_name' => $guardName,
+                                ]);
+
+                                DB::table('menu_has_submenus')
+                                    ->insert([
+                                        'submenu_id' => $submenu->id,
+                                        'menu_id' => $parentMenu->id,
+                                    ]);
+                            }
+                        }
+                    }
                 }
             }
+
+            DB::commit();
         }
         catch (\Throwable $th)
         {
+            DB::rollBack();
             Log::error('Error al asignar el submenú al menú: ' . $th->getMessage());
             throw $th;
         }

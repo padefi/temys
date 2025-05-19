@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\ControlAcceso\Module;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ModuleSeeder extends Seeder
 {
@@ -13,19 +15,24 @@ class ModuleSeeder extends Seeder
      */
     public function run(): void
     {
-        $modules = [
-            ['key' => 'control-acceso', 'name' => 'Control de Acceso'],
-            ['key' => 'afiliados', 'name' => 'Afiliados'],
-            ['key' => 'compras', 'name' => 'Compras'],
-            ['key' => 'contabilidad', 'name' => 'Contabilidad'],
-            ['key' => 'inventario', 'name' => 'Inventario'],
-            ['key' => 'seccionales', 'name' => 'Seccionales'],
-            ['key' => 'ventas', 'name' => 'Ventas'],
-        ];
+        $enabledModules  = config('module.enabled_modules', []);
+        $guardName = 'web';
 
-        foreach ($modules as $module)
+        DB::beginTransaction();
+
+        try
         {
-            Module::create(['key' => $module['key'], 'name' => $module['name'], 'guard_name' => 'web']);
+            foreach ($enabledModules as $module)
+            {
+                Module::create(['key' => $module['key'], 'name' => $module['name'], 'guard_name' => $guardName]);
+            }
+
+            DB::commit();
+        }
+        catch (\Throwable $th)
+        {
+            DB::rollBack();
+            Log::error('Error al crear los modulos: ' . $th->getMessage());
         }
     }
 }

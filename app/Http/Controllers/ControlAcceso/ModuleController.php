@@ -38,6 +38,13 @@ class ModuleController extends Controller
             ->select('modules.*', DB::raw('IF(model_has_modules.module_id IS NOT NULL, true, false) as is_assigned')) // Verifica si el módulo estaba asignado al usuario
             ->get();
 
+        // Agrega el campo has_menus a cada módulo
+        $modules->map(function ($module)
+        {
+            $module->has_menus = $module->menus()->exists();
+            return $module;
+        });
+
         return ModuleResource::collection($modules);
     }
 
@@ -46,15 +53,17 @@ class ModuleController extends Controller
         if ($user->modules()->where('modules.id', $module->id)->exists())
         {
             $user->modules()->detach($module->id);
-            DB::table('model_has_menus')->whereIn('menu_id', $module->menus()->pluck('id'))->delete();
-            DB::table('model_has_submenus')->whereIn('submenu_id', function ($query) use ($module)
-            {
-                $query->select('submenus.id')
-                    ->from('submenus')
-                    ->join('menu_has_submenus', 'submenus.id', '=', 'menu_has_submenus.submenu_id')
-                    ->join('module_has_menus', 'menu_has_submenus.menu_id', '=', 'module_has_menus.menu_id')
-                    ->where('module_has_menus.module_id', $module->id);
-            })->delete();
+            DB::table('model_has_menus')->where('model_id', $user->id)
+                ->whereIn('menu_id', $module->menus()->pluck('id'))->delete();
+            DB::table('model_has_submenus')->where('model_id', $user->id)
+                ->whereIn('submenu_id', function ($query) use ($module)
+                {
+                    $query->select('submenus.id')
+                        ->from('submenus')
+                        ->join('menu_has_submenus', 'submenus.id', '=', 'menu_has_submenus.submenu_id')
+                        ->join('module_has_menus', 'menu_has_submenus.menu_id', '=', 'module_has_menus.menu_id')
+                        ->where('module_has_menus.module_id', $module->id);
+                })->delete();
 
             return response()->json(['message' => 'Modulo eliminado con exito', 'action' => 'delete', 'success' => true]);
         }

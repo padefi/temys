@@ -48,6 +48,13 @@ class MenuController extends Controller
             )
             ->get();
 
+        // Agrega el campo has_menus a cada módulo
+        $menus->map(function ($menu)
+        {
+            $menu->has_submenus = $menu->submenus()->exists();
+            return $menu;
+        });
+
         return MenuResource::collection($menus);
     }
 
@@ -66,7 +73,8 @@ class MenuController extends Controller
         if ($user->menus()->where('menus.id', $menu->id)->exists())
         {
             $user->menus()->detach($menu->id);
-            DB::table('model_has_submenus')->whereIn('submenu_id', $menu->submenus()->pluck('id'))->delete();
+            DB::table('model_has_submenus')->where('model_id', $user->id)
+            ->whereIn('submenu_id', $menu->submenus()->pluck('id'))->delete();
 
             return response()->json(['message' => 'Menú eliminado con exito', 'action' => 'delete', 'success' => true]);
         }

@@ -20,6 +20,7 @@ class MenuResource extends JsonResource
             'key' => $this->key,
             'submenus' => SubmenuResource::collection($this->whenLoaded('submenus')),
             'is_assigned' => $this->when(isset($this->is_assigned), $this->is_assigned),
+            'has_submenus' => $this->when(isset($this->has_submenus), $this->has_submenus),
         ];
     }
 }

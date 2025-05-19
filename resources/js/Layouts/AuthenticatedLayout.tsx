@@ -66,12 +66,20 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
                                                             menu.submenus && menu.submenus.length > 0 ? (
                                                                 menu.submenus.map((submenu, index) => (
                                                                     <DropdownMenuItem key={index + submenu.name} asChild>
-                                                                        <Link href={route(submenu.key)}>{submenu.name}</Link>
+                                                                        {route().has(submenu.key) ? (
+                                                                            <Link href={route(submenu.key)}>{submenu.name}</Link>
+                                                                        ) : (
+                                                                            <span>{submenu.name}</span>
+                                                                        )}
                                                                     </DropdownMenuItem>
                                                                 ))
                                                             ) : (
                                                                 <DropdownMenuItem key={menu.id + menu.name}>
-                                                                    <Link href={route(module.key + '.' + menu.key)}>{menu.name}</Link>
+                                                                    {route().has(module.key + '.' + menu.key) ? (
+                                                                        <Link href={route(module.key + '.' + menu.key)}>{menu.name}</Link>
+                                                                    ) : (
+                                                                        <span>{menu.name}</span>
+                                                                    )}
                                                                 </DropdownMenuItem>
                                                             )
                                                         ))
@@ -104,14 +112,22 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
                                                         <MenubarSubContent>
                                                             {menu.submenus.map((submenu, index) => (
                                                                 <MenubarItem key={index + submenu.name} asChild>
-                                                                    <Link href={route(submenu.key)}>{submenu.name}</Link>
+                                                                    {route().has(submenu.key) ? (
+                                                                        <Link href={route(submenu.key)}>{submenu.name}</Link>
+                                                                    ) : (
+                                                                        <span>{submenu.name}</span>
+                                                                    )}
                                                                 </MenubarItem>
                                                             ))}
                                                         </MenubarSubContent>
                                                     </MenubarSub>
                                                 ) : (
                                                     <MenubarItem key={menu.id + menu.name}>
-                                                        <Link href={route(module.key + '.' + menu.key)}>{menu.name}</Link>
+                                                        {route().has(module.key + '.' + menu.key) ? (
+                                                            <Link href={route(module.key + '.' + menu.key)}>{menu.name}</Link>
+                                                        ) : (
+                                                            <span>{menu.name}</span>
+                                                        )}
                                                     </MenubarItem>
                                                 )}
                                             </Fragment>
