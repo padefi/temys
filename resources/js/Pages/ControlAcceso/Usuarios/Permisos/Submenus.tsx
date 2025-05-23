@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Skeleton } from "@/Components/ui/skeleton"
-import { Link } from "@inertiajs/react";
-import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "@/Components/ui/button";
+import { Button } from "@/Components/ui/button";
 import { ScrollArea } from "@/Components/ui/scroll-area"
-import { Eye, MinusCircle, PlusCircle } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { toast } from "sonner";
+
+import { PermisosPopover } from "./PermisosPopover";
+import axios from "axios";
+import { ConfirmPopover } from "./ConfimPopover";
 
 interface Submenu {
     id: number;
@@ -15,17 +17,65 @@ interface Submenu {
 
 interface SubemnusProps {
     moduleSelected: number;
+    moduleSelectedIsAssigned: boolean;
     menuSelected: number;
+    menuSelectedIsAssigned: boolean;
     user: number;
 }
 
-export function Submenus({ moduleSelected, menuSelected, user }: SubemnusProps) {
+export function Submenus({ moduleSelected, moduleSelectedIsAssigned, menuSelected, menuSelectedIsAssigned, user }: SubemnusProps) {
     const [dataSubmenus, setDataSubmenus] = useState<Submenu[] | null>(null);
     const [loading, setLoading] = useState(true);
-    const [isClicked, setIsClicked] = useState(-1);
+    const [loadingPermissions, setLoadingPermissions] = useState(true);
+    const [dataPermission, setDataPermission] = useState<{ sectionName: string; option: string, idOption: number, permissionAssigned: [] }>({ sectionName: '', option: '', idOption: 0, permissionAssigned: [] });
+
+    const seccion = async (option: string, idOption: number) => {
+        try {
+            const response = await fetch(`/control-acceso/managed-permissions-submenus-by-user/${user}/${idOption}`);
+            const data = await response.json();
+
+            setDataPermission({ sectionName: 'Submenu', option, idOption, permissionAssigned: data });
+            setLoadingPermissions(false);
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) toast.error(error.response.data.message || "Error desconocido del servidor");
+            else toast.error("Error al obtener los permisos asignados al usuario");
+        }
+    };
+
+    const togglePermissionAssignment = async (idSubmenu: number, permission: string) => {
+        try {
+            const response = await axios.post('/control-acceso/managed-permissions-submenus-by-user/', {
+                user,
+                idSubmenu,
+                permission
+            })
+
+            const data = await response.data;
+
+            if (!data.success) {
+                toast.error(data.message);
+                return;
+            }
+
+            if (data.action === "add") toast.success(data.message);
+            else toast.warning(data.message);
+
+            setDataPermission((prev: any) => {
+                const exists = prev.permissionAssigned.find((item: any) => item.name === permission);
+                let newAssigned;
+
+                if (exists) newAssigned = prev.permissionAssigned.filter((item: any) => item.name !== permission); // Quitar permiso
+                else newAssigned = [...prev.permissionAssigned, { name: permission }]; // Agregar permiso
+
+                return { ...prev, permissionAssigned: newAssigned };
+            });
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) toast.error(error.response.data.message || "Error desconocido del servidor");
+            else toast.error("Error al asignar el permiso al submenú");
+        }
+    }
 
     const fetchDataSubmenus = async () => {
-        setIsClicked(-1);
         setLoading(true);
 
         if (menuSelected === 0) {
@@ -50,8 +100,14 @@ export function Submenus({ moduleSelected, menuSelected, user }: SubemnusProps) 
 
     const toggleSubmenuAssignment = async (idModule: number, idMenu: number, idSubmenu: number, isAssigned: number) => {
         try {
-            const response = await fetch(`/control-acceso/managed-submenus-by-user/${user}/${idModule}/${idMenu}/${idSubmenu}`);
-            const data = await response.json();
+            const response = await axios.post('/control-acceso/managed-submenus-by-user/', {
+                user,
+                idModule,
+                idMenu,
+                idSubmenu
+            })
+
+            const data = await response.data;
 
             if (!data.success) {
                 toast.error(data.message);
@@ -71,8 +127,8 @@ export function Submenus({ moduleSelected, menuSelected, user }: SubemnusProps) 
                 );
             });
         } catch (error) {
-            toast.error("Error al cambiar el estado del submenú");
-            console.error("Error al cambiar el estado del submenú:", error);
+            if (axios.isAxiosError(error) && error.response) toast.error(error.response.data.message || "Error desconocido del servidor");
+            else toast.error("Error al cambiar el estado del submenú");
         }
     };
 
@@ -94,54 +150,32 @@ export function Submenus({ moduleSelected, menuSelected, user }: SubemnusProps) 
                     {dataSubmenus && dataSubmenus.length > 0 ? (
                         dataSubmenus.map((submenu, index) => (
                             <div key={index} className="flex items-center justify-between">
-                                <Link
-                                    key={index}
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setIsClicked(index);
-                                    }}
-                                    className={cn(
-                                        buttonVariants({ variant: isClicked === index ? "default" : "ghost", size: "sm" }),
-                                        isClicked === index &&
-                                        "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white",
-                                        "justify-start"
-                                    )}
-                                >
-                                    {submenu.name}
-                                </Link>
-                                {submenu.is_assigned === 0 ? (
-                                    <Button
-                                        className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
-                                        variant="ghost"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            toggleSubmenuAssignment(moduleSelected, menuSelected, submenu.id, 1);
-                                        }}
-                                    >
-                                        <PlusCircle className="w-6! h-6! text-emerald-500" />
-                                    </Button>
-                                ) : (
-                                    <div key={submenu.id + index} className="flex items-center justify-between">
+                                <p className="text-sm font-medium py-2 cursor-default">{submenu.name}</p>
+                                {moduleSelectedIsAssigned && menuSelectedIsAssigned && (
+                                    submenu.is_assigned === 0 ? (
                                         <Button
-                                            className="hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
-                                            variant="ghost"
-                                        >
-                                            <Eye className="w-6! h-6! text-cyan-400" />
-                                        </Button>
-                                        <Button
-                                            className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(199,0,54,0.5)]"
+                                            className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
                                             variant="ghost"
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                toggleSubmenuAssignment(moduleSelected, menuSelected, submenu.id, 0);
+                                                toggleSubmenuAssignment(moduleSelected, menuSelected, submenu.id, 1);
                                             }}
                                         >
-                                            <MinusCircle className="w-6! h-6! text-red-400" />
+                                            <PlusCircle className="w-6! h-6! text-emerald-500" />
                                         </Button>
-                                    </div>
-                                )
-                                }
+                                    ) : (
+                                        <div key={submenu.id + index} className="flex items-center justify-between">
+                                            <PermisosPopover dataPermission={dataPermission}
+                                                onClick={() => {
+                                                    setLoadingPermissions(true);
+                                                    seccion(submenu.name, submenu.id);
+                                                }}
+                                                onPermissionChange={(option) => togglePermissionAssignment(submenu.id, option)}
+                                                loadingPermissions={loadingPermissions} />
+                                            <ConfirmPopover seccion="submenú" opcion={submenu.name} onClick={() => toggleSubmenuAssignment(moduleSelected, menuSelected, submenu.id, 0)} />
+                                        </div>
+                                    )
+                                )}
                             </div>
                         ))
                     ) : (

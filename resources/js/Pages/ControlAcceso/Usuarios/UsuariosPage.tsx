@@ -1,24 +1,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage } from '@inertiajs/react';
 import { PageProps as InertiaPageProps } from '@inertiajs/core';
-import { UserLock, UserPen, UserRoundX } from "lucide-react"
-import { Button } from "@/Components/ui/button"
-import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/Components/ui/table"
-import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
-import { usePermissions } from '@/composables/permissions';
-
 import { User, columns } from "./UsuariosColumns"
 import { DataTable } from "./UsuariosDataTable"
-
-/* type User = {
-    id: number;
-    name: string;
-    email: string;
-    roles: Array<{
-        id: number;
-        name: string;
-    }>;
-} */
 
 type PageProps = InertiaPageProps & {
     users: {
@@ -28,7 +12,6 @@ type PageProps = InertiaPageProps & {
 
 export default function UsuariosPage() {
     const { users: { data: users } } = usePage<PageProps>().props;
-    const { userAuth } = usePermissions();
 
     return (
         <AuthenticatedLayout>

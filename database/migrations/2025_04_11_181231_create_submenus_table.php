@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('submenus', function (Blueprint $table) {
+        Schema::create('submenus', function (Blueprint $table)
+        {
             $table->id();
             $table->string('key')->collation('utf8mb4_general_ci');
             $table->string('name')->collation('utf8mb4_general_ci');
@@ -52,7 +53,7 @@ return new class extends Migration
             $table->primary(['submenu_id', 'model_id', 'model_type'], 'model_has_submenus_submenu_model_type_primary');
         });
 
-        /* Schema::create('model_has_submenu_permissions', function (Blueprint $table)
+        Schema::create('model_has_submenu_permissions', function (Blueprint $table)
         {
             $table->unsignedBigInteger('submenu_id');
             $table->unsignedBigInteger('permission_id');
@@ -71,7 +72,7 @@ return new class extends Migration
 
             $table->index(['model_id', 'model_type'], 'model_has_submenu_permission_model_id_model_type_index');
             $table->primary(['submenu_id', 'permission_id', 'model_id', 'model_type'], 'model_has_submenu_permissions_submenu_permission_model_type_primary');
-        }); */
+        });
     }
 
     /**
@@ -90,15 +91,15 @@ return new class extends Migration
             $table->dropForeign(['submenu_id']);
         });
 
-        /* Schema::table('model_has_submenu_permissions', function (Blueprint $table)
+        Schema::table('model_has_submenu_permissions', function (Blueprint $table)
         {
             $table->dropForeign(['submenu_id']);
             $table->dropForeign(['permission_id']);
-        }); */
+        });
 
         Schema::dropIfExists('submenus');
         Schema::dropIfExists('menu_has_submenus');
         Schema::dropIfExists('model_has_submenus');
-        // Schema::dropIfExists('model_has_submenu_permissions');
+        Schema::dropIfExists('model_has_submenu_permissions');
     }
 };

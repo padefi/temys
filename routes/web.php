@@ -29,18 +29,29 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy')->middleware('can:avoid,' . User::class);
 
     /* TO-DO Modulo control accesos */
-    Route::middleware('module:control-acceso')->group(function () {
+    Route::middleware(['module:control-acceso', 'role:admin'])->group(function () {
         Route::middleware('menu:usuarios')->group(function () {
-            Route::get('control-acceso/usuarios/usuariosPage', [UsuarioController::class, 'index'])->name('control-acceso.usuarios')->middleware('can:read,' . UsuarioController::class);
-            
-            Route::get('control-acceso/show-modulos-by-user/{user}', [ModuleController::class, 'showModulesByUser'])->middleware('can:read,' . ModuleController::class);
-            Route::get('control-acceso/managed-modulos-by-user/{user}/{module}', [ModuleController::class, 'managedModulesByUser'])->middleware('can:update,' . ModuleController::class);
+            Route::middleware('menu_permission:read usuarios')->group(function () {
+                Route::get('control-acceso/usuarios/usuariosPage', [UsuarioController::class, 'index'])->name('control-acceso.usuarios');
 
-            Route::get('control-acceso/show-menus-by-user/{user}/{module}', [MenuController::class, 'showMenusByUser'])->middleware('can:read,' . MenuController::class);
-            Route::get('control-acceso/managed-menus-by-user/{user}/{module}/{menu}', [MenuController::class, 'managedMenusByUser'])->middleware('can:read,' . MenuController::class);
+                Route::get('control-acceso/show-modulos-by-user/{user}', [ModuleController::class, 'showModulesByUser']);
+                Route::get('control-acceso/show-menus-by-user/{user}/{module}', [MenuController::class, 'showMenusByUser']);
+                Route::get('control-acceso/show-submenus-by-user/{user}/{menu}', [SubmenuController::class, 'showSubmenusByUser']);
+            });
 
-            Route::get('control-acceso/show-submenus-by-user/{user}/{menu}', [SubmenuController::class, 'showSubmenusByUser'])->middleware('can:read,' . SubmenuController::class);
-            Route::get('control-acceso/managed-submenus-by-user/{user}/{module}/{menu}/{submenu}', [SubmenuController::class, 'managedSubmenusByUser'])->middleware('can:read,' . SubmenuController::class);
+            Route::middleware('menu_permission:update usuarios')->group(function () {
+                Route::post('control-acceso/managed-modulos-by-user', [ModuleController::class, 'managedModulesByUser']);
+                Route::post('control-acceso/managed-menus-by-user', [MenuController::class, 'managedMenusByUser']);
+                Route::post('control-acceso/managed-submenus-by-user', [SubmenuController::class, 'managedSubmenusByUser']);
+
+                Route::get('control-acceso/managed-permissions-modulos-by-user/{user}/{module}', [ModuleController::class, 'getPermissionsModulesByUser']);
+                Route::get('control-acceso/managed-permissions-menus-by-user/{user}/{menu}', [MenuController::class, 'getPermissionsMenusByUser']);
+                Route::get('control-acceso/managed-permissions-submenus-by-user/{user}/{submenu}', [SubmenuController::class, 'getPermissionsSubmenusByUser']);
+
+                Route::post('control-acceso/managed-permissions-modulos-by-user', [ModuleController::class, 'managedPermissionsModulesByUser']);
+                Route::post('control-acceso/managed-permissions-menus-by-user', [MenuController::class, 'managedPermissionsMenusByUser']);
+                Route::post('control-acceso/managed-permissions-submenus-by-user', [SubmenuController::class, 'managedPermissionsSubmenusByUser']);
+            });
         });
 
         Route::get('control-acceso/roles', [UsuarioController::class, 'index'])->name('control-acceso.roles')->middleware('can:read,' . UsuarioController::class);

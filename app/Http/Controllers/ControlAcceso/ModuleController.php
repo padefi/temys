@@ -9,6 +9,8 @@ use App\Models\ControlAcceso\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use PhpParser\Node\Expr\AssignOp\Mod;
+use Spatie\Permission\Models\Permission;
 
 class ModuleController extends Controller
 {
@@ -48,8 +50,16 @@ class ModuleController extends Controller
         return ModuleResource::collection($modules);
     }
 
-    public function managedModulesByUser(User $user, Module $module)
+    public function managedModulesByUser(Request $request)
     {
+        $request->validate([
+            'idModule' => ['required', 'exists:modules,id'],
+            'user' => ['required', 'exists:users,id'],
+        ]);
+
+        $user = User::find($request->user);
+        $module = Module::find($request->idModule);
+
         if ($user->modules()->where('modules.id', $module->id)->exists())
         {
             $user->modules()->detach($module->id);
@@ -71,5 +81,65 @@ class ModuleController extends Controller
         $user->modules()->attach($module->id, ['model_type' => User::class]);
 
         return response()->json(['message' => 'Modulo agregado con exito', 'action' => 'add', 'success' => true]);
+    }
+
+    public function getPermissionsModulesByUser(User $user, Module $module)
+    {
+
+        $permissions = DB::table('model_has_module_permissions')
+            ->join('permissions', 'model_has_module_permissions.permission_id', '=', 'permissions.id')
+            ->select('permissions.name')
+            ->where('model_id', $user->id)
+            ->where('model_type', User::class)
+            ->where('module_id', $module->id)
+            ->get();
+
+        return $permissions;
+    }
+
+    public function managedPermissionsModulesByUser(Request $request)
+    {
+        $request->validate([
+            'user' => ['required', 'exists:users,id'],
+            'idModule' => ['required', 'exists:modules,id'],
+            'permission' => ['required', 'exists:permissions,name'],
+        ]);
+
+        $user = User::find($request->user);
+        $module = Module::find($request->idModule);
+        $permission = Permission::findByName($request->permission);
+
+        if (!$user->modules()->where('modules.id', $module->id)->exists())
+        {
+            return response()->json(['message' => 'El módulo no está asignado al usuario', 'success' => false]);
+        }
+
+        $hasPermission = DB::table('model_has_module_permissions')
+            ->where('model_id', $user->id)
+            ->where('model_type', User::class)
+            ->where('module_id', $module->id)
+            ->where('permission_id', $permission->id)
+            ->exists();
+
+        if ($hasPermission)
+        {
+            DB::table('model_has_module_permissions')
+                ->where('model_id', $user->id)
+                ->where('model_type', User::class)
+                ->where('module_id', $module->id)
+                ->where('permission_id', $permission->id)
+                ->delete();
+
+            return response()->json(['message' => 'Permiso eliminado con exito', 'action' => 'delete', 'success' => true]);
+        }
+
+        DB::table('model_has_module_permissions')->insert([
+            'model_id' => $user->id,
+            'model_type' => User::class,
+            'module_id' => $module->id,
+            'permission_id' => $permission->id,
+        ]);
+
+        return response()->json(['message' => 'Permiso agregado con exito', 'action' => 'add', 'success' => true]);
     }
 }

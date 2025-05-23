@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Skeleton } from "@/Components/ui/skeleton"
 import { Link } from "@inertiajs/react";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/Components/ui/button";
 import { ScrollArea } from "@/Components/ui/scroll-area"
-import { Eye, MinusCircle, PlusCircle } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { toast } from "sonner";
+
+import { PermisosPopover } from "./PermisosPopover";
+import axios from "axios";
+import { ConfirmPopover } from "./ConfimPopover";
 
 interface Menu {
     id: number;
@@ -16,14 +20,64 @@ interface Menu {
 
 interface MenusProps {
     moduleSelected: number;
+    moduleSelectedIsAssigned: boolean;
     setMenuSelected: (id: number) => void;
+    setMenuSelectedIsAssigned: (status: boolean) => void;
     user: number;
 }
 
-export function Menus({ moduleSelected, setMenuSelected, user }: MenusProps) {
+export function Menus({ moduleSelected, moduleSelectedIsAssigned, setMenuSelected, setMenuSelectedIsAssigned, user }: MenusProps) {
     const [dataMenus, setDataMenus] = useState<Menu[] | null>(null);
     const [loading, setLoading] = useState(true);
+    const [loadingPermissions, setLoadingPermissions] = useState(true);
     const [isClicked, setIsClicked] = useState(-1);
+    const [dataPermission, setDataPermission] = useState<{ sectionName: string; option: string, idOption: number, permissionAssigned: [] }>({ sectionName: '', option: '', idOption: 0, permissionAssigned: [] });
+
+    const seccion = async (option: string, idOption: number) => {
+        try {
+            const response = await fetch(`/control-acceso/managed-permissions-menus-by-user/${user}/${idOption}`);
+            const data = await response.json();
+
+            setDataPermission({ sectionName: 'Menu', option, idOption, permissionAssigned: data });
+            setLoadingPermissions(false);
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) toast.error(error.response.data.message || "Error desconocido del servidor");
+            else toast.error("Error al obtener los permisos asignados al usuario");
+        }
+    };
+
+    const togglePermissionAssignment = async (idMenu: number, permission: string) => {
+        try {
+            const response = await axios.post('/control-acceso/managed-permissions-menus-by-user/', {
+                user,
+                idMenu,
+                permission
+            })
+
+            const data = await response.data;
+
+            if (!data.success) {
+                toast.error(data.message);
+                return;
+            }
+
+            if (data.action === "add") toast.success(data.message);
+            else toast.warning(data.message);
+
+            setDataPermission((prev: any) => {
+                const exists = prev.permissionAssigned.find((item: any) => item.name === permission);
+                let newAssigned;
+
+                if (exists) newAssigned = prev.permissionAssigned.filter((item: any) => item.name !== permission); // Quitar permiso
+                else newAssigned = [...prev.permissionAssigned, { name: permission }]; // Agregar permiso
+
+                return { ...prev, permissionAssigned: newAssigned };
+            });
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) toast.error(error.response.data.message || "Error desconocido del servidor");
+            else toast.error("Error al asignar el permiso al menú");
+        }
+    }
 
     const fetchDataMenus = async () => {
         setIsClicked(-1);
@@ -51,21 +105,27 @@ export function Menus({ moduleSelected, setMenuSelected, user }: MenusProps) {
 
     const toggleMenuAssignment = async (idModule: number, idMenu: number, isAssigned: number) => {
         try {
-            const response = await fetch(`/control-acceso/managed-menus-by-user/${user}/${idModule}/${idMenu}`);
-            const data = await response.json();
+            const response = await axios.post('/control-acceso/managed-menus-by-user/', {
+                user,
+                idModule,
+                idMenu
+            });
+
+            const data = response.data;
 
             if (!data.success) {
                 toast.error(data.message);
                 return;
             }
 
-            if (data.action === "add") toast.success(data.message);
-            else {
+            if (data.action === "add") {
+                setMenuSelectedIsAssigned(true);
+                toast.success(data.message);
+            } else {
+                setIsClicked(-1);
                 setMenuSelected(0);
+                setMenuSelectedIsAssigned(false);
                 toast.warning(data.message);
-                setTimeout(() => {
-                    setMenuSelected(idMenu);
-                }, 0);
             }
 
             setDataMenus((prevData) => {
@@ -78,9 +138,9 @@ export function Menus({ moduleSelected, setMenuSelected, user }: MenusProps) {
                 );
             });
 
-        } catch (error) {
-            toast.error("Error al cambiar el estado del menú");
-            console.error("Error al cambiar el estado del menú:", error);
+        } catch (error: any) {
+            if (axios.isAxiosError(error) && error.response) toast.error(error.response.data.message || "Error desconocido del servidor");
+            else toast.error("Error al cambiar el estado del menú");
         }
     };
 
@@ -109,50 +169,45 @@ export function Menus({ moduleSelected, setMenuSelected, user }: MenusProps) {
                                         e.preventDefault();
                                         setIsClicked(index);
                                         setMenuSelected(menu.id);
+                                        setMenuSelectedIsAssigned(menu.is_assigned === 1 ? true : false);
                                     }}
                                     className={cn(
                                         buttonVariants({ variant: isClicked === index ? "default" : "ghost", size: "sm" }),
                                         isClicked === index &&
                                         "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white",
-                                        "justify-start"
+                                        "justify-start w-0 flex-1"
                                     )}
                                 >
                                     {menu.name}
                                 </Link>
-                                {menu.is_assigned === 0 ? (
-                                    <Button
-                                        className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
-                                        variant="ghost"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            toggleMenuAssignment(moduleSelected, menu.id, 1);
-                                        }}
-                                    >
-                                        <PlusCircle className="w-6! h-6! text-emerald-500" />
-                                    </Button>
-                                ) : (
-                                    <div key={menu.id + index} className="flex items-center justify-between">
-                                        {!menu.has_submenus && (
-                                            <Button
-                                                className="hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
-                                                variant="ghost"
-                                            >
-                                                <Eye className="w-6! h-6! text-cyan-400" />
-                                            </Button>
-                                        )}
+                                {moduleSelectedIsAssigned && (
+                                    menu.is_assigned === 0 ? (
                                         <Button
-                                            className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(199,0,54,0.5)]"
+                                            className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
                                             variant="ghost"
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                toggleMenuAssignment(moduleSelected, menu.id, 0);
+                                                toggleMenuAssignment(moduleSelected, menu.id, 1);
                                             }}
                                         >
-                                            <MinusCircle className="w-6! h-6! text-red-400" />
+                                            <PlusCircle className="w-6! h-6! text-emerald-500" />
                                         </Button>
-                                    </div>
-                                )
-                                }
+                                    ) : (
+                                        <div key={menu.id + index} className="flex items-center justify-between">
+                                            {!menu.has_submenus && (
+                                                <PermisosPopover dataPermission={dataPermission}
+                                                    onClick={() => {
+                                                        setLoadingPermissions(true);
+                                                        seccion(menu.name, menu.id)
+                                                    }}
+                                                    onPermissionChange={(option) => togglePermissionAssignment(menu.id, option)}
+                                                    loadingPermissions={loadingPermissions} />
+                                            )}
+
+                                            <ConfirmPopover seccion="menú" opcion={menu.name} onClick={() => toggleMenuAssignment(moduleSelected, menu.id, 0)} />
+                                        </div>
+                                    )
+                                )}
                             </div>
                         ))
                     ) : (

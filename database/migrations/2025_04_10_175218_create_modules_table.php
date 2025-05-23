@@ -53,7 +53,7 @@ return new class extends Migration
             $table->primary(['module_id', 'model_id', 'model_type'], 'model_has_modules_module_model_type_primary');
         });
 
-        /* Schema::create('model_has_module_rol', function (Blueprint $table)
+        Schema::create('model_has_module_rol', function (Blueprint $table)
         {
             $table->unsignedBigInteger('module_id');
             $table->unsignedBigInteger('role_id');
@@ -72,7 +72,28 @@ return new class extends Migration
 
             $table->index(['model_id', 'model_type'], 'model_has_module_rol_model_id_model_type_index');
             $table->primary(['module_id', 'role_id', 'model_id', 'model_type'], 'model_has_module_rol_module_model_type_role_id_primary');
-        }); */
+        });
+
+        Schema::create('model_has_module_permissions', function (Blueprint $table)
+        {
+            $table->unsignedBigInteger('module_id');
+            $table->unsignedBigInteger('permission_id');
+            $table->string('model_type');
+            $table->unsignedBigInteger('model_id');
+
+            $table->foreign('module_id')
+                ->references('id')
+                ->on('modules')
+                ->onDelete('cascade');
+
+            $table->foreign('permission_id')
+                ->references('id')
+                ->on('permissions')
+                ->onDelete('cascade');
+
+            $table->index(['model_id', 'model_type'], 'model_has_module_permission_model_id_model_type_index');
+            $table->primary(['module_id', 'permission_id', 'model_id', 'model_type'], 'model_has_module_permissions_module_permission_model_type_primary');
+        });
     }
 
     /**
@@ -97,9 +118,16 @@ return new class extends Migration
             $table->dropForeign(['role_id']);
         });
 
+        Schema::table('model_has_module_permissions', function (Blueprint $table)
+        {
+            $table->dropForeign(['module_id']);
+            $table->dropForeign(['permission_id']);
+        });
+
         Schema::dropIfExists('modules');
         Schema::dropIfExists('role_has_modules');
         Schema::dropIfExists('model_has_modules');
         Schema::dropIfExists('model_has_module_rol');
+        Schema::dropIfExists('model_has_module_permissions');
     }
 };

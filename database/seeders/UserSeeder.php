@@ -32,15 +32,19 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('12345678'),
             ])->assignRole('encargado');
 
+            $i++;
+
             User::create([
-                'name' => 'Prueba ' . $i++,
-                'email' => 'prueba' . $i++ . '@prueba.com',
+                'name' => 'Prueba ' . $i,
+                'email' => 'prueba' . $i . '@prueba.com',
                 'password' => Hash::make('12345678'),
             ])->assignRole('auxiliar');
 
+            $i++;
+            
             User::create([
-                'name' => 'Prueba ' . $i++,
-                'email' => 'prueba' . $i++ . '@prueba.com',
+                'name' => 'Prueba ' . $i,
+                'email' => 'prueba' . $i . '@prueba.com',
                 'password' => Hash::make('12345678'),
             ])->assignRole('administrativo');
         }

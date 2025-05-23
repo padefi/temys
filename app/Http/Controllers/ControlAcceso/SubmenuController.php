@@ -11,6 +11,7 @@ use App\Models\ControlAcceso\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Spatie\Permission\Models\Permission;
 
 class SubmenuController extends Controller
 {
@@ -52,8 +53,20 @@ class SubmenuController extends Controller
         return SubmenuResource::collection($submenus);
     }
 
-    public function managedSubmenusByUser(User $user, Module $module, Menu $menu, Submenu $submenu)
+    public function managedSubmenusByUser(Request $request)
     {
+        $request->validate([
+            'idModule' => ['required', 'exists:modules,id'],
+            'idMenu' => ['required', 'exists:menus,id'],
+            'idSubmenu' => ['required', 'exists:submenus,id'],
+            'user' => ['required', 'exists:users,id'],
+        ]);
+
+        $user = User::find($request->user);
+        $module = Module::find($request->idModule);
+        $menu = Menu::find($request->idMenu);
+        $submenu = Submenu::find($request->idSubmenu);
+
         if (!$user->modules()->where('modules.id', $module->id)->exists())
         {
             return response()->json(['message' => 'El módulo relacionado con el menú no está asignado al usuario', 'success' => false]);
@@ -79,5 +92,65 @@ class SubmenuController extends Controller
         $user->submenus()->attach($submenu->id, ['model_type' => User::class]);
 
         return response()->json(['message' => 'Submenú agregado con exito', 'action' => 'add', 'success' => true]);
+    }
+
+    public function getPermissionsSubmenusByUser(User $user, Submenu $submenu)
+    {
+
+        $permissions = DB::table('model_has_submenu_permissions')
+            ->join('permissions', 'model_has_submenu_permissions.permission_id', '=', 'permissions.id')
+            ->select('permissions.name')
+            ->where('model_id', $user->id)
+            ->where('model_type', User::class)
+            ->where('submenu_id', $submenu->id)
+            ->get();
+
+        return $permissions;
+    }
+
+    public function managedPermissionsSubmenusByUser(Request $request)
+    {
+        $request->validate([
+            'user' => ['required', 'exists:users,id'],
+            'idSubmenu' => ['required', 'exists:submenus,id'],
+            'permission' => ['required', 'exists:permissions,name'],
+        ]);
+
+        $user = User::find($request->user);
+        $submenu = Submenu::find($request->idSubmenu);
+        $permission = Permission::findByName($request->permission);
+
+        if (!$user->submenus()->where('submenus.id', $submenu->id)->exists())
+        {
+            return response()->json(['message' => 'El submenú no está asignado al usuario', 'success' => false]);
+        }
+
+        $hasPermission = DB::table('model_has_submenu_permissions')
+            ->where('model_id', $user->id)
+            ->where('model_type', User::class)
+            ->where('submenu_id', $submenu->id)
+            ->where('permission_id', $permission->id)
+            ->exists();
+
+        if ($hasPermission)
+        {
+            DB::table('model_has_submenu_permissions')
+                ->where('model_id', $user->id)
+                ->where('model_type', User::class)
+                ->where('submenu_id', $submenu->id)
+                ->where('permission_id', $permission->id)
+                ->delete();
+
+            return response()->json(['message' => 'Permiso eliminado con exito', 'action' => 'delete', 'success' => true]);
+        }
+
+        DB::table('model_has_submenu_permissions')->insert([
+            'model_id' => $user->id,
+            'model_type' => User::class,
+            'submenu_id' => $submenu->id,
+            'permission_id' => $permission->id,
+        ]);
+
+        return response()->json(['message' => 'Permiso agregado con exito', 'action' => 'add', 'success' => true]);
     }
 }

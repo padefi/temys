@@ -52,6 +52,27 @@ return new class extends Migration
             $table->index(['model_id', 'model_type'], 'model_has_menus_model_id_model_type_index');
             $table->primary(['menu_id', 'model_id', 'model_type'], 'model_has_menus_menu_model_type_primary');
         });
+
+        Schema::create('model_has_menu_permissions', function (Blueprint $table)
+        {
+            $table->unsignedBigInteger('menu_id');
+            $table->unsignedBigInteger('permission_id');
+            $table->string('model_type');
+            $table->unsignedBigInteger('model_id');
+
+            $table->foreign('menu_id')
+                ->references('id')
+                ->on('menus')
+                ->onDelete('cascade');
+
+            $table->foreign('permission_id')
+                ->references('id')
+                ->on('permissions')
+                ->onDelete('cascade');
+
+            $table->index(['model_id', 'model_type'], 'model_has_menu_permission_model_id_model_type_index');
+            $table->primary(['menu_id', 'permission_id', 'model_id', 'model_type'], 'model_has_menu_permissions_menu_permission_model_type_primary');
+        });
     }
 
     /**
@@ -70,8 +91,15 @@ return new class extends Migration
             $table->dropForeign(['menu_id']);
         });
 
+        Schema::table('model_has_menu_permissions', function (Blueprint $table)
+        {
+            $table->dropForeign(['menu_id']);
+            $table->dropForeign(['permission_id']);
+        });
+
         Schema::dropIfExists('menus');
         Schema::dropIfExists('module_has_menus');
         Schema::dropIfExists('model_has_menus');
+        Schema::dropIfExists('model_has_menu_permissions');
     }
 };
