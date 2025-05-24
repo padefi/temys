@@ -4,12 +4,12 @@ namespace App\Http\Controllers\ControlAcceso;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ControlAcceso\ModuleResource;
+use App\Models\ControlAcceso\Menu;
 use App\Models\ControlAcceso\Module;
 use App\Models\ControlAcceso\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use PhpParser\Node\Expr\AssignOp\Mod;
 use Spatie\Permission\Models\Permission;
 
 class ModuleController extends Controller
@@ -62,37 +62,52 @@ class ModuleController extends Controller
 
         if ($user->modules()->where('modules.id', $module->id)->exists())
         {
+            $menuIds = $module->menus()->pluck('id');
+            $menus = Menu::whereIn('id', $menuIds)->get();
+            $submenuIds = $menus->pluck('submenus')->flatten()->pluck('id');
+
             $user->modules()->detach($module->id);
-            DB::table('model_has_menus')->where('model_id', $user->id)
-                ->whereIn('menu_id', $module->menus()->pluck('id'))->delete();
-            DB::table('model_has_submenus')->where('model_id', $user->id)
-                ->whereIn('submenu_id', function ($query) use ($module)
-                {
-                    $query->select('submenus.id')
-                        ->from('submenus')
-                        ->join('menu_has_submenus', 'submenus.id', '=', 'menu_has_submenus.submenu_id')
-                        ->join('module_has_menus', 'menu_has_submenus.menu_id', '=', 'module_has_menus.menu_id')
-                        ->where('module_has_menus.module_id', $module->id);
-                })->delete();
+            $user->menus()->detach($menuIds);
+            $user->submenus()->detach($submenuIds);
+
+            DB::table('model_has_module_permissions')
+                ->where('model_id', $user->id)
+                ->where('module_id', $module->id)
+                ->delete();
+
+            DB::table('model_has_menu_permissions')
+                ->where('model_id', $user->id)
+                ->whereIn('menu_id', $menuIds)
+                ->delete();
+
+            DB::table('model_has_submenu_permissions')
+                ->where('model_id', $user->id)
+                ->whereIn('submenu_id', $submenuIds)
+                ->delete();
 
             return response()->json(['message' => 'Modulo eliminado con exito', 'action' => 'delete', 'success' => true]);
         }
 
-        $user->modules()->attach($module->id, ['model_type' => User::class]);
+        $user->modules()->attach($request->idModule, ['model_type' => User::class]);
+
+        // Solo asigna permisos si el módulo NO tiene menús
+        if ($module->menus()->count() === 0)
+        {
+            $module->userPermissions()->attach(
+                Permission::findByName('read')->id,
+                ['model_type' => User::class, 'model_id' => $user->id]
+            );
+        }
 
         return response()->json(['message' => 'Modulo agregado con exito', 'action' => 'add', 'success' => true]);
     }
 
     public function getPermissionsModulesByUser(User $user, Module $module)
     {
-
-        $permissions = DB::table('model_has_module_permissions')
-            ->join('permissions', 'model_has_module_permissions.permission_id', '=', 'permissions.id')
+        $permissions = $module->userPermissions()
             ->select('permissions.name')
             ->where('model_id', $user->id)
-            ->where('model_type', User::class)
-            ->where('module_id', $module->id)
-            ->get();
+            ->where('model_type', User::class)->get();
 
         return $permissions;
     }
@@ -114,31 +129,25 @@ class ModuleController extends Controller
             return response()->json(['message' => 'El módulo no está asignado al usuario', 'success' => false]);
         }
 
-        $hasPermission = DB::table('model_has_module_permissions')
+        $hasPermission = $module->userPermissions()
+            ->where('permissions.id', $permission->id)
             ->where('model_id', $user->id)
             ->where('model_type', User::class)
-            ->where('module_id', $module->id)
-            ->where('permission_id', $permission->id)
             ->exists();
 
         if ($hasPermission)
         {
             DB::table('model_has_module_permissions')
-                ->where('model_id', $user->id)
-                ->where('model_type', User::class)
                 ->where('module_id', $module->id)
                 ->where('permission_id', $permission->id)
+                ->where('model_id', $user->id)
+                ->where('model_type', User::class)
                 ->delete();
 
             return response()->json(['message' => 'Permiso eliminado con exito', 'action' => 'delete', 'success' => true]);
         }
 
-        DB::table('model_has_module_permissions')->insert([
-            'model_id' => $user->id,
-            'model_type' => User::class,
-            'module_id' => $module->id,
-            'permission_id' => $permission->id,
-        ]);
+        $module->userPermissions()->attach($permission->id, ['model_type' => User::class, 'model_id' => $user->id]);
 
         return response()->json(['message' => 'Permiso agregado con exito', 'action' => 'add', 'success' => true]);
     }

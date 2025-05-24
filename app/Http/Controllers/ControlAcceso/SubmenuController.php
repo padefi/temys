@@ -26,12 +26,7 @@ class SubmenuController extends Controller
 
     public function showSubmenus(Menu $menu)
     {
-        $submenus = Submenu::join('menu_has_submenus', 'submenus.id', '=', 'menu_has_submenus.submenu_id')
-            ->where('menu_has_submenus.menu_id', $menu->id)
-            ->select('submenus.*')
-            ->get();
-
-        return SubmenuResource::collection($submenus);
+        return SubmenuResource::collection($menu->submenus);
     }
 
     public function showSubmenusByUser(User $user, Menu $menu)
@@ -86,24 +81,26 @@ class SubmenuController extends Controller
         {
             $user->submenus()->detach($submenu->id);
 
+            DB::table('model_has_submenu_permissions')
+                ->where('model_id', $user->id)
+                ->where('submenu_id', $submenu->id)
+                ->delete();
+
             return response()->json(['message' => 'Submenú eliminado con exito', 'action' => 'delete', 'success' => true]);
         }
 
         $user->submenus()->attach($submenu->id, ['model_type' => User::class]);
+        $submenu->userPermissions()->attach(Permission::findByName('read')->id, ['model_type' => User::class, 'model_id' => $user->id]);
 
         return response()->json(['message' => 'Submenú agregado con exito', 'action' => 'add', 'success' => true]);
     }
 
     public function getPermissionsSubmenusByUser(User $user, Submenu $submenu)
     {
-
-        $permissions = DB::table('model_has_submenu_permissions')
-            ->join('permissions', 'model_has_submenu_permissions.permission_id', '=', 'permissions.id')
+        $permissions = $submenu->userPermissions()
             ->select('permissions.name')
             ->where('model_id', $user->id)
-            ->where('model_type', User::class)
-            ->where('submenu_id', $submenu->id)
-            ->get();
+            ->where('model_type', User::class)->get();
 
         return $permissions;
     }
@@ -125,31 +122,25 @@ class SubmenuController extends Controller
             return response()->json(['message' => 'El submenú no está asignado al usuario', 'success' => false]);
         }
 
-        $hasPermission = DB::table('model_has_submenu_permissions')
+        $hasPermission = $submenu->userPermissions()
+            ->where('permissions.id', $permission->id)
             ->where('model_id', $user->id)
             ->where('model_type', User::class)
-            ->where('submenu_id', $submenu->id)
-            ->where('permission_id', $permission->id)
             ->exists();
 
         if ($hasPermission)
         {
             DB::table('model_has_submenu_permissions')
-                ->where('model_id', $user->id)
-                ->where('model_type', User::class)
                 ->where('submenu_id', $submenu->id)
                 ->where('permission_id', $permission->id)
+                ->where('model_id', $user->id)
+                ->where('model_type', User::class)
                 ->delete();
 
             return response()->json(['message' => 'Permiso eliminado con exito', 'action' => 'delete', 'success' => true]);
         }
-
-        DB::table('model_has_submenu_permissions')->insert([
-            'model_id' => $user->id,
-            'model_type' => User::class,
-            'submenu_id' => $submenu->id,
-            'permission_id' => $permission->id,
-        ]);
+        
+        $submenu->userPermissions()->attach($permission->id, ['model_type' => User::class, 'model_id' => $user->id]);
 
         return response()->json(['message' => 'Permiso agregado con exito', 'action' => 'add', 'success' => true]);
     }

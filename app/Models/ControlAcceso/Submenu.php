@@ -4,6 +4,7 @@ namespace App\Models\ControlAcceso;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Permission\Models\Permission;
 
 class Submenu extends Model
 {
@@ -24,5 +25,10 @@ class Submenu extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'model_has_submenus', 'submenu_id', 'model_id');
+    }
+
+    public function userPermissions()
+    {
+        return $this->belongsToMany(Permission::class, 'model_has_submenu_permissions', 'submenu_id', 'permission_id');
     }
 }

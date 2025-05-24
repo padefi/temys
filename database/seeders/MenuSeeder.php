@@ -41,10 +41,7 @@ class MenuSeeder extends Seeder
                             'guard_name' => $guardName,
                         ]);
 
-                        DB::table('module_has_menus')->insert([
-                            'menu_id' => $menu->id,
-                            'module_id' => $module->id,
-                        ]);
+                        $module->menus()->attach($menu->id);
                     }
                 }
             }

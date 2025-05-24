@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::create([
+        $admin = User::create([
             'name' => 'Prueba',
             'email' => 'prueba@prueba.com',
             'password' => Hash::make('12345678'),
@@ -41,7 +41,7 @@ class UserSeeder extends Seeder
             ])->assignRole('auxiliar');
 
             $i++;
-            
+
             User::create([
                 'name' => 'Prueba ' . $i,
                 'email' => 'prueba' . $i . '@prueba.com',
@@ -59,34 +59,38 @@ class UserSeeder extends Seeder
 
                 if ($module)
                 {
-                    DB::table('model_has_modules')
-                        ->insert([
-                            'module_id' => $module->id,
-                            'model_type' => $user::class,
-                            'model_id' => $user->id,
-                        ]);
+                    $admin->modules()->attach($module->id, ['model_type' => User::class]);
+
+                    // Solo asigna permisos si el módulo NO tiene menús
+                    if ($module->menus()->count() === 0)
+                    {
+                        $module->userPermissions()->attach(
+                            Permission::all()->pluck('id')->toArray(),
+                            ['model_type' => User::class, 'model_id' => $admin->id]
+                        );
+                    }
 
                     $menus = $module->menus()->get();
 
                     foreach ($menus as $menu)
                     {
-                        DB::table('model_has_menus')
-                            ->insert([
-                                'menu_id' => $menu->id,
-                                'model_type' => $user::class,
-                                'model_id' => $user->id,
-                            ]);
+                        $admin->menus()->attach($menu->id, ['model_type' => User::class]);
+
+                        // Solo asigna permisos si el menú NO tiene submenús
+                        if ($menu->submenus()->count() === 0)
+                        {
+                            $menu->userPermissions()->attach(
+                                Permission::all()->pluck('id')->toArray(),
+                                ['model_type' => User::class, 'model_id' => $admin->id]
+                            );
+                        }
 
                         $submenus = $menu->submenus()->get();
 
                         foreach ($submenus as $submenu)
                         {
-                            DB::table('model_has_submenus')
-                                ->insert([
-                                    'submenu_id' => $submenu->id,
-                                    'model_type' => $user::class,
-                                    'model_id' => $user->id,
-                                ]);
+                            $admin->submenus()->attach($submenu->id, ['model_type' => User::class]);
+                            $submenu->userPermissions()->attach(Permission::all()->pluck('id')->toArray(), ['model_type' => User::class, 'model_id' => $admin->id]);
                         }
                     }
                 }

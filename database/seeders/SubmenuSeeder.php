@@ -56,11 +56,7 @@ class SubmenuSeeder extends Seeder
                                     'guard_name' => $guardName,
                                 ]);
 
-                                DB::table('menu_has_submenus')
-                                    ->insert([
-                                        'submenu_id' => $submenu->id,
-                                        'menu_id' => $parentMenu->id,
-                                    ]);
+                                $parentMenu->submenus()->attach($submenu);
                             }
                         }
                     }
