@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { PermisosPopover } from "./PermisosPopover";
 import axios from "axios";
 import { ConfirmPopover } from "./ConfimPopover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 
 interface Submenu {
     id: number;
@@ -161,7 +162,18 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, menuSelecte
                                                 toggleSubmenuAssignment(moduleSelected, menuSelected, submenu.id, 1);
                                             }}
                                         >
-                                            <PlusCircle className="w-6! h-6! text-emerald-500" />
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <span>
+                                                            <PlusCircle className="w-6! h-6! text-emerald-500" />
+                                                        </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Agregar submenú</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
                                         </Button>
                                     ) : (
                                         <div key={submenu.id + index} className="flex items-center justify-between">

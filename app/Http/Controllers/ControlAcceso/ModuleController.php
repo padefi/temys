@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class ModuleController extends Controller
 {
@@ -50,6 +51,26 @@ class ModuleController extends Controller
         return ModuleResource::collection($modules);
     }
 
+    public function managedRoleModulesByUser(Request $request)
+    {
+        $request->validate([
+            'idModule' => ['required', 'exists:modules,id'],
+            'user' => ['required', 'exists:users,id'],
+            'role' => ['required', 'exists:roles,name'],
+        ]);
+
+        $user = User::find($request->user);
+        $module = Module::find($request->idModule);
+        $role = Role::findByName($request->role);
+
+        $exists = $user->modulesRole()->where('modules.id', $module->id)->exists();
+
+        if ($exists) $user->modulesRole()->updateExistingPivot($module->id, ['role_id' => $role->id]);
+        else  $user->modulesRole()->attach($module->id, ['role_id' => $role->id, 'model_type' => User::class]);
+
+        return response()->json(['message' => 'Rol asignado con exito', 'success' => true]);
+    }
+
     public function managedModulesByUser(Request $request)
     {
         $request->validate([
@@ -66,6 +87,7 @@ class ModuleController extends Controller
             $menus = Menu::whereIn('id', $menuIds)->get();
             $submenuIds = $menus->pluck('submenus')->flatten()->pluck('id');
 
+            $user->modulesRole()->detach($module->id);
             $user->modules()->detach($module->id);
             $user->menus()->detach($menuIds);
             $user->submenus()->detach($submenuIds);
@@ -85,7 +107,7 @@ class ModuleController extends Controller
                 ->whereIn('submenu_id', $submenuIds)
                 ->delete();
 
-            return response()->json(['message' => 'Modulo eliminado con exito', 'action' => 'delete', 'success' => true]);
+            return response()->json(['message' => 'Modulo quitado con exito', 'action' => 'delete', 'success' => true]);
         }
 
         $user->modules()->attach($request->idModule, ['model_type' => User::class]);

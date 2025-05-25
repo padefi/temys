@@ -92,7 +92,7 @@ class MenuController extends Controller
                 ->whereIn('submenu_id', $submenuIds)
                 ->delete();
 
-            return response()->json(['message' => 'Menú eliminado con exito', 'action' => 'delete', 'success' => true]);
+            return response()->json(['message' => 'Menú quitado con exito', 'action' => 'delete', 'success' => true]);
         }
 
         $user->menus()->attach($menu->id, ['model_type' => User::class]);

@@ -69,7 +69,12 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Submenu::class, 'model_has_submenus', 'model_id', 'submenu_id');
     }
-    
+
+    public function modulesRole()
+    {
+        return $this->belongsToMany(Module::class, 'model_has_module_role', 'model_id', 'module_id')->withPivot('role_id');
+    }
+
     public function permissions()
     {
         return $this->belongsToMany(Permission::class, 'model_has_permissions', 'model_id', 'permission_id');

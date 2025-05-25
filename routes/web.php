@@ -33,6 +33,8 @@ Route::middleware('auth')->group(function () {
         Route::middleware('menu:usuarios')->group(function () {
             Route::middleware('menu_permission:read usuarios')->group(function () {
                 Route::get('control-acceso/usuarios/usuariosPage', [UsuarioController::class, 'index'])->name('control-acceso.usuarios');
+                Route::get('control-acceso/get-roles', [UsuarioController::class, 'getRoles']);
+                Route::get('control-acceso/get-role-module-by-user/{user}/{module}', [UsuarioController::class, 'getRoleModuleByUser']);
 
                 Route::get('control-acceso/show-modulos-by-user/{user}', [ModuleController::class, 'showModulesByUser']);
                 Route::get('control-acceso/show-menus-by-user/{user}/{module}', [MenuController::class, 'showMenusByUser']);
@@ -40,6 +42,8 @@ Route::middleware('auth')->group(function () {
             });
 
             Route::middleware('menu_permission:update usuarios')->group(function () {
+                Route::post('control-acceso/managed-role-modulos-by-user', [ModuleController::class, 'managedRoleModulesByUser']);
+
                 Route::post('control-acceso/managed-modulos-by-user', [ModuleController::class, 'managedModulesByUser']);
                 Route::post('control-acceso/managed-menus-by-user', [MenuController::class, 'managedMenusByUser']);
                 Route::post('control-acceso/managed-submenus-by-user', [SubmenuController::class, 'managedSubmenusByUser']);

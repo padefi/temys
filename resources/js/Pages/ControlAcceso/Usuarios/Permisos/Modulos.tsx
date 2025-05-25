@@ -10,6 +10,13 @@ import { toast } from "sonner";
 import { PermisosPopover } from "./PermisosPopover";
 import axios from "axios";
 import { ConfirmPopover } from "./ConfimPopover";
+import { RolePopover } from "./RolePopover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+
+interface Role {
+    id: number;
+    name: string;
+}
 
 interface Modulo {
     id: number;
@@ -30,8 +37,57 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
     const [dataModulos, setDataModulos] = useState<Modulo[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadingPermissions, setLoadingPermissions] = useState(true);
+    const [loadingRole, setLoadingRole] = useState(true);
     const [isClicked, setIsClicked] = useState(-1);
     const [dataPermission, setDataPermission] = useState<{ sectionName: string; option: string, idOption: number, permissionAssigned: [] }>({ sectionName: '', option: '', idOption: 0, permissionAssigned: [] });
+    const [dataRole, setDataRole] = useState<{ sectionName: string; option: string, idOption: number, roles: Role[], roleAssigned: string }>({ sectionName: '', option: '', idOption: 0, roles: [], roleAssigned: '' });
+    const [roles, setRoles] = useState([]);
+
+    useEffect(() => {
+        fetchRoles();
+    }, []);
+
+    const fetchRoles = async () => {
+        try {
+            const response = await fetch(`/control-acceso/get-roles`);
+            const data = await response.json();
+
+            setRoles(data.data);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const rolesPopover = async (option: string, idOption: number) => {
+        const response = await fetch(`/control-acceso/get-role-module-by-user/${user}/${idOption}`);
+        const data = await response.json();
+        const roleAssigned = data.data ? data.data.name : '';
+
+        setDataRole({ sectionName: 'Modulo', option, idOption, roles: roles, roleAssigned: roleAssigned });
+        setLoadingRole(false);
+    }
+
+    const toggleRoleAssignment = async (idModule: number, role: string) => {
+        try {
+            const response = await axios.post('/control-acceso/managed-role-modulos-by-user/', {
+                user,
+                idModule,
+                role
+            });
+
+            const data = await response.data;
+
+            if (!data.success) {
+                toast.error(data.message);
+                return;
+            }
+
+            toast.success(data.message);
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) toast.error(error.response.data.message || "Error desconocido del servidor");
+            else toast.error("Error al asignar el rol al módulo");
+        }
+    }
 
     const seccion = async (option: string, idOption: number) => {
         try {
@@ -52,7 +108,7 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
                 user,
                 idModule,
                 permission
-            })
+            });
 
             const data = await response.data;
 
@@ -86,6 +142,7 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
         try {
             const response = await fetch(`/control-acceso/show-modulos-by-user/${user}`);
             const data = await response.json();
+
             setDataModulos(data.data);
         } catch (error) {
             console.error("Error al obtener los módulos:", error);
@@ -185,10 +242,30 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
                                             toggleModuleAssignment(modulo.id, 1);
                                         }}
                                     >
-                                        <PlusCircle className="w-6! h-6! text-emerald-500" />
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <span>
+                                                        <PlusCircle className="w-6! h-6! text-emerald-500" />
+                                                    </span>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Agregar módulo</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
                                     </Button>
                                 ) : (
-                                    <div key={modulo.id + index} className="flex items-center justify-between">
+                                    <div key={modulo.id + index} className="flex items-center justify-between gap-3">
+                                        <RolePopover dataRole={dataRole}
+                                            loadingRole={loadingRole}
+                                            onClick={() => {
+                                                setLoadingRole(true);
+                                                rolesPopover(modulo.name, modulo.id);
+                                            }}
+                                            onRoleChange={(option) => toggleRoleAssignment(modulo.id, option)}
+                                        />
+
                                         {!modulo.has_menus && (
                                             <PermisosPopover dataPermission={dataPermission}
                                                 onClick={() => {

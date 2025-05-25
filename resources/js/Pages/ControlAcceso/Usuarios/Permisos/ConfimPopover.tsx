@@ -1,8 +1,8 @@
-import { PropsWithChildren, useEffect, useState } from "react";
+import { PropsWithChildren } from "react";
 import { PopoverDialog, PopoverDialogContent, PopoverDialogTrigger } from "@/Components/ui/popoverDialog"
 import { Button } from "@/Components/ui/button";
 import { MinusCircle } from "lucide-react";
-import { Checkbox } from "@/Components/ui/checkbox"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 
 interface ConfirmPopoverProps {
   seccion: string,
@@ -11,18 +11,24 @@ interface ConfirmPopoverProps {
 }
 
 export function ConfirmPopover({ seccion, opcion, onClick }: PropsWithChildren<ConfirmPopoverProps>) {
-
-  const togglePermissionAssignment = async (option: string, idOption: number, idPermission: string) => {
-    console.log(option, idOption, idPermission);
-  };
-
   return (
     <PopoverDialog modal={false}>
       <PopoverDialogTrigger asChild>
         <Button
           className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(199,0,54,0.5)]"
           variant="ghost">
-          <MinusCircle className="w-6! h-6! text-red-400" />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <MinusCircle className="w-6! h-6! text-red-400" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Quitar {seccion}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </Button>
       </PopoverDialogTrigger>
       <PopoverDialogContent onPointerDown={e => e.stopPropagation()}>

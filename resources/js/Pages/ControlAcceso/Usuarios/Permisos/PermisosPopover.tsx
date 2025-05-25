@@ -4,6 +4,7 @@ import { Button } from "@/Components/ui/button";
 import { Eye } from "lucide-react";
 import { Checkbox } from "@/Components/ui/checkbox"
 import { Skeleton } from "@/Components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 
 interface PermisosPopoverProps {
   dataPermission: { sectionName: string; option: string, idOption: number, permissionAssigned: [] };
@@ -13,15 +14,25 @@ interface PermisosPopoverProps {
 }
 
 export function PermisosPopover({ dataPermission, loadingPermissions, onClick, onPermissionChange }: PropsWithChildren<PermisosPopoverProps>) {
-
   return (
     <PopoverDialog modal={false}>
       <PopoverDialogTrigger asChild>
         <Button
-          className="hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
+          className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
           variant="ghost"
           onClick={onClick}>
-          <Eye className="w-6! h-6! text-cyan-400" />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Eye className="w-6! h-6! text-cyan-400" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Ver permisos</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </Button>
       </PopoverDialogTrigger>
       <PopoverDialogContent onPointerDown={e => e.stopPropagation()}>

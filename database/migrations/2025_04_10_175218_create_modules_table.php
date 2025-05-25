@@ -53,7 +53,7 @@ return new class extends Migration
             $table->primary(['module_id', 'model_id', 'model_type'], 'model_has_modules_module_model_type_primary');
         });
 
-        Schema::create('model_has_module_rol', function (Blueprint $table)
+        Schema::create('model_has_module_role', function (Blueprint $table)
         {
             $table->unsignedBigInteger('module_id');
             $table->unsignedBigInteger('role_id');
@@ -70,8 +70,8 @@ return new class extends Migration
                 ->on('roles')
                 ->onDelete('cascade');
 
-            $table->index(['model_id', 'model_type'], 'model_has_module_rol_model_id_model_type_index');
-            $table->primary(['module_id', 'role_id', 'model_id', 'model_type'], 'model_has_module_rol_module_model_type_role_id_primary');
+            $table->index(['model_id', 'model_type'], 'model_has_module_role_model_id_model_type_index');
+            $table->primary(['module_id', 'role_id', 'model_id', 'model_type'], 'model_has_module_role_module_model_type_role_id_primary');
         });
 
         Schema::create('model_has_module_permissions', function (Blueprint $table)
@@ -112,7 +112,7 @@ return new class extends Migration
             $table->dropForeign(['module_id']);
         });
 
-        Schema::table('model_has_module_rol', function (Blueprint $table)
+        Schema::table('model_has_module_role', function (Blueprint $table)
         {
             $table->dropForeign(['module_id']);
             $table->dropForeign(['role_id']);
@@ -127,7 +127,7 @@ return new class extends Migration
         Schema::dropIfExists('modules');
         Schema::dropIfExists('role_has_modules');
         Schema::dropIfExists('model_has_modules');
-        Schema::dropIfExists('model_has_module_rol');
+        Schema::dropIfExists('model_has_module_role');
         Schema::dropIfExists('model_has_module_permissions');
     }
 };

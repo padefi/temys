@@ -86,7 +86,7 @@ class SubmenuController extends Controller
                 ->where('submenu_id', $submenu->id)
                 ->delete();
 
-            return response()->json(['message' => 'Submenú eliminado con exito', 'action' => 'delete', 'success' => true]);
+            return response()->json(['message' => 'Submenú quitado con exito', 'action' => 'delete', 'success' => true]);
         }
 
         $user->submenus()->attach($submenu->id, ['model_type' => User::class]);
