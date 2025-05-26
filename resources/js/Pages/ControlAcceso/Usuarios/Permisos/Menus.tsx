@@ -100,9 +100,9 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, setMenuSelecte
         }
     };
 
-    useEffect(() => {
+    useEffect(() => {       
         fetchDataMenus();
-    }, [moduleSelected]);
+    }, [moduleSelected, moduleSelectedIsAssigned]);
 
     const toggleMenuAssignment = async (idModule: number, idMenu: number, isAssigned: number) => {
         try {
@@ -157,7 +157,7 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, setMenuSelecte
     }
 
     return (
-        <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-19rem)] lg:h-[calc(100vh-23rem)] xl:h-[calc(100vh-29rem)] 2xl:h-[calc(100vh-39rem)] w-[-webkit-fill-available]">
+        <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-19rem)] lg:h-[calc(100vh-23rem)] xl:h-[calc(100vh-24rem)] 2xl:h-[calc(100vh-39rem)] w-[-webkit-fill-available]">
             <div className="group flex flex-col gap-4 py-2">
                 <nav className="grid gap-1 px-2">
                     {dataMenus && dataMenus.length > 0 ? (

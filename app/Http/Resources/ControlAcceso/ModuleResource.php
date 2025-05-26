@@ -21,6 +21,7 @@ class ModuleResource extends JsonResource
             'menus' => MenuResource::collection($this->whenLoaded('menus')),
             'is_assigned' => $this->when(isset($this->is_assigned), $this->is_assigned),
             'has_menus' => $this->when(isset($this->has_menus), $this->has_menus),
+            'has_role_module' => $this->when(isset($this->has_role_module), $this->has_role_module),
         ];
     }
 }

@@ -231,7 +231,7 @@ export const columns: ColumnDef<User>[] = [
                             </Tooltip>
                         </TooltipProvider>
 
-                        <PermisosDialog open={isDialogOpen} setOpen={setIsDialogOpen} user={user.id} />
+                        <PermisosDialog open={isDialogOpen} setOpen={setIsDialogOpen} user={user} />
 
                         <TooltipProvider>
                             <Tooltip>

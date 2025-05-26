@@ -62,26 +62,35 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
                                             <DropdownMenuPortal>
                                                 <DropdownMenuSubContent>
                                                     {module.menus && module.menus.length > 0 ? (
-                                                        module.menus.map((menu) => (
-                                                            menu.submenus && menu.submenus.length > 0 ? (
-                                                                menu.submenus.map((submenu, index) => (
-                                                                    <DropdownMenuItem key={index + submenu.name} asChild>
-                                                                        {route().has(submenu.key) ? (
-                                                                            <Link href={route(submenu.key)}>{submenu.name}</Link>
+                                                        module.menus.map((menu, indexMenu) => (
+                                                            <Fragment key={indexMenu + menu.name}>
+                                                                {menu.submenus && menu.submenus.length > 0 ? (
+                                                                    <DropdownMenuSub>
+                                                                        <DropdownMenuSubTrigger>{menu.name}</DropdownMenuSubTrigger>
+                                                                        <DropdownMenuPortal>
+                                                                            <DropdownMenuSubContent>
+                                                                                {menu.submenus.map((submenu, index) => (
+                                                                                    <DropdownMenuItem key={index + submenu.name} asChild>
+                                                                                        {route().has(submenu.key) ? (
+                                                                                            <Link href={route(submenu.key)}>{submenu.name}</Link>
+                                                                                        ) : (
+                                                                                            <span>{submenu.name}</span>
+                                                                                        )}
+                                                                                    </DropdownMenuItem>
+                                                                                ))}
+                                                                            </DropdownMenuSubContent>
+                                                                        </DropdownMenuPortal>
+                                                                    </DropdownMenuSub>
+                                                                ) : (
+                                                                    <DropdownMenuItem key={menu.id + menu.name}>
+                                                                        {route().has(module.key + '.' + menu.key) ? (
+                                                                            <Link href={route(module.key + '.' + menu.key)}>{menu.name}</Link>
                                                                         ) : (
-                                                                            <span>{submenu.name}</span>
+                                                                            <span>{menu.name}</span>
                                                                         )}
                                                                     </DropdownMenuItem>
-                                                                ))
-                                                            ) : (
-                                                                <DropdownMenuItem key={menu.id + menu.name}>
-                                                                    {route().has(module.key + '.' + menu.key) ? (
-                                                                        <Link href={route(module.key + '.' + menu.key)}>{menu.name}</Link>
-                                                                    ) : (
-                                                                        <span>{menu.name}</span>
-                                                                    )}
-                                                                </DropdownMenuItem>
-                                                            )
+                                                                )}
+                                                            </Fragment>
                                                         ))
                                                     ) : (
                                                         <DropdownMenuItem className="italic">No hay menús disponibles</DropdownMenuItem>

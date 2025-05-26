@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'module' => \App\Http\Middleware\ModuleMiddleware::class,
             'menu' => \App\Http\Middleware\MenuMiddleware::class,
             'submenu' => \App\Http\Middleware\SubmenuMiddleware::class,
+            'role_module' => \App\Http\Middleware\RoleModuleMiddleware::class,
             'module_permission' => \App\Http\Middleware\ModulePermissionMiddleware::class,
             'menu_permission' => \App\Http\Middleware\MenuPermissionMiddleware::class,
             'submenu_permission' => \App\Http\Middleware\SubmenuPermissionMiddleware::class,

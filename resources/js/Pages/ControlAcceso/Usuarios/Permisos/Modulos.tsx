@@ -23,6 +23,7 @@ interface Modulo {
     name: string;
     is_assigned: number;
     has_menus: boolean;
+    has_role_module: boolean;
 }
 
 interface ModulosProps {
@@ -69,6 +70,7 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
 
     const toggleRoleAssignment = async (idModule: number, role: string) => {
         try {
+            setModuleSelectedIsAssigned(false);
             const response = await axios.post('/control-acceso/managed-role-modulos-by-user/', {
                 user,
                 idModule,
@@ -82,7 +84,18 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
                 return;
             }
 
+            setModuleSelectedIsAssigned(true);
             toast.success(data.message);
+
+            setDataModulos((prevData) => {
+                if (!prevData) return null;
+
+                return prevData.map((modulo) =>
+                    modulo.id === idModule
+                        ? { ...modulo, has_role_module: true, }
+                        : modulo
+                );
+            });
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) toast.error(error.response.data.message || "Error desconocido del servidor");
             else toast.error("Error al asignar el rol al módulo");
@@ -170,23 +183,23 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
             }
 
             if (data.action === "add") {
-                setModuleSelectedIsAssigned(true);
                 toast.success(data.message);
             } else {
                 setIsClicked(-1);
                 setModuleSelected(0);
-                setModuleSelectedIsAssigned(false);
                 setMenuSelected(0);
                 setMenuSelectedIsAssigned(false);
                 toast.warning(data.message);
             }
+
+            setModuleSelectedIsAssigned(false);
 
             setDataModulos((prevData) => {
                 if (!prevData) return null;
 
                 return prevData.map((modulo) =>
                     modulo.id === idModule
-                        ? { ...modulo, is_assigned: isAssigned }
+                        ? { ...modulo, is_assigned: isAssigned, has_role_module: false, }
                         : modulo
                 );
             });
@@ -208,7 +221,7 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
     }
 
     return (
-        <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-19rem)] lg:h-[calc(100vh-23rem)] xl:h-[calc(100vh-29rem)] 2xl:h-[calc(100vh-39rem)] w-[-webkit-fill-available]">
+        <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-19rem)] lg:h-[calc(100vh-23rem)] xl:h-[calc(100vh-24rem)] 2xl:h-[calc(100vh-39rem)] w-[-webkit-fill-available]">
             <div className="group flex flex-col gap-4 py-2">
                 <nav className="grid gap-1 px-2">
                     {dataModulos && dataModulos.length > 0 ? (
@@ -220,9 +233,8 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
                                         e.preventDefault();
                                         setIsClicked(index);
                                         setModuleSelected(modulo.id);
-                                        setModuleSelectedIsAssigned(modulo.is_assigned === 1 ? true : false);
+                                        setModuleSelectedIsAssigned(modulo.is_assigned === 1 && modulo.has_role_module ? true : false);
                                         setMenuSelected(0);
-                                        setMenuSelectedIsAssigned(false);
                                     }}
                                     className={cn(
                                         buttonVariants({ variant: isClicked === index ? "default" : "ghost", size: "sm" }),

@@ -68,7 +68,12 @@ class MenuController extends Controller
 
         if (!$user->modules()->where('modules.id', $module->id)->exists())
         {
-            return response()->json(['message' => 'El módulo no está asignado al usuario', 'success' => false]);
+            return response()->json(['message' => 'El módulo no ha sido asignado al usuario', 'success' => false]);
+        }
+
+        if(!$user->modulesRole()->where('modules.id', $module->id)->exists())
+        {
+            return response()->json(['message' => 'No ha sido asignado el rol del usuario al módulo', 'success' => false]);
         }
 
         if (!$module->menus()->where('menus.id', $menu->id)->exists())
@@ -133,7 +138,7 @@ class MenuController extends Controller
 
         if (!$user->menus()->where('menus.id', $menu->id)->exists())
         {
-            return response()->json(['message' => 'El menú no está asignado al usuario', 'success' => false]);
+            return response()->json(['message' => 'El menú no ha sido asignado al usuario', 'success' => false]);
         }
 
         $hasPermission = $menu->userPermissions()

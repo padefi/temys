@@ -38,16 +38,19 @@ class ModuleController extends Controller
             $join->on('modules.id', '=', 'model_has_modules.module_id')
                 ->where('model_has_modules.model_id', '=', $user->id);
         })
+            ->join('role_has_modules', 'modules.id', '=', 'role_has_modules.module_id')
+            ->where('role_has_modules.role_id', $user->userRoles()->pluck('role_id')->first())    
             ->select('modules.*', DB::raw('IF(model_has_modules.module_id IS NOT NULL, true, false) as is_assigned')) // Verifica si el módulo estaba asignado al usuario
             ->get();
 
         // Agrega el campo has_menus a cada módulo
-        $modules->map(function ($module)
+        $modules->map(function ($module) use ($user)
         {
             $module->has_menus = $module->menus()->exists();
+            $module->has_role_module = $user->modulesRole()->where('modules.id', $module->id)->exists();
             return $module;
         });
-
+        
         return ModuleResource::collection($modules);
     }
 
@@ -68,6 +71,7 @@ class ModuleController extends Controller
         if ($exists) $user->modulesRole()->updateExistingPivot($module->id, ['role_id' => $role->id]);
         else $user->modulesRole()->attach($module->id, ['role_id' => $role->id, 'model_type' => User::class]);
 
+        $this->cleanPermissionsModulesByUser($user, $module);
         if ($role->name === 'encargado') $this->assingDefaultPermissions($module, $role, $user);
 
         return response()->json(['message' => 'Rol asignado con exito', 'success' => true]);
@@ -176,14 +180,39 @@ class ModuleController extends Controller
         return response()->json(['message' => 'Permiso agregado con exito', 'action' => 'add', 'success' => true]);
     }
 
-
-    private function assingDefaultPermissions($module, $roleModule, $user)
+    private function cleanPermissionsModulesByUser(User $user, Module $module)
     {
         DB::table('model_has_module_permissions')
             ->where('model_id', $user->id)
             ->where('module_id', $module->id)
             ->delete();
 
+        $menus = $module->menus()->get();
+
+        foreach ($menus as $menu)
+        {
+            $user->menus()->detach($menu->id);
+            DB::table('model_has_menu_permissions')
+                ->where('model_id', $user->id)
+                ->where('menu_id', $menu->id)
+                ->delete();
+
+            $submenus = $menu->submenus()->get();
+
+            foreach ($submenus as $submenu)
+            {
+                $user->submenus()->detach($submenu->id);
+                DB::table('model_has_submenu_permissions')
+                    ->where('model_id', $user->id)
+                    ->where('submenu_id', $submenu->id)
+                    ->delete();
+            }
+        }
+    }
+
+
+    private function assingDefaultPermissions($module, $roleModule, $user)
+    {
         if ($module->menus()->count() === 0)
         {
             $module->userPermissions()->attach(
@@ -196,12 +225,6 @@ class ModuleController extends Controller
 
         foreach ($menus as $menu)
         {
-            DB::table('model_has_menu_permissions')
-                ->where('model_id', $user->id)
-                ->where('menu_id', $menu->id)
-                ->delete();
-
-            $user->menus()->detach($menu->id);
             $user->menus()->attach($menu->id, ['model_type' => User::class]);
 
             if ($menu->submenus()->count() === 0)
@@ -216,12 +239,6 @@ class ModuleController extends Controller
 
             foreach ($submenus as $submenu)
             {
-                DB::table('model_has_submenu_permissions')
-                    ->where('model_id', $user->id)
-                    ->where('submenu_id', $submenu->id)
-                    ->delete();
-
-                $user->submenus()->detach($submenu->id);
                 $user->submenus()->attach($submenu->id, ['model_type' => User::class]);
 
                 $submenu->userPermissions()->attach($roleModule->permissions()->pluck('id')->toArray(), ['model_type' => User::class, 'model_id' => $user->id]);
