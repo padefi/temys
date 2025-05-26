@@ -49,7 +49,7 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
 
     const fetchRoles = async () => {
         try {
-            const response = await fetch(`/control-acceso/get-roles`);
+            const response = await fetch(`/control-acceso/get-module-roles`);
             const data = await response.json();
 
             setRoles(data.data);

@@ -27,7 +27,6 @@ class RolePermissionSeeder extends Seeder
         {
             foreach ($modules as $module)
             {
-
                 DB::table('role_has_modules')
                     ->insert([
                         'module_id' => $module->id,
@@ -38,6 +37,28 @@ class RolePermissionSeeder extends Seeder
         catch (\Throwable $th)
         {
             Log::error('Error al asignar el módulo al rol admin: ' . $th->getMessage());
+            throw $th;
+        }
+
+        $empleadoRole = Role::findByName('empleado');
+        $empleadoRole->syncPermissions($allPermissions);
+
+        $modules = Module::where('key', '!=', 'control-acceso')->get();
+
+        try
+        {
+            foreach ($modules as $module)
+            {
+                DB::table('role_has_modules')
+                    ->insert([
+                        'module_id' => $module->id,
+                        'role_id' => $empleadoRole->id,
+                    ]);
+            }
+        }
+        catch (\Throwable $th)
+        {
+            Log::error('Error al asignar el módulo al rol empleado: ' . $th->getMessage());
             throw $th;
         }
     }

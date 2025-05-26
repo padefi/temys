@@ -34,6 +34,7 @@ Route::middleware('auth')->group(function () {
             Route::middleware('menu_permission:read usuarios')->group(function () {
                 Route::get('control-acceso/usuarios/usuariosPage', [UsuarioController::class, 'index'])->name('control-acceso.usuarios');
                 Route::get('control-acceso/get-roles', [UsuarioController::class, 'getRoles']);
+                Route::get('control-acceso/get-module-roles', [UsuarioController::class, 'getModuleRoles']);
                 Route::get('control-acceso/get-role-module-by-user/{user}/{module}', [UsuarioController::class, 'getRoleModuleByUser']);
 
                 Route::get('control-acceso/show-modulos-by-user/{user}', [ModuleController::class, 'showModulesByUser']);

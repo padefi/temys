@@ -67,7 +67,7 @@ return new class extends Migration
                 
             $table->foreign('role_id')
                 ->references('id')
-                ->on('roles')
+                ->on('role_modules')
                 ->onDelete('cascade');
 
             $table->index(['model_id', 'model_type'], 'model_has_module_role_model_id_model_type_index');

@@ -205,7 +205,7 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, setMenuSelecte
                                             </TooltipProvider>
                                         </Button>
                                     ) : (
-                                        <div key={menu.id + index} className="flex items-center justify-between">
+                                        <div key={menu.id + index} className="flex items-center justify-between gap-3">
                                             {!menu.has_submenus && (
                                                 <PermisosPopover dataPermission={dataPermission}
                                                     onClick={() => {

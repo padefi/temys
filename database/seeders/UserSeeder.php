@@ -30,23 +30,7 @@ class UserSeeder extends Seeder
                 'name' => 'Prueba ' . $i,
                 'email' => 'prueba' . $i . '@prueba.com',
                 'password' => Hash::make('12345678'),
-            ])->assignRole('encargado');
-
-            $i++;
-
-            User::create([
-                'name' => 'Prueba ' . $i,
-                'email' => 'prueba' . $i . '@prueba.com',
-                'password' => Hash::make('12345678'),
-            ])->assignRole('auxiliar');
-
-            $i++;
-
-            User::create([
-                'name' => 'Prueba ' . $i,
-                'email' => 'prueba' . $i . '@prueba.com',
-                'password' => Hash::make('12345678'),
-            ])->assignRole('administrativo');
+            ])->assignRole('empleado');
         }
 
         $enabledModules  = config('module.enabled_modules', []);

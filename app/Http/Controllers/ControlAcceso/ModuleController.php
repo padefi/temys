@@ -6,12 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ControlAcceso\ModuleResource;
 use App\Models\ControlAcceso\Menu;
 use App\Models\ControlAcceso\Module;
+use App\Models\ControlAcceso\RoleModule;
 use App\Models\ControlAcceso\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 class ModuleController extends Controller
 {
@@ -56,17 +56,19 @@ class ModuleController extends Controller
         $request->validate([
             'idModule' => ['required', 'exists:modules,id'],
             'user' => ['required', 'exists:users,id'],
-            'role' => ['required', 'exists:roles,name'],
+            'role' => ['required', 'exists:role_modules,name'],
         ]);
 
         $user = User::find($request->user);
         $module = Module::find($request->idModule);
-        $role = Role::findByName($request->role);
+        $role = RoleModule::findByName($request->role);
 
         $exists = $user->modulesRole()->where('modules.id', $module->id)->exists();
 
         if ($exists) $user->modulesRole()->updateExistingPivot($module->id, ['role_id' => $role->id]);
-        else  $user->modulesRole()->attach($module->id, ['role_id' => $role->id, 'model_type' => User::class]);
+        else $user->modulesRole()->attach($module->id, ['role_id' => $role->id, 'model_type' => User::class]);
+
+        if ($role->name === 'encargado') $this->assingDefaultPermissions($module, $role, $user);
 
         return response()->json(['message' => 'Rol asignado con exito', 'success' => true]);
     }
@@ -172,5 +174,58 @@ class ModuleController extends Controller
         $module->userPermissions()->attach($permission->id, ['model_type' => User::class, 'model_id' => $user->id]);
 
         return response()->json(['message' => 'Permiso agregado con exito', 'action' => 'add', 'success' => true]);
+    }
+
+
+    private function assingDefaultPermissions($module, $roleModule, $user)
+    {
+        DB::table('model_has_module_permissions')
+            ->where('model_id', $user->id)
+            ->where('module_id', $module->id)
+            ->delete();
+
+        if ($module->menus()->count() === 0)
+        {
+            $module->userPermissions()->attach(
+                $roleModule->permissions()->pluck('id')->toArray(),
+                ['model_type' => User::class, 'model_id' => $user->id]
+            );
+        }
+
+        $menus = $module->menus()->get();
+
+        foreach ($menus as $menu)
+        {
+            DB::table('model_has_menu_permissions')
+                ->where('model_id', $user->id)
+                ->where('menu_id', $menu->id)
+                ->delete();
+
+            $user->menus()->detach($menu->id);
+            $user->menus()->attach($menu->id, ['model_type' => User::class]);
+
+            if ($menu->submenus()->count() === 0)
+            {
+                $menu->userPermissions()->attach(
+                    $roleModule->permissions()->pluck('id')->toArray(),
+                    ['model_type' => User::class, 'model_id' => $user->id]
+                );
+            }
+
+            $submenus = $menu->submenus()->get();
+
+            foreach ($submenus as $submenu)
+            {
+                DB::table('model_has_submenu_permissions')
+                    ->where('model_id', $user->id)
+                    ->where('submenu_id', $submenu->id)
+                    ->delete();
+
+                $user->submenus()->detach($submenu->id);
+                $user->submenus()->attach($submenu->id, ['model_type' => User::class]);
+
+                $submenu->userPermissions()->attach($roleModule->permissions()->pluck('id')->toArray(), ['model_type' => User::class, 'model_id' => $user->id]);
+            }
+        }
     }
 }

@@ -9,7 +9,6 @@ use Spatie\Permission\Models\Permission;
 class Menu extends Model
 {
     protected $fillable = [
-        'id',
         'key',
         'name',
         'guard_name',

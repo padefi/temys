@@ -9,7 +9,6 @@ use Spatie\Permission\Models\Permission;
 class Module extends Model
 {
     protected $fillable = [
-        'id',
         'key',
         'name',
         'guard_name',

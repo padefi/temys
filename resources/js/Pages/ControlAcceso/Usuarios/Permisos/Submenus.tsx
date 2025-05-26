@@ -176,7 +176,7 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, menuSelecte
                                             </TooltipProvider>
                                         </Button>
                                     ) : (
-                                        <div key={submenu.id + index} className="flex items-center justify-between">
+                                        <div key={submenu.id + index} className="flex items-center justify-between gap-3">
                                             <PermisosPopover dataPermission={dataPermission}
                                                 onClick={() => {
                                                     setLoadingPermissions(true);

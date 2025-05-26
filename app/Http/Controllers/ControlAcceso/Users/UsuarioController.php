@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ControlAcceso\RoleResource;
 use App\Http\Resources\ControlAcceso\UserResource;
 use App\Models\ControlAcceso\Module;
+use App\Models\ControlAcceso\RoleModule;
 use App\Models\ControlAcceso\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -24,9 +25,16 @@ class UsuarioController extends Controller
 
     public function getRoles()
     {
-        $roles = Role::where('name', '!=', 'admin')->get();
+        $roles = Role::all();
 
         return RoleResource::collection($roles);
+    }
+    
+    public function getModuleRoles()
+    {
+        $moduleRoles = RoleModule::all();
+
+        return RoleResource::collection($moduleRoles);
     }
 
     public function getRoleModuleByUser(User $user, Module $module)
@@ -39,7 +47,7 @@ class UsuarioController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $role = Role::find($roleId);
+        $role = RoleModule::find($roleId);
 
         return new RoleResource($role);
     }
