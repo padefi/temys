@@ -23,7 +23,7 @@ class Menu extends Model
 
     public function submenus(): BelongsToMany
     {
-        return $this->belongsToMany(Submenu::class, 'menu_has_submenus', 'menu_id', 'submenu_id');
+        return $this->belongsToMany(Submenu::class, 'menu_has_submenus', 'menu_id', 'submenu_id')->orderBy('name');
     }
 
     public function users(): BelongsToMany

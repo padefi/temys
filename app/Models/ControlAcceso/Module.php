@@ -19,7 +19,7 @@ class Module extends Model
 
     public function menus(): BelongsToMany
     {
-        return $this->belongsToMany(Menu::class, 'module_has_menus', 'module_id', 'menu_id');
+        return $this->belongsToMany(Menu::class, 'module_has_menus', 'module_id', 'menu_id')->orderBy('name');
     }
 
     public function users(): BelongsToMany

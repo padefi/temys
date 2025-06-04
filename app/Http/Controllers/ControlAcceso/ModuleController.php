@@ -41,6 +41,7 @@ class ModuleController extends Controller
             ->join('role_has_modules', 'modules.id', '=', 'role_has_modules.module_id')
             ->where('role_has_modules.role_id', $user->userRoles()->pluck('role_id')->first())    
             ->select('modules.*', DB::raw('IF(model_has_modules.module_id IS NOT NULL, true, false) as is_assigned')) // Verifica si el módulo estaba asignado al usuario
+            ->orderBy('modules.name', 'asc')
             ->get();
 
         // Agrega el campo has_menus a cada módulo

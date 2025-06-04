@@ -16,7 +16,7 @@ class RoleModulePermissionSeeder extends Seeder
     public function run(): void
     {
         $encargadoRole = RoleModule::findByName('encargado');
-        $auxiliarRole = RoleModule::findByName('auxiliar');
+        // $auxiliarRole = RoleModule::findByName('auxiliar');
         $administrativoRole = RoleModule::findByName('administrativo');
 
         try

@@ -33,6 +33,9 @@ class RoleModuleMiddleware
         }
 
         $user = Auth::user();
+
+        if ($user->hasRole('admin')) return $next($request);
+
         $dataParams = explode('|', implode(' ', $params));
 
         $hasRole = false;
@@ -42,19 +45,33 @@ class RoleModuleMiddleware
             $dataParam = trim($dataParam);
             if (!$dataParam) continue;
 
-            [$roleName, $moduleKey] = explode(' ', $dataParam, 2);
-            $module = Module::where('key', trim($moduleKey))->first();
-            if (!$module) continue;
+            $parts = explode(' ', $dataParam, 2);
+            $roleName = trim($parts[0]);
+            $moduleKey = $parts[1] ?? null;
 
             $role = RoleModule::where('name', trim($roleName))->first();
             if (!$role) continue;
 
-            $exists = DB::table('model_has_module_role')
-                ->where('module_id', $module->id)
-                ->where('role_id', $role->id)
-                ->where('model_type', $user::class)
-                ->where('model_id', $user->id)
-                ->exists();
+            if ($moduleKey)
+            {
+                $module = Module::where('key', trim($moduleKey))->first();
+                if (!$module) continue;
+
+                $exists = DB::table('model_has_module_role')
+                    ->where('module_id', $module->id)
+                    ->where('role_id', $role->id)
+                    ->where('model_type', $user::class)
+                    ->where('model_id', $user->id)
+                    ->exists();
+            }
+            else
+            {
+                $exists = DB::table('model_has_module_role')
+                    ->where('role_id', $role->id)
+                    ->where('model_type', $user::class)
+                    ->where('model_id', $user->id)
+                    ->exists();
+            }
 
             if ($exists)
             {

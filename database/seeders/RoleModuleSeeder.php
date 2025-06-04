@@ -14,7 +14,7 @@ class RoleModuleSeeder extends Seeder
     {
         $roleModules = [
             ['name' => 'encargado', 'guard_name' => 'web'],
-            ['name' => 'auxiliar', 'guard_name' => 'web'],
+            // ['name' => 'auxiliar', 'guard_name' => 'web'],
             ['name' => 'administrativo', 'guard_name' => 'web'],
         ];
 

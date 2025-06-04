@@ -6,11 +6,11 @@ return [
             'key' => 'control-acceso',
             'name' => 'Control de Acceso',
             'menus' => [
-                ['key' => 'usuarios', 'name' => 'Usuarios'],
                 ['key' => 'roles', 'name' => 'Roles'],
                 ['key' => 'modulos', 'name' => 'Modulos'],
                 ['key' => 'menus', 'name' => 'Menus'],
                 ['key' => 'submenus', 'name' => 'Submenus'],
+                ['key' => 'usuariosControlAcceso', 'name' => 'Usuarios'],
             ]
         ],
         [
@@ -37,17 +37,18 @@ return [
                 [
                     'key' => 'fondoDeSepelio',
                     'name' => 'Fondo de sepelio',
-                    'submenus' => [],
                 ],
                 [
                     'key' => 'pas',
                     'name' => 'P.A.S.',
-                    'submenus' => [],
                 ],
                 [
                     'key' => 'turismo',
                     'name' => 'Turismo',
-                    'submenus' => [],
+                ],
+                [
+                    'key' => 'usuariosAfiliados',
+                    'name' => 'Usuarios'
                 ],
             ]
         ],
@@ -75,17 +76,18 @@ return [
                 [
                     'key' => 'productos',
                     'name' => 'Productos',
-                    'submenus' => []
                 ],
                 [
                     'key' => 'reportes',
                     'name' => 'Reportes',
-                    'submenus' => []
                 ],
                 [
                     'key' => 'configuracion',
                     'name' => 'Configuracion',
-                    'submenus' => []
+                ],
+                [
+                    'key' => 'usuariosCompras',
+                    'name' => 'Usuarios'
                 ],
             ]
         ],
@@ -96,7 +98,6 @@ return [
                 [
                     'key' => 'tablero',
                     'name' => 'Tablero',
-                    'submenus' => []
                 ],
                 [
                     'key' => 'clientes',
@@ -128,29 +129,46 @@ return [
                 [
                     'key' => 'reportes',
                     'name' => 'Reportes',
-                    'submenus' => []
                 ],
                 [
                     'key' => 'configuracion',
                     'name' => 'Configuracion',
-                    'submenus' => []
+                ],
+                [
+                    'key' => 'usuariosContabilidad',
+                    'name' => 'Usuarios'
                 ],
             ]
         ],
         [
             'key' => 'inventario',
             'name' => 'Inventario',
-            'menus' => []
+            'menus' => [
+                [
+                    'key' => 'usuariosInventario',
+                    'name' => 'Usuarios'
+                ],
+            ]
         ],
         [
             'key' => 'seccionales',
             'name' => 'Seccionales',
-            'menus' => []
+            'menus' => [
+                [
+                    'key' => 'usuariosSeccionales',
+                    'name' => 'Usuarios'
+                ],
+            ]
         ],
         [
             'key' => 'ventas',
             'name' => 'Ventas',
-            'menus' => []
+            'menus' => [
+                [
+                    'key' => 'usuariosVentas',
+                    'name' => 'Usuarios'
+                ],
+            ]
         ],
     ],
 ];

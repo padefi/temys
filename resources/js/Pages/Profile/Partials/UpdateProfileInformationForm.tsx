@@ -20,6 +20,7 @@ export default function UpdateProfileInformation({
     const { data, setData, patch, errors, processing, recentlySuccessful } =
         useForm({
             name: user.name,
+            last_name: user.last_name,
             email: user.email,
         });
 
@@ -56,6 +57,21 @@ export default function UpdateProfileInformation({
                     />
 
                     <InputError className="mt-2" message={errors.name} />
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="last_name" value="Apellido" />
+
+                    <TextInput
+                        id="last_name"
+                        className="mt-1 block w-full"
+                        value={data.last_name}
+                        onChange={(e) => setData('last_name', e.target.value)}
+                        required
+                        autoComplete="last_name"
+                    />
+
+                    <InputError className="mt-2" message={errors.email} />
                 </div>
 
                 <div>

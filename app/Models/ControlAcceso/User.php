@@ -11,8 +11,7 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
-{
+class User extends Authenticatable {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
@@ -23,6 +22,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'last_name',
         'email',
         'password',
     ];
@@ -42,41 +42,44 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
 
-    public function userRoles()
-    {
+    public function userRoles() {
         return $this->belongsToMany(Role::class, 'model_has_roles', 'model_id', 'role_id');
     }
 
-    public function modules()
-    {
+    public function modules() {
         return $this->belongsToMany(Module::class, 'model_has_modules', 'model_id', 'module_id');
     }
 
-    public function menus()
-    {
+    public function menus() {
         return $this->belongsToMany(Menu::class, 'model_has_menus', 'model_id', 'menu_id');
     }
 
-    public function submenus()
-    {
+    public function submenus() {
         return $this->belongsToMany(Submenu::class, 'model_has_submenus', 'model_id', 'submenu_id');
     }
 
-    public function modulesRole()
-    {
+    public function modulesRole() {
         return $this->belongsToMany(Module::class, 'model_has_module_role', 'model_id', 'module_id')->withPivot('role_id');
     }
 
-    public function permissions()
-    {
+    public function permissions() {
         return $this->belongsToMany(Permission::class, 'model_has_permissions', 'model_id', 'permission_id');
+    }
+
+    public static function moduleUsers(Module $module) {
+        return User::whereHas('modules', function ($query) use ($module) {
+            $query->where('modules.id', $module->id);
+        })
+        ->whereHas('userRoles', function ($query) {
+            $query->where('name', '!=', 'admin');
+        })
+        ->get();
     }
 }

@@ -42,6 +42,7 @@ class MenuController extends Controller
                 'menus.*',
                 DB::raw('IF(model_has_menus.menu_id IS NOT NULL, true, false) as is_assigned') // Verifica si el menú está asignado al usuario
             )
+            ->orderBy('menus.name', 'asc')
             ->get();
 
         // Agrega el campo has_menus a cada módulo

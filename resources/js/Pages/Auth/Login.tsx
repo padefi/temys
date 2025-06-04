@@ -3,8 +3,10 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import { Button } from '@/Components/ui/button';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { Loader2Icon } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
 export default function Login({
@@ -57,7 +59,7 @@ export default function Login({
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
+                    <InputLabel htmlFor="password" value="Contraseña" />
 
                     <TextInput
                         id="password"
@@ -73,7 +75,7 @@ export default function Login({
                 </div>
 
                 <div className="mt-4 block">
-                    <label className="flex items-center">
+                    {/* <label className="flex items-center">
                         <Checkbox
                             name="remember"
                             checked={data.remember}
@@ -87,22 +89,37 @@ export default function Login({
                         <span className="ms-2 text-sm text-gray-600">
                             Remember me
                         </span>
-                    </label>
+                    </label> */}
                 </div>
 
                 <div className="mt-4 flex items-center justify-end">
-                    {canResetPassword && (
+                    {/* {canResetPassword && (
                         <Link
                             href={route('password.request')}
                             className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         >
                             Forgot your password?
                         </Link>
-                    )}
+                    )} */}
 
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Log in
-                    </PrimaryButton>
+                    <Link
+                        href={route('register')}
+                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    >
+                        ¿No tienes una cuenta?
+                    </Link>
+
+
+                    <Button size="sm" variant={'success'} className="ms-4" disabled={processing}>
+                        {processing ? (
+                            <>
+                                <Loader2Icon className="animate-spin" />
+                                <span>Procesando...</span>
+                            </>
+                        ) : (
+                            <span>Ingresar</span>
+                        )}
+                    </Button>
                 </div>
             </form>
         </GuestLayout>

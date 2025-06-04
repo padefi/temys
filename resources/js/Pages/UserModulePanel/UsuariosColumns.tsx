@@ -3,7 +3,7 @@ import { Input } from "@/Components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { usePermissions } from "@/composables/permissions";
 import { ColumnDef } from "@tanstack/react-table"
-import { Ban, Funnel, FunnelX, LockKeyhole, Pencil, Waypoints } from "lucide-react";
+import { Funnel, FunnelX, Waypoints } from "lucide-react";
 import { ArrowUpDown } from "lucide-react"
 import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/Components/ui/select"
@@ -16,10 +16,7 @@ export type User = {
     id: number;
     name: string;
     email: string;
-    roles: Array<{
-        id: number;
-        name: string;
-    }>;
+    module_role: string;
 }
 
 export const columns: ColumnDef<User>[] = [
@@ -108,18 +105,20 @@ export const columns: ColumnDef<User>[] = [
         cell: ({ row }) => <span className="text-sm">{row.getValue('email')}</span>,
     },
     {
-        accessorKey: 'roles',
+        accessorKey: 'module_role',
         header: ({ column }) => {
             const [filterEnabled, setFilterEnabled] = useState(false);
             const [roles, setRoles] = useState([]);
 
             useEffect(() => {
-                getRoles();
+                getModuleRoles();
             }, []);
 
-            const getRoles = async () => {
+            const getModuleRoles = async () => {
                 try {
-                    const response = await fetch('/control-acceso/get-roles');
+                    const response = await fetch('/user-model-panel/get-module-roles', {
+                        credentials: 'include'
+                    });
                     const data = await response.json();
                     setRoles(data.data);
                 } catch (error) {
@@ -172,60 +171,40 @@ export const columns: ColumnDef<User>[] = [
             )
         },
         cell: ({ row }) => {
-            const roles = row.getValue('roles') as Array<{ id: number; name: string }> | undefined;
+            const roles = row.getValue('module_role') as string | undefined;
 
-            if (!roles || roles.length === 0) {
+            if (!roles) {
                 return <span className="text-sm text-red-500">Sin Rol</span>;
             }
 
             return (
                 <span className="text-sm">
-                    {roles[0].name === 'admin' ? (
-                        <span className="text-emerald-700">{roles[0].name}</span>
-                    ) : (
-                        <span>EMPLEADO</span>
-                    )}
+                    <span>{roles.toUpperCase()}</span>
                 </span>
             );
         },
         filterFn: (row, columnId, filterValue) => {
-            const roles = row.getValue(columnId) as Array<{ id: number; name: string }> | undefined;
+            const roles = row.getValue(columnId) as string | undefined;
 
-            if (!roles || roles.length === 0) {
+            if (!roles) {
                 return filterValue === 'SIN ROL';
             }
 
-            if (filterValue === 'EMPLEADO') {
-                return roles.some((role) => role.name.toUpperCase() !== 'ADMIN' && role.name.toUpperCase() !== 'SIN ROL');
-            }
-
-            return roles.some((role) => role.name.toUpperCase() === filterValue.toUpperCase());
+            return roles.toUpperCase() === filterValue.toUpperCase();
         },
     },
     {
         accessorKey: 'actions',
         header: 'Acciones',
-        cell: ({ row }) => {
-            const user = row.original
+        cell: ({ row, table }) => {
+            const user = row.original;
+            const { module } = table.options.meta as { module: number };
             const { userAuth } = usePermissions();
             const [isDialogOpen, setIsDialogOpen] = useState(false);
 
             return (
-                userAuth.id !== user.id ? (
+                userAuth.id !== user.id && user.module_role && user.module_role !== 'encargado' ? (
                     <div className="text-right flex gap-3">
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button variant="ghost" className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]">
-                                        <Pencil className='w-6! h-6! text-amber-500' />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>Editar</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -243,33 +222,7 @@ export const columns: ColumnDef<User>[] = [
                             </Tooltip>
                         </TooltipProvider>
 
-                        <PermisosDialog open={isDialogOpen} setOpen={setIsDialogOpen} user={user} />
-
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button variant="ghost" className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(0,117,149,0.5)]">
-                                        <LockKeyhole className='w-6! h-6! text-cyan-500' />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>Reestablecer contraseña</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button variant="ghost" className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(199,0,54,0.5)]">
-                                        <Ban className='w-6! h-6! text-red-500' />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>Deshabilitar</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
+                        <PermisosDialog open={isDialogOpen} setOpen={setIsDialogOpen} user={user} module={module} />
                     </div>
                 ) : (
                     <span className="text-sm text-gray-500">Sin acciones</span>

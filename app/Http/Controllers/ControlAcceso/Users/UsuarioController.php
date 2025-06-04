@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\ControlAcceso\Users;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ControlAcceso\ModuleResource;
 use App\Http\Resources\ControlAcceso\RoleResource;
 use App\Http\Resources\ControlAcceso\UserResource;
+use App\Http\Resources\UserModulePanel\RoleModuleResource;
 use App\Models\ControlAcceso\Module;
 use App\Models\ControlAcceso\RoleModule;
 use App\Models\ControlAcceso\User;
@@ -29,12 +31,12 @@ class UsuarioController extends Controller
 
         return RoleResource::collection($roles);
     }
-    
+
     public function getModuleRoles()
     {
         $moduleRoles = RoleModule::all();
 
-        return RoleResource::collection($moduleRoles);
+        return RoleModuleResource::collection($moduleRoles);
     }
 
     public function getRoleModuleByUser(User $user, Module $module)

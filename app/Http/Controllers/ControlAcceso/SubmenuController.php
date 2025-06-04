@@ -43,6 +43,7 @@ class SubmenuController extends Controller
                 'submenus.*',
                 DB::raw('IF(model_has_submenus.submenu_id IS NOT NULL, true, false) as is_assigned') // Verifica si el submenú está asignado al usuario
             )
+            ->orderBy('submenus.name', 'asc')
             ->get();
 
         return SubmenuResource::collection($submenus);
