@@ -110,7 +110,7 @@ export default function Login({
                     </Link>
 
 
-                    <Button size="sm" variant={'success'} className="ms-4" disabled={processing}>
+                    <Button size="sm" variant="success" className="ms-4" disabled={processing}>
                         {processing ? (
                             <>
                                 <Loader2Icon className="animate-spin" />

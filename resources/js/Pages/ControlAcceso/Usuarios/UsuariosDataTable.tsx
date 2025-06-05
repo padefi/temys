@@ -5,12 +5,19 @@ import { Button } from "@/Components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select"
 import React from "react"
 
+interface Role {
+    name: string;
+}
+
 interface DataTablePaginationProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
+    editUserId: number | null
+    setEditUserId: React.Dispatch<React.SetStateAction<number | null>>
+    roles: Role[]
 }
 
-export function DataTable<TData, TValue>({ columns, data }: DataTablePaginationProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, editUserId, setEditUserId, roles }: DataTablePaginationProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
     const [pagination, setPagination] = React.useState<PaginationState>({
@@ -21,6 +28,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTablePaginationP
     const table = useReactTable({
         data,
         columns,
+        meta: { editUserId, setEditUserId, roles },
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         onSortingChange: setSorting,

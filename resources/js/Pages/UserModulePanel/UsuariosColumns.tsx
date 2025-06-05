@@ -15,6 +15,7 @@ import { toast } from "sonner";
 export type User = {
     id: number;
     name: string;
+    last_name: string;
     email: string;
     module_role: string;
 }
@@ -43,6 +44,48 @@ export const columns: ColumnDef<User>[] = [
                             onChange={(e) => column.setFilterValue(e.target.value)}
                         />) : (
                         <span className="text-sm font-medium text-gray-900">Nombre</span>
+                    )}
+                    <Button
+                        variant="ghost"
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                    >
+                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={toggleFilter}
+                    >
+                        {filterEnabled ? <FunnelX className="h-4 w-4" /> : <Funnel className="h-4 w-4" />}
+                    </Button>
+                </div>
+            )
+        },
+        cell: ({ row }) => <span className="text-sm">{row.getValue('name')}</span>,
+    },
+    {
+        accessorKey: 'last_name',
+        header: ({ column }) => {
+            const [filterEnabled, setFilterEnabled] = useState(false);
+
+            const toggleFilter = () => {
+                if (filterEnabled) {
+                    column.setFilterValue(undefined);
+                }
+                setFilterEnabled(!filterEnabled);
+            };
+
+            return (
+                <div className="flex gap-2 items-center">
+                    {filterEnabled ? (
+                        <Input
+                            type="text"
+                            placeholder="Filtrar..."
+                            className="border rounded px-2 py-1 text-sm"
+                            value={(column.getFilterValue() as string) || ""}
+                            onChange={(e) => column.setFilterValue(e.target.value)}
+                        />) : (
+                        <span className="text-sm font-medium text-gray-900">Apellido</span>
                     )}
                     <Button
                         variant="ghost"
