@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Proveedor extends Model
+{
+    use HasFactory;
+
+    protected $table = 'proveedores';
+
+    protected $fillable = [
+        'id_padron',
+        'razon_social',
+        'nombre_fantasia'
+    ];
+
+    // Relación con el padrón
+    public function padron()
+    {
+        return $this->belongsTo(Padron::class, 'id_padron');
+    }
+
+    // relación al modelo Proveedor
+    public function clientes()
+    {
+        return $this->belongsToMany(Cliente::class, 'relacion_cliente_proveedor', 'id_proveedor', 'id_cliente');
+    }
+
+    // Agrega esta relación al modelo Proveedor
+    public function condicionesIva()
+    {
+        return $this->belongsToMany(CondicionIva::class, 'relacion_proveedor_condicion', 'id_proveedor', 'id_iva')
+                    ->withTimestamps();
+    }
+
+}
