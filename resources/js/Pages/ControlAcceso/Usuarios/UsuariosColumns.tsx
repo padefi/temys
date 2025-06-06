@@ -1,16 +1,17 @@
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
+import { FloatingLabelInput } from '@/Components/ui/floating-label-input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { usePermissions } from "@/composables/permissions";
 import { ColumnDef } from "@tanstack/react-table"
-import { Ban, Funnel, FunnelX, KeyRound, LockKeyhole, Pencil, Save, Waypoints, X } from "lucide-react";
+import { Ban, Funnel, FunnelX, KeyRound, Loader2Icon, LockKeyhole, Pencil, Save, Waypoints, X } from "lucide-react";
 import { ArrowUpDown } from "lucide-react"
 import { useState } from "react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/Components/ui/select"
 
 import { PermisosDialog } from "./Permisos/PermisosDialog";
 import { ErrorMessage } from "@/Components/ui/error-message";
-import { isEmpty, validateEmail } from '@/utils/validateFunctions';
+import { isEmpty, isUndefined, validateEmail } from '@/utils/validateFunctions';
 import axios from "axios";
 import { toast } from "sonner";
 import { Spinner } from "@/Components/ui/spinner";
@@ -77,12 +78,12 @@ export const columns: ColumnDef<User>[] = [
             if (row.original.id === editUserId) {
                 return (
                     <div className="grid items-center">
-                        <Input
+                        <FloatingLabelInput
                             type="text"
                             name="name"
                             className="text-sm"
                             variant={isError ? "error" : "underline"}
-                            placeholder="Nombre"
+                            label="Nombre"
                             defaultValue={row.getValue('name')}
                             autoComplete="off"
                             onChange={e => setEditUserData(prev => ({ ...prev, name: e.target.value }))}
@@ -147,12 +148,12 @@ export const columns: ColumnDef<User>[] = [
             if (row.original.id === editUserId) {
                 return (
                     <div className="grid items-center">
-                        <Input
+                        <FloatingLabelInput
                             type="text"
                             name="last_name"
                             className="text-sm"
                             variant={isError ? "error" : "underline"}
-                            placeholder="Apellido"
+                            label="Apellido"
                             defaultValue={row.getValue('last_name')}
                             autoComplete="off"
                             onChange={e => setEditUserData(prev => ({ ...prev, last_name: e.target.value }))}
@@ -218,12 +219,12 @@ export const columns: ColumnDef<User>[] = [
             if (row.original.id === editUserId) {
                 return (
                     <div className="grid items-center">
-                        <Input
+                        <FloatingLabelInput
                             type="text"
                             name="email"
                             className="text-sm"
                             variant={isError ? "error" : "underline"}
-                            placeholder="Email"
+                            label="Email"
                             defaultValue={row.getValue('email')}
                             autoComplete="off"
                             onChange={e => setEditUserData(prev => ({ ...prev, email: e.target.value }))}
@@ -300,7 +301,7 @@ export const columns: ColumnDef<User>[] = [
             const currentRole = row.original.id === editUserId
                 ? (editUserData.roles?.[0]?.name ?? (row.getValue('roles') as Array<{ name: string }>)[0]?.name)
                 : (row.getValue('roles') as Array<{ name: string }>)[0]?.name;
-            const isError = isEmpty(currentRole);
+            const isError = isUndefined(currentRole);
 
             if (row.original.id === editUserId) {
                 return (
@@ -475,7 +476,7 @@ export const columns: ColumnDef<User>[] = [
             if (loadingSaving) {
                 return (
                     <div className="text-right flex gap-3 ml-[2.4rem]">
-                        <Spinner />
+                        <Loader2Icon className="animate-spin" />
                     </div>
                 );
             }

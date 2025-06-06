@@ -48,8 +48,8 @@ class SubmenuPermissionMiddleware
             $permission = Permission::where('name', trim($permissionName))->first();
             if (!$permission) continue;
 
-            $exists = DB::table('model_has_menu_permissions')
-                ->where('menu_id', $submenu->id)
+            $exists = DB::table('model_has_submenu_permissions')
+                ->where('submenu_id', $submenu->id)
                 ->where('permission_id', $permission->id)
                 ->where('model_type', $user::class)
                 ->where('model_id', $user->id)

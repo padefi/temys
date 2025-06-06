@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Factories\Padron\Cliente;
 
 use App\Models\Padron\Padron;
 use Illuminate\Database\Eloquent\Factories\Factory;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Factories\Padron;
 
 use App\Models\Padron\Cliente\Cliente;
 use App\Models\Padron\Proveedor\Proveedor;

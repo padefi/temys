@@ -1,9 +1,8 @@
 import { format, isEqual, isBefore, isAfter } from "@formkit/tempo";
 import { addDate } from "@/utils/formatterFunctions";
 
-export const isEmpty = (value) => { 
-    return value && value.trim() === "" || value === null || value === undefined;
-};
+export const isEmpty = (value) => value.trim() === "";
+export const isUndefined = (value) => value === undefined;
 export const validateEmail = (value) => /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value);
 // export const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 

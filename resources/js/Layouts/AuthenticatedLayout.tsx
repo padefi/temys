@@ -72,7 +72,7 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
                                                                                 {menu.submenus.map((submenu, index) => (
                                                                                     <DropdownMenuItem key={index + submenu.name} asChild>
                                                                                         {route().has(submenu.key) ? (
-                                                                                            <Link href={route(submenu.key)}>{submenu.name}</Link>
+                                                                                            <Link href={route(submenu.key)} className="cursor-pointer">{submenu.name}</Link>
                                                                                         ) : (
                                                                                             <span>{submenu.name}</span>
                                                                                         )}
@@ -84,7 +84,7 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
                                                                 ) : (
                                                                     <DropdownMenuItem key={menu.id + menu.name}>
                                                                         {route().has(module.key + '.' + menu.key) ? (
-                                                                            <Link href={route(module.key + '.' + menu.key)}>{menu.name}</Link>
+                                                                            <Link href={route(module.key + '.' + menu.key)} className="cursor-pointer">{menu.name}</Link>
                                                                         ) : (
                                                                             <span>{menu.name}</span>
                                                                         )}
@@ -122,7 +122,7 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
                                                             {menu.submenus.map((submenu, index) => (
                                                                 <MenubarItem key={index + submenu.name} asChild>
                                                                     {route().has(submenu.key) ? (
-                                                                        <Link href={route(submenu.key)}>{submenu.name}</Link>
+                                                                        <Link href={route(submenu.key)} className="cursor-pointer">{submenu.name}</Link>
                                                                     ) : (
                                                                         <span>{submenu.name}</span>
                                                                     )}
@@ -133,7 +133,7 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
                                                 ) : (
                                                     <MenubarItem key={menu.id + menu.name}>
                                                         {route().has(module.key + '.' + menu.key) ? (
-                                                            <Link href={route(module.key + '.' + menu.key)}>{menu.name}</Link>
+                                                            <Link href={route(module.key + '.' + menu.key)} className="cursor-pointer">{menu.name}</Link>
                                                         ) : (
                                                             <span>{menu.name}</span>
                                                         )}
@@ -164,7 +164,7 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
                                 <Link href={route('profile.edit')}>Perfil</Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
-                                <Link method="post" href={route('logout')} className='cursor-pointer'>Log Out</Link>
+                                <Link method="post" href={route('logout')} className='cursor-pointer'>Cerrar sesión</Link>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

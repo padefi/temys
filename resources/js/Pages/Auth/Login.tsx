@@ -111,7 +111,6 @@ export default function Login({
                         ¿No tienes una cuenta?
                     </Link>
 
-
                     <Button size="sm" variant="success" className="ms-4" disabled={processing}>
                         {processing ? (
                             <>

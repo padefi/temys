@@ -24,7 +24,7 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
-    
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit')->middleware('can:read,' . User::class);
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update')->middleware('can:update,' . User::class);
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy')->middleware('can:avoid,' . User::class);
@@ -71,7 +71,7 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
     });
 
     /* TO-DO Panel de usuarios de todos los modulos */
-    Route::middleware('role_module:encargado')->group(function () {          
+    Route::middleware('role_module:encargado')->group(function () {
         Route::get('user-model-panel/get-module-roles', [UserModuleController::class, 'getModuleRoles']);
         Route::get('user-model-panel/get-module-by-user/{user}/{module}', [UserModuleController::class, 'showModuleByUser']);
         Route::get('user-model-panel/managed-permissions-modulos-by-user/{user}/{module}', [ModuleController::class, 'getPermissionsModulesByUser']);
@@ -90,54 +90,77 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
 
     /* TO-DO Modulo afiliados */
     Route::middleware('module:afiliados')->group(function () {
-         Route::middleware(['menu:usuariosAfiliados', 'role_module:encargado afiliados'])->group(function () {
-            Route::middleware('menu_permission:read usuariosAfiliados')->group(function () {            
-                Route::get('afiliados/usuarios', [UserModuleController::class, 'index'])->name('afiliados.usuariosAfiliados');
+        Route::middleware(['menu:configuracionAfiliados'])->group(function () {
+            Route::middleware(['submenu:usuariosAfiliados', 'role_module:encargado afiliados'])->group(function () {
+                Route::middleware('submenu_permission:read usuariosAfiliados')->group(function () {
+                    Route::get('afiliados/usuarios', [UserModuleController::class, 'index'])->name('usuariosAfiliados');
+                });
             });
         });
     });
 
     /* TO-DO Modulo compras */
     Route::middleware('module:compras')->group(function () {
-        Route::middleware(['menu:usuariosCompras', 'role_module:encargado compras'])->group(function () {
-            Route::middleware('menu_permission:read usuariosCompras')->group(function () {            
-                Route::get('compras/usuarios', [UserModuleController::class, 'index'])->name('compras.usuariosCompras');
+        Route::middleware(['menu:configuracionCompras'])->group(function () {
+            Route::middleware(['submenu:usuariosCompras', 'role_module:encargado compras'])->group(function () {
+                Route::middleware('submenu_permission:read usuariosCompras')->group(function () {
+                    Route::get('compras/usuarios', [UserModuleController::class, 'index'])->name('usuariosCompras');
+                });
             });
         });
     });
 
     /* TO-DO Modulo contabilidad */
     Route::middleware('module:contabilidad')->group(function () {
-        Route::middleware(['menu:usuariosContabilidad', 'role_module:encargado contabilidad'])->group(function () {
-            Route::middleware('menu_permission:read usuariosContabilidad')->group(function () {            
-                Route::get('contabilidad/usuarios', [UserModuleController::class, 'index'])->name('contabilidad.usuariosContabilidad');
+        Route::middleware(['menu:configuracionContabilidad'])->group(function () {
+            Route::middleware(['submenu:usuariosContabilidad', 'role_module:encargado contabilidad'])->group(function () {
+                Route::middleware('submenu_permission:read usuariosContabilidad')->group(function () {
+                    Route::get('contabilidad/usuarios', [UserModuleController::class, 'index'])->name('usuariosContabilidad');
+                });
             });
         });
     });
 
     /* TO-DO Modulo inventario */
     Route::middleware('module:inventario')->group(function () {
-        Route::middleware(['menu:usuariosInventario', 'role_module:encargado inventario'])->group(function () {
-            Route::middleware('menu_permission:read usuariosInventario')->group(function () {            
-                Route::get('inventario/usuarios', [UserModuleController::class, 'index'])->name('inventario.usuariosInventario');
+        Route::middleware(['menu:configuracionInventario'])->group(function () {
+            Route::middleware(['submenu:usuariosInventario', 'role_module:encargado inventario'])->group(function () {
+                Route::middleware('submenu_permission:read usuariosInventario')->group(function () {
+                    Route::get('inventario/usuarios', [UserModuleController::class, 'index'])->name('usuariosInventario');
+                });
             });
         });
     });
 
     /* TO-DO Modulo seccionales */
     Route::middleware('module:seccionales')->group(function () {
-        Route::middleware(['menu:usuariosSeccionales', 'role_module:encargado seccionales'])->group(function () {
-            Route::middleware('menu_permission:read usuariosSeccionales')->group(function () {            
-                Route::get('seccionales/usuarios', [UserModuleController::class, 'index'])->name('seccionales.usuariosSeccionales');
+        Route::middleware(['menu:configuracionSeccionales'])->group(function () {
+            Route::middleware(['submenu:usuariosSeccionales', 'role_module:encargado seccionales'])->group(function () {
+                Route::middleware('submenu_permission:read usuariosSeccionales')->group(function () {
+                    Route::get('seccionales/usuarios', [UserModuleController::class, 'index'])->name('usuariosSeccionales');
+                });
             });
         });
     });
 
     /* TO-DO Modulo ventas */
     Route::middleware('module:ventas')->group(function () {
-        Route::middleware(['menu:usuariosVentas', 'role_module:encargado ventas'])->group(function () {
-            Route::middleware('menu_permission:read usuariosVentas')->group(function () {            
-                Route::get('ventas/usuarios', [UserModuleController::class, 'index'])->name('ventas.usuariosVentas');
+        Route::middleware(['menu:configuracionVentas'])->group(function () {
+            Route::middleware(['submenu:usuariosVentas', 'role_module:encargado ventas'])->group(function () {
+                Route::middleware('submenu_permission:read usuariosVentas')->group(function () {
+                    Route::get('ventas/usuarios', [UserModuleController::class, 'index'])->name('usuariosVentas');
+                });
+            });
+        });
+    });
+
+    /* TO-DO Modulo patrimonio */
+    Route::middleware('module:patrimonio')->group(function () {
+        Route::middleware(['menu:configuracionPatrimonio'])->group(function () {
+            Route::middleware(['submenu:usuariosPatrimonio', 'role_module:encargado patrimonio'])->group(function () {
+                Route::middleware('submenu_permission:read usuariosPatrimonio')->group(function () {
+                    Route::get('patrimonio/usuarios', [UserModuleController::class, 'index'])->name('usuariosPatrimonio');
+                });
             });
         });
     });

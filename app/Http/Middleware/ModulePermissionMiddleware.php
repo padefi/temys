@@ -48,7 +48,7 @@ class ModulePermissionMiddleware
             $permission = Permission::where('name', trim($permissionName))->first();
             if (!$permission) continue;
 
-            $exists = DB::table('model_has_menu_permissions')
+            $exists = DB::table('model_has_module_permissions')
                 ->where('menu_id', $module->id)
                 ->where('permission_id', $permission->id)
                 ->where('model_type', $user::class)
