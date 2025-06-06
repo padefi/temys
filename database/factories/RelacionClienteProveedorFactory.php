@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Cliente;
-use App\Models\Proveedor;
+use App\Models\Padron\Cliente\Cliente;
+use App\Models\Padron\Proveedor\Proveedor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class RelacionClienteProveedorFactory extends Factory

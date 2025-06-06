@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\CondicionIva;
+use App\Models\Padron\CondicionIva;
 
 class CondicionIvaSeeder extends Seeder
 {

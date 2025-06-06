@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Padron;
+use App\Models\Padron\Padron;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ClienteFactory extends Factory

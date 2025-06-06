@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Cliente;
-use App\Models\CondicionIva;
+use App\Models\Padron\Cliente\Cliente;
+use App\Models\Padron\CondicionIva;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class RelacionClienteCondicionFactory extends Factory

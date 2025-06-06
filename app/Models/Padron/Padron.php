@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Padron;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,6 +23,6 @@ class Padron extends Model
 
     public function cliente()
 {
-    return $this->hasOne(Cliente::class, 'id_padron');
+    return $this->hasOne(\App\Models\Padron\Cliente\Cliente::class, 'id_padron');
 }
 }

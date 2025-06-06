@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Padron;
+use App\Models\Padron\Padron;
 
 class PadronSeeder extends Seeder
 {

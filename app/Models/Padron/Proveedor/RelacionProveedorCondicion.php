@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Padron\Proveedor;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,12 +19,12 @@ class RelacionProveedorCondicion extends Model
     // Relación con CondicionIva
     public function condicionIva()
     {
-        return $this->belongsTo(CondicionIva::class, 'id_iva');
+        return $this->belongsTo(\App\Models\Padron\CondicionIva::class, 'id_iva');
     }
 
     // Relación con Proveedor
     public function proveedor()
     {
-        return $this->belongsTo(Proveedor::class, 'id_proveedor');
+        return $this->belongsTo(\App\Models\Padron\Proveedor\Proveedor::class, 'id_proveedor');
     }
 }
