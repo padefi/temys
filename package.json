@@ -6,7 +6,8 @@
         "dev": "vite",
         "start": "npm-run-all --parallel dev serve",
         "serve": "php artisan serve",
-        "serve_sharing": "dotenv -e .env -- node -e \"require('child_process').execSync(`php artisan serve --host=${process.env.MY_IP} --port=8000`, { stdio: 'inherit' })\""
+        "serve_sharing": "dotenv -e .env -- node -e \"require('child_process').execSync(`php artisan serve --host=${process.env.MY_IP} --port=8000`, { stdio: 'inherit' })\"",
+        "clear-cache": "php artisan cache:clear && php artisan config:clear && php artisan route:clear && php artisan view:clear"
     },
     "devDependencies": {
         "@headlessui/react": "^2.2.4",

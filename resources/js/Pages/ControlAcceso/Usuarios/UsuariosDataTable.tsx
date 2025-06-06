@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-r
 import { Button } from "@/Components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select"
 import React from "react"
+import { User } from "./UsuariosColumns"
 
 interface Role {
     name: string;
@@ -14,10 +15,13 @@ interface DataTablePaginationProps<TData, TValue> {
     data: TData[]
     editUserId: number | null
     setEditUserId: React.Dispatch<React.SetStateAction<number | null>>
+    editUserData: Partial<User>
+    setEditUserData: React.Dispatch<React.SetStateAction<Partial<User>>>
     roles: Role[]
+    updateUser: (user: User) => void
 }
 
-export function DataTable<TData, TValue>({ columns, data, editUserId, setEditUserId, roles }: DataTablePaginationProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, editUserId, setEditUserId, editUserData, setEditUserData, roles, updateUser }: DataTablePaginationProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
     const [pagination, setPagination] = React.useState<PaginationState>({
@@ -28,7 +32,7 @@ export function DataTable<TData, TValue>({ columns, data, editUserId, setEditUse
     const table = useReactTable({
         data,
         columns,
-        meta: { editUserId, setEditUserId, roles },
+        meta: { editUserId, setEditUserId, editUserData, setEditUserData, roles, updateUser },
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         onSortingChange: setSorting,

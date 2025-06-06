@@ -8,7 +8,7 @@ const selectVariants = {
   default: "",
   filled: "bg-gray-100 border-gray-300",
   underline: "border-0 border-b-2 border-b-gray-500 rounded-none rounded-t-md focus-visible:ring-0 focus-visible:border-emerald-600 data-[state=open]:border-emerald-600",
-  error: "border-0 border-b-2 border-b-gray-500 rounded-none rounded-t-md focus-visible:ring-0 focus-visible:border-red-600 data-[state=open]:border-red-600",
+  error: "text-red-600 border-0 border-b-2 border-b-red-500 rounded-none rounded-t-md focus-visible:ring-0 focus-visible:border-red-600 data-[state=open]:border-red-600",
 }
 
 type SelectVariant = keyof typeof selectVariants;

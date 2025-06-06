@@ -18,25 +18,33 @@ interface Role {
 }
 
 export default function UsuariosPage() {
-    const { users: { data: users } } = usePage<PageProps>().props;
+    const { users: { data: initialUsers } } = usePage<PageProps>().props;
     const [editUserId, setEditUserId] = useState<number | null>(null);
+    const [editUserData, setEditUserData] = useState<Partial<User>>({});
     const [roles, setRoles] = useState<Role[]>([]);
-
-    useEffect(() => {
-        getRoles();
-    }, []);
+    const [users, setUsers] = useState<User[]>(initialUsers);
 
     const getRoles = async () => {
         try {
             const response = await fetch('/control-acceso/get-roles');
             const data = await response.json();
-            const roles = [{ name: 'SIN ROL' }, ...data.data];
-            
-            setRoles(roles);
+            setRoles(data.data);
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) toast.error(error.response.data.message || "Error desconocido del servidor");
             else toast.error("Error al obtener los roles");
         }
+    };
+
+    useEffect(() => {
+        getRoles();
+    }, []);
+
+    const updateUser = (updatedUser: User) => {
+        setUsers(prevUsers =>
+            prevUsers.map(user =>
+                user.id === updatedUser.id ? { ...user, ...updatedUser } : user
+            )
+        );
     };
 
     return (
@@ -53,7 +61,10 @@ export default function UsuariosPage() {
                                 data={users}
                                 editUserId={editUserId}
                                 setEditUserId={setEditUserId}
-                                roles={roles} />
+                                editUserData={editUserData}
+                                setEditUserData={setEditUserData}
+                                roles={roles}
+                                updateUser={updateUser} />
                         </div>
                     </div>
                 </div>
