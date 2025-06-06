@@ -20,6 +20,7 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'last_name' => $this->last_name,
             'email' => $this->email,
+            'is_active' => $this->is_active,
             'roles' => RoleResource::collection($this->roles),
             'modules' => ModuleResource::collection($this->modules),
             'menus' => MenuResource::collection($this->menus),

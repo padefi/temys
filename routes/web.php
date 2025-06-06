@@ -20,11 +20,11 @@ use Inertia\Inertia;
     ]);
 }); */
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Dashboard');
+    })->name('dashboard');
+    
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit')->middleware('can:read,' . User::class);
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update')->middleware('can:update,' . User::class);
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy')->middleware('can:avoid,' . User::class);
@@ -44,6 +44,10 @@ Route::middleware('auth')->group(function () {
             });
 
             Route::middleware('menu_permission:update usuariosControlAcceso')->group(function () {
+                Route::put('control-acceso/edit-user/{user}', [UsuarioController::class, 'update']);
+                Route::put('control-acceso/reset-user-password/{user}', [UsuarioController::class, 'resetPassword']);
+                Route::put('control-acceso/managed-user-active/{user}', [UsuarioController::class, 'manageActive']);
+
                 Route::post('control-acceso/managed-role-modulos-by-user', [ModuleController::class, 'managedRoleModulesByUser']);
 
                 Route::post('control-acceso/managed-modulos-by-user', [ModuleController::class, 'managedModulesByUser']);
