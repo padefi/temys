@@ -7,23 +7,17 @@ use App\Http\Controllers\ControlAcceso\SubmenuController;
 use App\Http\Controllers\ControlAcceso\Users\UsuarioController;
 use App\Http\Controllers\UserModulePanel\UserModuleController;
 use App\Models\ControlAcceso\User;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-/* Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-}); */
-
 Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(function () {
-    Route::get('/dashboard', function () {
+    Route::get('/', function () {
+        return Inertia::render('Welcome');
+    })->name('welcome');;
+
+    /* Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
-    })->name('dashboard');
+    })->name('dashboard'); */
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit')->middleware('can:read,' . User::class);
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update')->middleware('can:update,' . User::class);
@@ -31,6 +25,12 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
 
     /* TO-DO Modulo control accesos */
     Route::middleware(['module:control-acceso', 'role:admin'])->group(function () {
+        Route::get('/control-acceso', function () {
+            return Inertia::render('ControlAcceso/Index', [
+                'modulo' => 'control-acceso',
+            ]);
+        })->name('control-acceso');
+
         Route::middleware('menu:usuariosControlAcceso')->group(function () {
             Route::middleware('menu_permission:read usuariosControlAcceso')->group(function () {
                 Route::get('control-acceso/usuarios', [UsuarioController::class, 'index'])->name('control-acceso.usuariosControlAcceso');
@@ -64,10 +64,12 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
             });
         });
 
-        Route::get('control-acceso/roles', [UsuarioController::class, 'index'])->name('control-acceso.roles')->middleware('can:read,' . UsuarioController::class);
+
+        /* TO-DO Panel demás menús */
+        /* Route::get('control-acceso/roles', [UsuarioController::class, 'index'])->name('control-acceso.roles')->middleware('can:read,' . UsuarioController::class);
         Route::get('control-acceso/modulos', [UsuarioController::class, 'index'])->name('control-acceso.modulos')->middleware('can:read,' . UsuarioController::class);
         Route::get('control-acceso/menus', [UsuarioController::class, 'index'])->name('control-acceso.menus')->middleware('can:read,' . UsuarioController::class);
-        Route::get('control-acceso/submenus', [UsuarioController::class, 'index'])->name('control-acceso.submenus')->middleware('can:read,' . UsuarioController::class);
+        Route::get('control-acceso/submenus', [UsuarioController::class, 'index'])->name('control-acceso.submenus')->middleware('can:read,' . UsuarioController::class); */
     });
 
     /* TO-DO Panel de usuarios de todos los modulos */
@@ -90,6 +92,12 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
 
     /* TO-DO Modulo afiliados */
     Route::middleware('module:afiliados')->group(function () {
+        Route::get('/afiliados', function () {
+            return Inertia::render('ControlAcceso/Index', [
+                'modulo' => 'afiliados',
+            ]);
+        })->name('afiliados');
+
         Route::middleware(['menu:configuracionAfiliados'])->group(function () {
             Route::middleware(['submenu:usuariosAfiliados', 'role_module:encargado afiliados'])->group(function () {
                 Route::middleware('submenu_permission:read usuariosAfiliados')->group(function () {

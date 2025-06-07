@@ -3,7 +3,7 @@ import { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarSub, MenubarSubContent, MenubarSubTrigger, MenubarTrigger } from "@/Components/ui/menubar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu"
 import { Button } from '@/Components/ui/button';
-import { ChevronDown, MenuIcon } from 'lucide-react';
+import { ChevronDown, House, MenuIcon } from 'lucide-react';
 import { ReactNode, Fragment, PropsWithChildren } from 'react';
 import { usePermissions } from '@/composables/permissions';
 import { Toaster } from '@/Components/ui/sonner';
@@ -20,33 +20,79 @@ type Menu = {
     submenus?: Submenu[];
 };
 
-type Module = {
-    name: string;
-    key: string;
-    menus?: Menu[];
-};
-
 type AuthenticatedProps = {
     header?: ReactNode;
     children?: ReactNode;
 };
 
 type PageProps = InertiaPageProps & {
-    modules: {
-        data: Array<Module>;
+    menus: {
+        modulo: string;
+        menus: {
+            data: Menu[];
+        };
     };
 };
 
 export default function Authenticated({ children }: PropsWithChildren<AuthenticatedProps>) {
-    const { modules } = usePage<PageProps>().props;
+    const { menus } = usePage<PageProps>().props;
     const { userAuth } = usePermissions();
+
+    const modulo = menus.modulo;
+    const menusList = menus.menus;
 
     return (
         <div className="min-h-screen bg-gray-100">
             <nav className="border-b border-gray-100 bg-white flex">
 
-                {/* DropdownMenu */}
+                {/* Menubar para desktop */}
+                <Menubar className="hidden md:flex md:flex-row rounded-none border-b border-none shadow-none">
+                    <Link
+                        href={route('welcome')}
+                        className="text-center font-semibold text-gray-700 hover:text-emerald-600 transition"
+                    >
+                        <House className="w-5 h-5" />
+                    </Link>
+                    {menusList.data && menusList.data.length > 0 && (
+                        menusList.data.map((menu, index) => (
+                            menu.submenus && menu.submenus.length > 0 ? (
+                                <MenubarMenu key={index + menu.name}>
+                                    <MenubarTrigger>{menu.name}</MenubarTrigger>
+                                    <MenubarContent className="hidden md:flex md:flex-col">
+                                        {menu.submenus.map((submenu, subIndex) => (
+                                            <MenubarItem key={subIndex + submenu.name} asChild>
+                                                {route().has(submenu.key) ? (
+                                                    <Link href={route(submenu.key)} className="cursor-pointer">{submenu.name}</Link>
+                                                ) : (
+                                                    <span>{submenu.name}</span>
+                                                )}
+                                            </MenubarItem>
+                                        ))}
+                                    </MenubarContent>
+                                </MenubarMenu>
+                            ) : (
+                                <MenubarMenu key={index + menu.name}>
+                                    <MenubarTrigger asChild>
+                                        {route().has(modulo + '.' + menu.key) ? (
+                                            <Link href={route(modulo + '.' + menu.key)} className="cursor-pointer">{menu.name}</Link>
+                                        ) : (
+                                            <span>{menu.name}</span>
+                                        )}
+                                    </MenubarTrigger>
+                                </MenubarMenu>
+                            )
+                        ))
+                    )}
+                </Menubar>
+
+                {/* DropdownMenu para mobile */}
                 <div className="flex items-center justify-between px-2 md:hidden">
+                    <Link
+                        href={route('welcome')}
+                        className="text-center font-semibold text-gray-700 hover:text-emerald-600 transition"
+                    >
+                        <House className="w-5 h-5" />
+                    </Link>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost">
@@ -54,102 +100,39 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56">
-                            {modules.data && modules.data.length > 0 && (
-                                modules.data.map((module, index) => (
-                                    <DropdownMenuGroup key={index + module.name}>
-                                        <DropdownMenuSub>
-                                            <DropdownMenuSubTrigger>{module.name}</DropdownMenuSubTrigger>
+                            {menusList.data && menusList.data.length > 0 && (
+                                menusList.data.map((menu, index) => (
+                                    menu.submenus && menu.submenus.length > 0 ? (
+                                        <DropdownMenuSub key={index + menu.name}>
+                                            <DropdownMenuSubTrigger>{menu.name}</DropdownMenuSubTrigger>
                                             <DropdownMenuPortal>
                                                 <DropdownMenuSubContent>
-                                                    {module.menus && module.menus.length > 0 ? (
-                                                        module.menus.map((menu, indexMenu) => (
-                                                            <Fragment key={indexMenu + menu.name}>
-                                                                {menu.submenus && menu.submenus.length > 0 ? (
-                                                                    <DropdownMenuSub>
-                                                                        <DropdownMenuSubTrigger>{menu.name}</DropdownMenuSubTrigger>
-                                                                        <DropdownMenuPortal>
-                                                                            <DropdownMenuSubContent>
-                                                                                {menu.submenus.map((submenu, index) => (
-                                                                                    <DropdownMenuItem key={index + submenu.name} asChild>
-                                                                                        {route().has(submenu.key) ? (
-                                                                                            <Link href={route(submenu.key)} className="cursor-pointer">{submenu.name}</Link>
-                                                                                        ) : (
-                                                                                            <span>{submenu.name}</span>
-                                                                                        )}
-                                                                                    </DropdownMenuItem>
-                                                                                ))}
-                                                                            </DropdownMenuSubContent>
-                                                                        </DropdownMenuPortal>
-                                                                    </DropdownMenuSub>
-                                                                ) : (
-                                                                    <DropdownMenuItem key={menu.id + menu.name}>
-                                                                        {route().has(module.key + '.' + menu.key) ? (
-                                                                            <Link href={route(module.key + '.' + menu.key)} className="cursor-pointer">{menu.name}</Link>
-                                                                        ) : (
-                                                                            <span>{menu.name}</span>
-                                                                        )}
-                                                                    </DropdownMenuItem>
-                                                                )}
-                                                            </Fragment>
-                                                        ))
-                                                    ) : (
-                                                        <DropdownMenuItem className="italic">No hay menús disponibles</DropdownMenuItem>
-                                                    )}
+                                                    {menu.submenus.map((submenu, subIndex) => (
+                                                        <DropdownMenuItem key={subIndex + submenu.name} asChild>
+                                                            {route().has(submenu.key) ? (
+                                                                <Link href={route(submenu.key)} className="cursor-pointer">{submenu.name}</Link>
+                                                            ) : (
+                                                                <span>{submenu.name}</span>
+                                                            )}
+                                                        </DropdownMenuItem>
+                                                    ))}
                                                 </DropdownMenuSubContent>
                                             </DropdownMenuPortal>
                                         </DropdownMenuSub>
-                                    </DropdownMenuGroup>
+                                    ) : (
+                                        <DropdownMenuItem key={index + menu.name} asChild>
+                                            {route().has(modulo + '.' + menu.key) ? (
+                                                <Link href={route(modulo + '.' + menu.key)} className="cursor-pointer">{menu.name}</Link>
+                                            ) : (
+                                                <span>{menu.name}</span>
+                                            )}
+                                        </DropdownMenuItem>
+                                    )
                                 ))
                             )}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
-
-                {/* MenuBar */}
-                <Menubar className="hidden md:flex md:flex-row rounded-none border-b border-none shadow-none">
-                    {modules && modules.data.length > 0 && (
-                        modules.data.map((module, index) => (
-                            <MenubarMenu key={index + module.name}>
-                                <MenubarTrigger>{module.name}</MenubarTrigger>
-                                <MenubarContent className="hidden md:flex md:flex-col">
-                                    {module.menus && module.menus.length > 0 ? (
-                                        module.menus.map((menu, indexMenu) => (
-                                            <Fragment key={indexMenu + menu.name}>
-                                                {menu.submenus && menu.submenus.length > 0 ? (
-                                                    <MenubarSub>
-                                                        <MenubarSubTrigger>{menu.name}</MenubarSubTrigger>
-                                                        <MenubarSubContent>
-                                                            {menu.submenus.map((submenu, index) => (
-                                                                <MenubarItem key={index + submenu.name} asChild>
-                                                                    {route().has(submenu.key) ? (
-                                                                        <Link href={route(submenu.key)} className="cursor-pointer">{submenu.name}</Link>
-                                                                    ) : (
-                                                                        <span>{submenu.name}</span>
-                                                                    )}
-                                                                </MenubarItem>
-                                                            ))}
-                                                        </MenubarSubContent>
-                                                    </MenubarSub>
-                                                ) : (
-                                                    <MenubarItem key={menu.id + menu.name}>
-                                                        {route().has(module.key + '.' + menu.key) ? (
-                                                            <Link href={route(module.key + '.' + menu.key)} className="cursor-pointer">{menu.name}</Link>
-                                                        ) : (
-                                                            <span>{menu.name}</span>
-                                                        )}
-                                                    </MenubarItem>
-                                                )}
-                                            </Fragment>
-                                        ))
-                                    ) : (
-                                        <MenubarItem className="italic">No hay menús disponibles</MenubarItem>
-                                    )}
-                                </MenubarContent>
-                            </MenubarMenu>
-                        ))
-
-                    )}
-                </Menubar>
 
                 <div className="hidden ml-auto mr-4 sm:flex sm:items-center">
                     <DropdownMenu>

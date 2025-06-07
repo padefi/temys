@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Http\Resources\ControlAcceso\MenuResource;
 use App\Http\Resources\ControlAcceso\ModuleResource;
+use App\Models\ControlAcceso\Menu;
 use App\Models\ControlAcceso\Module;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
@@ -34,19 +36,52 @@ class ModulesServiceProvider extends ServiceProvider
                 ->whereHas('users', function ($query) use ($user) {
                     $query->where('model_id', $user->id);
                 })
-                ->with(['menus' => function ($query) use ($user) {
-                    $query->whereHas('users', function ($q) use ($user) {
-                        $q->where('model_id', $user->id);
-                    })
-                    ->with(['submenus' => function ($q) use ($user) {
-                        $q->whereHas('users', function ($sq) use ($user) {
-                            $sq->where('model_id', $user->id);
-                        });
-                    }]);
-                }])
                 ->get();
 
             return ModuleResource::collection($modules);
+        });
+
+        Inertia::share('menus', function () {
+            $user = Auth::user();
+            $request = request();
+            $modulo = Module::query()->where('key', $request->segment(1))->first();
+
+            if (!$user || !$modulo) {
+                return [];
+            }
+
+            /* $menus = Menu::query()
+                ->whereHas('users', function ($query) use ($user) {
+                    $query->where('model_id', $user->id);
+                })
+                ->whereHas('modules', function ($query) use ($modulo) {
+                    $query->where('module_id', $modulo);
+                })
+                ->with(['submenus' => function ($q) use ($user) {
+                    $q->whereHas('users', function ($sq) use ($user) {
+                        $sq->where('model_id', $user->id);
+                    });
+                }])
+                ->get(); */
+
+            $menus = Menu::query()
+                ->whereHas('modules', function ($query) use ($modulo) {
+                    $query->where('module_id', $modulo->id);
+                })
+                ->whereHas('users', function ($query) use ($user) {
+                    $query->where('model_id', $user->id);
+                })
+                ->with(['submenus' => function ($q) use ($user) {
+                    $q->whereHas('users', function ($sq) use ($user) {
+                        $sq->where('model_id', $user->id);
+                    });
+                }])
+                ->get();
+
+            return [
+                'modulo' => $modulo->key,
+                'menus' => MenuResource::collection($menus)
+            ];
         });
     }
 }
