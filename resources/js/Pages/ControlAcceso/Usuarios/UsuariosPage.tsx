@@ -9,7 +9,10 @@ import { toast } from "sonner";
 
 type PageProps = InertiaPageProps & {
     users: {
-        data: Array<User>;
+        data: User[];
+    };
+    roles: {
+        data: Role[];
     };
 };
 
@@ -18,26 +21,10 @@ interface Role {
 }
 
 export default function UsuariosPage() {
-    const { users: { data: initialUsers } } = usePage<PageProps>().props;
+    const { users: { data: initialUsers }, roles: { data: initialRoles } } = usePage<PageProps>().props;
     const [editUserId, setEditUserId] = useState<number | null>(null);
     const [editUserData, setEditUserData] = useState<Partial<User>>({});
-    const [roles, setRoles] = useState<Role[]>([]);
     const [users, setUsers] = useState<User[]>(initialUsers);
-
-    const getRoles = async () => {
-        try {
-            const response = await fetch('/control-acceso/get-roles');
-            const data = await response.json();
-            setRoles(data.data);
-        } catch (error) {
-            if (axios.isAxiosError(error) && error.response) toast.error(error.response.data.message || "Error desconocido del servidor");
-            else toast.error("Error al obtener los roles");
-        }
-    };
-
-    useEffect(() => {
-        getRoles();
-    }, []);
 
     const updateUser = (updatedUser: User) => {
         setUsers(prevUsers =>
@@ -63,7 +50,7 @@ export default function UsuariosPage() {
                                 setEditUserId={setEditUserId}
                                 editUserData={editUserData}
                                 setEditUserData={setEditUserData}
-                                roles={roles}
+                                roles={initialRoles}
                                 updateUser={updateUser} />
                         </div>
                     </div>
