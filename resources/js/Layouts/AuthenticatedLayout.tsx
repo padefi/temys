@@ -1,7 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { PageProps as InertiaPageProps } from '@inertiajs/core';
-import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarSub, MenubarSubContent, MenubarSubTrigger, MenubarTrigger } from "@/Components/ui/menubar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu"
+import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "@/Components/ui/menubar"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu"
 import { Button } from '@/Components/ui/button';
 import { ChevronDown, House, MenuIcon } from 'lucide-react';
 import { ReactNode, Fragment, PropsWithChildren } from 'react';
@@ -39,7 +39,7 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
     const { userAuth } = usePermissions();
 
     const modulo = menus.modulo;
-    const menusList = menus.menus;
+    const menusList = menus.menus || { data: [] };
 
     return (
         <div className="min-h-screen bg-gray-100">
