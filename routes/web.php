@@ -15,10 +15,6 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
         return Inertia::render('Welcome');
     })->name('welcome');;
 
-    /* Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard'); */
-
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit')->middleware('can:read,' . User::class);
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update')->middleware('can:update,' . User::class);
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy')->middleware('can:avoid,' . User::class);
