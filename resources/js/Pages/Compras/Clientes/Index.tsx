@@ -6,11 +6,11 @@ export default function Index() {
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Compras
+                    Clientes
                 </h2>
             }
         >
-            <Head title="Compras" />
+            <Head title="Clientes" />
 
         </AuthenticatedLayout>
     );

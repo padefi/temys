@@ -105,11 +105,29 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
 
     /* TO-DO Modulo compras */
     Route::middleware('module:compras')->group(function () {
+
+        Route::get('/compras', function () {
+            return Inertia::render('ControlAcceso/Index', [
+                'modulo' => 'compras',
+            ]);
+        })->name('compras');
+
+
+        Route::middleware('menu:ordenes')->group(function () {
+            Route::middleware('menu_permission:read ordenes')->group(function () {
+                Route::middleware(['submenu:clientes', 'role_module:encargado compras'])->group(function () {
+                Route::get('compras/clientes', [UsuarioController::class, 'index'])->name('clientes');
+                });
+            });
+        });
+
         Route::middleware(['menu:configuracionCompras'])->group(function () {
             Route::middleware(['submenu:usuariosCompras', 'role_module:encargado compras'])->group(function () {
                 Route::middleware('submenu_permission:read usuariosCompras')->group(function () {
                     Route::get('compras/usuarios', [UserModuleController::class, 'index'])->name('usuariosCompras');
                 });
+
+
             });
         });
     });
