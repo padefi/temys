@@ -20,9 +20,12 @@ class UsuarioController extends Controller
     public function index()
     {
         $users = User::all();
+        $roles = Role::all();
+        $roles->prepend(new Role(['id' => 0, 'name' => 'SIN ROL']));
 
         return Inertia::render('ControlAcceso/Usuarios/UsuariosPage', [
             'users' => UserResource::collection($users),
+            'roles' => RoleResource::collection($roles),
         ]);
     }
 
