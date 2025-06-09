@@ -384,7 +384,7 @@ export const columns: ColumnDef<User>[] = [
                 hasError =
                     isEmpty(name as string) ||
                     isEmpty(last_name as string) ||
-                    isEmpty(role as string) ||
+                    isUndefined(role as string) ||
                     isEmpty(email as string) ||
                     !validateEmail(email as string);
             }
