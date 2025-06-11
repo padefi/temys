@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories\Padron\Clientes;
+namespace Database\Factories\Padron\Cliente;
 
 use App\Models\Padron\Cliente\Cliente;
 use App\Models\Padron\CondicionIva;

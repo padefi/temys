@@ -103,7 +103,7 @@ export const columns: ColumnDef<User>[] = [
                 </div>
             )
         },
-        cell: ({ row }) => <span className="text-sm">{row.getValue('name')}</span>,
+        cell: ({ row }) => <span className="text-sm">{row.getValue('last_name')}</span>,
     },
     {
         accessorKey: 'email',

@@ -10,7 +10,6 @@ use App\Http\Resources\UserModulePanel\RoleModuleResource;
 use App\Models\ControlAcceso\Module;
 use App\Models\ControlAcceso\RoleModule;
 use App\Models\ControlAcceso\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
@@ -27,6 +26,17 @@ class UsuarioController extends Controller
             'users' => UserResource::collection($users),
             'roles' => RoleResource::collection($roles),
         ]);
+    }
+
+    public function store(UserRequest $request)
+    {
+        $data = $request->all();
+        $data['password'] = Hash::make('12345678');
+        $user = User::create($data);
+        $user->update(['updated_at' => now()]);
+        $user->syncRoles($request->role);
+
+        return response()->json(['message' => 'Usuario creado con exito', 'success' => true, 'id' => $user->id]);
     }
 
     public function update(UserRequest $request, User $user)

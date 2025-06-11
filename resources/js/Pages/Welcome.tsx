@@ -21,7 +21,7 @@ export default function Welcome() {
 
     return (
         <div className="min-h-screen bg-gray-100">
-            <Head title="Welcome" />
+            <Head title="Dashboard" />
 
             <nav className="border-b border-gray-100 bg-white flex">
                 <div className="hidden my-2 ml-auto mr-4 sm:flex sm:items-center">
