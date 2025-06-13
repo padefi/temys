@@ -1,11 +1,12 @@
 <?php
-
 use App\Http\Controllers\ControlAcceso\MenuController;
 use App\Http\Controllers\ControlAcceso\ModuleController;
 use App\Http\Controllers\ControlAcceso\ProfileController;
 use App\Http\Controllers\ControlAcceso\SubmenuController;
 use App\Http\Controllers\ControlAcceso\Users\UsuarioController;
 use App\Http\Controllers\UserModulePanel\UserModuleController;
+
+
 use App\Models\ControlAcceso\User;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -104,41 +105,13 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
     });
 
     /* TO-DO Modulo compras */
+    // En tu web.php, reemplaza la sección de compras con:
     Route::middleware('module:compras')->group(function () {
-
-        Route::get('/compras', function () {
-            return Inertia::render('ControlAcceso/Index', [
-               'modulo' => 'compras',
-            ]);
-        })->name('compras');
-
-        /*Route::get('/compras', function () {
-            return Inertia::render('Inventario/Index', [
-                'modulo' => 'compras',
-            ]);
-        })->name('compras')*/
-
-
-
-        Route::middleware('menu:ordenes')->group(function () {
-            Route::middleware('menu_permission:read ordenes')->group(function () {
-                Route::middleware(['submenu:clientes', 'role_module:encargado compras'])->group(function () {
-                Route::get('compras/clientes', [UsuarioController::class, 'index'])->name('clientes');
-                });
-            });
-        });
-
-
-        Route::middleware(['menu:configuracionCompras'])->group(function () {
-            Route::middleware(['submenu:usuariosCompras', 'role_module:encargado compras'])->group(function () {
-                Route::middleware('submenu_permission:read usuariosCompras')->group(function () {
-                    Route::get('compras/usuarios', [UserModuleController::class, 'index'])->name('usuariosCompras');
-                });
-
-
-            });
-        });
+        Route::prefix('compras')->group(base_path('routes/compras.php'));
     });
+
+
+
 
 
     /* TO-DO Modulo contabilidad */
