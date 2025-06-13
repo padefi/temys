@@ -26,6 +26,10 @@ class DatabaseSeeder extends Seeder
             PadronSeeder::class,
             ClienteSeeder::class,
             ProveedorSeeder::class,
+            InmueblesTipoEstadoSeeder::class,
+            InmueblesTipoOcupacionSeeder::class,
+            InmueblesTipoSeeder::class,
+            InmueblesSeeder::class,
         ]);
     }
 }
