@@ -1,0 +1,66 @@
+<?php
+
+namespace App\Models\Patrimonio\Inmuebles;
+
+use App\Models\ControlAcceso\User;
+use Illuminate\Database\Eloquent\Model;
+
+class Inmueble extends Model
+{
+    // Desactivar timestamps automáticos (created_at y updated_at)
+    public $timestamps = false;
+
+    
+    protected $fillable = [
+    
+        'num_partida',
+        'estado_id',
+        'nombre_completo',
+        'nombre_fantasia',
+        'tipo_inmueble_id',
+        'tipo_ocupacion_id',
+        'superficie_cubierta',
+        'superficie_libre',
+        'superficie_total',
+        'fecha_creacion',
+        'usuario_creacion',
+        'fecha_actualizacion',
+        'usuario_actualizacion',
+    ];
+
+  
+    protected $casts = [
+        'fecha_creacion' => 'datetime',
+        'fecha_actualizacion' => 'datetime',
+        'superficie_cubierta'=>'float',
+        'superficie_libre'=>'float',
+        'superficie_total'=>'float',
+    ];
+
+
+       public function estado()
+    {
+        return $this->belongsTo(TipoEstado::class, 'estado_id');
+    }
+
+    public function tipoInmueble()
+    {
+        return $this->belongsTo(InmuebleTipo::class, 'tipo_inmueble_id');
+    }
+
+    public function tipoOcupacion()
+    {
+        return $this->belongsTo(TipoOcupacion::class, 'tipo_ocupacion_id');
+    }
+
+    public function creador()
+    {
+        return $this->belongsTo(User::class, 'usuario_creacion');
+    }
+
+    public function actualizador()
+    {
+        return $this->belongsTo(User::class, 'usuario_actualizacion');
+    } 
+
+}
