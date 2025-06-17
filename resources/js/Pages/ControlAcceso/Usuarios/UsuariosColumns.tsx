@@ -300,7 +300,7 @@ export const columns: ColumnDef<User>[] = [
             const currentRole = row.original.id === editUserId
                 ? (editUserData.roles?.[0]?.name ?? (row.getValue('roles') as Array<{ name: string }>)[0]?.name)
                 : (row.getValue('roles') as Array<{ name: string }>)[0]?.name;
-            const isError = isUndefined(currentRole);
+            const isError = isUndefined(currentRole) || currentRole === 'SIN ROL';
 
             if (row.original.id === editUserId) {
                 return (
@@ -371,7 +371,7 @@ export const columns: ColumnDef<User>[] = [
             const user = row.original;
             const { userAuth } = usePermissions();
             const [isDialogOpen, setIsDialogOpen] = useState(false);
-            const { editUserId, setEditUserId, editUserData, setEditUserData, updateUser } = table.options.meta as { editUserId: number | null, setEditUserId: React.Dispatch<React.SetStateAction<number | null>>, editUserData: Partial<User>, setEditUserData: React.Dispatch<React.SetStateAction<Partial<User>>>, updateUser: (user: User) => void };
+            const { editUserId, setEditUserId, editUserData, setEditUserData, cancelCreateUser, updateUser } = table.options.meta as { editUserId: number | null, setEditUserId: React.Dispatch<React.SetStateAction<number | null>>, editUserData: Partial<User>, setEditUserData: React.Dispatch<React.SetStateAction<Partial<User>>>, cancelCreateUser: () => void, updateUser: (user: User, action: string) => void };
             const [loadingSaving, setLoadingSaving] = useState(false);
 
             let hasError = false;
@@ -384,9 +384,46 @@ export const columns: ColumnDef<User>[] = [
                 hasError =
                     isEmpty(name as string) ||
                     isEmpty(last_name as string) ||
-                    isEmpty(role as string) ||
+                    isUndefined(role as string) ||
+                    (role as string) === 'SIN ROL' ||
                     isEmpty(email as string) ||
                     !validateEmail(email as string);
+            }
+
+            const storeNewUser = async (user: User) => {
+                setLoadingSaving(true);
+                const dataToSave = {
+                    id: user.id,
+                    name: editUserData.name ?? user.name,
+                    last_name: editUserData.last_name ?? user.last_name,
+                    email: editUserData.email ?? user.email,
+                    role: (editUserData.roles?.[0]?.name ?? user.roles?.[0]?.name) ?? "",
+                };
+
+                try {
+                    const response = await axios.post(`/control-acceso/store-user/`, dataToSave);
+                    const data = await response.data;
+
+                    if (!data.success) {
+                        toast.error(data.message);
+                        return;
+                    }
+                    
+                    toast.success(data.message);
+                    updateUser({
+                        ...user,
+                        ...dataToSave,
+                        id: data.id,
+                        roles: [{ name: dataToSave.role }]
+                    }, 'store');
+                    setEditUserId(null);
+                    setEditUserData({});
+                } catch (error) {
+                    if (axios.isAxiosError(error) && error.response) toast.error(error.response.data.message || "Error desconocido del servidor");
+                    else toast.error("Error al editar el usuario");
+                }
+
+                setLoadingSaving(false);
             }
 
             const saveEditUser = async (user: User) => {
@@ -413,7 +450,7 @@ export const columns: ColumnDef<User>[] = [
                         ...user,
                         ...dataToSave,
                         roles: [{ name: dataToSave.role }]
-                    });
+                    }, 'update');
                     setEditUserId(null);
                     setEditUserData({});
                 } catch (error) {
@@ -458,10 +495,10 @@ export const columns: ColumnDef<User>[] = [
                     }
 
                     if (data.action) {
-                        updateUser({ ...user, roles: [], is_active: false });
+                        updateUser({ ...user, roles: [], is_active: false }, 'active');
                         toast.warning(data.message);
                     } else {
-                        updateUser({ ...user, is_active: true });
+                        updateUser({ ...user, is_active: true }, 'active');
                         toast.success(data.message);
                     }
                 } catch (error) {
@@ -511,7 +548,7 @@ export const columns: ColumnDef<User>[] = [
                                     <Button
                                         variant="ghost"
                                         className="p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
-                                        onClick={() => saveEditUser(user)}
+                                        onClick={() => user.id == 0 ? storeNewUser(user) : saveEditUser(user)}
                                         disabled={hasError}>
                                         <Save className='w-6! h-6! text-emerald-500' />
                                     </Button>
@@ -529,6 +566,7 @@ export const columns: ColumnDef<User>[] = [
                                         variant="ghost"
                                         className="p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
                                         onClick={() => {
+                                            if(user.id === 0) cancelCreateUser();
                                             setEditUserId(null);
                                             setEditUserData({});
                                         }}>
@@ -553,7 +591,8 @@ export const columns: ColumnDef<User>[] = [
                                     <Button
                                         variant="ghost"
                                         className="p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
-                                        onClick={() => setEditUserId(user.id)}>
+                                        onClick={() => setEditUserId(user.id)}
+                                        disabled={editUserId !== null}>
                                         <Pencil className='w-6! h-6! text-amber-500' />
                                     </Button>
                                 </TooltipTrigger>
@@ -570,6 +609,7 @@ export const columns: ColumnDef<User>[] = [
                                         variant="ghost"
                                         className="p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
                                         onClick={() => setIsDialogOpen(true)}
+                                        disabled={editUserId !== null}
                                     >
                                         <Waypoints className='w-6! h-6! text-emerald-500' />
                                     </Button>
@@ -587,7 +627,8 @@ export const columns: ColumnDef<User>[] = [
                                 <TooltipTrigger asChild>
                                     <Button variant="ghost"
                                         className="p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(0,117,149,0.5)]"
-                                        onClick={() => resetUserPassword(user)}>
+                                        onClick={() => resetUserPassword(user)}
+                                        disabled={editUserId !== null}>
                                         <KeyRound className='w-6! h-6! text-cyan-500' />
                                     </Button>
                                 </TooltipTrigger>
@@ -602,7 +643,8 @@ export const columns: ColumnDef<User>[] = [
                                 <TooltipTrigger asChild>
                                     <Button variant="ghost"
                                         className="p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(199,0,54,0.5)]"
-                                        onClick={() => managedUserActive(user)}>
+                                        onClick={() => managedUserActive(user)}
+                                        disabled={editUserId !== null}>
                                         <Ban className='w-6! h-6! text-red-500' />
                                     </Button>
                                 </TooltipTrigger>

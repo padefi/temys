@@ -40,6 +40,8 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
                 Route::get('control-acceso/show-submenus-by-user/{user}/{menu}', [SubmenuController::class, 'showSubmenusByUser']);
             });
 
+            Route::post('control-acceso/store-user', [UsuarioController::class, 'store'])->middleware('menu_permission:create usuariosControlAcceso');
+
             Route::middleware('menu_permission:update usuariosControlAcceso')->group(function () {
                 Route::put('control-acceso/edit-user/{user}', [UsuarioController::class, 'update']);
                 Route::put('control-acceso/reset-user-password/{user}', [UsuarioController::class, 'resetPassword']);
