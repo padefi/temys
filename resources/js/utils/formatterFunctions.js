@@ -30,3 +30,7 @@ export const addDate = (date, days) => {
     result.setDate(result.getDate() + days);
     return result;
 };
+
+export const numberFormatter = (data) => {
+    return data.toLocaleString("es-AR");
+};

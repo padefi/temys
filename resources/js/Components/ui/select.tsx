@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 const selectVariants = {
   default: "",
   filled: "bg-gray-100 border-gray-300",
+  filter: "border-0 border-b-2 border-b-gray-500 rounded-none rounded-t-md focus-visible:ring-0 focus-visible:border-gray-600 data-[state=open]:border-gray-600",
   underline: "border-0 border-b-2 border-b-gray-500 rounded-none rounded-t-md focus-visible:ring-0 focus-visible:border-emerald-600 data-[state=open]:border-emerald-600",
   error: "text-red-600 border-0 border-b-2 border-b-red-500 rounded-none rounded-t-md focus-visible:ring-0 focus-visible:border-red-600 data-[state=open]:border-red-600",
 }

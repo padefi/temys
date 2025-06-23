@@ -50,20 +50,6 @@ class ModulesServiceProvider extends ServiceProvider
                 return [];
             }
 
-            /* $menus = Menu::query()
-                ->whereHas('users', function ($query) use ($user) {
-                    $query->where('model_id', $user->id);
-                })
-                ->whereHas('modules', function ($query) use ($modulo) {
-                    $query->where('module_id', $modulo);
-                })
-                ->with(['submenus' => function ($q) use ($user) {
-                    $q->whereHas('users', function ($sq) use ($user) {
-                        $sq->where('model_id', $user->id);
-                    });
-                }])
-                ->get(); */
-
             $menus = Menu::query()
                 ->whereHas('modules', function ($query) use ($modulo) {
                     $query->where('module_id', $modulo->id);
