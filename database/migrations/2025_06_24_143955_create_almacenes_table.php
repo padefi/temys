@@ -13,7 +13,22 @@ return new class extends Migration
     {
         Schema::create('almacenes', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->string('nombre');
+            $table->enum('tipo', ['Central', 'Deposito', 'Punto de venta']);
+            $table->unsignedBigInteger('responsable_id');
+            $table->unsignedBigInteger('almacen_padre_id');
+            $table->timestamp('fecha_creacion');
+            $table->unsignedBigInteger('usuario_creacion');
+            $table->dateTime('fecha_actualizacion');
+            $table->unsignedBigInteger('usuario_actualizacion')->nullable();
+
+
+
+            //Relaciones
+            $table->foreign('responsable_id')->references('id')->on('clientes');
+            $table->foreign('almacen_padre_id')->references('id')->on('almacenes');
+            $table->foreign('usuario_creacion')->references('id')->on('users');
+            $table->foreign('usuario_actualizacion')->references('id')->on('users');
         });
     }
 

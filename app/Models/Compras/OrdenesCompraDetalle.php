@@ -12,12 +12,10 @@ class OrdenesCompraDetalle extends Model
     
     protected $fillable = [
     
-        'orden_compre_id',
+        'orden_compra_id',
         'producto_id',
         'cantidad_solicitada',
         'precio',
-        'es_inventario',
-        'es_patrimonio',
         'fecha_creacion',
         'usuario_creacion',
         'fecha_actualizacion',

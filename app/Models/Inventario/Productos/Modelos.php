@@ -11,7 +11,6 @@ class Modelos extends Model
 
     
     protected $fillable = [
-    
         'descripcion',
         'marca_id',
         'fecha_creacion',

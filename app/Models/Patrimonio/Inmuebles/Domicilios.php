@@ -11,13 +11,11 @@ class Domicilios extends Model
 
     
     protected $fillable = [
-    
         'inmueble_id',
-        'provincia_id',
-        'localidad_id',
         'calle_id',
         'altura',
         'codigo_postal',
+        'observacion',
         'piso',
         'departamento',
         'fecha_creacion',

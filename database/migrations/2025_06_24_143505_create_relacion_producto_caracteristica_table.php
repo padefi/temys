@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('relacion_producto_caracteristica', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->unsignedBigInteger('producto_id');
+            $table->unsignedBigInteger('caracteristicas_id');
+
+
+            //relaciones
+            $table->foreign('producto_id')->references('id')->on('productos');
+            $table->foreign('caracteristicas_id')->references('id')->on('productos_categorias');
         });
     }
 

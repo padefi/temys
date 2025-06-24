@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('relacion_movimiento_stock_recepcion_detalle', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->unsignedBigInteger('movimiento_stock_id');
+            $table->unsignedBigInteger('recepcion_productos_detalle_id');
+
+
+            //relaciones
+            $table->foreign('movimiento_stock_id')->references('id')->on('inventario_movimientos_stock');
+            $table->foreign('recepcion_productos_detalle_id')->references('id')->on('inventario_recepcion_productos_detalle');
         });
     }
 

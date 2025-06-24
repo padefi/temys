@@ -13,7 +13,22 @@ return new class extends Migration
     {
         Schema::create('inventario_recepcion_productos_detalle', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->unsignedBigInteger('recepcion_producto_id');
+            $table->unsignedBigInteger('producto_id');
+            $table->integer('cantidad_recibida');
+            $table->integer('cantidad_esperada');
+            $table->enum('estado', ['completo','Parcial','faltante']);
+            $table->timestamp('fecha_creacion');
+            $table->unsignedBigInteger('usuario_creacion');
+            $table->dateTime('fecha_actualizacion');
+            $table->unsignedBigInteger('usuario_actualizacion')->nullable();
+
+
+            //Relaciones
+            $table->foreign('recepcion_producto_id')->references('id')->on('inventario_recepcion_productos');
+            $table->foreign('producto_id')->references('id')->on('productos');
+            $table->foreign('usuario_creacion')->references('id')->on('users');
+            $table->foreign('usuario_actualizacion')->references('id')->on('users');
         });
     }
 
