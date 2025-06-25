@@ -4,9 +4,9 @@ namespace App\Models\Inventario\Productos;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Productos extends Model
+class Producto extends Model
 {
-    // Desactivar timestamps automáticos (created_at y updated_at)
+    protected $table = 'productos';
     public $timestamps = false;
 
     
@@ -41,4 +41,25 @@ class Productos extends Model
         'volumen'=>'float',
         'profundidad'=>'float',
     ];
+
+
+    public function modelo()
+    {
+        return $this->belongsTo(Modelo::class, 'id_modelo', 'id_modelo');
+    }
+
+    public function subCategoria()
+    {
+        return $this->belongsTo(SubCategoria::class, 'id_subcategoria', 'id');
+    }
+
+    public function caracteristicas()
+    {
+        return $this->belongsToMany(
+            Caracteristica::class,
+            'relacion_producto_caracteristicas',
+            'id_prod',
+            'id_caracteristicas'
+        );
+    }
 }

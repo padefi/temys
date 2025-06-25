@@ -1,23 +1,19 @@
 <?php
 
-namespace App\Models\Inventario;
+namespace App\Models\Inventario\Productos;
 
 use Illuminate\Database\Eloquent\Model;
 
-class RecepcionProductos extends Model
+class Subcategoria extends Model
 {
-    protected $table='inventario_recepcion_productos';
+    protected $table='productos_subcategorias';
     public $timestamps = false;
 
     
     protected $fillable = [
     
-        'origen_id',
-        'destino_id',
-        'tipo_movimiento',
-        'movimiento_id',
-        'fecha_recepcion',
-        'estado',
+        'descripcion',
+        'categoria_id',
         'fecha_creacion',
         'usuario_creacion',
         'fecha_actualizacion',
@@ -25,8 +21,12 @@ class RecepcionProductos extends Model
     ];
 
     protected $casts = [
-        'fecha_recepcion' => 'datetime',
         'fecha_creacion' => 'datetime',
         'fecha_actualizacion' => 'datetime',
     ];
+
+     public function categoria()
+    {
+        return $this->belongsTo(Categoria::class, 'id_categorias', 'id_categorias');
+    }
 }

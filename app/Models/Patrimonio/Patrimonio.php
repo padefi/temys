@@ -2,11 +2,12 @@
 
 namespace App\Models\Patrimonio;
 
+use App\Models\Inventario\Productos\Producto;
 use Illuminate\Database\Eloquent\Model;
 
 class Patrimonio extends Model
 {
-    // Desactivar timestamps automáticos (created_at y updated_at)
+    
     public $timestamps = false;
 
     
@@ -23,4 +24,9 @@ class Patrimonio extends Model
         'fecha_creacion' => 'datetime',
         'fecha_actualizacion' => 'datetime',
     ];
+
+     public function producto()
+    {
+        return $this->belongsTo(Producto::class, 'id_producto');
+    }
 }

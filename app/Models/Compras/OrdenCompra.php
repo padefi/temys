@@ -2,11 +2,12 @@
 
 namespace App\Models\Compras;
 
+use App\Models\Almacenes\Almacen;
 use Illuminate\Database\Eloquent\Model;
 
-class OrdenesCompra extends Model
+class OrdenCompra extends Model
 {
-    // Desactivar timestamps automáticos (created_at y updated_at)
+    protected $table = 'ordenes_compra';
     public $timestamps = false;
 
     
@@ -25,4 +26,14 @@ class OrdenesCompra extends Model
         'fecha_creacion' => 'datetime',
         'fecha_actualizacion' => 'datetime',
     ];
+
+      public function almacenDestino()
+    {
+        return $this->belongsTo(Almacen::class, 'almacen_destino_id');
+    }
+
+    public function detalles()
+    {
+        return $this->hasMany(OrdenCompraDetalle::class, 'orden_compra_id');
+    }
 }

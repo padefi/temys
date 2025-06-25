@@ -2,9 +2,10 @@
 
 namespace App\Models\Inventario;
 
+use App\Models\Inventario\Productos\Producto;
 use Illuminate\Database\Eloquent\Model;
 
-class RecepcionProductosDetalle extends Model
+class RecepcionProductoDetalle extends Model
 {
     protected $table='inventario_recepcion_productos_detalle';
     public $timestamps = false;
@@ -27,4 +28,14 @@ class RecepcionProductosDetalle extends Model
         'fecha_creacion' => 'datetime',
         'fecha_actualizacion' => 'datetime',
     ];
+
+        public function recepcion()
+    {
+        return $this->belongsTo(RecepcionProducto::class, 'recepcion_id');
+    }
+
+    public function producto()
+    {
+        return $this->belongsTo(Producto::class, 'producto_id');
+    }
 }

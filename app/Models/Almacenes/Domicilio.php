@@ -29,4 +29,9 @@ class Domicilio extends Model
         'fecha_creacion' => 'datetime',
         'fecha_actualizacion' => 'datetime',
     ];
+
+       public function almacen()
+    {
+        return $this->belongsTo(Almacen::class, 'id_almacen');
+    }
 }

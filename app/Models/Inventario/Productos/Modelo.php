@@ -1,21 +1,18 @@
 <?php
 
-namespace App\Models\Inventario;
+namespace App\Models\Inventario\Productos;
 
 use Illuminate\Database\Eloquent\Model;
 
-class MovimientosStock extends Model
+class Modelo extends Model
 {
-    protected $table='inventario_movimientos_stock';
+    protected $table='productos_modelos';
     public $timestamps = false;
 
     
     protected $fillable = [
-    
-        'producto_id',
-        'origen_id',
-        'destino_id',
-        'cantidad',
+        'descripcion',
+        'marca_id',
         'fecha_creacion',
         'usuario_creacion',
         'fecha_actualizacion',
@@ -26,4 +23,9 @@ class MovimientosStock extends Model
         'fecha_creacion' => 'datetime',
         'fecha_actualizacion' => 'datetime',
     ];
+
+    public function marca()
+    {
+        return $this->belongsTo(Marca::class, 'id_marca', 'id_marca');
+    }
 }

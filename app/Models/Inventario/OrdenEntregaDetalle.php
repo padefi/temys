@@ -2,6 +2,7 @@
 
 namespace App\Models\Inventario;
 
+use App\Models\Inventario\Productos\Producto;
 use Illuminate\Database\Eloquent\Model;
 
 class OrdenEntregaDetalle extends Model
@@ -25,4 +26,14 @@ class OrdenEntregaDetalle extends Model
         'fecha_creacion' => 'datetime',
         'fecha_actualizacion' => 'datetime',
     ];
+
+    public function ordenEntrega()
+    {
+        return $this->belongsTo(OrdenEntrega::class, 'orden_entrega_id');
+    }
+
+    public function producto()
+    {
+        return $this->belongsTo(Producto::class, 'producto_id');
+    }
 }
