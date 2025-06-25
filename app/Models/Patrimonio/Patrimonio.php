@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Patrimonio extends Model
 {
-    
+    protected $table = 'ordenes_compra';
     public $timestamps = false;
 
     
