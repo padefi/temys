@@ -2,22 +2,21 @@
 
 namespace App\Models\Compras;
 
+use App\Models\Inventario\Productos\Producto;
 use Illuminate\Database\Eloquent\Model;
 
-class OrdenesCompraDetalle extends Model
+class OrdenCompraDetalle extends Model
 {
-    // Desactivar timestamps automáticos (created_at y updated_at)
+    protected $table = 'ordenes_compra_detalle';
     public $timestamps = false;
 
     
     protected $fillable = [
     
-        'orden_compre_id',
+        'orden_compra_id',
         'producto_id',
         'cantidad_solicitada',
         'precio',
-        'es_inventario',
-        'es_patrimonio',
         'fecha_creacion',
         'usuario_creacion',
         'fecha_actualizacion',
@@ -29,4 +28,14 @@ class OrdenesCompraDetalle extends Model
         'fecha_actualizacion' => 'datetime',
         'precio'=>'float',
     ];
+
+        public function ordenCompra()
+    {
+        return $this->belongsTo(OrdenCompra::class, 'orden_compra_id');
+    }
+
+    public function producto()
+    {
+        return $this->belongsTo(Producto::class, 'producto_id');
+    }
 }

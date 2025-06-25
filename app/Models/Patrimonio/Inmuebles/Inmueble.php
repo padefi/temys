@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Inmueble extends Model
 {
-    // Desactivar timestamps automáticos (created_at y updated_at)
+    protected $table = 'inmuebles';
     public $timestamps = false;
 
     

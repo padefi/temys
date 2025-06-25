@@ -6,18 +6,18 @@ use App\Models\Almacenes\Almacen;
 use App\Models\Inventario\Productos\Producto;
 use Illuminate\Database\Eloquent\Model;
 
-class Stock extends Model
+class MovimientoStock extends Model
 {
-    protected $table='inventario_stock';
+    protected $table='inventario_movimientos_stock';
     public $timestamps = false;
 
     
     protected $fillable = [
     
         'producto_id',
-        'almacen_id',
-        'cantidad_actual',
-        'stock_minimo',
+        'origen_id',
+        'destino_id',
+        'cantidad',
         'fecha_creacion',
         'usuario_creacion',
         'fecha_actualizacion',
@@ -29,13 +29,18 @@ class Stock extends Model
         'fecha_actualizacion' => 'datetime',
     ];
 
-    public function producto()
+     public function producto()
     {
         return $this->belongsTo(Producto::class, 'producto_id');
     }
 
-    public function almacen()
+    public function almacenOrigen()
     {
-        return $this->belongsTo(Almacen::class, 'almacen_id');
+        return $this->belongsTo(Almacen::class, 'almacen_origen_id');
+    }
+
+    public function almacenDestino()
+    {
+        return $this->belongsTo(Almacen::class, 'almacen_destino_id');
     }
 }

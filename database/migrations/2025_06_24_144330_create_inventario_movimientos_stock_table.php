@@ -13,7 +13,23 @@ return new class extends Migration
     {
         Schema::create('inventario_movimientos_stock', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->unsignedBigInteger('producto_id');
+            $table->unsignedBigInteger('origen_id');
+            $table->unsignedBigInteger('destino_id');
+            $table->integer('cantidad');;
+            $table->timestamp('fecha_creacion');
+            $table->unsignedBigInteger('usuario_creacion');
+            $table->dateTime('fecha_actualizacion');
+            $table->unsignedBigInteger('usuario_actualizacion')->nullable();
+            
+
+            
+             //Relaciones
+            $table->foreign('producto_id')->references('id')->on('productos');
+            $table->foreign('origen_id')->references('id')->on('almacenes');
+            $table->foreign('destino_id')->references('id')->on('almacenes');
+            $table->foreign('usuario_creacion')->references('id')->on('users');
+            $table->foreign('usuario_actualizacion')->references('id')->on('users');
         });
     }
 

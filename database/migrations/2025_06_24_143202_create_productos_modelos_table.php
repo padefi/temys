@@ -13,7 +13,19 @@ return new class extends Migration
     {
         Schema::create('productos_modelos', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->string('descripcion');
+            $table->unsignedBigInteger('marca_id');
+            $table->timestamp('fecha_creacion');
+            $table->unsignedBigInteger('usuario_creacion');
+            $table->dateTime('fecha_actualizacion');
+            $table->unsignedBigInteger('usuario_actualizacion')->nullable();
+         
+
+             //Relaciones
+            $table->foreign('marca_id')->references('id')->on('productos_marcas');
+            $table->foreign('usuario_creacion')->references('id')->on('users');
+            $table->foreign('usuario_actualizacion')->references('id')->on('users');
+
         });
     }
 

@@ -11,7 +11,23 @@ return new class extends Migration
     {
         Schema::create('inmuebles_domicilios', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->unsignedBigInteger('calle_id');
+            $table->integer('altura');
+            $table->string('codigo_postal');
+            $table->string('observacion');
+            $table->integer('piso');
+            $table->string('departamento');
+            $table->timestamp('fecha_creacion');
+            $table->unsignedBigInteger('usuario_creacion');
+            $table->dateTime('fecha_actualizacion');
+            $table->unsignedBigInteger('usuario_actualizacion')->nullable();
+
+
+            //Relaciones
+            $table->foreign('inmueble_id')->references('id')->on('inmuebles');
+            $table->foreign('usuario_creacion')->references('id')->on('users');
+            $table->foreign('usuario_actualizacion')->references('id')->on('users');
+
         });
     }
 
