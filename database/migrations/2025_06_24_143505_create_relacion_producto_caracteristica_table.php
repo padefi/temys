@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('relacion_producto_caracteristica', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('producto_id');
-            $table->unsignedBigInteger('caracteristicas_id');
+            $table->unsignedBigInteger('caracteristica_id');
 
 
             //relaciones
             $table->foreign('producto_id')->references('id')->on('productos');
-            $table->foreign('caracteristicas_id')->references('id')->on('productos_categorias');
+            $table->foreign('caracteristica_id')->references('id')->on('producto_caracteristicas');
         });
     }
 

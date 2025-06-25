@@ -1,18 +1,21 @@
 <?php
 
-namespace App\Models\Patrimonio;
+namespace App\Models\Inventario\Productos;
 
-use App\Models\Inventario\Productos\Producto;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Patrimonio extends Model
+class ProductoSubcategoria extends Model
 {
-   
+    use HasFactory;
+  
     public $timestamps = false;
 
     
     protected $fillable = [
-        'producto_id',
+    
+        'descripcion',
+        'categoria_id',
         'fecha_creacion',
         'usuario_creacion',
         'fecha_actualizacion',
@@ -24,8 +27,8 @@ class Patrimonio extends Model
         'fecha_actualizacion' => 'datetime',
     ];
 
-     public function producto()
+     public function categoria()
     {
-        return $this->belongsTo(Producto::class, 'id_producto');
+        return $this->belongsTo(ProductoCategoria::class, 'id_categorias', 'id_categorias');
     }
 }

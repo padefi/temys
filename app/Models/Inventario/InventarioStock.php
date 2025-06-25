@@ -1,19 +1,21 @@
 <?php
 
-namespace App\Models\Compras;
+namespace App\Models\Inventario;
 
 use App\Models\Almacenes\Almacen;
+use App\Models\Inventario\Productos\Producto;
 use Illuminate\Database\Eloquent\Model;
 
-class OrdenCompra extends Model
+class InventarioStock extends Model
 {
     
     public $timestamps = false;
 
     protected $fillable = [
-        'proveedor_id',
-        'almacen_destino_id',
-        'estado',
+        'producto_id',
+        'almacen_id',
+        'cantidad_actual',
+        'stock_minimo',
         'fecha_creacion',
         'usuario_creacion',
         'fecha_actualizacion',
@@ -25,13 +27,13 @@ class OrdenCompra extends Model
         'fecha_actualizacion' => 'datetime',
     ];
 
-      public function almacenDestino()
+    public function producto()
     {
-        return $this->belongsTo(Almacen::class, 'almacen_destino_id');
+        return $this->belongsTo(Producto::class, 'producto_id');
     }
 
-    public function detalles()
+    public function almacen()
     {
-        return $this->hasMany(OrdenCompraDetalle::class, 'orden_compra_id');
+        return $this->belongsTo(Almacen::class, 'almacen_id');
     }
 }

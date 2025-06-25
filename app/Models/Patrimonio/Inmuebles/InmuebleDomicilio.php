@@ -1,18 +1,21 @@
 <?php
 
-namespace App\Models\Patrimonio;
+namespace App\Models\Patrimonio\Inmuebles;
 
-use App\Models\Inventario\Productos\Producto;
 use Illuminate\Database\Eloquent\Model;
 
-class Patrimonio extends Model
+class InmuebleDomicilio extends Model
 {
-   
     public $timestamps = false;
-
-    
+  
     protected $fillable = [
-        'producto_id',
+        'inmueble_id',
+        'calle_id',
+        'altura',
+        'codigo_postal',
+        'observacion',
+        'piso',
+        'departamento',
         'fecha_creacion',
         'usuario_creacion',
         'fecha_actualizacion',
@@ -24,8 +27,4 @@ class Patrimonio extends Model
         'fecha_actualizacion' => 'datetime',
     ];
 
-     public function producto()
-    {
-        return $this->belongsTo(Producto::class, 'id_producto');
-    }
 }

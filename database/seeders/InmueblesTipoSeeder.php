@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Patrimonio\Inmuebles\InmuebleTipo;
 use Illuminate\Database\Seeder;
-use App\Models\InmuebleTipo;
-use App\Models\Patrimonio\Inmuebles\InmuebleTipo as InmueblesInmuebleTipo;
 
 class InmueblesTipoSeeder extends Seeder
 {
@@ -13,7 +12,7 @@ class InmueblesTipoSeeder extends Seeder
         $tipos = ['Casa', 'Departamento', 'Local', 'Terreno', 'Galpón'];
 
         foreach ($tipos as $tipo) {
-            InmueblesInmuebleTipo::create(['descripcion' => $tipo]);
+            InmuebleTipo::create(['descripcion' => $tipo]);
         }
     }
 }
