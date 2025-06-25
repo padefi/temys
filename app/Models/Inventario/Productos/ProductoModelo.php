@@ -1,24 +1,20 @@
 <?php
 
-namespace App\Models\Almacenes;
+namespace App\Models\Inventario\Productos;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Almacen_domicilio extends Model
+class ProductoModelo extends Model
 {
+    use HasFactory;
   
     public $timestamps = false;
 
     
     protected $fillable = [
-    
-        'almacen_id',
-        'calle_id',
-        'altura',
-        'codigo_postal',
-        'observacion',
-        'piso',
-        'departamento',
+        'descripcion',
+        'marca_id',
         'fecha_creacion',
         'usuario_creacion',
         'fecha_actualizacion',
@@ -30,8 +26,8 @@ class Almacen_domicilio extends Model
         'fecha_actualizacion' => 'datetime',
     ];
 
-       public function almacen()
+    public function marca()
     {
-        return $this->belongsTo(Almacen::class, 'id_almacen');
+        return $this->belongsTo(ProductoMarca::class, 'id_marca', 'id_marca');
     }
 }

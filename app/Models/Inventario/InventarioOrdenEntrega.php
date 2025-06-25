@@ -6,18 +6,15 @@ use App\Models\Almacenes\Almacen;
 use App\Models\ControlAcceso\User;
 use Illuminate\Database\Eloquent\Model;
 
-class Inventario_recepcion_producto extends Model
+class InventarioOrdenEntrega extends Model
 {
-
+    
     public $timestamps = false;
-    
+
     protected $fillable = [
-    
         'origen_id',
         'destino_id',
-        'tipo_movimiento',
-        'movimiento_id',
-        'fecha_recepcion',
+        'fecha_envio',
         'estado',
         'fecha_creacion',
         'usuario_creacion',
@@ -26,19 +23,19 @@ class Inventario_recepcion_producto extends Model
     ];
 
     protected $casts = [
-        'fecha_recepcion' => 'datetime',
+        'fecha_envio' => 'datetime',
         'fecha_creacion' => 'datetime',
         'fecha_actualizacion' => 'datetime',
     ];
 
-     public function remitente()
+    public function origen()
     {
-        return $this->belongsTo(Almacen::class, 'id_remitente');
+        return $this->belongsTo(Almacen::class, 'almacen_origen_id');
     }
 
     public function destino()
     {
-        return $this->belongsTo(Almacen::class, 'id_destino');
+        return $this->belongsTo(Almacen::class, 'almacen_destino_id');
     }
 
     public function usuario()
@@ -48,6 +45,6 @@ class Inventario_recepcion_producto extends Model
 
     public function detalles()
     {
-        return $this->hasMany(Inventario_recepcion_producto_detalle::class, 'recepcion_id');
-    }
+        return $this->hasMany(inventarioOrdenEntregaDetalle::class, 'orden_entrega_id');
+    } 
 }

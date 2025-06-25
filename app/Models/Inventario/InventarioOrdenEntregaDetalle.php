@@ -2,20 +2,19 @@
 
 namespace App\Models\Inventario;
 
-use App\Models\Almacenes\Almacen;
 use App\Models\Inventario\Productos\Producto;
 use Illuminate\Database\Eloquent\Model;
 
-class Inventario_stock extends Model
+class InventarioOrdenEntregaDetalle extends Model
 {
+    protected $table='inventario_orden_entrega_detalle';
     
     public $timestamps = false;
-
-    protected $fillable = [
+   
+    protected $fillable = [ 
+        'orden_entrega_id',
         'producto_id',
-        'almacen_id',
-        'cantidad_actual',
-        'stock_minimo',
+        'cantidad_enviada',
         'fecha_creacion',
         'usuario_creacion',
         'fecha_actualizacion',
@@ -27,13 +26,13 @@ class Inventario_stock extends Model
         'fecha_actualizacion' => 'datetime',
     ];
 
+    public function ordenEntrega()
+    {
+        return $this->belongsTo(InventarioOrdenEntrega::class, 'orden_entrega_id');
+    }
+
     public function producto()
     {
         return $this->belongsTo(Producto::class, 'producto_id');
-    }
-
-    public function almacen()
-    {
-        return $this->belongsTo(Almacen::class, 'almacen_id');
     }
 }

@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Inventario\Productos\Categoria;
-use App\Models\Inventario\Productos\Producto_categoria;
-use Illuminate\Support\Facades\DB;
+
+use App\Models\Inventario\Productos\ProductoCategoria;
+
 
 class CategoriaSeeder extends Seeder
 {
@@ -19,7 +19,7 @@ class CategoriaSeeder extends Seeder
         ];
 
         foreach ($categorias as $categoria) {
-            Producto_categoria::create($categoria);
+            ProductoCategoria::create($categoria);
         }
     }
 }

@@ -5,7 +5,7 @@ namespace App\Models\Compras;
 use App\Models\Almacenes\Almacen;
 use Illuminate\Database\Eloquent\Model;
 
-class Orden_compra extends Model
+class OrdenCompra extends Model
 {
     
     public $timestamps = false;
@@ -32,6 +32,6 @@ class Orden_compra extends Model
 
     public function detalles()
     {
-        return $this->hasMany(orden_compra_detalle::class, 'orden_compra_id');
+        return $this->hasMany(OrdenCompraDetalle::class, 'orden_compra_id');
     }
 }

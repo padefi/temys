@@ -4,8 +4,9 @@
 namespace Database\Factories\Inventario\Productos;
 
 use App\Models\ControlAcceso\User;
-use App\Models\Inventario\Productos\Producto_modelo;
-use App\Models\Inventario\Productos\Producto_subcategoria;
+
+use App\Models\Inventario\Productos\ProductoModelo;
+use App\Models\Inventario\Productos\ProductoSubcategoria;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,8 +21,8 @@ class ProductoFactory extends Factory
      */
     public function definition(): array
     {
-        $modelo = Producto_modelo::inRandomOrder()->first() ?? Producto_modelo::factory()->create();
-        $subcategoria = Producto_subcategoria::inRandomOrder()->first() ?? Producto_subcategoria::factory()->create();
+        $modelo = ProductoModelo::inRandomOrder()->first() ?? ProductoModelo::factory()->create();
+        $subcategoria = ProductoSubcategoria::inRandomOrder()->first() ?? ProductoSubcategoria::factory()->create();
         $user= User::inRandomOrder()->first() ?? User::factory()->create();
         return [
             'nombre' => $this->faker->name,

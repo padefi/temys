@@ -1,22 +1,22 @@
 <?php
 
-namespace App\Models\Inventario;
+namespace App\Models\Compras;
 
 use App\Models\Inventario\Productos\Producto;
 use Illuminate\Database\Eloquent\Model;
 
-class Inventario_recepcion_producto_detalle extends Model
+class OrdenCompraDetalle extends Model
 {
-    protected $table = 'inventario_recepcion_productos_detalle';
-
+   
     public $timestamps = false;
 
+    
     protected $fillable = [
-        'recepcion_producto_id',
+    
+        'orden_compra_id',
         'producto_id',
-        'cantidad_recibida',
-        'cantidad_esperada',
-        'estado',
+        'cantidad_solicitada',
+        'precio',
         'fecha_creacion',
         'usuario_creacion',
         'fecha_actualizacion',
@@ -26,11 +26,12 @@ class Inventario_recepcion_producto_detalle extends Model
     protected $casts = [
         'fecha_creacion' => 'datetime',
         'fecha_actualizacion' => 'datetime',
+        'precio'=>'float',
     ];
 
-    public function recepcion()
+        public function ordenCompra()
     {
-        return $this->belongsTo(Inventario_recepcion_producto::class, 'recepcion_id');
+        return $this->belongsTo(OrdenCompra::class, 'orden_compra_id');
     }
 
     public function producto()

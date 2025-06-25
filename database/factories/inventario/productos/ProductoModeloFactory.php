@@ -3,22 +3,22 @@
 namespace Database\Factories\Inventario\Productos;
 
 use App\Models\ControlAcceso\User;
-use App\Models\Inventario\Productos\Producto_categoria;
+use App\Models\Inventario\Productos\ProductoMarca;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Model>
  */
-class Producto_subcategoriaFactory extends Factory
+class ProductoModeloFactory extends Factory
 {
-
+   
     public function definition(): array
     {
-         $categoria= Producto_categoria::inRandomOrder()->first() ?? Producto_categoria::factory()->create();
-         $user= User::inRandomOrder()->first() ?? User::factory()->create();
+        $marca = ProductoMarca::inRandomOrder()->first() ?? ProductoMarca::factory()->create();
+        $user= User::inRandomOrder()->first() ?? User::factory()->create();
         return [
             'descripcion' =>$this->faker->text(),
-            'categoria_id'=>$categoria->id,
+            'marca_id' =>$marca->id,
             'fecha_creacion' =>$this->faker->date,
             'usuario_creacion' =>$user->id,
             'fecha_actualizacion' =>$this->faker->date,

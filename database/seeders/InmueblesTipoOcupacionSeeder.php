@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Patrimonio\Inmuebles\Inmueble_tipo_ocupacions;
+use App\Models\Patrimonio\Inmuebles\InmuebleTipoOcupacions;
 use Illuminate\Database\Seeder;
 
 
@@ -13,7 +13,7 @@ class InmueblesTipoOcupacionSeeder extends Seeder
         $ocupaciones = ['Propietario', 'Inquilino', 'Usufructuario'];
 
         foreach ($ocupaciones as $ocupacion) {
-            Inmueble_tipo_ocupacions::create(['descripcion' => $ocupacion]);
+            InmuebleTipoOcupacions::create(['descripcion' => $ocupacion]);
         }
     }
 }

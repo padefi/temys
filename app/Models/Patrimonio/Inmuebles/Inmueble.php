@@ -40,17 +40,17 @@ class Inmueble extends Model
 
        public function estado()
     {
-        return $this->belongsTo(Inmueble_tipo_estado::class, 'estado_id');
+        return $this->belongsTo(InmuebleTipoEstado::class, 'estado_id');
     }
 
     public function tipoInmueble()
     {
-        return $this->belongsTo(Inmueble_tipo::class, 'tipo_inmueble_id');
+        return $this->belongsTo(InmuebleTipo::class, 'tipo_inmueble_id');
     }
 
     public function tipoOcupacion()
     {
-        return $this->belongsTo(Inmueble_tipo_ocupacions::class, 'tipo_ocupacion_id');
+        return $this->belongsTo(InmuebleTipoOcupacions::class, 'tipo_ocupacion_id');
     }
 
     public function creador()

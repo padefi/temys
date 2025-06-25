@@ -4,7 +4,7 @@ namespace App\Models\Inventario\Productos;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Producto_marca extends Model
+class ProductoMarca extends Model
 {
    
     public $timestamps = false;
@@ -16,6 +16,6 @@ class Producto_marca extends Model
 
       public function modelos()
     {
-        return $this->hasMany(Producto_modelo::class, 'id_marca', 'id_marca');
+        return $this->hasMany(ProductoModelo::class, 'id_marca', 'id_marca');
     }
 }

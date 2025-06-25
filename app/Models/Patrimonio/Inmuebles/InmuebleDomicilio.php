@@ -4,7 +4,7 @@ namespace App\Models\Patrimonio\Inmuebles;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Inmueble_domicilio extends Model
+class InmuebleDomicilio extends Model
 {
     public $timestamps = false;
   

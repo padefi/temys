@@ -5,7 +5,7 @@ use App\Models\Almacenes\Almacen;
 use App\Models\Inventario\Productos\Producto;
 use Illuminate\Database\Eloquent\Model;
 
-class Inventario_movimiento_stock extends Model
+class InventarioMovimientoStock extends Model
 {
     
     public $timestamps = false;

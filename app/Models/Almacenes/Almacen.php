@@ -50,7 +50,7 @@ class Almacen extends Model
 
     public function direcciones()
     {
-        return $this->hasMany(Almacen_domicilio::class, 'id_almacen');
+        return $this->hasMany(AlmacenDomicilio::class, 'id_almacen');
     }
 
     public function stocks()
@@ -60,6 +60,6 @@ class Almacen extends Model
 
     public function ordenesDestino()
     {
-        return $this->hasMany(Orden_compra::class, 'almacen_destino_id');
+        return $this->hasMany(OrdenCompra::class, 'almacen_destino_id');
     }
 }

@@ -4,7 +4,7 @@ namespace App\Models\Inventario\Productos;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Producto_caracteristica extends Model
+class ProductoCaracteristica extends Model
 {
     
     public $timestamps = false;

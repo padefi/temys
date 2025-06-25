@@ -4,9 +4,10 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
-use App\Models\Inventario\Productos\Caracteristica;
+
 use App\Models\Inventario\Productos\Producto;
-use App\Models\Inventario\Productos\Producto_caracteristica;
+
+use App\Models\Inventario\Productos\ProductoCaracteristica;
 
 class ProductoSeeder extends Seeder
 {
@@ -17,7 +18,7 @@ class ProductoSeeder extends Seeder
             ->create()
             ->each(function ($producto) {
                 // Relacionar 3 características aleatorias (si existen)
-                $caracteristicas = Producto_caracteristica::inRandomOrder()->limit(3)->pluck('id');
+                $caracteristicas = ProductoCaracteristica::inRandomOrder()->limit(3)->pluck('id');
                 $producto->caracteristicas()->attach($caracteristicas);
             });
     }

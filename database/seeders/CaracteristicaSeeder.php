@@ -3,8 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Inventario\Productos\Caracteristica;
-use App\Models\Inventario\Productos\Producto_caracteristica;
+use App\Models\Inventario\Productos\ProductoCaracteristica;
 
 class CaracteristicaSeeder extends Seeder
 {
@@ -24,7 +23,7 @@ class CaracteristicaSeeder extends Seeder
         ];
 
         foreach ($caracteristicas as $descripcion) {
-            Producto_caracteristica::create([
+            ProductoCaracteristica::create([
                 'descripcion' => $descripcion
             ]);
         }

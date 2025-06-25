@@ -46,18 +46,18 @@ class Producto extends Model
 
     public function modelo()
     {
-        return $this->belongsTo(Producto_modelo::class, 'id_modelo', 'id_modelo');
+        return $this->belongsTo(ProductoModelo::class, 'id_modelo', 'id_modelo');
     }
 
     public function subCategoria()
     {
-        return $this->belongsTo(Producto_subcategoria::class, 'id_subcategoria', 'id');
+        return $this->belongsTo(ProductoSubcategoria::class, 'id_subcategoria', 'id');
     }
 
     public function caracteristicas()
     {
         return $this->belongsToMany(
-            Producto_caracteristica::class,
+            ProductoCaracteristica::class,
             'relacion_producto_caracteristica',
             'caracteristica_id', // FK de este modelo (Caracteristica)
             'producto_id'        // FK del otro modelo (Producto)

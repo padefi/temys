@@ -4,7 +4,7 @@ namespace App\Models\Inventario\Productos;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Producto_categoria extends Model
+class ProductoCategoria extends Model
 {
    
     public $timestamps = false;
@@ -16,6 +16,6 @@ class Producto_categoria extends Model
 
      public function subCategorias()
     {
-        return $this->hasMany(Producto_subcategoria::class, 'id_categorias', 'id_categorias');
+        return $this->hasMany(ProductoSubcategoria::class, 'id_categorias', 'id_categorias');
     }
 }

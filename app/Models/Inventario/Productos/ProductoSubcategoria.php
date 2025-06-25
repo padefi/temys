@@ -5,7 +5,7 @@ namespace App\Models\Inventario\Productos;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Producto_modelo extends Model
+class ProductoSubcategoria extends Model
 {
     use HasFactory;
   
@@ -13,8 +13,9 @@ class Producto_modelo extends Model
 
     
     protected $fillable = [
+    
         'descripcion',
-        'marca_id',
+        'categoria_id',
         'fecha_creacion',
         'usuario_creacion',
         'fecha_actualizacion',
@@ -26,8 +27,8 @@ class Producto_modelo extends Model
         'fecha_actualizacion' => 'datetime',
     ];
 
-    public function marca()
+     public function categoria()
     {
-        return $this->belongsTo(Producto_marca::class, 'id_marca', 'id_marca');
+        return $this->belongsTo(ProductoCategoria::class, 'id_categorias', 'id_categorias');
     }
 }
