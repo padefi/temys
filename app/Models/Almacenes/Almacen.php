@@ -2,8 +2,10 @@
 
 namespace App\Models\Almacenes;
 
+use App\Models\Compras\orden_compra;
 use App\Models\Compras\OrdenCompra;
 use App\Models\ControlAcceso\User;
+use App\Models\Inventario\Inventario_stock;
 use App\Models\Inventario\Stock;
 use Illuminate\Database\Eloquent\Model;
 
@@ -48,16 +50,16 @@ class Almacen extends Model
 
     public function direcciones()
     {
-        return $this->hasMany(Domicilio::class, 'id_almacen');
+        return $this->hasMany(Almacen_domicilio::class, 'id_almacen');
     }
 
     public function stocks()
     {
-        return $this->hasMany(Stock::class, 'almacen_id');
+        return $this->hasMany(Inventario_stock::class, 'almacen_id');
     }
 
     public function ordenesDestino()
     {
-        return $this->hasMany(OrdenCompra::class, 'almacen_destino_id');
+        return $this->hasMany(Orden_compra::class, 'almacen_destino_id');
     }
 }

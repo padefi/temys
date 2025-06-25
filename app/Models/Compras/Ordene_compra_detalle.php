@@ -1,18 +1,22 @@
 <?php
 
-namespace App\Models\Patrimonio;
+namespace App\Models\Compras;
 
 use App\Models\Inventario\Productos\Producto;
 use Illuminate\Database\Eloquent\Model;
 
-class Patrimonio extends Model
+class Orden_compra_detalle extends Model
 {
    
     public $timestamps = false;
 
     
     protected $fillable = [
+    
+        'orden_compra_id',
         'producto_id',
+        'cantidad_solicitada',
+        'precio',
         'fecha_creacion',
         'usuario_creacion',
         'fecha_actualizacion',
@@ -22,10 +26,16 @@ class Patrimonio extends Model
     protected $casts = [
         'fecha_creacion' => 'datetime',
         'fecha_actualizacion' => 'datetime',
+        'precio'=>'float',
     ];
 
-     public function producto()
+        public function ordenCompra()
     {
-        return $this->belongsTo(Producto::class, 'id_producto');
+        return $this->belongsTo(orden_compra::class, 'orden_compra_id');
+    }
+
+    public function producto()
+    {
+        return $this->belongsTo(Producto::class, 'producto_id');
     }
 }

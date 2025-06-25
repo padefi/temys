@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Inmueble extends Model
 {
-    protected $table = 'inmuebles';
+    
     public $timestamps = false;
 
     
@@ -40,17 +40,17 @@ class Inmueble extends Model
 
        public function estado()
     {
-        return $this->belongsTo(TipoEstado::class, 'estado_id');
+        return $this->belongsTo(Inmueble_tipo_estado::class, 'estado_id');
     }
 
     public function tipoInmueble()
     {
-        return $this->belongsTo(InmuebleTipo::class, 'tipo_inmueble_id');
+        return $this->belongsTo(Inmueble_tipo::class, 'tipo_inmueble_id');
     }
 
     public function tipoOcupacion()
     {
-        return $this->belongsTo(TipoOcupacion::class, 'tipo_ocupacion_id');
+        return $this->belongsTo(Inmueble_tipo_ocupacions::class, 'tipo_ocupacion_id');
     }
 
     public function creador()

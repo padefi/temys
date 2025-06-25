@@ -11,31 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('productos', function (Blueprint $table) {
+        Schema::create('producto_modelos', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre');
             $table->string('descripcion');
-            $table->unsignedBigInteger('modelo_id');
-            $table->unsignedBigInteger('subcategoria_id');
-            $table->decimal('peso');
-            $table->decimal('alto');
-            $table->decimal('ancho');
-            $table->decimal('volumen');
-            $table->decimal('profundidad');
-            $table->string('cod_barras');
-            $table->string('es_inventario');
-            $table->boolean('es_patrimonio');
-            $table->string('referencia');
+            $table->unsignedBigInteger('marca_id');
             $table->timestamp('fecha_creacion');
             $table->unsignedBigInteger('usuario_creacion');
             $table->dateTime('fecha_actualizacion');
             $table->unsignedBigInteger('usuario_actualizacion')->nullable();
-            
+         
 
-            
              //Relaciones
-            $table->foreign('modelo_id')->references('id')->on('producto_modelos');
-            $table->foreign('subcategoria_id')->references('id')->on('producto_subcategorias');
+            $table->foreign('marca_id')->references('id')->on('producto_marcas');
             $table->foreign('usuario_creacion')->references('id')->on('users');
             $table->foreign('usuario_actualizacion')->references('id')->on('users');
 
@@ -47,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('productos');
+        Schema::dropIfExists('producto_modelos');
     }
 };
