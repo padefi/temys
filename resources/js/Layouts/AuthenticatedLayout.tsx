@@ -63,15 +63,15 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
                             menusList.data.map((menu, index) => (
                                 menu.submenus && menu.submenus.length > 0 ? (
                                     <MenubarMenu key={index + menu.name}>
-                                        <MenubarTrigger>{menu.name}</MenubarTrigger>
+                                        <MenubarTrigger className='lg:text-base! text-[15px]!'>{menu.name}</MenubarTrigger>
                                         <MenubarContent className="hidden md:flex md:flex-col">
                                             <div className="max-h-[calc(100vh-5rem)] overflow-y-auto">
                                                 {menu.submenus.map((submenu, subIndex) => (
                                                     <MenubarItem key={subIndex + submenu.name} asChild>
                                                         {route().has(submenu.key) ? (
-                                                            <Link href={route(submenu.key)} className="cursor-pointer text-base!">{submenu.name}</Link>
+                                                            <Link href={route(submenu.key)} className="cursor-pointer lg:text-base! text-[15px]!">{submenu.name}</Link>
                                                         ) : (
-                                                            <span className="text-base!">{submenu.name}</span>
+                                                            <span className="lg:text-base! text-[15px]!">{submenu.name}</span>
                                                         )}
                                                     </MenubarItem>
                                                 ))}
@@ -82,9 +82,9 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
                                     <MenubarMenu key={index + menu.name}>
                                         <MenubarTrigger asChild>
                                             {route().has(modulo + '.' + menu.key) ? (
-                                                <Link href={route(modulo + '.' + menu.key)} className="cursor-pointer text-base!">{menu.name}</Link>
+                                                <Link href={route(modulo + '.' + menu.key)} className="cursor-pointer lg:text-base! text-[15px]!">{menu.name}</Link>
                                             ) : (
-                                                <span className="text-base!">{menu.name}</span>
+                                                <span className="lg:text-base! text-[15px]!">{menu.name}</span>
                                             )}
                                         </MenubarTrigger>
                                     </MenubarMenu>
