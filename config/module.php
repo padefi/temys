@@ -65,25 +65,25 @@ return [
             'name' => 'Compras',
             'menus' => [
                 [
-                    'key' => 'ordenes',
+                    'key' => 'ordenesCompras',
                     'name' => 'Ordenes',
                     'submenus' => [
-                        ['key' => 'cotizacionesOrdenes', 'name' => 'Cotizaciones'],
-                        ['key' => 'ordenes', 'name' => 'Ordenes'],
+                        ['key' => 'cotizacionesOrdenesCompras', 'name' => 'Cotizaciones'],
+                        ['key' => 'ordenesCompras', 'name' => 'Ordenes'],
                         ['key' => 'equiposDeVentas', 'name' => 'Equipos de ventas'],
                         ['key' => 'proveedoresCompras', 'name' => 'Proveedores'],
                     ]
                 ],
                 [
-                    'key' => 'productos',
+                    'key' => 'productosCompras',
                     'name' => 'Productos',
                     'submenus' => [
-                        ['key' => 'productos', 'name' => 'Productos'],
-                        ['key' => 'variantesProductos', 'name' => 'Variantes de productos'],
+                        ['key' => 'productosCompras', 'name' => 'Productos'],
+                        ['key' => 'variantesProductosCompras', 'name' => 'Variantes de productos'],
                     ]
                 ],
                 [
-                    'key' => 'reportes',
+                    'key' => 'reportesCompras',
                     'name' => 'Reportes',
                     'submenus' => [
                         ['key' => 'compra', 'name' => 'Compra'],
@@ -146,7 +146,7 @@ return [
                     ]
                 ],
                 [
-                    'key' => 'reportes',
+                    'key' => 'reportesContabilidad',
                     'name' => 'Reportes',
                     'submenus' => [
                         ['key' => 'balanceGeneral', 'name' => 'Balance general'],
@@ -219,15 +219,15 @@ return [
                     ]
                 ],
                 [
-                    'key' => 'productos',
+                    'key' => 'productosInventario',
                     'name' => 'Productos',
                     'submenus' => [
-                        ['key' => 'Productos', 'name' => 'Productos'],
-                        ['key' => 'variantesProductos', 'name' => 'Variantes de productos'],
+                        ['key' => 'productosInventario', 'name' => 'Productos'],
+                        ['key' => 'variantesProductosInventario', 'name' => 'Variantes de productos'],
                     ]
                 ],
                 [
-                    'key' => 'reportes',
+                    'key' => 'reportesInventario',
                     'name' => 'Reportes',
                     'submenus' => [
                         ['key' => 'existencias', 'name' => 'Existencias'],
@@ -270,11 +270,11 @@ return [
             'name' => 'Ventas',
             'menus' => [
                 [
-                    'key' => 'ordenes',
+                    'key' => 'ordenesInventario',
                     'name' => 'Ordenes',
                     'submenus' => [
                         ['key' => 'cotizacionesVentas', 'name' => 'Cotizaciones'],
-                        ['key' => 'ordenes', 'name' => 'Ordenes'],
+                        ['key' => 'ordenesInventario', 'name' => 'Ordenes'],
                         ['key' => 'equiposVentas', 'name' => 'Equipos de ventas'],
                         ['key' => 'clientes', 'name' => 'Clientes'],
                     ]
@@ -288,16 +288,16 @@ return [
                     ]
                 ],
                 [
-                    'key' => 'productos',
+                    'key' => 'productosVentas',
                     'name' => 'Productos',
                     'submenus' => [
-                        ['key' => 'productos', 'name' => 'Productos'],
-                        ['key' => 'variantesProductos', 'name' => 'Variantes de productos'],
+                        ['key' => 'productosVentas', 'name' => 'Productos'],
+                        ['key' => 'variantesProductosVentas', 'name' => 'Variantes de productos'],
                         ['key' => 'listaPrecios', 'name' => 'Lista de precios'],
                     ]
                 ],
                 [
-                    'key' => 'reportes',
+                    'key' => 'reportesVentas',
                     'name' => 'Reportes',
                     'submenus' => [
                         ['key' => 'ventas', 'name' => 'Ventas'],
