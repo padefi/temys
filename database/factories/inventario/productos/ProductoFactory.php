@@ -9,9 +9,6 @@ use App\Models\Inventario\Productos\ProductoModelo;
 use App\Models\Inventario\Productos\ProductoSubcategoria;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Inventario\Productos\Producto>
- */
 class ProductoFactory extends Factory
 {
     /**
