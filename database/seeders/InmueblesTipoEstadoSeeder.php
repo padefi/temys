@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Patrimonio\Inmuebles\InmuebleTipoEstado;
 use Illuminate\Database\Seeder;
-use App\Models\InmuebleTipoEstado;
-use App\Models\Patrimonio\Inmuebles\TipoEstado;
+
+
 
 class InmueblesTipoEstadoSeeder extends Seeder
 {
@@ -13,7 +14,7 @@ class InmueblesTipoEstadoSeeder extends Seeder
         $estados = ['Activo', 'Inactivo', 'En proceso', 'Demolido'];
 
         foreach ($estados as $estado) {
-            TipoEstado::create(['descripcion' => $estado]);
+            InmuebleTipoEstado::create(['descripcion' => $estado]);
         }
     }
 }

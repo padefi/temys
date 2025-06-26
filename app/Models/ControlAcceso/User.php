@@ -3,6 +3,8 @@
 namespace App\Models\ControlAcceso;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Models\Almacenes\Almacen;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -84,5 +86,10 @@ class User extends Authenticatable {
             $query->where('name', '!=', 'admin');
         })
         ->get();
+    }
+
+     public function almacenes()
+    {
+        return $this->hasMany(Almacen::class, 'id_responsable');
     }
 }
