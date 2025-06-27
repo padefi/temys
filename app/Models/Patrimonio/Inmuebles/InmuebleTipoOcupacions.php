@@ -4,9 +4,9 @@ namespace App\Models\Patrimonio\Inmuebles;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TipoOcupacion extends Model
+class InmuebleTipoOcupacions extends Model
 {
-    protected $table = 'inmuebles_tipo_ocupacion';
+
 
     public $timestamps = false;
 

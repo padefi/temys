@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
 
-        Schema::create('inmuebles_tipo_estado', function (Blueprint $table) {
+        Schema::create('inmueble_tipo_estados', function (Blueprint $table) {
             $table->id();
             $table->string('descripcion');
         });
@@ -18,6 +18,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('inmuebles_tipo_estado');
+        Schema::dropIfExists('inmueble_tipo_estados');
     }
 };

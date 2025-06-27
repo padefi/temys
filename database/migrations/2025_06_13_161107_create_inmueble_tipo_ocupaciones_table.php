@@ -6,10 +6,10 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+     public function up(): void
     {
 
-        Schema::create('inmuebles_tipo', function (Blueprint $table) {
+        Schema::create('Inmueble_tipo_ocupacions', function (Blueprint $table) {
             $table->id();
             $table->string('descripcion');
         });
@@ -18,6 +18,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('inmuebles_tipo');
+        Schema::dropIfExists('Inmueble_tipo_ocupacions');
     }
 };

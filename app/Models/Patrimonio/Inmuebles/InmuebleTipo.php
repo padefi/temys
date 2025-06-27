@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class InmuebleTipo extends Model
 {
-    protected $table='inmuebles_tipo';
+  
     public $timestamps = false;
 
     

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Inmueble extends Model
 {
-    // Desactivar timestamps automáticos (created_at y updated_at)
+    
     public $timestamps = false;
 
     
@@ -40,7 +40,7 @@ class Inmueble extends Model
 
        public function estado()
     {
-        return $this->belongsTo(TipoEstado::class, 'estado_id');
+        return $this->belongsTo(InmuebleTipoEstado::class, 'estado_id');
     }
 
     public function tipoInmueble()
@@ -50,7 +50,7 @@ class Inmueble extends Model
 
     public function tipoOcupacion()
     {
-        return $this->belongsTo(TipoOcupacion::class, 'tipo_ocupacion_id');
+        return $this->belongsTo(InmuebleTipoOcupacions::class, 'tipo_ocupacion_id');
     }
 
     public function creador()
