@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 // use App\Models\ControlAcceso\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -30,6 +32,16 @@ class DatabaseSeeder extends Seeder
             InmueblesTipoOcupacionSeeder::class,
             InmueblesTipoSeeder::class,
             InmueblesSeeder::class,
+            
+            CaracteristicaSeeder::class, 
+            CategoriaSeeder::class,
+            SubcategoriaSeeder::class,
+            MarcaSeeder::class,
+            ModeloSeeder::class,
+            ProductoSeeder::class,
+            AlmacenSeeder::class
+            
+
         ]);
     }
 }

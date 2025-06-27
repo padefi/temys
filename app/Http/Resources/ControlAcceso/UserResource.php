@@ -4,7 +4,6 @@ namespace App\Http\Resources\ControlAcceso;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Spatie\Permission\Contracts\Role;
 
 class UserResource extends JsonResource
 {
@@ -22,9 +21,9 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'is_active' => $this->is_active,
             'roles' => RoleResource::collection($this->roles),
-            'modules' => ModuleResource::collection($this->modules),
+            /* 'modules' => ModuleResource::collection($this->modules),
             'menus' => MenuResource::collection($this->menus),
-            'submenus' => SubmenuResource::collection($this->submenus),
+            'submenus' => SubmenuResource::collection($this->submenus), */
             'permissions' => $this->permissions,
         ];
     }

@@ -30,3 +30,26 @@ export const addDate = (date, days) => {
     result.setDate(result.getDate() + days);
     return result;
 };
+
+export const numberFormatter = (data) => {
+    return data.toLocaleString("es-AR");
+};
+
+export const formatString = (data) => {
+    if (!data) return "";
+
+    let formattedString = data.replace(/([A-Z])/g, ' $1').toLowerCase();
+
+    // Replace hyphens and underscores with spaces
+    formattedString = formattedString.replace(/[-_]/g, ' ');
+
+    // Trim leading/trailing spaces and multiple internal spaces
+    formattedString = formattedString.replace(/\s+/g, ' ').trim();
+
+    // Capitalize the first letter of each word
+    formattedString = formattedString.split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+
+    return formattedString;
+}

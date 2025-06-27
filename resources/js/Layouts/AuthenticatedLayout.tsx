@@ -3,10 +3,11 @@ import { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "@/Components/ui/menubar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu"
 import { Button } from '@/Components/ui/button';
-import { ChevronDown, House, MenuIcon } from 'lucide-react';
-import { ReactNode, Fragment, PropsWithChildren } from 'react';
+import { ChevronDown, ChevronsRight, House, MenuIcon } from 'lucide-react';
+import { ReactNode, PropsWithChildren } from 'react';
 import { usePermissions } from '@/composables/permissions';
 import { Toaster } from '@/Components/ui/sonner';
+import { formatString } from '@/utils/formatterFunctions';
 
 type Submenu = {
     name: string;
@@ -53,53 +54,64 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
                     >
                         <House className="w-5 h-5" />
                     </Link>
-                    {menusList.data && menusList.data.length > 0 && (
-                        menusList.data.map((menu, index) => (
-                            menu.submenus && menu.submenus.length > 0 ? (
-                                <MenubarMenu key={index + menu.name}>
-                                    <MenubarTrigger>{menu.name}</MenubarTrigger>
-                                    <MenubarContent className="hidden md:flex md:flex-col">
-                                        {menu.submenus.map((submenu, subIndex) => (
-                                            <MenubarItem key={subIndex + submenu.name} asChild>
-                                                {route().has(submenu.key) ? (
-                                                    <Link href={route(submenu.key)} className="cursor-pointer">{submenu.name}</Link>
-                                                ) : (
-                                                    <span>{submenu.name}</span>
-                                                )}
-                                            </MenubarItem>
-                                        ))}
-                                    </MenubarContent>
-                                </MenubarMenu>
-                            ) : (
-                                <MenubarMenu key={index + menu.name}>
-                                    <MenubarTrigger asChild>
-                                        {route().has(modulo + '.' + menu.key) ? (
-                                            <Link href={route(modulo + '.' + menu.key)} className="cursor-pointer">{menu.name}</Link>
-                                        ) : (
-                                            <span>{menu.name}</span>
-                                        )}
-                                    </MenubarTrigger>
-                                </MenubarMenu>
-                            )
-                        ))
-                    )}
+                    <div className='font-bold flex items-center gap-2 ml-2'>
+                        <span>{formatString(modulo)}</span>
+                        <ChevronsRight className="h-4 w-4" />
+                    </div>
+                    <div className='flex font-semibold'>
+                        {menusList.data && menusList.data.length > 0 && (
+                            menusList.data.map((menu, index) => (
+                                menu.submenus && menu.submenus.length > 0 ? (
+                                    <MenubarMenu key={index + menu.name}>
+                                        <MenubarTrigger className='lg:text-base! text-[15px]!'>{menu.name}</MenubarTrigger>
+                                        <MenubarContent className="hidden md:flex md:flex-col">
+                                            <div className="max-h-[calc(100vh-5rem)] overflow-y-auto">
+                                                {menu.submenus.map((submenu, subIndex) => (
+                                                    <MenubarItem key={subIndex + submenu.name} asChild>
+                                                        {route().has(submenu.key) ? (
+                                                            <Link href={route(submenu.key)} className="cursor-pointer lg:text-base! text-[15px]!">{submenu.name}</Link>
+                                                        ) : (
+                                                            <span className="lg:text-base! text-[15px]!">{submenu.name}</span>
+                                                        )}
+                                                    </MenubarItem>
+                                                ))}
+                                            </div>
+                                        </MenubarContent>
+                                    </MenubarMenu>
+                                ) : (
+                                    <MenubarMenu key={index + menu.name}>
+                                        <MenubarTrigger asChild>
+                                            {route().has(modulo + '.' + menu.key) ? (
+                                                <Link href={route(modulo + '.' + menu.key)} className="cursor-pointer lg:text-base! text-[15px]!">{menu.name}</Link>
+                                            ) : (
+                                                <span className="lg:text-base! text-[15px]!">{menu.name}</span>
+                                            )}
+                                        </MenubarTrigger>
+                                    </MenubarMenu>
+                                )
+                            ))
+                        )}
+                    </div>
                 </Menubar>
 
                 {/* DropdownMenu para mobile */}
-                <div className="flex items-center justify-between px-2 md:hidden">
-                    <Link
-                        href={route('welcome')}
-                        className="text-center font-semibold text-gray-700 hover:text-emerald-600 transition"
-                    >
-                        <House className="w-5 h-5" />
-                    </Link>
+                <div className="flex items-center justify-between md:hidden">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost">
                                 <MenuIcon />
                             </Button>
                         </DropdownMenuTrigger>
+                        <span className='font-bold'>{formatString(modulo)}</span>
                         <DropdownMenuContent className="w-56">
+                            <div className='px-2'>
+                                <Link
+                                    href={route('welcome')}
+                                    className="text-center font-semibold text-gray-700 hover:text-emerald-600 transition"
+                                >
+                                    <House className="w-5 h-5" />
+                                </Link>
+                            </div>
                             {menusList.data && menusList.data.length > 0 && (
                                 menusList.data.map((menu, index) => (
                                     menu.submenus && menu.submenus.length > 0 ? (
@@ -107,15 +119,17 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
                                             <DropdownMenuSubTrigger>{menu.name}</DropdownMenuSubTrigger>
                                             <DropdownMenuPortal>
                                                 <DropdownMenuSubContent>
-                                                    {menu.submenus.map((submenu, subIndex) => (
-                                                        <DropdownMenuItem key={subIndex + submenu.name} asChild>
-                                                            {route().has(submenu.key) ? (
-                                                                <Link href={route(submenu.key)} className="cursor-pointer">{submenu.name}</Link>
-                                                            ) : (
-                                                                <span>{submenu.name}</span>
-                                                            )}
-                                                        </DropdownMenuItem>
-                                                    ))}
+                                                    <div className="max-h-[calc(100vh-5rem)] overflow-y-auto">
+                                                        {menu.submenus.map((submenu, subIndex) => (
+                                                            <DropdownMenuItem key={subIndex + submenu.name} asChild>
+                                                                {route().has(submenu.key) ? (
+                                                                    <Link href={route(submenu.key)} className="cursor-pointer">{submenu.name}</Link>
+                                                                ) : (
+                                                                    <span>{submenu.name}</span>
+                                                                )}
+                                                            </DropdownMenuItem>
+                                                        ))}
+                                                    </div>
                                                 </DropdownMenuSubContent>
                                             </DropdownMenuPortal>
                                         </DropdownMenuSub>
@@ -134,7 +148,7 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
                     </DropdownMenu>
                 </div>
 
-                <div className="hidden ml-auto mr-4 sm:flex sm:items-center">
+                <div className="ml-auto mr-4 flex items-center">
                     <DropdownMenu>
                         <DropdownMenuTrigger
                             className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 ring-0 focus:outline-none focus:ring-0 group"

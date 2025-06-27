@@ -1,0 +1,21 @@
+.sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
+
+    tr {
+        background-color: var(--background);
+    }
+}
+
+.table-container {
+    max-height: calc(100vh - 310px);
+    overflow-y: auto;
+    border-radius: 0.5rem;
+}
+
+/* Add shadow to sticky header when scrolled */
+.table-container:not(:first-child) .sticky-header {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
