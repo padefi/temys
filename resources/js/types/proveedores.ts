@@ -10,6 +10,7 @@ export interface Padron {
     updated_at?: string;
 }
 
+
 export interface Proveedor {
     id: number;
     id_padron: number;

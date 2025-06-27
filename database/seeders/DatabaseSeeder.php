@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             InmueblesTipoOcupacionSeeder::class,
             InmueblesTipoSeeder::class,
             InmueblesSeeder::class,
+            TipoMonedaSeeder::class,
         ]);
     }
 }

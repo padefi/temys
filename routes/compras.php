@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Compras\ComprasController;
 use App\Http\Controllers\Compras\Proveedores\ProveedoresController;
+use App\Http\Controllers\Compras\CotizacionesOrdenes\CotizacionesOrdenesController;
 use App\Http\Controllers\UserModulePanel\UserModuleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -31,10 +32,23 @@ Route::middleware(['menu:ordenes'])->group(function () {
             Route::get('compras/proveedores', [ProveedoresController::class, 'index'])
                 ->name('proveedoresCompras');
 
+            //Solicitud de Cotización
+            Route::get('compras/cotizaciones-ordenes', [CotizacionesOrdenesController::class, 'index'])
+            ->name('cotizacionesOrdenes');
+
             // Ruta para actualización
             Route::middleware('submenu_permission:update proveedoresCompras')->group(function () {
                 Route::put('proveedores/{proveedor}', [ProveedoresController::class, 'update'])
                 ->name('proveedores.update');
             });
+    });
+
+     Route::middleware(['submenu:cotizacionesOrdenes'])
+        ->group(function () {
+            // nueva cotización
+            Route::get('/cotizaciones-ordenes/nueva-cotizacion', [CotizacionesOrdenesController::class, 'nuevaCotizacion'])
+                ->name('cotizacionesCompras');
+
+
     });
 });
