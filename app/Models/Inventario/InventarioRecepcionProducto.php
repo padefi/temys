@@ -33,12 +33,12 @@ class InventarioRecepcionProducto extends Model
 
      public function remitente()
     {
-        return $this->belongsTo(Almacen::class, 'id_remitente');
+        return $this->belongsTo(Almacen::class, 'remitente_id');
     }
 
     public function destino()
     {
-        return $this->belongsTo(Almacen::class, 'id_destino');
+        return $this->belongsTo(Almacen::class, 'destino_id');
     }
 
     public function usuario()

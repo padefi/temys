@@ -36,7 +36,7 @@ class Almacen extends Model
 
     public function responsable()
     {
-        return $this->belongsTo(User::class, 'id_responsable', 'id_user');
+        return $this->belongsTo(User::class, 'responsable_id', 'user_id');
     }
 
     public function padre()
@@ -51,7 +51,7 @@ class Almacen extends Model
 
     public function direcciones()
     {
-        return $this->hasMany(AlmacenDomicilio::class, 'id_almacen');
+        return $this->hasMany(AlmacenDomicilio::class, 'almacen_id');
     }
 
     public function stocks()
