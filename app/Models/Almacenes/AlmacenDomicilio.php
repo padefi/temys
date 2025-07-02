@@ -32,6 +32,6 @@ class AlmacenDomicilio extends Model
 
        public function almacen()
     {
-        return $this->belongsTo(Almacen::class, 'id_almacen');
+        return $this->belongsTo(Almacen::class, 'almacen_id');
     }
 }

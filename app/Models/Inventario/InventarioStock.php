@@ -4,11 +4,12 @@ namespace App\Models\Inventario;
 
 use App\Models\Almacenes\Almacen;
 use App\Models\Inventario\Productos\Producto;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class InventarioStock extends Model
 {
-    
+     use HasFactory;
     public $timestamps = false;
 
     protected $fillable = [

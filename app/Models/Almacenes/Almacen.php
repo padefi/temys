@@ -2,16 +2,17 @@
 
 namespace App\Models\Almacenes;
 
-use App\Models\Compras\orden_compra;
+
 use App\Models\Compras\OrdenCompra;
 use App\Models\ControlAcceso\User;
-use App\Models\Inventario\Inventario_stock;
-use App\Models\Inventario\Stock;
+use App\Models\Inventario\InventarioStock;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Almacen extends Model
 {
-    protected $table = 'almacenes';
+    use HasFactory;
+    
     public $timestamps = false;
 
     
@@ -35,7 +36,7 @@ class Almacen extends Model
 
     public function responsable()
     {
-        return $this->belongsTo(User::class, 'id_responsable', 'id_user');
+        return $this->belongsTo(User::class, 'responsable_id', 'user_id');
     }
 
     public function padre()
@@ -50,12 +51,12 @@ class Almacen extends Model
 
     public function direcciones()
     {
-        return $this->hasMany(AlmacenDomicilio::class, 'id_almacen');
+        return $this->hasMany(AlmacenDomicilio::class, 'almacen_id');
     }
 
     public function stocks()
     {
-        return $this->hasMany(Inventario_stock::class, 'almacen_id');
+        return $this->hasMany(InventarioStock::class, 'almacen_id');
     }
 
     public function ordenesDestino()

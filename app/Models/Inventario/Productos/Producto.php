@@ -46,12 +46,12 @@ class Producto extends Model
 
     public function modelo()
     {
-        return $this->belongsTo(ProductoModelo::class, 'id_modelo', 'id_modelo');
+        return $this->belongsTo(ProductoModelo::class, 'modelo_id', 'modelo_id');
     }
 
     public function subCategoria()
     {
-        return $this->belongsTo(ProductoSubcategoria::class, 'id_subcategoria', 'id');
+        return $this->belongsTo(ProductoSubcategoria::class, 'subcategoria_id', 'id');
     }
 
     public function caracteristicas()
