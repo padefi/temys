@@ -178,7 +178,7 @@ export function DataTable<TData extends User, TValue>({
                         if (col.id === 'roles') {
                             return (
                                 <div>
-                                    <span className={`
+                                    <span className={`font-medium
                                     ${(initialCellOriginalValue === 'admin')
                                             ? 'text-emerald-700'
                                             : initialCellOriginalValue === 'SIN ROL'
@@ -309,7 +309,7 @@ export function DataTable<TData extends User, TValue>({
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={columns.length} className="h-24 text-center">
-                                        No results.
+                                        Sin resultados.
                                     </TableCell>
                                 </TableRow>
                             )}

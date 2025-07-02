@@ -13,7 +13,6 @@ use App\Models\ControlAcceso\User;
 use App\QueryBuilders\Sorts\RoleSort;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
@@ -102,20 +101,30 @@ class UsuarioController extends Controller
     {
         if (!$user->is_active) return response()->json(['message' => 'El usuario se encuentra deshabilitado', 'success' => false]);
 
+        $currentRole = $user->roles()->first();
+        $currentRoleName = $currentRole ? strtolower($currentRole->name) : null;
+        $newRoleName = strtolower($request->role);
+
         $user->update([
             'name' => strtoupper($request->name),
             'last_name' => strtoupper($request->last_name),
             'email' => strtoupper($request->email),
         ]);
         $user->update(['updated_at' => now()]);
-        $userRole = $user->roles()->first();
         $user->syncRoles($request->role);
 
-        if ($userRole && strtolower($userRole->name) !== strtolower($request->role) && strtolower($request->role) !== 'admin') $this->cleanPermissionsByUser($user);
-        elseif (strtolower($request->role) === 'admin')
+
+        if ($currentRoleName !== $newRoleName)
         {
-            $this->cleanPermissionsByUser($user);
-            $this->assingDefaultPermissions($user);
+            if ($newRoleName === 'admin')
+            {
+                $this->cleanPermissionsByUser($user);
+                $this->assingDefaultPermissions($user);
+            }
+            else
+            {
+                $this->cleanPermissionsByUser($user);
+            }
         }
 
         return response()->json(['message' => 'Usuario actualizado con exito', 'success' => true, 'user' => UserResource::make($user)]);
@@ -184,22 +193,14 @@ class UsuarioController extends Controller
 
     private function cleanPermissionsByUser(User $user)
     {
-        $user->modulesRole()->detach();
         $user->modules()->detach();
         $user->menus()->detach();
         $user->submenus()->detach();
-
-        DB::table('model_has_module_permissions')
-            ->where('model_id', $user->id)
-            ->delete();
-
-        DB::table('model_has_menu_permissions')
-            ->where('model_id', $user->id)
-            ->delete();
-
-        DB::table('model_has_submenu_permissions')
-            ->where('model_id', $user->id)
-            ->delete();
+        $user->modulesRole()->detach();
+        $user->permissions()->detach();
+        $user->modulePermissions()->detach();
+        $user->menuPermissions()->detach();
+        $user->submenuPermissions()->detach();
     }
 
     private function assingDefaultPermissions($user)

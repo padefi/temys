@@ -39,7 +39,7 @@ class ModuleController extends Controller
                 ->where('model_has_modules.model_id', '=', $user->id);
         })
             ->join('role_has_modules', 'modules.id', '=', 'role_has_modules.module_id')
-            ->where('role_has_modules.role_id', $user->userRoles()->pluck('role_id')->first())    
+            ->where('role_has_modules.role_id', $user->userRoles()->pluck('role_id')->first())
             ->select('modules.*', DB::raw('IF(model_has_modules.module_id IS NOT NULL, true, false) as is_assigned')) // Verifica si el módulo estaba asignado al usuario
             ->orderBy('modules.name', 'asc')
             ->get();
@@ -49,9 +49,12 @@ class ModuleController extends Controller
         {
             $module->has_menus = $module->menus()->exists();
             $module->has_role_module = $user->modulesRole()->where('modules.id', $module->id)->exists();
+
+            $roleModuleId = $user->modulesRole()->where('modules.id', $module->id)->pluck('role_id')->first();
+            $module->role_module = $roleModuleId ? RoleModule::findById($roleModuleId)?->name : null;
             return $module;
         });
-        
+
         return ModuleResource::collection($modules);
     }
 
@@ -66,6 +69,11 @@ class ModuleController extends Controller
         $user = User::find($request->user);
         $module = Module::find($request->idModule);
         $role = RoleModule::findByName($request->role);
+
+        if ($user->hasRole('admin'))
+        {
+            return response()->json(['message' => 'No puedes asignar un rol a un administrador', 'success' => false]);
+        }
 
         $exists = $user->modulesRole()->where('modules.id', $module->id)->exists();
 
@@ -87,6 +95,11 @@ class ModuleController extends Controller
 
         $user = User::find($request->user);
         $module = Module::find($request->idModule);
+
+        if ($user->hasRole('admin'))
+        {
+            return response()->json(['message' => 'No puedes agregar o quitar modulos a un administrador', 'success' => false]);
+        }
 
         if ($user->modules()->where('modules.id', $module->id)->exists())
         {
@@ -152,6 +165,11 @@ class ModuleController extends Controller
         $user = User::find($request->user);
         $module = Module::find($request->idModule);
         $permission = Permission::findByName($request->permission);
+
+        if ($user->hasRole('admin'))
+        {
+            return response()->json(['message' => 'No puedes agregar o quitar permisos a un administrador', 'success' => false]);
+        }
 
         if (!$user->modules()->where('modules.id', $module->id)->exists())
         {

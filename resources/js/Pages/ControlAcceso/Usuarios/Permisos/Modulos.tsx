@@ -8,10 +8,10 @@ import { PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { PermisosPopover } from "./PermisosPopover";
-import axios from "axios";
 import { ConfirmPopover } from "./ConfimPopover";
 import { RolePopover } from "./RolePopover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+import axios from "axios";
 
 interface Role {
     id: number;
@@ -24,17 +24,19 @@ interface Modulo {
     is_assigned: number;
     has_menus: boolean;
     has_role_module: boolean;
+    role_module: string;
 }
 
 interface ModulosProps {
     setModuleSelected: (id: number) => void;
     setModuleSelectedIsAssigned: (status: boolean) => void;
+    setModuleSelectedRoleModule: (role: string) => void;
     setMenuSelected: (id: number) => void;
     setMenuSelectedIsAssigned: (status: boolean) => void;
     user: number;
 }
 
-export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMenuSelected, setMenuSelectedIsAssigned, user }: ModulosProps) {
+export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setModuleSelectedRoleModule, setMenuSelected, setMenuSelectedIsAssigned, user }: ModulosProps) {
     const [dataModulos, setDataModulos] = useState<Modulo[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadingPermissions, setLoadingPermissions] = useState(true);
@@ -71,6 +73,7 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
     const toggleRoleAssignment = async (idModule: number, role: string) => {
         try {
             setModuleSelectedIsAssigned(false);
+            setModuleSelectedRoleModule('');
             const response = await axios.post('/control-acceso/managed-role-modulos-by-user/', {
                 user,
                 idModule,
@@ -85,6 +88,7 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
             }
 
             setModuleSelectedIsAssigned(true);
+            setModuleSelectedRoleModule(role.toLowerCase());
             toast.success(data.message);
 
             setDataModulos((prevData) => {
@@ -92,7 +96,7 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
 
                 return prevData.map((modulo) =>
                     modulo.id === idModule
-                        ? { ...modulo, has_role_module: true, }
+                        ? { ...modulo, has_role_module: true, role_module: role }
                         : modulo
                 );
             });
@@ -193,13 +197,14 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
             }
 
             setModuleSelectedIsAssigned(false);
+            setModuleSelectedRoleModule('');
 
             setDataModulos((prevData) => {
                 if (!prevData) return null;
 
                 return prevData.map((modulo) =>
                     modulo.id === idModule
-                        ? { ...modulo, is_assigned: isAssigned, has_role_module: false, }
+                        ? { ...modulo, is_assigned: isAssigned, has_role_module: false, role_module: '' }
                         : modulo
                 );
             });
@@ -234,6 +239,7 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
                                         setIsClicked(index);
                                         setModuleSelected(modulo.id);
                                         setModuleSelectedIsAssigned(modulo.is_assigned === 1 && modulo.has_role_module ? true : false);
+                                        setModuleSelectedRoleModule(modulo.role_module ? modulo.role_module.toLowerCase() : '');
                                         setMenuSelected(0);
                                     }}
                                     className={cn(
@@ -285,10 +291,11 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
                                                     seccion(modulo.name, modulo.id);
                                                 }}
                                                 onPermissionChange={(option) => togglePermissionAssignment(modulo.id, option)}
-                                                loadingPermissions={loadingPermissions} />
+                                                loadingPermissions={loadingPermissions}
+                                                disabled={false} />
                                         )}
 
-                                        <ConfirmPopover seccion="módulo" opcion={modulo.name} onClick={() => toggleModuleAssignment(modulo.id, 0)} />
+                                        <ConfirmPopover seccion="módulo" opcion={modulo.name} onClick={() => toggleModuleAssignment(modulo.id, 0)} disabled={false} />
                                     </div>
                                 )}
                             </div>

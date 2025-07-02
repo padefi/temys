@@ -72,11 +72,11 @@ export const columns: ColumnDef<User>[] = [
         },
         cell: ({ row }) => {
             if (!row.original.roles || row.original.roles.length === 0) {
-                return <span className="text-sm text-red-500">Sin Rol</span>;
+                return <span className="text-sm font-medium text-red-500">Sin Rol</span>;
             }
 
             return (
-                <span className={`${row.original.roles[0].name === 'admin'
+                <span className={`font-medium ${row.original.roles[0].name === 'admin'
                     ? 'text-emerald-700'
                     : ''} text-sm`}>
                     {row.original.roles[0].name}

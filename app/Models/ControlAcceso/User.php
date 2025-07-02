@@ -74,6 +74,18 @@ class User extends Authenticatable {
         return $this->belongsToMany(Module::class, 'model_has_module_role', 'model_id', 'module_id')->withPivot('role_id');
     }
 
+    public function modulePermissions() {
+        return $this->belongsToMany(Module::class, 'model_has_module_permissions', 'model_id', 'module_id')->withPivot('permission_id');
+    }
+
+    public function menuPermissions() {
+        return $this->belongsToMany(Module::class, 'model_has_menu_permissions', 'model_id', 'module_id')->withPivot('permission_id');
+    }
+
+    public function submenuPermissions() {
+        return $this->belongsToMany(Module::class, 'model_has_submenu_permissions', 'model_id', 'module_id')->withPivot('permission_id');
+    }
+
     public function permissions() {
         return $this->belongsToMany(Permission::class, 'model_has_permissions', 'model_id', 'permission_id');
     }

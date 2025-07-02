@@ -8,15 +8,17 @@ interface ConfirmPopoverProps {
   seccion: string,
   opcion: string,
   onClick: () => void;
+  disabled: boolean;
 }
 
-export function ConfirmPopover({ seccion, opcion, onClick }: PropsWithChildren<ConfirmPopoverProps>) {
+export function ConfirmPopover({ seccion, opcion, onClick, disabled }: PropsWithChildren<ConfirmPopoverProps>) {
   return (
     <PopoverDialog modal={false}>
       <PopoverDialogTrigger asChild>
         <Button
           className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(199,0,54,0.5)]"
-          variant="ghost">
+          variant="ghost"
+          disabled={disabled}>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

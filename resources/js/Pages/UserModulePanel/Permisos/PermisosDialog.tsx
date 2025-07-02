@@ -23,12 +23,14 @@ interface PermisosDialogProps {
 export function PermisosDialog({ open, setOpen, user, module }: PropsWithChildren<PermisosDialogProps>) {
     const [moduleSelected, setModuleSelected] = useState(0);
     const [moduleSelectedIsAssigned, setModuleSelectedIsAssigned] = useState(false);
+    const [moduleSelectedRoleModule, setModuleSelectedRoleModule] = useState('');
     const [menuSelected, setMenuSelected] = useState(0);
     const [menuSelectedIsAssigned, setMenuSelectedIsAssigned] = useState(false);
 
     useEffect(() => {
         setModuleSelected(module);
         setModuleSelectedIsAssigned(true);
+        setModuleSelectedRoleModule('');
         setMenuSelected(0);
         setMenuSelectedIsAssigned(false);
     }, [open]);
@@ -55,7 +57,7 @@ export function PermisosDialog({ open, setOpen, user, module }: PropsWithChildre
                         </div>
                         <Separator />
                         <div className="flex items-center justify-center">
-                            <Modulos setModuleSelected={setModuleSelected} setModuleSelectedIsAssigned={setModuleSelectedIsAssigned} setMenuSelected={setMenuSelected} setMenuSelectedIsAssigned={setMenuSelectedIsAssigned} user={user.id} module={moduleSelected} />
+                            <Modulos user={user.id} module={moduleSelected} setModuleSelectedRoleModule={setModuleSelectedRoleModule} />
                         </div>
                     </ResizablePanel>
                     <ResizableHandle withHandle />
@@ -65,7 +67,12 @@ export function PermisosDialog({ open, setOpen, user, module }: PropsWithChildre
                         </div>
                         <Separator />
                         <div className="flex items-center justify-center">
-                            <Menus moduleSelected={moduleSelected} moduleSelectedIsAssigned={moduleSelectedIsAssigned} setMenuSelected={setMenuSelected} setMenuSelectedIsAssigned={setMenuSelectedIsAssigned} user={user.id} />
+                            <Menus moduleSelected={moduleSelected}
+                                moduleSelectedIsAssigned={moduleSelectedIsAssigned}
+                                moduleSelectedRoleModule={moduleSelectedRoleModule}
+                                setMenuSelected={setMenuSelected}
+                                setMenuSelectedIsAssigned={setMenuSelectedIsAssigned}
+                                user={user.id} />
                         </div>
                     </ResizablePanel>
                     <ResizableHandle withHandle />
@@ -75,7 +82,12 @@ export function PermisosDialog({ open, setOpen, user, module }: PropsWithChildre
                         </div>
                         <Separator />
                         <div className="flex items-center justify-center">
-                            <Submenus moduleSelected={moduleSelected} moduleSelectedIsAssigned={moduleSelectedIsAssigned} menuSelected={menuSelected} menuSelectedIsAssigned={menuSelectedIsAssigned} user={user.id} />
+                            <Submenus moduleSelected={moduleSelected}
+                                moduleSelectedIsAssigned={moduleSelectedIsAssigned}
+                                moduleSelectedRoleModule={moduleSelectedRoleModule}
+                                menuSelected={menuSelected}
+                                menuSelectedIsAssigned={menuSelectedIsAssigned}
+                                user={user.id} />
                         </div>
                     </ResizablePanel>
                 </ResizablePanelGroup>
