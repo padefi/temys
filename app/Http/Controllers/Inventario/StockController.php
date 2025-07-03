@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\inventario;
+namespace App\Http\Controllers\Inventario;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\inventario\StockResource;
