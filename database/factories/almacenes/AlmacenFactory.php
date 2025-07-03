@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories\almacenes;
+namespace Database\Factories\Almacenes;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Enums\TipoAlmacen;
