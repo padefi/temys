@@ -67,12 +67,17 @@ class MenuController extends Controller
         $module = Module::find($request->idModule);
         $menu = Menu::find($request->idMenu);
 
+        if ($user->hasRole('admin'))
+        {
+            return response()->json(['message' => 'No puedes agregar o quitar modulos a un administrador', 'success' => false]);
+        }
+
         if (!$user->modules()->where('modules.id', $module->id)->exists())
         {
             return response()->json(['message' => 'El módulo no ha sido asignado al usuario', 'success' => false]);
         }
 
-        if(!$user->modulesRole()->where('modules.id', $module->id)->exists())
+        if (!$user->modulesRole()->where('modules.id', $module->id)->exists())
         {
             return response()->json(['message' => 'No ha sido asignado el rol del usuario al módulo', 'success' => false]);
         }
@@ -136,6 +141,11 @@ class MenuController extends Controller
         $user = User::find($request->user);
         $menu = Menu::find($request->idMenu);
         $permission = Permission::findByName($request->permission);
+
+        if ($user->hasRole('admin'))
+        {
+            return response()->json(['message' => 'No puedes agregar o quitar permisos a un administrador', 'success' => false]);
+        }
 
         if (!$user->menus()->where('menus.id', $menu->id)->exists())
         {

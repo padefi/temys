@@ -18,7 +18,7 @@ interface RowActionsProps {
     disabled?: boolean
 }
 
-export const RowActions: React.FC<RowActionsProps> =(
+export const RowActions: React.FC<RowActionsProps> = (
     { user, onUserUpdate, onEditClick, isEditing, disabled }: RowActionsProps) => {
     const { userAuth } = usePermissions();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -142,19 +142,20 @@ export const RowActions: React.FC<RowActionsProps> =(
             <div className="text-right flex gap-3">
                 <TooltipProvider>
                     {actions.filter(action => action.show).map((action, index) => (
-                        <Tooltip key={index}>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    className={`p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_${action.shadowColor}]`}
-                                    onClick={action.onClick}
-                                    disabled={action.disabled}
-                                >
-                                    <action.icon className={`w-6! h-6! ${action.color}`} />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>{action.tooltip}</p></TooltipContent>
-                        </Tooltip>
+                        action.tooltip === "Permisos" && (user.roles.length === 0 || user.roles.some(role => role.name === 'admin')) ? null :
+                            <Tooltip key={index}>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        className={`p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_${action.shadowColor}]`}
+                                        onClick={action.onClick}
+                                        disabled={action.disabled}
+                                    >
+                                        <action.icon className={`w-6! h-6! ${action.color}`} />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent><p>{action.tooltip}</p></TooltipContent>
+                            </Tooltip>
                     ))}
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -172,7 +173,9 @@ export const RowActions: React.FC<RowActionsProps> =(
                 </TooltipProvider>
             </div>
 
-            <PermisosDialog open={isDialogOpen} setOpen={setIsDialogOpen} user={user} />
+            {user.roles.length !== 0 && user.roles.some(role => role.name !== 'admin') &&
+                <PermisosDialog open={isDialogOpen} setOpen={setIsDialogOpen} user={user} />
+            }
         </>
     );
 }
