@@ -29,6 +29,6 @@ class ProductoSubcategoria extends Model
 
      public function categoria()
     {
-        return $this->belongsTo(ProductoCategoria::class, 'categorias_id', 'categorias_id');
+        return $this->belongsTo(ProductoCategoria::class, 'categoria_id', 'id');
     }
 }

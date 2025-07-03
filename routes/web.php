@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Almacenes\AlmacenController;
 use App\Http\Controllers\ControlAcceso\MenuController;
 use App\Http\Controllers\ControlAcceso\ModuleController;
 use App\Http\Controllers\ControlAcceso\ProfileController;
 use App\Http\Controllers\ControlAcceso\SubmenuController;
 use App\Http\Controllers\ControlAcceso\Users\UsuarioController;
+use App\Http\Controllers\inventario\StockController;
 use App\Http\Controllers\UserModulePanel\UserModuleController;
 use App\Models\ControlAcceso\User;
 use Illuminate\Support\Facades\Route;
@@ -151,9 +153,12 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
             Route::middleware(['submenu:usuariosInventario', 'role_module:encargado inventario'])->group(function () {
                 Route::middleware('submenu_permission:read usuariosInventario')->group(function () {
                     Route::get('inventario/usuarios', [UserModuleController::class, 'index'])->name('usuariosInventario');
+                    Route::get('inventario/inventarioFisico', [StockController::class, 'index'])->name('inventarioFisico');
+                    Route::get('/inventario/almacenes', [AlmacenController::class, 'index']); // No estoy segura de que se declare aca
+                  
                 });
             });
-        });
+        }); 
     });
 
     /* TO-DO Modulo seccionales */

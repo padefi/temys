@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories\inventario;;
+namespace Database\Factories\Inventario;;
 
 use App\Models\Almacenes\Almacen;
 use App\Models\Inventario\InventarioStock;
