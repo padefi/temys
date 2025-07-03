@@ -1,10 +1,8 @@
 <?php
 
-use App\Http\Controllers\ControlAcceso\MenuController;
-use App\Http\Controllers\ControlAcceso\ModuleController;
+use App\Http\Controllers\Almacenes\AlmacenController;
 use App\Http\Controllers\ControlAcceso\ProfileController;
-use App\Http\Controllers\ControlAcceso\SubmenuController;
-use App\Http\Controllers\ControlAcceso\Users\UsuarioController;
+use App\Http\Controllers\inventario\StockController;
 use App\Http\Controllers\UserModulePanel\UserModuleController;
 use App\Models\ControlAcceso\User;
 use Illuminate\Support\Facades\Route;
