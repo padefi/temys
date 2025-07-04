@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 class Almacen extends Model
 {
     use HasFactory;
-    
+    protected $table='almacenes';
     public $timestamps = false;
 
     

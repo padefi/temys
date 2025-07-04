@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 
 
 
-class AlmacenSeeder extends Seeder
+class almacenSeeder extends Seeder
 {
     public function run(): void
     {

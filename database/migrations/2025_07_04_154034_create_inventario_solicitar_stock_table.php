@@ -11,24 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('inventario_stocks', function (Blueprint $table) {
+        Schema::create('inventario_solicitar_stocks', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('producto_id');
-            $table->unsignedBigInteger('almacen_id');
-            $table->integer('cantidad_actual');
-            $table->integer('stock_minimo');
+            $table->unsignedBigInteger('almacen_solicitante_id');
+            $table->unsignedBigInteger('almacen_proovedor_id');
+            $table->integer('cantidad_solicitada');
+            $table->enum('prioridad', ['Baja', 'Normal', 'Alta','Urgente']);
+            $table->string('motivo');
             $table->timestamp('fecha_creacion');
             $table->unsignedBigInteger('usuario_creacion');
-            $table->dateTime('fecha_actualizacion');
-            $table->unsignedBigInteger('usuario_actualizacion')->nullable();
-            
 
-            
-             //Relaciones
+
+            //Relaciones
+
             $table->foreign('producto_id')->references('id')->on('productos');
-            $table->foreign('almacen_id')->references('id')->on('almacenes');
+            $table->foreign('almacen_solicitante_id')->references('id')->on('almacenes');
+            $table->foreign('almacen_proovedor_id')->references('id')->on('almacenes');
             $table->foreign('usuario_creacion')->references('id')->on('users');
-            $table->foreign('usuario_actualizacion')->references('id')->on('users');
+
+         
         });
     }
 
@@ -37,6 +39,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('inventario_stocks');
+        Schema::dropIfExists('inventario_solicitar_stock');
     }
 };
