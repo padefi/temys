@@ -1,12 +1,11 @@
 import { Button } from "@/Components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
-import { Ban, KeyRound, Loader2Icon, LockKeyhole, Pencil, Waypoints } from "lucide-react";
+import { Loader2Icon, Waypoints } from "lucide-react";
 import { usePermissions } from "@/composables/permissions";
 import { User } from "./page";
-import { toast } from 'sonner';
-import { useState } from "react";
-import { PermisosDialog } from "./Permisos/PermisosDialog";
-import axios from 'axios';
+import React, { Suspense, useState } from "react";
+
+const PermisosDialog = React.lazy(() => import("./Permisos/PermisosDialog"));
 
 interface RowActionsProps {
     user: User;
@@ -14,7 +13,7 @@ interface RowActionsProps {
     disabled?: boolean
 }
 
-export const RowActions: React.FC<RowActionsProps> =(
+export const RowActions = React.memo((
     { user, module, disabled }: RowActionsProps) => {
     const { userAuth } = usePermissions();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -66,7 +65,9 @@ export const RowActions: React.FC<RowActionsProps> =(
                 </TooltipProvider>
             </div>
 
-            <PermisosDialog open={isDialogOpen} setOpen={setIsDialogOpen} user={user} module={module} />
+            <Suspense fallback={null}>
+                <PermisosDialog open={isDialogOpen} setOpen={setIsDialogOpen} user={user} module={module} />
+            </Suspense>
         </>
     );
-}
+});

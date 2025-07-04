@@ -3,13 +3,9 @@ import { Head, usePage } from '@inertiajs/react';
 import { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { columns } from "./columns"
 import { DataTable } from "./data-table"
-import { Button } from '@/Components/ui/button';
-import { UserPlus } from 'lucide-react';
 import { links } from '@/types/links';
 import { meta } from '@/types/meta';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { useDataTableParams } from '@/hooks/useDataTableParams';
+import { useEffect, useMemo, useState } from 'react';
 
 export type User = {
   id: number;
@@ -45,10 +41,13 @@ export default function UsuariosPage() {
   const { users: { data: initialUsers, links, meta }, module_roles: { data: initialModuleRoles }, module } = usePage<PageProps>().props;
   const [users, setUsers] = useState<User[]>(initialUsers);
 
+  const memoizedColumns = useMemo(() => columns, []);
+  const memoizedModuleRoles = useMemo(() => initialModuleRoles, [initialModuleRoles]);
+
   useEffect(() => {
-    setUsers(initialUsers);
+    if (users !== initialUsers) setUsers(initialUsers);
   }, [initialUsers]);
-  
+
   return (
     <AuthenticatedLayout>
       <Head title="Dashboard" />
@@ -56,12 +55,12 @@ export default function UsuariosPage() {
         <div className="overflow-hidden bg-white shadow-xs sm:rounded-lg">
           <div className="p-6 text-gray-900">
             <DataTable
-              columns={columns}
+              columns={memoizedColumns}
               data={users}
               links={links}
               meta={meta}
               module={module as number}
-              module_roles={initialModuleRoles} />
+              module_roles={memoizedModuleRoles} />
           </div>
         </div>
       </div>

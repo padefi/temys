@@ -7,7 +7,7 @@ import { Button } from '@/Components/ui/button';
 import { UserPlus } from 'lucide-react';
 import { links } from '@/types/links';
 import { meta } from '@/types/meta';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useDataTableParams } from '@/hooks/useDataTableParams';
 
@@ -49,17 +49,26 @@ export default function UsuariosPage() {
   const [users, setUsers] = useState<User[]>(initialUsers);
   const { isLoading } = useDataTableParams();
 
+  const memoizedColumns = useMemo(() => columns, []);
+  const memoizedRoles = useMemo(() => initialRoles, [initialRoles]);
+
   useEffect(() => {
-    setUsers(initialUsers);
+    if (users !== initialUsers) setUsers(initialUsers);
   }, [initialUsers]);
 
-  const handleAddNewUser = () => {
+  const handleAddNewUser = useCallback(() => {
     if (users.some(u => u.id === 0) || newUser) {
       toast.error("Ya se encuentra creando un nuevo usuario");
       return;
     }
     setNewUser(true);
-  };
+  }, [users, newUser]);
+
+  const cancelCreateUser = useCallback(() => {
+    setUsers(prevUsers => prevUsers.filter(user => user.id !== 0));
+    setEditingNewUserIndex(null);
+    setNewUser(false);
+  }, []);
 
   useEffect(() => {
     if (newUser && meta.current_page === meta.last_page && !isLoading) {
@@ -75,12 +84,6 @@ export default function UsuariosPage() {
       }
     }
   }, [newUser, meta.current_page, meta.last_page, isLoading, users]);
-
-  const cancelCreateUser = () => {
-    setUsers(prevUsers => prevUsers.filter(user => user.id !== 0));
-    setEditingNewUserIndex(null);
-    setNewUser(false);
-  };
 
   return (
     <AuthenticatedLayout>
@@ -99,18 +102,18 @@ export default function UsuariosPage() {
                 <span>Nuevo usuario</span>
               </Button>
             </div>
-            <DataTable
-              columns={columns}
-              data={users}
-              links={links}
-              meta={meta}
-              roles={initialRoles}
-              newUser={newUser}
-              setNewUser={setNewUser}
-              editingNewUserIndex={editingNewUserIndex}
-              cancelCreateUser={cancelCreateUser}
-              editingUserIndex={editingUserIndex}
-              setEditingUserIndex={setEditingUserIndex} />
+              <DataTable
+                columns={memoizedColumns}
+                data={users}
+                links={links}
+                meta={meta}
+                roles={memoizedRoles}
+                newUser={newUser}
+                setNewUser={setNewUser}
+                editingNewUserIndex={editingNewUserIndex}
+                cancelCreateUser={cancelCreateUser}
+                editingUserIndex={editingUserIndex}
+                setEditingUserIndex={setEditingUserIndex} />
           </div>
         </div>
       </div>
