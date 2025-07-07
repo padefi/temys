@@ -1,21 +1,17 @@
 <?php
-
 namespace App\Http\Controllers\Inventario;
-
 use App\Http\Controllers\Controller;
+use App\Http\Resources\inventario\SolicitudRecibidaStockResource;
 use App\Http\Resources\inventario\StockResource;
 use App\Models\Inventario\InventarioSolicitarStock;
 use App\Models\Inventario\InventarioStock;
-
+use App\Models\Inventario\SolicitudRecibidaStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
-
-
 class StockController extends Controller
 {
-    
     public function index()
     {
         $stock = InventarioStock::with(['producto', 'almacen'])
@@ -30,7 +26,6 @@ class StockController extends Controller
         $stock = InventarioStock::with(['producto', 'almacen'])
             ->where('almacen_id', 1)
             ->get();
-
         return response()->json(StockResource::collection($stock));
     }
 
@@ -43,8 +38,6 @@ class StockController extends Controller
             'prioridad' => 'required|string|max:50',
             'motivo' => 'nullable|string|max:255',
         ]);
-
-
              InventarioSolicitarStock::create([
             'producto_id' => $validated['producto_id'],
             'almacen_solicitante_id' => $validated['almacen_solicitante_id'],
@@ -56,16 +49,24 @@ class StockController extends Controller
             'usuario_creacion' => Auth::user()->id, 
         ]);
 
-
-
-
     }
 
-    public function getSolicitudes(Request $request){
-        $solicitudes=InventarioSolicitarStock::with(['producto', 'almacenesolicitante', 'almacenProovedor'])
-        ->where('almacen_proovedor_id',1/* Auth::user()->id */)
-        ->get();
+    public function getSolicitudesAll(){
+          $solicitudes=SolicitudRecibidaStock::with(['producto', 'almacensolicitante'])
+          ->get();
+         return response()->json(SolicitudRecibidaStockResource::collection($solicitudes));
+    }
+    public function getSolicitudesAlmacen($id){
+       $solicitud = InventarioSolicitarStock::with([
+        'producto',
+        'almacensolicitante',
+        'almacenProovedor'
+    ])->find($id);
 
-         return response()->json($solicitudes);
+    if (!$solicitud) {
+        return response()->json(['message' => 'Solicitud no encontrada'], 404);
+    }
+
+    return response()->json($solicitud);
     }
 }

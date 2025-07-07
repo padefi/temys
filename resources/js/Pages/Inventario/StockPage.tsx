@@ -1,56 +1,21 @@
 import React, { useEffect, useState } from "react";
-import {
-    Package,
-    AlertTriangle,
-    Plus,
-    Search,
-    ArrowUpDown,
-    ArrowDownWideNarrow,
-    ArrowUpNarrowWide,
-    Download,
-    Bell,
-} from "lucide-react";
+import {Package,AlertTriangle,Plus,Search,ArrowUpDown,ArrowDownWideNarrow,ArrowUpNarrowWide,Bell} from "lucide-react";
 import { Button } from "@/Components/ui/button";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/Components/ui/card";
+import {Card,CardContent,CardDescription,CardHeader,CardTitle} from "@/Components/ui/card";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/Components/ui/table";
+import {Table,TableBody,TableCell,TableHead,TableHeader,TableRow,} from "@/Components/ui/table";
 import { Tabs, TabsContent } from "@/Components/ui/tabs";
 import { Badge } from "@/Components/ui/badge";
-
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/Components/ui/select";
-
+import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from "@/Components/ui/select";
 import axios from "axios";
 import { usePage } from "@inertiajs/react";
 import { PageProps as InertiaPageProps } from "@inertiajs/core";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import { SolicitarStock } from "./ModalSolicitarStock";
-
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from "@/Components/ui/tooltip";
+import { SolicitarStock } from "./ModalCrearSolicitudStock";
+import {Tooltip,TooltipContent,TooltipTrigger} from "@/Components/ui/tooltip";
+import SolicitudesStock from "./ModalSolicitudesEntrantes";
 
 type Producto = {
     id: number;
@@ -83,19 +48,14 @@ export default function StockManagement() {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedAlmacen, setselectedAlmacen] = useState("all");
     const [stockFiltro, setstockFiltro] = useState("all");
-    const [selectedProduct, setSelectedProduct] = useState<StockItem | null>(
-        null
-    );
+    const [selectedProduct, setSelectedProduct] = useState<StockItem | null>(null);
     const [solicitudDialogOpen, setsolicitudDialogOpen] = useState(false);
+    const [solicitudesStockDialogOpen, setSolicitudesStockDialogOpen] = useState(false);
     const [stock, setStock] = useState<StockItem[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
-
     const [sortColumn, setSortColumn] = useState<keyof StockItem | null>(null);
-    const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(
-        null
-    );
-
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(null);
     const { stocks } = usePage<PageProps>().props;
 
     useEffect(() => {
@@ -129,11 +89,6 @@ export default function StockManagement() {
     });
 
     const totalPages = Math.ceil(filteredStock.length / itemsPerPage);
-    /*    const paginatedStock = filteredStock.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
- */
     const getStockStatus = (actual: any, minimo: any) => {
         if (actual === 0) return { status: "Sin stock", color: "destructive" };
         if (actual <= minimo) return { status: "Stock bajo", color: "custom" };
@@ -146,6 +101,13 @@ export default function StockManagement() {
         setSelectedProduct(product);
         setsolicitudDialogOpen(true);
     };
+
+    const handleSolicitudes=()=>{
+        setSolicitudesStockDialogOpen(true)
+
+
+    }
+
 
     const sortedStock = React.useMemo(() => {
         if (!sortColumn || !sortDirection) return filteredStock;
@@ -221,9 +183,8 @@ export default function StockManagement() {
                             <CardHeader className="text-xl flex justify-between">
                                 <CardTitle>Filtros</CardTitle>
                                 <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        
-                                        <Button variant="outline" size="lg">
+                                    <TooltipTrigger asChild>                                        
+                                        <Button variant="outline" size="lg"       onClick={() => handleSolicitudes()}>
                                             <Badge variant={"success"}>1</Badge>
                                             <Bell className="h-4 " />
                                         </Button>
@@ -241,30 +202,13 @@ export default function StockManagement() {
                                         </Label>
                                         <div className="relative w-46">
                                             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                                            <Input
-                                                id="search"
-                                                placeholder="Nombre"
-                                                value={searchTerm}
-                                                onChange={(e) => {
-                                                    setSearchTerm(
-                                                        e.target.value
-                                                    );
-                                                    setCurrentPage(1);
-                                                }}
-                                                className="pl-8"
-                                            />
+                                            <Input id="search" placeholder="Nombre" value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value);setCurrentPage(1);}} className="pl-8"/>
                                         </div>
                                     </div>
 
                                     <div className="space-y-2">
                                         <Label>Almacén</Label>
-                                        <Select
-                                            value={selectedAlmacen}
-                                            onValueChange={(value) => {
-                                                setselectedAlmacen(value);
-                                                setCurrentPage(1);
-                                            }}
-                                        >
+                                        <Select value={selectedAlmacen} onValueChange={(value) => {setselectedAlmacen(value); setCurrentPage(1); }}>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Seleccionar almacén" />
                                             </SelectTrigger>
@@ -273,10 +217,7 @@ export default function StockManagement() {
                                                     Todos los almacenes
                                                 </SelectItem>
                                                 {almacenes.map((almacen) => (
-                                                    <SelectItem
-                                                        key={almacen.id}
-                                                        value={almacen.nombre}
-                                                    >
+                                                    <SelectItem key={almacen.id} value={almacen.nombre} >
                                                         {almacen.nombre}
                                                     </SelectItem>
                                                 ))}
@@ -286,13 +227,7 @@ export default function StockManagement() {
 
                                     <div className="space-y-2">
                                         <Label>Estado de stock</Label>
-                                        <Select
-                                            value={stockFiltro}
-                                            onValueChange={(value) => {
-                                                setstockFiltro(value);
-                                                setCurrentPage(1);
-                                            }}
-                                        >
+                                        <Select value={stockFiltro} onValueChange={(value) => { setstockFiltro(value); setCurrentPage(1); }} >
                                             <SelectTrigger className="w-46">
                                                 <SelectValue placeholder="Estado de stock" />
                                             </SelectTrigger>
@@ -550,6 +485,12 @@ export default function StockManagement() {
                 setsolicitudDialogOpen={setsolicitudDialogOpen}
                 selectedProduct={selectedProduct}
             ></SolicitarStock>
+
+            {/* Dialog Solicitudes de stock para aprobar */}
+
+           <SolicitudesStock isOpen={solicitudesStockDialogOpen} onClose={() => setSolicitudesStockDialogOpen(false)}></SolicitudesStock>
+
+
         </AuthenticatedLayout>
 
         

@@ -33,7 +33,7 @@ class InventarioSolicitarStock extends Model
         return $this->belongsTo(Producto::class, 'producto_id');
     }
 
-    public function almacenesolicitante()
+    public function almacensolicitante()
     {
         return $this->belongsTo(Almacen::class, 'almacen_solicitante_id');
     }

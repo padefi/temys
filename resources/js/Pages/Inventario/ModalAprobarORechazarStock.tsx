@@ -1,6 +1,4 @@
-"use client"
-
-import { useEffect, useState } from "react"
+import {useState } from "react"
 import { AlertTriangle, Check, X } from "lucide-react"
 import { Button } from "@/Components/ui/button"
 import {
@@ -16,15 +14,28 @@ import { Label } from "@/Components/ui/label"
 import { Textarea } from "@/Components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select"
 import { Alert, AlertDescription } from "@/Components/ui/alert"
-import axios from "axios"
+
+type Producto = {
+    id: number;
+    nombre: string;
+    descripcion: string;
+    modelo_id?: number;
+    subcategoria_id?: number;
+};
+
+type Almacen = {
+    id: number;
+    nombre: string;
+};
+
 
 interface StockRequest {
   id: string
-  producto: string
-  almacenSolicitante: string
+  producto: Producto
+  almacenSolicitante: Almacen
   cantidadSolicitada: number
   prioridad: "Alta" | "Media" | "Baja"
-  justificacion: string
+  motivo: string
   stockActual: number
   stockMinimo: number
 }
@@ -37,7 +48,7 @@ interface StockApprovalModalProps {
   onReject: (requestId: string, reason: string) => void
 }
 
-export default function ModalAceptarStock({ isOpen, onClose, request, onApprove, onReject }: StockApprovalModalProps) {
+export default function AceptarStock({ isOpen, onClose, request, onApprove, onReject }: StockApprovalModalProps) {
 
 
   const [approvedQuantity, setApprovedQuantity] = useState("")
@@ -86,11 +97,11 @@ export default function ModalAceptarStock({ isOpen, onClose, request, onApprove,
               <AlertDescription className="text-red-800">
                 <div className="font-medium">Stock Bajo Detectado</div>
                 <div className="text-sm mt-1">
-                  <div>{request.producto}</div>
-                  <div>
+                  <div>{request.producto.nombre}</div>
+             {/*      <div>
                     Stock actual: {request.stockActual} | Mínimo: {request.stockMinimo}
-                  </div>
-                  <div>Almacén: {request.almacenSolicitante}</div>
+                  </div> */}
+                 {/*  <div>Almacén: {request.almacen_}</div> */}
                 </div>
               </AlertDescription>
             </Alert>
@@ -100,18 +111,18 @@ export default function ModalAceptarStock({ isOpen, onClose, request, onApprove,
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Almacén Solicitante</Label>
-              <Input value={request.almacenSolicitante} disabled />
+              <Input value={request.almacenSolicitante?.nombre} disabled />
             </div>
             <div className="space-y-2">
               <Label>Producto</Label>
-              <Input value={request.producto} disabled />
+              <Input value={request.producto?.nombre} disabled />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Cantidad Solicitada</Label>
-              <Input value={request.cantidadSolicitada.toString()} disabled />
+              <Input value={request.cantidadSolicitada?.toString()} disabled />
             </div>
             <div className="space-y-2">
               <Label>Prioridad</Label>
@@ -131,7 +142,7 @@ export default function ModalAceptarStock({ isOpen, onClose, request, onApprove,
           {/* Original Justification */}
           <div className="space-y-2">
             <Label>Justificación Original</Label>
-            <Textarea value={request.justificacion} disabled className="min-h-[60px] resize-none" />
+            <Textarea value={request.motivo} disabled className="min-h-[60px] resize-none" />
           </div>
 
           {/* Approval Section */}
