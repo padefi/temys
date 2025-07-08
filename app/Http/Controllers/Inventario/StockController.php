@@ -67,6 +67,6 @@ class StockController extends Controller
         return response()->json(['message' => 'Solicitud no encontrada'], 404);
     }
 
-    return response()->json($solicitud);
+    return response()->json(new SolicitudRecibidaStockResource($solicitud));
     }
 }

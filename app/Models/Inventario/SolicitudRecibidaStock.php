@@ -14,7 +14,6 @@ class SolicitudRecibidaStock extends Model
     protected $fillable = [
         'producto_id',
         'almacen_solicitante_id',
-        'cantidad_solicitada',
         'prioridad',
         'fecha_creacion',
     ];

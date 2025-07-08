@@ -1,86 +1,64 @@
 import {useState } from "react"
-import { AlertTriangle, Check, X } from "lucide-react"
+import {Check, X } from "lucide-react"
 import { Button } from "@/Components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import {Dialog,DialogContent,DialogDescription,DialogFooter,DialogHeader,DialogTitle} from "@/components/ui/dialog"
 import { Input } from "@/Components/ui/input"
 import { Label } from "@/Components/ui/label"
 import { Textarea } from "@/Components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select"
-import { Alert, AlertDescription } from "@/Components/ui/alert"
-
-type Producto = {
-    id: number;
-    nombre: string;
-    descripcion: string;
-    modelo_id?: number;
-    subcategoria_id?: number;
-};
-
-type Almacen = {
-    id: number;
-    nombre: string;
-};
-
 
 interface StockRequest {
   id: string
-  producto: Producto
-  almacenSolicitante: Almacen
-  cantidadSolicitada: number
-  prioridad: "Alta" | "Media" | "Baja"
+  nombre_producto: string
+  nombre_almacen: string
+  cantidad_solicitada: number
+  prioridad: "Alta" | "Media" | "Baja" | "Urgente"
   motivo: string
-  stockActual: number
-  stockMinimo: number
 }
 
 interface StockApprovalModalProps {
   isOpen: boolean
   onClose: () => void
   request: StockRequest | null
-  onApprove: (requestId: string, approvedQuantity: number, notes: string) => void
-  onReject: (requestId: string, reason: string) => void
+  onAprobado: (requestId: string, cantidadAprobada: number, notas: string) => void
+  onRechazado: (requestId: string, motivo: string) => void
 }
 
-export default function AceptarStock({ isOpen, onClose, request, onApprove, onReject }: StockApprovalModalProps) {
+export default function AceptarStock({ isOpen, onClose, request, onAprobado, onRechazado }: StockApprovalModalProps) {
+  const [cantidadAprobada, setCantidadAprobada] = useState("")
+  const [notas, setNotas] = useState("")
+  const [action, setAction] = useState<"aprobado" | "rechazado" | null>(null)
 
 
-  const [approvedQuantity, setApprovedQuantity] = useState("")
-  const [notes, setNotes] = useState("")
-  const [action, setAction] = useState<"approve" | "reject" | null>(null)
+  const [errorCantidad, setErrorCantidad] = useState("");
+
 
   if (!request) return null
 
   const handleSubmit = () => {
-    if (action === "approve") {
-      const quantity = Number.parseInt(approvedQuantity) || 0
-      onApprove(request.id, quantity, notes)
-    } else if (action === "reject") {
-      onReject(request.id, notes)
+    if (action === "aprobado") {
+      const cantidad = Number.parseInt(cantidadAprobada) || 0
+      onAprobado(request.id, cantidad, notas)
+    } else if (action === "rechazado") {
+      onRechazado(request.id, notas)
     }
 
     // Reset form
-    setApprovedQuantity("")
-    setNotes("")
+    setCantidadAprobada("")
+    setNotas("")
     setAction(null)
     onClose()
   }
 
   const handleClose = () => {
-    setApprovedQuantity("")
-    setNotes("")
+    setCantidadAprobada("")
+    setNotas("")
     setAction(null)
     onClose()
+    setErrorCantidad("")          
+    setCantidadAprobada("")      
   }
 
-  const isLowStock = request.stockActual <= request.stockMinimo
-
+ 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
@@ -90,52 +68,30 @@ export default function AceptarStock({ isOpen, onClose, request, onApprove, onRe
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Stock Alert */}
-          {isLowStock && (
-            <Alert className="border-red-200 bg-red-50">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-red-800">
-                <div className="font-medium">Stock Bajo Detectado</div>
-                <div className="text-sm mt-1">
-                  <div>{request.producto.nombre}</div>
-             {/*      <div>
-                    Stock actual: {request.stockActual} | Mínimo: {request.stockMinimo}
-                  </div> */}
-                 {/*  <div>Almacén: {request.almacen_}</div> */}
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Request Details */}
+          
+          {/* detalle de la solicitud */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Almacén Solicitante</Label>
-              <Input value={request.almacenSolicitante?.nombre} disabled />
+              <Input value={request.nombre_almacen} disabled />
             </div>
             <div className="space-y-2">
               <Label>Producto</Label>
-              <Input value={request.producto?.nombre} disabled />
+              <Input value={request.nombre_producto} disabled />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Cantidad Solicitada</Label>
-              <Input value={request.cantidadSolicitada?.toString()} disabled />
+              <Input value={request.cantidad_solicitada?.toString()} disabled />
             </div>
             <div className="space-y-2">
               <Label>Prioridad</Label>
-              <Select value={request.prioridad} disabled>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Alta">Alta</SelectItem>
-                  <SelectItem value="Media">Media</SelectItem>
-                  <SelectItem value="Baja">Baja</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input value={request.prioridad} className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                request.prioridad === "Urgente"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-gray-100 text-gray-700"}`} disabled />
             </div>
           </div>
 
@@ -145,44 +101,66 @@ export default function AceptarStock({ isOpen, onClose, request, onApprove, onRe
             <Textarea value={request.motivo} disabled className="min-h-[60px] resize-none" />
           </div>
 
-          {/* Approval Section */}
-          {action === "approve" && (
+          {/* confirmacion */}
+          {action === "aprobado" && (
             <div className="space-y-4 p-4 border rounded-lg bg-green-50">
               <div className="space-y-2">
                 <Label htmlFor="approved-quantity">Cantidad Aprobada</Label>
-                <Input
+               <Input
                   id="approved-quantity"
                   type="number"
                   placeholder="Ingresa la cantidad a aprobar"
-                  value={approvedQuantity}
-                  onChange={(e) => setApprovedQuantity(e.target.value)}
-                  max={request.cantidadSolicitada}
+                  value={cantidadAprobada}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    const max = request.cantidad_solicitada;
+
+                    if (value > max) {
+                      setErrorCantidad(`No puedes aprobar más de ${max}`);
+                    } else if (value < 0) {
+                    setErrorCantidad("La cantidad no puede ser negativa");
+                    }else if (value == 0) {
+                    setErrorCantidad("La cantidad no puede ser cero");
+                    } else {
+                      setErrorCantidad("");
+                      setCantidadAprobada(e.target.value);
+                    }
+
+                    
+                    setCantidadAprobada(e.target.value);
+                  }}
+                  max={request.cantidad_solicitada}
                   min="0"
                 />
+              {errorCantidad && (
+                <p className="text-sm text-red-500 mt-1">{errorCantidad}</p>
+                )}
+
+
               </div>
               <div className="space-y-2">
                 <Label htmlFor="approval-notes">Notas de Aprobación</Label>
                 <Textarea
                   id="approval-notes"
                   placeholder="Notas adicionales (opcional)..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  value={notas}
+                  onChange={(e) => setNotas(e.target.value)}
                   className="min-h-[80px] resize-none"
                 />
               </div>
             </div>
           )}
 
-          {/* Rejection Section */}
-          {action === "reject" && (
+          {/* seccion recazada */}
+          {action === "rechazado" && (
             <div className="space-y-4 p-4 border rounded-lg bg-red-50">
               <div className="space-y-2">
                 <Label htmlFor="rejection-reason">Motivo del Rechazo</Label>
                 <Textarea
                   id="rejection-reason"
                   placeholder="Explica el motivo del rechazo..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  value={notas}
+                  onChange={(e) => setNotas(e.target.value)}
                   className="min-h-[80px] resize-none"
                   required
                 />
@@ -198,21 +176,21 @@ export default function AceptarStock({ isOpen, onClose, request, onApprove, onRe
 
           {!action && (
             <>
-              <Button variant="destructive" onClick={() => setAction("reject")} className="gap-2">
+              <Button variant="destructive" onClick={() => setAction("rechazado")} className="gap-2">
                 <X className="h-4 w-4" />
                 Rechazar
               </Button>
-              <Button onClick={() => setAction("approve")} className="gap-2">
+              <Button onClick={() => setAction("aprobado")} className="gap-2">
                 <Check className="h-4 w-4" />
                 Aprobar
               </Button>
             </>
           )}
 
-          {action === "approve" && (
+          {action === "aprobado" && (
             <Button
               onClick={handleSubmit}
-              disabled={!approvedQuantity || Number.parseInt(approvedQuantity) <= 0}
+              disabled={!cantidadAprobada || Number.parseInt(cantidadAprobada) <= 0 || !!errorCantidad }
               className="gap-2"
             >
               <Check className="h-4 w-4" />
@@ -220,8 +198,8 @@ export default function AceptarStock({ isOpen, onClose, request, onApprove, onRe
             </Button>
           )}
 
-          {action === "reject" && (
-            <Button variant="destructive" onClick={handleSubmit} disabled={!notes.trim()} className="gap-2">
+          {action === "rechazado" && (
+            <Button variant="destructive" onClick={handleSubmit} disabled={!notas.trim()} className="gap-2">
               <X className="h-4 w-4" />
               Confirmar Rechazo
             </Button>

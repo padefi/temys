@@ -89,8 +89,8 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
                     Route::get('inventario/inventarioFisico', [StockController::class, 'index'])->name('inventarioFisico');
                     Route::get('/inventario/almacenes', [AlmacenController::class, 'index']); // No estoy segura de que se declare aca
                     Route::post('/solicitar-stock', [StockController::class, 'solicitarStock']);
-                    Route::get('/solicitudes-stock', [StockController::class, 'getSolicitudesAll']);
-                    Route::get('/solicitudes-stock/{id}', [StockController::class, 'getSolicitudesAlmacen']);
+                    Route::get('/solicitudes-stock', [StockController::class, 'getSolicitudesAll'])->name('inventario.solicitudes.all');
+                    Route::get('/solicitudes-stock/{id}', [StockController::class, 'getSolicitudesAlmacen'])->name('inventario.solicitudes.detalle');
 
                   
                 });

@@ -1,20 +1,8 @@
 import { Button } from "@/Components/ui/button";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-} from "@/components/ui/dialog";
+import {Dialog,DialogContent,DialogDescription,DialogFooter,DialogHeader} from "@/components/ui/dialog";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/Components/ui/select";
+import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from "@/Components/ui/select";
 import { Textarea } from "@/Components/ui/textarea";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import axios from "axios";
@@ -29,7 +17,7 @@ type Almacen = {
 interface SolicitarStockProps {
     solicitudDialogOpen: boolean;
     setsolicitudDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    selectedProduct: any; // idealmente tipa esto mejor
+    selectedProduct: any; 
 }
 
 export const SolicitarStock: React.FC<SolicitarStockProps> = ({
@@ -40,7 +28,7 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
     const [almacenes, setAlmacenes] = useState<Almacen[]>([]);
     const [almacenProveedor, setAlmacenProveedor] = useState("");
     const [cantidad, setCantidad] = useState(0);
-    const [prioridad, setPrioridad] = useState("high");
+    const [prioridad, setPrioridad] = useState("Alta");
     const [motivo, setMotivo] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -48,7 +36,7 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
         try {
             setLoading(true);
 
-            await axios.post("/solicitudes-stock", {
+            await axios.post("/solicitar-stock", {
                 producto_id: selectedProduct.producto.id,
                 almacen_solicitante_id: selectedProduct.almacen.id,
                 almacen_proovedor_id: parseInt(almacenProveedor),
@@ -77,13 +65,12 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
     return (
         <Dialog
             open={solicitudDialogOpen}
-            onOpenChange={setsolicitudDialogOpen}
-        >
+            onOpenChange={setsolicitudDialogOpen} >
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Solicitar Stock a Otro Almacén</DialogTitle>
                     <DialogDescription>
-                        Solicita stock de {selectedProduct?.producto.nombre}{" "}
+                        Solicita stock de {selectedProduct?.producto.nombre}
                         desde otros almacenes autorizados
                     </DialogDescription>
                 </DialogHeader>
@@ -101,11 +88,11 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
                                 {selectedProduct?.producto.nombre}
                             </div>
                             <div>
-                                Stock actual:{" "}
+                                Stock actual:
                                 <span className="font-bold">
                                     {selectedProduct?.cantidad_actual}
-                                </span>{" "}
-                                | Mínimo:{" "}
+                                </span>
+                                | Mínimo:
                                 <span className="font-bold">
                                     {selectedProduct?.stock_minimo}
                                 </span>
@@ -170,13 +157,12 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="low">Baja</SelectItem>
-                                    <SelectItem value="normal">
-                                        Normal
+                                    <SelectItem value="Baja">Baja</SelectItem>
+                                    <SelectItem value="Media">
+                                        Media
                                     </SelectItem>
-                                    <SelectItem value="high">Alta</SelectItem>
-                                    <SelectItem value="urgent">
-                                        {" "}
+                                    <SelectItem value="Alta">Alta</SelectItem>
+                                    <SelectItem value="Urgente">                   
                                         Urgente
                                     </SelectItem>
                                 </SelectContent>
@@ -200,7 +186,6 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
                         Cancelar{" "}
                     </Button>
                     <Button
-
                         onClick={handleSubmit}
                         className="bg-emerald-500 hover:bg-emerald-600"
                         disabled={loading || !almacenProveedor || cantidad <=0}

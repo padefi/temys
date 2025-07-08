@@ -51,12 +51,14 @@ export default function StockManagement() {
     const [selectedProduct, setSelectedProduct] = useState<StockItem | null>(null);
     const [solicitudDialogOpen, setsolicitudDialogOpen] = useState(false);
     const [solicitudesStockDialogOpen, setSolicitudesStockDialogOpen] = useState(false);
+    const [solicitudes, setSolicitudes] = useState()
     const [stock, setStock] = useState<StockItem[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
     const [sortColumn, setSortColumn] = useState<keyof StockItem | null>(null);
     const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(null);
     const { stocks } = usePage<PageProps>().props;
+    
 
     useEffect(() => {
         setStock(stocks.data);
@@ -102,11 +104,17 @@ export default function StockManagement() {
         setsolicitudDialogOpen(true);
     };
 
-    const handleSolicitudes=()=>{
-        setSolicitudesStockDialogOpen(true)
-
-
+ 
+ const handleSolicitudes = async () => {
+    try {
+      const res = await axios.get(`/solicitudes-stock/`)
+      setSolicitudes(res.data)
+      setSolicitudesStockDialogOpen(true)
+      console.log(res.data.length)
+    } catch (err) {
+      console.error("Error al cargar detalles de la solicitud", err)
     }
+  }
 
 
     const sortedStock = React.useMemo(() => {
@@ -488,7 +496,7 @@ export default function StockManagement() {
 
             {/* Dialog Solicitudes de stock para aprobar */}
 
-           <SolicitudesStock isOpen={solicitudesStockDialogOpen} onClose={() => setSolicitudesStockDialogOpen(false)}></SolicitudesStock>
+           <SolicitudesStock isOpen={solicitudesStockDialogOpen} onClose={() => setSolicitudesStockDialogOpen(false)} requests={solicitudes}></SolicitudesStock>
 
 
         </AuthenticatedLayout>

@@ -14,12 +14,15 @@ class SolicitudRecibidaStockResource extends JsonResource
      */
 public function toArray(Request $request): array
 {
+    $mostrarCamposExtra = $request->routeIs('inventario.solicitudes.detalle');
     return [
         'id' => $this->id,
         'nombre_producto' => optional($this->producto)->nombre,
         'nombre_almacen' => optional($this->almacensolicitante)->nombre,
         'prioridad' => $this->prioridad,
         'fecha' => $this->fecha_creacion,
+        'motivo' => $this->when($mostrarCamposExtra, $this->motivo),
+        'cantidad_solicitada' => $this->when($mostrarCamposExtra, $this->cantidad_solicitada),
     ];
 }
 
