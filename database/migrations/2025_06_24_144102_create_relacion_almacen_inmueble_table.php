@@ -19,7 +19,7 @@ return new class extends Migration
 
             //relaciones
             $table->foreign('inmuebles_id')->references('id')->on('inmuebles');
-            $table->foreign('almacenes_id')->references('id')->on('almacens');
+            $table->foreign('almacenes_id')->references('id')->on('almacenes');
         });
     }
 

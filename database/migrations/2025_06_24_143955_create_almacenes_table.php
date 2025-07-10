@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('almacens', function (Blueprint $table) {
+        Schema::create('almacenes', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
             $table->enum('tipo', ['Central', 'Deposito', 'Punto de venta']);
@@ -26,7 +26,7 @@ return new class extends Migration
 
             //Relaciones
             $table->foreign('responsable_id')->references('id')->on('clientes');
-            $table->foreign('almacen_padre_id')->references('id')->on('almacens');
+            $table->foreign('almacen_padre_id')->references('id')->on('almacenes');
             $table->foreign('usuario_creacion')->references('id')->on('users');
             $table->foreign('usuario_actualizacion')->references('id')->on('users');
         });
@@ -37,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('almacens');
+        Schema::dropIfExists('almacenes');
     }
 };

@@ -26,8 +26,8 @@ return new class extends Migration
             
              //Relaciones
 
-            $table->foreign('origen_id')->references('id')->on('almacens');
-            $table->foreign('destino_id')->references('id')->on('almacens');
+            $table->foreign('origen_id')->references('id')->on('almacenes');
+            $table->foreign('destino_id')->references('id')->on('almacenes');
             $table->foreign('usuario_creacion')->references('id')->on('users');
             $table->foreign('usuario_actualizacion')->references('id')->on('users');
         });
