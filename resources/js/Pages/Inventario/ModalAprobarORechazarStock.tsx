@@ -5,12 +5,13 @@ import {Dialog,DialogContent,DialogDescription,DialogFooter,DialogHeader,DialogT
 import { Input } from "@/Components/ui/input"
 import { Label } from "@/Components/ui/label"
 import { Textarea } from "@/Components/ui/textarea"
+import axios from "axios"
 
 interface StockRequest {
   id: string
   nombre_producto: string
   nombre_almacen: string
-  cantidad_solicitada: number
+  cantidad: number
   prioridad: "Alta" | "Media" | "Baja" | "Urgente"
   motivo: string
 }
@@ -19,13 +20,13 @@ interface StockApprovalModalProps {
   isOpen: boolean
   onClose: () => void
   request: StockRequest | null
-  onAprobado: (requestId: string, cantidadAprobada: number, notas: string) => void
+  onAprobado: (requestId: string, cantidadAprobada: number, motivo: string) => void
   onRechazado: (requestId: string, motivo: string) => void
 }
 
 export default function AceptarStock({ isOpen, onClose, request, onAprobado, onRechazado }: StockApprovalModalProps) {
   const [cantidadAprobada, setCantidadAprobada] = useState("")
-  const [notas, setNotas] = useState("")
+  const [motivo, setMotivo] = useState("")
   const [action, setAction] = useState<"aprobado" | "rechazado" | null>(null)
 
 
@@ -34,24 +35,63 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
 
   if (!request) return null
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (action === "aprobado") {
       const cantidad = Number.parseInt(cantidadAprobada) || 0
-      onAprobado(request.id, cantidad, notas)
+      const estado='Aceptada'
+      onAprobado(request.id, cantidad, motivo)
+      try {
+      const response = await axios.post('/solicitudes-stock-aceptar', {
+        solicitud_id: request.id,
+        estado,
+        motivo,
+        cantidad,
+      });
+
+
+    } catch (err: any) {
+      if (err.response?.status === 422) {
+        const errors = err.response.data.errors;
+        setErrorCantidad(Object.values(errors).flat().join(', '));
+      } else {
+        setErrorCantidad('Error al conectar con el servidor');
+      }
+      console.error(err);
+    }
+
+
     } else if (action === "rechazado") {
-      onRechazado(request.id, notas)
+      const estado='Cancelada'
+     
+      onRechazado(request.id, motivo)
+      try {
+      const response = await axios.post('/solicitudes-stock-cancelar', {
+        solicitud_id: request.id,
+        estado,
+        motivo,
+       
+      });
+    } catch (err: any) {
+      if (err.response?.status === 422) {
+        const errors = err.response.data.errors;
+        setErrorCantidad(Object.values(errors).flat().join(', '));
+      } else {
+        setErrorCantidad('Error al conectar con el servidor');
+      }
+      console.error(err);
+    }
     }
 
     // Reset form
     setCantidadAprobada("")
-    setNotas("")
+    setMotivo("")
     setAction(null)
     onClose()
   }
 
   const handleClose = () => {
     setCantidadAprobada("")
-    setNotas("")
+    setMotivo("")
     setAction(null)
     onClose()
     setErrorCantidad("")          
@@ -84,12 +124,12 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Cantidad Solicitada</Label>
-              <Input value={request.cantidad_solicitada?.toString()} disabled />
+              <Input value={request.cantidad?.toString()} disabled />
             </div>
             <div className="space-y-2">
               <Label>Prioridad</Label>
               <Input value={request.prioridad} className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                request.prioridad === "Urgente"
+                                request.prioridad === "Alta"
                                 ? "bg-red-100 text-red-700"
                                 : "bg-gray-100 text-gray-700"}`} disabled />
             </div>
@@ -113,7 +153,7 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
                   value={cantidadAprobada}
                   onChange={(e) => {
                     const value = Number(e.target.value);
-                    const max = request.cantidad_solicitada;
+                    const max = request.cantidad;
 
                     if (value > max) {
                       setErrorCantidad(`No puedes aprobar más de ${max}`);
@@ -129,7 +169,7 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
                     
                     setCantidadAprobada(e.target.value);
                   }}
-                  max={request.cantidad_solicitada}
+                  max={request.cantidad}
                   min="0"
                 />
               {errorCantidad && (
@@ -143,8 +183,8 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
                 <Textarea
                   id="approval-notes"
                   placeholder="Notas adicionales (opcional)..."
-                  value={notas}
-                  onChange={(e) => setNotas(e.target.value)}
+                  value={motivo}
+                  onChange={(e) => setMotivo(e.target.value)}
                   className="min-h-[80px] resize-none"
                 />
               </div>
@@ -159,8 +199,8 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
                 <Textarea
                   id="rejection-reason"
                   placeholder="Explica el motivo del rechazo..."
-                  value={notas}
-                  onChange={(e) => setNotas(e.target.value)}
+                  value={motivo}
+                  onChange={(e) => setMotivo(e.target.value)}
                   className="min-h-[80px] resize-none"
                   required
                 />
@@ -199,7 +239,7 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
           )}
 
           {action === "rechazado" && (
-            <Button variant="destructive" onClick={handleSubmit} disabled={!notas.trim()} className="gap-2">
+            <Button variant="destructive" onClick={handleSubmit} disabled={!motivo.trim()} className="gap-2">
               <X className="h-4 w-4" />
               Confirmar Rechazo
             </Button>

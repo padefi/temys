@@ -40,7 +40,7 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
                 producto_id: selectedProduct.producto.id,
                 almacen_solicitante_id: selectedProduct.almacen.id,
                 almacen_proovedor_id: parseInt(almacenProveedor),
-                cantidad_solicitada: cantidad,
+                cantidad: cantidad,
                 prioridad,
                 motivo,
             });
@@ -63,24 +63,17 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
     }, []);
 
     return (
-        <Dialog
-            open={solicitudDialogOpen}
-            onOpenChange={setsolicitudDialogOpen} >
+        <Dialog open={solicitudDialogOpen} onOpenChange={setsolicitudDialogOpen} >
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Solicitar Stock a Otro Almacén</DialogTitle>
-                    <DialogDescription>
-                        Solicita stock de {selectedProduct?.producto.nombre}
-                        desde otros almacenes autorizados
-                    </DialogDescription>
+                    <DialogDescription> Solicita stock de {selectedProduct?.producto.nombre}desde otros almacenes autorizados</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                     <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
                         <div className="flex items-center gap-2 text-red-800 mb-2">
                             <AlertTriangle className="h-4 w-4" />
-                            <span className="font-medium">
-                                Stock Bajo Detectado
-                            </span>
+                            <span className="font-medium">Stock Bajo Detectado</span>
                         </div>
 
                         <div className="text-sm text-red-700">
@@ -88,14 +81,8 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
                                 {selectedProduct?.producto.nombre}
                             </div>
                             <div>
-                                Stock actual:
-                                <span className="font-bold">
-                                    {selectedProduct?.cantidad_actual}
-                                </span>
-                                | Mínimo:
-                                <span className="font-bold">
-                                    {selectedProduct?.stock_minimo}
-                                </span>
+                                Stock actual:<span className="font-bold">{selectedProduct?.cantidad_actual}</span>| Mínimo:
+                                <span className="font-bold">{selectedProduct?.stock_minimo}</span>
                             </div>
                             <div>
                                 Almacén: {selectedProduct?.almacen.nombre}
@@ -105,20 +92,11 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label>Almacén solicitante</Label>
-                            <Input
-                                type="text"
-                                value={selectedProduct?.almacen.nombre}
-                                disabled
-                                className="bg-gray-100 cursor-not-allowed"
-                            />
+                            <Input type="text" value={selectedProduct?.almacen.nombre} disabled className="bg-gray-100 cursor-not-allowed"/>
                         </div>
                         <div className="space-y-2">
                             <Label>Almacén proveedor</Label>
-                            <Select
-                                onValueChange={(value) =>
-                                    setAlmacenProveedor(value)
-                                }
-                            >
+                            <Select onValueChange={(value) => setAlmacenProveedor(value)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Seleccionar proveedor" />
                                 </SelectTrigger>
@@ -162,9 +140,9 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
                                         Media
                                     </SelectItem>
                                     <SelectItem value="Alta">Alta</SelectItem>
-                                    <SelectItem value="Urgente">                   
+{/*                                     <SelectItem value="Urgente">                   
                                         Urgente
-                                    </SelectItem>
+                                    </SelectItem> */}
                                 </SelectContent>
                             </Select>
                         </div>

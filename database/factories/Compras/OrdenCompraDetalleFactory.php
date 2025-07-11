@@ -16,7 +16,7 @@ class OrdenCompraDetalleFactory extends Factory
            $user= User::inRandomOrder()->first() ?? User::factory()->create();
         return [
             'producto_id' => Producto::inRandomOrder()->value('id') ?? 1,
-            'cantidad_solicitada' => $this->faker->numberBetween(1, 100),
+            'cantidad' => $this->faker->numberBetween(1, 100),
             'precio' => $this->faker->randomFloat(2, 10, 500),
             'fecha_creacion' => now(),
             'usuario_creacion' =>$user->id,
