@@ -16,8 +16,9 @@ return new class extends Migration
             $table->unsignedBigInteger('producto_id');
             $table->unsignedBigInteger('almacen_solicitante_id');
             $table->unsignedBigInteger('almacen_proovedor_id');
-            $table->integer('cantidad_solicitada');
-            $table->enum('prioridad', ['Alta', 'Media', 'Baja','Urgente']);
+            $table->integer('cantidad');
+            $table->enum('prioridad', ['Alta', 'Media', 'Baja']);
+            $table->enum('estado',['Pendiente','Aceptada','Cancelada']);
             $table->string('motivo');
             $table->timestamp('fecha_creacion');
             $table->unsignedBigInteger('usuario_creacion');

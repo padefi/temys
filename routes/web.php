@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Almacenes\AlmacenController;
 use App\Http\Controllers\ControlAcceso\ProfileController;
+use App\Http\Controllers\Inventario\SolicitudStockController;
 use App\Http\Controllers\inventario\StockController;
 use App\Http\Controllers\UserModulePanel\UserModuleController;
 use App\Models\ControlAcceso\User;
@@ -88,9 +89,12 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
                     Route::get('inventario/usuarios', [UserModuleController::class, 'index'])->name('usuariosInventario');
                     Route::get('inventario/inventarioFisico', [StockController::class, 'index'])->name('inventarioFisico');
                     Route::get('/inventario/almacenes', [AlmacenController::class, 'index']); // No estoy segura de que se declare aca
-                    Route::post('/solicitar-stock', [StockController::class, 'solicitarStock']);
-                    Route::get('/solicitudes-stock', [StockController::class, 'getSolicitudesAll'])->name('inventario.solicitudes.all');
-                    Route::get('/solicitudes-stock/{id}', [StockController::class, 'getSolicitudesAlmacen'])->name('inventario.solicitudes.detalle');
+                    Route::post('/solicitar-stock', [SolicitudStockController::class, 'solicitarStock']);
+                    Route::get('/solicitudes-stock', [SolicitudStockController::class, 'getSolicitudesAll'])->name('inventario.solicitudes.all');
+                    Route::get('/solicitudes-stock/{id}', [SolicitudStockController::class, 'getSolicitudDetalle'])->name('inventario.solicitudes.detalle');
+                    Route::post('/solicitudes-stock-aceptar', [SolicitudStockController::class, 'aceptarSolicitud']);
+                    Route::post('/solicitudes-stock-cancelar', [SolicitudStockController::class, 'cancelarSolicitud']);
+                    Route::get('/solicitudes-stock-aceptadas', [SolicitudStockController::class, 'solicitudesAceptadas'])->name('inventario.misSolicitudes');
 
                   
                 });
