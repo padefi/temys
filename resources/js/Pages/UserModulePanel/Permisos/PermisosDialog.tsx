@@ -1,5 +1,5 @@
 import { PropsWithChildren, useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/Components/ui/resizable"
 import { Button } from "@/Components/ui/button";
 import { Separator } from "@/Components/ui/separator";
@@ -20,7 +20,7 @@ interface PermisosDialogProps {
     module: number;
 }
 
-export function PermisosDialog({ open, setOpen, user, module }: PropsWithChildren<PermisosDialogProps>) {
+const PermisosDialog = ({ open, setOpen, user, module }: PropsWithChildren<PermisosDialogProps>) => {
     const [moduleSelected, setModuleSelected] = useState(0);
     const [moduleSelectedIsAssigned, setModuleSelectedIsAssigned] = useState(false);
     const [moduleSelectedRoleModule, setModuleSelectedRoleModule] = useState('');
@@ -100,3 +100,5 @@ export function PermisosDialog({ open, setOpen, user, module }: PropsWithChildre
         </Dialog>
     );
 };
+
+export default PermisosDialog;

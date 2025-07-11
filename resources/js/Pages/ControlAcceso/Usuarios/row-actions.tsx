@@ -4,9 +4,10 @@ import { Ban, KeyRound, Loader2Icon, LockKeyhole, Pencil, Waypoints } from "luci
 import { usePermissions } from "@/composables/permissions";
 import { User } from "./page";
 import { toast } from 'sonner';
-import { useState } from "react";
-import { PermisosDialog } from "./Permisos/PermisosDialog";
+import React, { Suspense, useState } from "react";
 import axios from 'axios';
+
+const PermisosDialog = React.lazy(() => import("./Permisos/PermisosDialog"));
 
 interface RowActionsProps {
     user: User;
@@ -18,7 +19,7 @@ interface RowActionsProps {
     disabled?: boolean
 }
 
-export const RowActions: React.FC<RowActionsProps> = (
+export const RowActions = React.memo((
     { user, onUserUpdate, onEditClick, isEditing, disabled }: RowActionsProps) => {
     const { userAuth } = usePermissions();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -40,9 +41,9 @@ export const RowActions: React.FC<RowActionsProps> = (
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) toast.error(error.response.data.message || "Error desconocido del servidor");
             else toast.error("Error al restablecer la contraseña del usuario");
+        } finally {
+            setIsLoadingAction(false);
         }
-
-        setIsLoadingAction(false);
     }
 
     const managedUserActive = async () => {
@@ -174,8 +175,10 @@ export const RowActions: React.FC<RowActionsProps> = (
             </div>
 
             {user.roles.length !== 0 && user.roles.some(role => role.name !== 'admin') &&
-                <PermisosDialog open={isDialogOpen} setOpen={setIsDialogOpen} user={user} />
+                <Suspense fallback={null}>
+                    <PermisosDialog open={isDialogOpen} setOpen={setIsDialogOpen} user={user} />
+                </Suspense>
             }
         </>
     );
-}
+});
