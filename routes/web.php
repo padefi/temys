@@ -5,6 +5,7 @@ use App\Http\Controllers\ControlAcceso\ProfileController;
 use App\Http\Controllers\Inventario\SolicitudStockController;
 use App\Http\Controllers\inventario\StockController;
 use App\Http\Controllers\UserModulePanel\UserModuleController;
+use App\Http\Controllers\Inventario\Productos\ProductoController;
 use App\Models\ControlAcceso\User;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -84,6 +85,27 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
         })->name('inventario');
 
         Route::middleware(['menu:configuracionInventario'])->group(function () {
+            
+            Route::middleware(['submenu:productosInventario'])->group(function () {
+                Route::middleware('submenu_permission:read productosInventario')->group(function () {
+                    Route::get('inventario/productos', [ProductoController::class, 'index'])->name('productosInventario');
+                });
+            
+                Route::middleware('submenu_permission:create productosInventario')->group(function () {
+                    Route::get('inventario/productos/crear', function () {
+                        return Inertia::render('Inventario/Productos/crear');
+                    })->name('productosInventario.crear');
+            
+                    Route::post('inventario/productos', [ProductoController::class, 'store'])
+                        ->name('productosInventario.store');
+                });
+            
+                Route::middleware('submenu_permission:update productosInventario')->group(function () {
+                    Route::put('inventario/productos/{producto}', [ProductoController::class, 'update'])
+                        ->name('productosInventario.update');
+                });
+            });
+
             Route::middleware(['submenu:usuariosInventario', 'role_module:encargado inventario'])->group(function () {
                 Route::middleware('submenu_permission:read usuariosInventario')->group(function () {
                     Route::get('inventario/usuarios', [UserModuleController::class, 'index'])->name('usuariosInventario');
