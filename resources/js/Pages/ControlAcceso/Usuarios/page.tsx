@@ -10,6 +10,7 @@ import { meta } from '@/types/meta';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useDataTableParams } from '@/hooks/useDataTableParams';
+import { usePermissions } from "@/composables/permissions";
 
 export type User = {
   id: number;
@@ -43,6 +44,7 @@ interface UserPagination {
 
 export default function UsuariosPage() {
   const { users: { data: initialUsers, links, meta }, roles: { data: initialRoles } } = usePage<PageProps>().props;
+  const { hasMenuPermission } = usePermissions();
   const [newUser, setNewUser] = useState(false);
   const [editingNewUserIndex, setEditingNewUserIndex] = useState<number | null>(null);
   const [editingUserIndex, setEditingUserIndex] = useState<number | null>(null);
@@ -93,27 +95,29 @@ export default function UsuariosPage() {
           <div className="p-6 text-gray-900">
             <div className='flex flex-row items-center justify-between'>
               <h1 className="text-2xl my-3 font-bold">Usuarios</h1>
-              <Button
-                variant="outline"
-                className="cursor-pointer"
-                onClick={handleAddNewUser}
-                disabled={newUser || editingUserIndex !== null}>
-                <UserPlus className='w-5! h-5!' />
-                <span>Nuevo usuario</span>
-              </Button>
+              {hasMenuPermission('usuariosControlAcceso', 'create') &&
+                <Button
+                  variant="outline"
+                  className="cursor-pointer"
+                  onClick={handleAddNewUser}
+                  disabled={newUser || editingUserIndex !== null}>
+                  <UserPlus className='w-5! h-5!' />
+                  <span>Nuevo usuario</span>
+                </Button>
+              }
             </div>
-              <DataTable
-                columns={memoizedColumns}
-                data={users}
-                links={links}
-                meta={meta}
-                roles={memoizedRoles}
-                newUser={newUser}
-                setNewUser={setNewUser}
-                editingNewUserIndex={editingNewUserIndex}
-                cancelCreateUser={cancelCreateUser}
-                editingUserIndex={editingUserIndex}
-                setEditingUserIndex={setEditingUserIndex} />
+            <DataTable
+              columns={memoizedColumns}
+              data={users}
+              links={links}
+              meta={meta}
+              roles={memoizedRoles}
+              newUser={newUser}
+              setNewUser={setNewUser}
+              editingNewUserIndex={editingNewUserIndex}
+              cancelCreateUser={cancelCreateUser}
+              editingUserIndex={editingUserIndex}
+              setEditingUserIndex={setEditingUserIndex} />
           </div>
         </div>
       </div>

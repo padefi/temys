@@ -21,7 +21,7 @@ interface RowActionsProps {
 
 export const RowActions = React.memo((
     { user, onUserUpdate, onEditClick, isEditing, disabled }: RowActionsProps) => {
-    const { userAuth } = usePermissions();
+    const { userAuth, hasMenuPermission } = usePermissions();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isLoadingAction, setIsLoadingAction] = useState(false);
 
@@ -46,11 +46,11 @@ export const RowActions = React.memo((
         }
     }
 
-    const managedUserActive = async () => {
+    const managedUserActive = async (user: User, action: string) => {
         setIsLoadingAction(true);
 
         try {
-            const response = await axios.put(`/control-acceso/managed-user-active/${user.id}`);
+            const response = await axios.patch(`/control-acceso/${action}-user-active/${user.id}`);
             const data = response.data;
 
             if (!data.success) {
@@ -82,7 +82,7 @@ export const RowActions = React.memo((
             shadowColor: "rgba(217,119,6,0.5)",
             onClick: onEditClick,
             disabled: isLoadingAction || disabled || isEditing,
-            show: true,
+            show: hasMenuPermission('usuariosControlAcceso', 'update') && user.is_active,
         },
         {
             icon: Waypoints,
@@ -91,7 +91,7 @@ export const RowActions = React.memo((
             shadowColor: "rgba(0,117,149,0.5)",
             onClick: () => { setIsDialogOpen(true) },
             disabled: isLoadingAction || disabled,
-            show: true,
+            show: hasMenuPermission('usuariosControlAcceso', 'update') && user.is_active,
         },
         {
             icon: KeyRound,
@@ -100,36 +100,32 @@ export const RowActions = React.memo((
             shadowColor: "rgba(0,117,149,0.5)",
             onClick: () => { resetUserPassword(user); },
             disabled: isLoadingAction || disabled,
-            show: true,
+            show: hasMenuPermission('usuariosControlAcceso', 'update') && user.is_active,
         },
+        {
+            icon: Ban,
+            tooltip: "Deshabilitar usuario",
+            color: "text-red-500",
+            shadowColor: "rgba(199,0,54,0.5)",
+            onClick: () => { managedUserActive(user, 'disable') },
+            disabled: isLoadingAction || disabled,
+            show: hasMenuPermission('usuariosControlAcceso', 'avoid') && user.is_active,
+        },
+        {
+            icon: LockKeyhole,
+            tooltip: "Habilitar usuario",
+            color: "text-cyan-500",
+            shadowColor: "rgba(0,117,149,0.5)",
+            onClick: () => { managedUserActive(user, 'enable') },
+            disabled: isLoadingAction || disabled,
+            show: hasMenuPermission('usuariosControlAcceso', 'restore') && !user.is_active,
+        }
     ];
 
     if (isLoadingAction) {
         return (
             <div className="text-right flex gap-3 ml-[2.4rem]">
                 <Loader2Icon className="animate-spin" />
-            </div>
-        );
-    }
-
-    if (!user.is_active) {
-        return (
-            <div className="text-right flex gap-3 ml-[2.4rem]">
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                className="p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(0,117,149,0.5)]"
-                                onClick={managedUserActive}
-                                disabled={isLoadingAction}
-                            >
-                                <LockKeyhole className='w-6! h-6! text-cyan-500' />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent><p>Habilitar</p></TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
             </div>
         );
     }
@@ -158,7 +154,7 @@ export const RowActions = React.memo((
                                 <TooltipContent><p>{action.tooltip}</p></TooltipContent>
                             </Tooltip>
                     ))}
-                    <Tooltip>
+                    {/* <Tooltip>
                         <TooltipTrigger asChild>
                             <Button
                                 variant="ghost"
@@ -170,7 +166,7 @@ export const RowActions = React.memo((
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent><p>Deshabilitar</p></TooltipContent>
-                    </Tooltip>
+                    </Tooltip> */}
                 </TooltipProvider>
             </div>
 

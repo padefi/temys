@@ -27,11 +27,12 @@ Route::middleware(['module:control-acceso', 'role:admin'])->group(function () {
         });
 
         Route::post('control-acceso/store-user', [UsuarioController::class, 'store'])->middleware('menu_permission:create usuariosControlAcceso');
+        Route::patch('control-acceso/disable-user-active/{user}', [UsuarioController::class, 'manageActive'])->middleware('menu_permission:avoid usuariosControlAcceso');
+        Route::patch('control-acceso/enable-user-active/{user}', [UsuarioController::class, 'manageActive'])->middleware('menu_permission:restore usuariosControlAcceso');
 
         Route::middleware('menu_permission:update usuariosControlAcceso')->group(function () {
             Route::put('control-acceso/edit-user/{user}', [UsuarioController::class, 'update']);
             Route::put('control-acceso/reset-user-password/{user}', [UsuarioController::class, 'resetPassword']);
-            Route::put('control-acceso/managed-user-active/{user}', [UsuarioController::class, 'manageActive']);
 
             Route::post('control-acceso/managed-role-modulos-by-user', [ModuleController::class, 'managedRoleModulesByUser']);
 

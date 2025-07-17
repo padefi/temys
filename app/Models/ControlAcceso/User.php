@@ -79,11 +79,11 @@ class User extends Authenticatable {
     }
 
     public function menuPermissions() {
-        return $this->belongsToMany(Module::class, 'model_has_menu_permissions', 'model_id', 'module_id')->withPivot('permission_id');
+        return $this->belongsToMany(Menu::class, 'model_has_menu_permissions', 'model_id', 'menu_id')->withPivot('permission_id');
     }
 
     public function submenuPermissions() {
-        return $this->belongsToMany(Module::class, 'model_has_submenu_permissions', 'model_id', 'module_id')->withPivot('permission_id');
+        return $this->belongsToMany(Submenu::class, 'model_has_submenu_permissions', 'model_id', 'submenu_id')->withPivot('permission_id');
     }
 
     public function permissions() {
