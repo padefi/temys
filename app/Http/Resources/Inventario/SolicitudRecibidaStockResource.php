@@ -18,7 +18,8 @@ public function toArray(Request $request): array
     return [
         'id' => $this->id,
         'nombre_producto' => optional($this->producto)->nombre,
-        'nombre_almacen' => optional($this->almacensolicitante)->nombre,
+        'nombre_almacen_solicitante' => optional($this->almacensolicitante)->nombre,
+        'nombre_almacen_proovedor' => optional($this->almacenproovedor)->nombre,
         'prioridad' => $this->prioridad,
         'fecha' => $this->fecha_creacion,
         'estado'=>$this->estado,

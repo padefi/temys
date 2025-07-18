@@ -10,7 +10,7 @@ import axios from "axios"
 interface StockRequest {
   id: string
   nombre_producto: string
-  nombre_almacen: string
+  nombre_almacen_solicitante: string
   cantidad: number
   prioridad: "Alta" | "Media" | "Baja" | "Urgente"
   motivo: string
@@ -113,7 +113,7 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Almacén Solicitante</Label>
-              <Input value={request.nombre_almacen} disabled />
+              <Input value={request.nombre_almacen_solicitante} disabled />
             </div>
             <div className="space-y-2">
               <Label>Producto</Label>

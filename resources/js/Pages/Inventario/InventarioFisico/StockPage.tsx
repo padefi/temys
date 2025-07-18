@@ -16,6 +16,7 @@ import { Head } from "@inertiajs/react";
 import { SolicitarStock } from "./ModalCrearSolicitudStock";
 import {Tooltip,TooltipContent,TooltipTrigger} from "@/Components/ui/tooltip";
 import SolicitudesStock from "./ModalSolicitudesEntrantes";
+import { DataTableSkeleton } from "@/Components/Data-table-skeleton";
 
 type Producto = {
     id: number;
@@ -58,10 +59,11 @@ export default function StockManagement() {
     const [sortColumn, setSortColumn] = useState<keyof StockItem | null>(null);
     const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(null);
     const { stocks } = usePage<PageProps>().props;
-    
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         setStock(stocks.data);
+        setIsLoading(false)
     }, []);
 
     useEffect(() => {
@@ -108,8 +110,10 @@ export default function StockManagement() {
  const handleSolicitudes = async () => {
     try {
       const res = await axios.get(`/solicitudes-stock/`)
+      
       setSolicitudes(res.data)
       setSolicitudesStockDialogOpen(true)
+   
       console.log(res.data.length)
     } catch (err) {
       console.error("Error al cargar detalles de la solicitud", err)
@@ -306,6 +310,7 @@ export default function StockManagement() {
                             </CardHeader>
                             <CardContent>
                                 <div>
+
                                     <Table>
                                         <TableHeader className="sticky-header">
                                             <TableRow>
@@ -377,6 +382,9 @@ export default function StockManagement() {
                                                 </TableHead>
                                             </TableRow>
                                         </TableHeader>
+                            {isLoading ? (
+                                <DataTableSkeleton columnCount={6} rowCount={5} showHeaders={false}></DataTableSkeleton>
+                            ):(
                                         <TableBody className="text-center">
                                             {paginatedStock.map((item) => {
                                                 const stockStatus =
@@ -386,64 +394,24 @@ export default function StockManagement() {
                                                     );
                                                 return (
                                                     <TableRow key={item.id}>
-                                                        <TableCell className="font-medium">
-                                                            {
-                                                                item.producto
-                                                                    .nombre
-                                                            }
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {
-                                                                item.almacen
-                                                                    .nombre
-                                                            }
-                                                        </TableCell>
+                                                        <TableCell className="font-medium">{item.producto.nombre}</TableCell>
+                                                        <TableCell>{item.almacen.nombre}</TableCell>
                                                         {/*  <TableCell>{item.almacen.nombre}</TableCell> */}
-                                                        <TableCell className="font-mono">
-                                                            {
-                                                                item.cantidad_actual
-                                                            }
-                                                        </TableCell>
-                                                        <TableCell className="font-mono">
-                                                            {item.stock_minimo}
-                                                        </TableCell>
+                                                        <TableCell className="font-mono">{item.cantidad_actual}</TableCell>
+                                                        <TableCell className="font-mono">{item.stock_minimo}</TableCell>
                                                         <TableCell>
-                                                            <Badge
-                                                                variant={
-                                                                    stockStatus.color as
-                                                                        | "default"
-                                                                        | "destructive"
-                                                                        | "secondary"
-                                                                        | "outline"
-                                                                }
-                                                            >
-                                                                {
-                                                                    stockStatus.status
-                                                                }
-                                                            </Badge>
-                                                        </TableCell>
+                                                            <Badge variant={stockStatus.color as | "default"| "destructive"| "secondary"| "outline"}>{stockStatus.status}</Badge>                                                     </TableCell>
                                                         <TableCell>
-                                                            {item.cantidad_actual <=
-                                                                item.stock_minimo && (
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="outline"
-                                                                    onClick={() =>
-                                                                        handleRequestStock(
-                                                                            item
-                                                                        )
-                                                                    }
-                                                                    className="text-xs"
-                                                                >
-                                                                    <Plus className="h-3 w-3 mr-1" />{" "}
-                                                                    Solicitar
+                                                            {item.cantidad_actual <= item.stock_minimo && (
+                                                                <Button size="sm" variant="outline" onClick={() => handleRequestStock( item)} className="text-xs">
+                                                                    <Plus className="h-3 w-3 mr-1" /> Solicitar
                                                                 </Button>
                                                             )}
                                                         </TableCell>
                                                     </TableRow>
                                                 );
                                             })}
-                                        </TableBody>
+                                        </TableBody> )}
                                     </Table>
                                 </div>
 

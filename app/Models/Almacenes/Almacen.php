@@ -16,8 +16,7 @@ class Almacen extends Model
     public $timestamps = false;
 
     
-    protected $fillable = [
-    
+    protected $fillable = [   
         'nombre',
         'tipo',
         'responsable_id',
@@ -63,4 +62,10 @@ class Almacen extends Model
     {
         return $this->hasMany(OrdenCompra::class, 'almacen_destino_id');
     }
+
+    public function usuarios()
+{
+    return $this->belongsToMany(User::class, 'relacion_almacen_user', 'almacen_id', 'user_id')->withTimestamps();
+}
+
 }

@@ -73,9 +73,6 @@ class SolicitudStockController extends Controller
         $original->save();
         $nuevaSolicitud = $original->replicate(); // compia el registro
 
-        // Intercambiar los almacenes
-        $nuevaSolicitud->almacen_solicitante_id = $original->almacen_proovedor_id;
-        $nuevaSolicitud->almacen_proovedor_id = $original->almacen_solicitante_id;
 
         // Sobrescribir los campos con los valores del request
         $nuevaSolicitud->estado = $request->estado;
@@ -105,9 +102,6 @@ class SolicitudStockController extends Controller
         $original->save();
         $nuevaSolicitud = $original->replicate(); // compia el registro
 
-        // Intercambiar los almacenes
-        $nuevaSolicitud->almacen_solicitante_id = $original->almacen_proovedor_id;
-        $nuevaSolicitud->almacen_proovedor_id = $original->almacen_solicitante_id;
 
         // Sobrescribir los campos con los valores del request
         $nuevaSolicitud->estado = $request->estado;
@@ -122,15 +116,22 @@ class SolicitudStockController extends Controller
             'nueva_solicitud_id' => $nuevaSolicitud->id,
         ]);
     }
-
-    public function solicitudesAceptadas()
+public function solicitudesAceptadas()
 {
-     $solicitudes = SolicitudRecibidaStock::with(['producto', 'almacensolicitante'])
-            ->where('almacen_solicitante_id', Auth::user()->id)
-            ->whereIn('estado', ['Aceptada','Cancelada'])
-            ->get();
-        return response()->json(SolicitudRecibidaStockResource::collection($solicitudes));
+    $userId = Auth::id();
+
+    $solicitudes = SolicitudRecibidaStock::with(['producto', 'almacensolicitante'])
+        ->where('almacen_solicitante_id', $userId)
+        ->where(function ($query) use ($userId) {
+            $query->where('almacen_proovedor_id', '!=', $userId)
+                  ->where('usuario_creacion', $userId);
+        })
+        ->whereIn('estado', ['Aceptada', 'Cancelada', 'Pendiente'])
+        ->get();
+
+    return response()->json(SolicitudRecibidaStockResource::collection($solicitudes));
 }
+
 
 
 
