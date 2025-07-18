@@ -57,7 +57,7 @@ export default function SolicitudesStock({ isOpen, onClose, requests,}: Solicitu
     const MisSolicitudes = async () => {
         try {
             const res = await axios.get("/solicitudes-stock-aceptadas");
-            console.log(res.data)
+          
         setIsLoading(false)
             setSolicitudesAceptadas(res.data);
 
@@ -91,13 +91,13 @@ export default function SolicitudesStock({ isOpen, onClose, requests,}: Solicitu
     };
 
     const handleAprobado = (id: any, qty: any, notes: any) => {
-        console.log("Aprobado", id, qty, notes);
+       
         setSolicitudesStock((prev) => prev.filter((s) => s.id !== id))
         setIsModalOpen(false);
     };
 
     const handleRechazado = (id: any, reason: any) => {
-        console.log("Rechazado", id, reason);
+       
         setSolicitudesStock((prev) => prev.filter((s) => s.id !== id))
         setIsModalOpen(false);
     };
@@ -120,7 +120,7 @@ export default function SolicitudesStock({ isOpen, onClose, requests,}: Solicitu
 
             <Tabs defaultValue="solicitudesPorAprobar" value={activeTab} onValueChange={(value) => { setActiveTab(value);
                 handleTabChange(value);
-                console.log("Tab seleccionado:", value);
+        
                 }} className="flex-1 flex flex-col overflow-hidden">
                     <TabsList>
                         <TabsTrigger value="solicitudesPorAprobar">Solicitudes de stock</TabsTrigger>

@@ -16,10 +16,10 @@ return new class extends Migration
             $table->unsignedBigInteger('origen_id');
             $table->unsignedBigInteger('destino_id');
             $table->date('fecha_envio');
-            $table->enum('estado', ['Enviado', 'Entregado', 'Cancelado']);
+            $table->enum('estado', ['Enviado', 'Entregado', 'Cancelado','Pendiente']);
             $table->timestamp('fecha_creacion');
             $table->unsignedBigInteger('usuario_creacion');
-            $table->dateTime('fecha_actualizacion');
+            $table->dateTime('fecha_actualizacion')->nullable();
             $table->unsignedBigInteger('usuario_actualizacion')->nullable();
             
 

@@ -35,6 +35,8 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
 
   if (!request) return null
 
+  console.log(request)
+
   const handleSubmit = async () => {
     if (action === "aprobado") {
       const cantidad = Number.parseInt(cantidadAprobada) || 0

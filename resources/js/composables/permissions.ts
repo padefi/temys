@@ -37,7 +37,7 @@ export function usePermissions() {
         auth: { user: userAuth, permissions },
     } = usePage<PageProps>().props;
 
-    console.log(permissions);
+
 
     const hasModulePermission = (moduleName: string, permissionName: string) =>
         permissions.module_permissions.some(

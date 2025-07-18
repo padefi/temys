@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Inventario;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\inventario\SolicitudRecibidaStockResource;
+use App\Models\Inventario\InventarioOrdenEntrega;
+use App\Models\Inventario\InventarioOrdenEntregaDetalle;
+use App\Models\Inventario\InventarioRecepcionProducto;
 use App\Models\Inventario\InventarioSolicitarStock;
 use App\Models\Inventario\SolicitudRecibidaStock;
 use Illuminate\Http\Request;
@@ -73,6 +76,7 @@ class SolicitudStockController extends Controller
         $original->save();
         $nuevaSolicitud = $original->replicate(); // compia el registro
 
+     
 
         // Sobrescribir los campos con los valores del request
         $nuevaSolicitud->estado = $request->estado;
@@ -82,6 +86,31 @@ class SolicitudStockController extends Controller
         $nuevaSolicitud->usuario_creacion = Auth::user()->id; 
 
         $nuevaSolicitud->save();
+
+        InventarioRecepcionProducto::create([
+            'origen_id'=>$nuevaSolicitud->almacen_solicitante_id,
+            'destino_id'=>$nuevaSolicitud->almacen_proovedor_id,
+            'tipo_movimiento'=>'restribuccion', 
+            'fecha_recepcion'=>now(),          
+            'estado'=>'Pendiente',
+            'usuario_creacion'=>Auth::user()->id,
+        ]);
+
+       $ordenEntrega= InventarioOrdenEntrega::create([
+            'origen_id' => $nuevaSolicitud->almacen_solicitante_id,
+            'destino_id' => $nuevaSolicitud->almacen_proovedor_id,
+            'fecha_envio' => now(),
+            'estado' => 'Pendiente', 
+            'usuario_creacion' => Auth::id(),
+        ]);
+
+        InventarioOrdenEntregaDetalle::create([
+            'orden_entrega_id' => $ordenEntrega->id,
+            'producto_id' => $nuevaSolicitud->producto_id,
+            'cantidad_enviada'=> -abs($nuevaSolicitud->cantidad),
+
+        ]);
+
 
         return response()->json([
             'message' => 'Nueva solicitud creada con almacenes invertidos.',
