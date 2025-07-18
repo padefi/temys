@@ -6,11 +6,14 @@ import { useEffect, useState } from "react";
 import AceptarStock from "./ModalAprobarORechazarStock";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Pagination } from "./components/PaginationSolicitud";
+import { DataTableSkeleton } from "@/Components/Data-table-skeleton"; 
+
 
 interface Solicitudes {
     id: number;
     nombre_producto: string;
-    nombre_almacen: string;
+    nombre_almacen_solicitante: string;
+    nombre_almacen_proovedor: string;
     estado: string;
     cantidad: number;
     motivo: string;
@@ -43,6 +46,7 @@ export default function SolicitudesStock({ isOpen, onClose, requests,}: Solicitu
     const endIndexMisSolicitudes = startIndexMisSolicitudes + itemsPerPage;
     const currentItemsMisSolicitudes = solicitudesAceptadas.slice(startIndexMisSolicitudes,endIndexMisSolicitudes);
     const [activeTab, setActiveTab] = useState("solicitadas");
+     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         if (requests) {
@@ -53,7 +57,10 @@ export default function SolicitudesStock({ isOpen, onClose, requests,}: Solicitu
     const MisSolicitudes = async () => {
         try {
             const res = await axios.get("/solicitudes-stock-aceptadas");
+            console.log(res.data)
+        setIsLoading(false)
             setSolicitudesAceptadas(res.data);
+
         } catch (error) {
             console.error("Error al cargar solicitudes aceptadas", error);
         }
@@ -135,7 +142,7 @@ export default function SolicitudesStock({ isOpen, onClose, requests,}: Solicitu
                                 {currentItems.length > 0 ? ( currentItems.map((solicitud) => (
                                     <TableRow key={solicitud.id}>
                                         <TableCell>{solicitud.nombre_producto}</TableCell>
-                                        <TableCell>{solicitud.nombre_almacen}</TableCell>
+                                        <TableCell>{solicitud.nombre_almacen_solicitante}</TableCell>
                                         <TableCell>
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${{
                                                                 Alta: "bg-red-100 text-red-700",
@@ -178,6 +185,7 @@ export default function SolicitudesStock({ isOpen, onClose, requests,}: Solicitu
                                 <TableRow>
                                     <TableHead>Producto</TableHead>
                                     <TableHead>Almacén origen</TableHead>
+                                    <TableHead>Almacén destino</TableHead>
                                     <TableHead>Estado</TableHead>
                                     <TableHead>Cantidad aprobada</TableHead>
                                     <TableHead>Motivo</TableHead>
@@ -185,11 +193,15 @@ export default function SolicitudesStock({ isOpen, onClose, requests,}: Solicitu
                                     {/*  <TableHead>Acciones</TableHead> */}
                                 </TableRow>
                             </TableHeader>
+                            {isLoading ? (
+                                <DataTableSkeleton columnCount={6} rowCount={5} showHeaders={false}></DataTableSkeleton>
+                            ):(
                             <TableBody>
                                 {solicitudesAceptadas.length > 0 ? ( solicitudesAceptadas.map((solicitud) => (
                                  <TableRow key={solicitud.id}>
                                     <TableCell>{solicitud.nombre_producto}</TableCell>
-                                    <TableCell>{solicitud.nombre_almacen}</TableCell>
+                                    <TableCell>{solicitud.nombre_almacen_solicitante}</TableCell>
+                                    <TableCell>{solicitud.nombre_almacen_proovedor}</TableCell>
                                     <TableCell><span className={`px-2 py-1 rounded-full text-xs font-medium  ${{
                                                     Cancelada:"bg-red-100 text-red-700",
                                                     Pendiente:"bg-yellow-100 text-yellow-700",
@@ -205,6 +217,7 @@ export default function SolicitudesStock({ isOpen, onClose, requests,}: Solicitu
                                  <TableRow><TableCell colSpan={5}  className="text-center py-8"  >No hay solicitudes disponibles</TableCell></TableRow>
                                     )}
                             </TableBody>
+                            )}
                         </Table>
 
                         <Pagination

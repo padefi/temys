@@ -19,7 +19,7 @@ class InventarioStockFactory extends Factory
         return [
             'producto_id' => Producto::inRandomOrder()->value('id') ?? 1,
             'almacen_id' => Almacen::inRandomOrder()->value('id') ?? 1,
-            'cantidad_actual' => $this->faker->numberBetween(10, 500),
+            'cantidad_actual' => $this->faker->numberBetween(0, 500),
             'stock_minimo' => $this->faker->numberBetween(5, 50),
             'fecha_creacion' => now(),
             'usuario_creacion' => rand(1, 20),

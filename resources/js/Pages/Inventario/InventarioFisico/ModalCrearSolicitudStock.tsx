@@ -67,7 +67,7 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Solicitar Stock a Otro Almacén</DialogTitle>
-                    <DialogDescription> Solicita stock de {selectedProduct?.producto.nombre}desde otros almacenes autorizados</DialogDescription>
+                    <DialogDescription> Solicita stock de {selectedProduct?.producto.nombre} desde otros almacenes autorizados</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                     <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -102,10 +102,7 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
                                 </SelectTrigger>
                                 <SelectContent>
                                     {almacenes.map((almacen) => (
-                                        <SelectItem
-                                            key={almacen.id}
-                                            value={almacen.id.toString()}
-                                        >
+                                        <SelectItem key={almacen.id} value={almacen.id.toString()} >
                                             {almacen.nombre}
                                         </SelectItem>
                                     ))}
@@ -116,21 +113,11 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label>Cantidad solicitada</Label>
-                            <Input
-                                type="number"
-                                placeholder="0"
-                                value={cantidad}
-                                onChange={(e) =>
-                                    setCantidad(parseInt(e.target.value, 10))
-                                }
-                            />
+                            <Input  type="number" placeholder="0" value={cantidad} onChange={(e) => setCantidad(parseInt(e.target.value, 10)) } />
                         </div>
                         <div className="space-y-2">
                             <Label>Prioridad</Label>
-                            <Select
-                                defaultValue={prioridad}
-                                onValueChange={setPrioridad}
-                            >
+                            <Select defaultValue={prioridad} onValueChange={setPrioridad} >
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
@@ -149,19 +136,12 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
                     </div>
                     <div className="space-y-2">
                         <Label>Justificación</Label>
-                        <Textarea
-                            placeholder="Motivo de la solicitud..."
-                            value={motivo}
-                            onChange={(e) => setMotivo(e.target.value)}
-                        />
+                        <Textarea placeholder="Motivo de la solicitud..." value={motivo} onChange={(e) => setMotivo(e.target.value)} />
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button
-                        variant="outline"
-                        onClick={() => setsolicitudDialogOpen(false)}
-                    >
-                        Cancelar{" "}
+                    <Button variant="outline" onClick={() => setsolicitudDialogOpen(false)} >
+                        Cancelar
                     </Button>
                     <Button
                         onClick={handleSubmit}
