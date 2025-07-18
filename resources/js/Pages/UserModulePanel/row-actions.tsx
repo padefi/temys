@@ -1,6 +1,6 @@
 import { Button } from "@/Components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
-import { Loader2Icon, Waypoints } from "lucide-react";
+import { Waypoints } from "lucide-react";
 import { usePermissions } from "@/composables/permissions";
 import { User } from "./page";
 import React, { Suspense, useState } from "react";
@@ -15,9 +15,8 @@ interface RowActionsProps {
 
 export const RowActions = React.memo((
     { user, module, disabled }: RowActionsProps) => {
-    const { userAuth } = usePermissions();
+    const { userAuth, hasSubmenuPermission } = usePermissions();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isLoadingAction, setIsLoadingAction] = useState(false);
 
     const actions = [
         {
@@ -26,18 +25,10 @@ export const RowActions = React.memo((
             color: "text-emerald-500",
             shadowColor: "rgba(0,117,149,0.5)",
             onClick: () => { setIsDialogOpen(true) },
-            disabled: isLoadingAction || disabled,
-            show: true,
+            disabled: disabled,
+            show: hasSubmenuPermission('usuariosAfiliados', 'update'),
         },
     ];
-
-    if (isLoadingAction) {
-        return (
-            <div className="text-right flex gap-3 ml-[2.4rem]">
-                <Loader2Icon className="animate-spin" />
-            </div>
-        );
-    }
 
     if (userAuth.id === user.id || user.module_roles.length === 0 || user.module_roles.some(role => role.name === 'encargado')) {
         return <span className="text-sm text-gray-500">Sin acciones</span>;
