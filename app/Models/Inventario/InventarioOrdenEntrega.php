@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class InventarioOrdenEntrega extends Model
 {
-    
+
     public $timestamps = false;
 
     protected $fillable = [
         'origen_id',
         'destino_id',
+        'solicitud_id',
         'fecha_envio',
         'estado',
         'fecha_creacion',
@@ -30,12 +31,12 @@ class InventarioOrdenEntrega extends Model
 
     public function origen()
     {
-        return $this->belongsTo(Almacen::class, 'almacen_origen_id');
+        return $this->belongsTo(Almacen::class, 'origen_id');
     }
 
     public function destino()
     {
-        return $this->belongsTo(Almacen::class, 'almacen_destino_id');
+        return $this->belongsTo(Almacen::class, 'destino_id');
     }
 
     public function usuario()
@@ -46,5 +47,12 @@ class InventarioOrdenEntrega extends Model
     public function detalles()
     {
         return $this->hasMany(inventarioOrdenEntregaDetalle::class, 'orden_entrega_id');
-    } 
+    }
+
+
+    // InventarioOrdenEntrega.php
+    public function solicitud()
+    {
+        return $this->belongsTo(InventarioSolicitarStock::class, 'solicitud_id');
+    }
 }

@@ -11,7 +11,7 @@ class StockController extends Controller
     public function index()
     {
         $stock = InventarioStock::with(['producto', 'almacen'])
-            ->where('almacen_id', Auth::user()->id) 
+            ->where('almacen_id', Auth::id()) 
             ->get();
         return Inertia::render('Inventario/InventarioFisico/StockPage', [
             'stocks' => StockResource::collection($stock),

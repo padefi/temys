@@ -14,7 +14,7 @@ class SolicitudRecibidaStock extends Model
     protected $fillable = [
         'producto_id',
         'almacen_solicitante_id',
-        'almacen_proovedor_id',
+        'almacen_proveedor_id',
         'prioridad',
         'fecha_creacion',
     ];
@@ -32,6 +32,6 @@ class SolicitudRecibidaStock extends Model
 
          public function almacenProovedor()
     {
-        return $this->belongsTo(Almacen::class, 'almacen_proovedor_id');
+        return $this->belongsTo(Almacen::class, 'almacen_proveedor_id');
     }
 }

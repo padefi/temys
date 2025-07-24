@@ -15,21 +15,25 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('producto_id');
             $table->unsignedBigInteger('almacen_solicitante_id');
-            $table->unsignedBigInteger('almacen_proovedor_id');
+            $table->unsignedBigInteger('almacen_proveedor_id');
             $table->integer('cantidad');
+            $table->integer('cantidad_aprobada')->default(0);
             $table->enum('prioridad', ['Alta', 'Media', 'Baja']);
             $table->enum('estado',['Pendiente','Aceptada','Cancelada']);
             $table->string('motivo');
             $table->timestamp('fecha_creacion');
             $table->unsignedBigInteger('usuario_creacion');
+            $table->timestamp('fecha_actualizacion')->nullable();
+            $table->unsignedBigInteger('usuario_actualizacion')->nullable();
 
 
             //Relaciones
 
             $table->foreign('producto_id')->references('id')->on('productos');
             $table->foreign('almacen_solicitante_id')->references('id')->on('almacenes');
-            $table->foreign('almacen_proovedor_id')->references('id')->on('almacenes');
+            $table->foreign('almacen_proveedor_id')->references('id')->on('almacenes');
             $table->foreign('usuario_creacion')->references('id')->on('users');
+            $table->foreign('usuario_actualizacion')->references('id')->on('users');
 
          
         });

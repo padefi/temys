@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from "react";
-import {Package,AlertTriangle,Plus,Search,ArrowUpDown,ArrowDownWideNarrow,ArrowUpNarrowWide,Bell} from "lucide-react";
+import { Package, AlertTriangle, Plus, Search, ArrowUpDown, ArrowDownWideNarrow, ArrowUpNarrowWide, Bell, SquarePlus } from "lucide-react";
 import { Button } from "@/Components/ui/button";
-import {Card,CardContent,CardDescription,CardHeader,CardTitle} from "@/Components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
-import {Table,TableBody,TableCell,TableHead,TableHeader,TableRow,} from "@/Components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/Components/ui/table";
 import { Tabs, TabsContent } from "@/Components/ui/tabs";
 import { Badge } from "@/Components/ui/badge";
-import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from "@/Components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import axios from "axios";
 import { usePage } from "@inertiajs/react";
 import { PageProps as InertiaPageProps } from "@inertiajs/core";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import { SolicitarStock } from "./ModalCrearSolicitudStock";
-import {Tooltip,TooltipContent,TooltipTrigger} from "@/Components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/Components/ui/tooltip";
 import SolicitudesStock from "./ModalSolicitudesEntrantes";
 import { DataTableSkeleton } from "@/Components/Data-table-skeleton";
 import { usePermissions } from "@/composables/permissions";
@@ -46,11 +46,11 @@ type PageProps = InertiaPageProps & {
 };
 
 export default function StockManagement() {
+    const [productosDisponibles, setProductosDisponibles] = useState<StockItem[]>([]);
     const [almacenes, setAlmacenes] = useState<Almacen[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedAlmacen, setselectedAlmacen] = useState("all");
     const [stockFiltro, setstockFiltro] = useState("all");
-    const [selectedProduct, setSelectedProduct] = useState<StockItem | null>(null);
     const [solicitudDialogOpen, setsolicitudDialogOpen] = useState(false);
     const [solicitudesStockDialogOpen, setSolicitudesStockDialogOpen] = useState(false);
     const [solicitudes, setSolicitudes] = useState()
@@ -61,8 +61,7 @@ export default function StockManagement() {
     const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(null);
     const { stocks } = usePage<PageProps>().props;
     const [isLoading, setIsLoading] = useState(true);
-
-    const {hasSubmenuPermission}=usePermissions();
+    const { hasSubmenuPermission } = usePermissions();
 
     useEffect(() => {
         setStock(stocks.data);
@@ -104,24 +103,31 @@ export default function StockManagement() {
         return { status: "Stock normal", color: "success" };
     };
 
-    const handleRequestStock = (product: any) => {
-        setSelectedProduct(product);
+
+    const handleAbrirModal = () => {
+        const productosFiltrados = stock.filter(
+            (item) => item.cantidad_actual <= item.stock_minimo
+        );
+        setProductosDisponibles(productosFiltrados);
         setsolicitudDialogOpen(true);
+
     };
 
- 
- const handleSolicitudes = async () => {
-    try {
-      const res = await axios.get(`/solicitudes-stock/`)
-      console.log(res.data)
-      setSolicitudes(res.data)
-      setSolicitudesStockDialogOpen(true)
-   
-    
-    } catch (err) {
-      console.error("Error al cargar detalles de la solicitud", err)
+
+
+
+    const handleSolicitudes = async () => {
+        try {
+            const res = await axios.get(`/solicitudes-stock/`)
+            // console.log(res.data)
+            setSolicitudes(res.data)
+            setSolicitudesStockDialogOpen(true)
+
+
+        } catch (err) {
+            console.error("Error al cargar detalles de la solicitud", err)
+        }
     }
-  }
 
 
     const sortedStock = React.useMemo(() => {
@@ -190,16 +196,39 @@ export default function StockManagement() {
             }
         >
             <Head title="Inventario" />
-            <div className="mb-6"></div>
+
             <div className="mx-auto w-full p-6 space-y-6">
+                <div className=" flex justify-between">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            {hasSubmenuPermission("inventarioFisico", "create") && (
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={handleAbrirModal}
+                                    className="text-xs"
+                                >
+                                    <Plus className="h-3 w-3 mr-1" /> Solicitar
+                                </Button>
+                            )}
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Solicitudes de stock</p>
+                        </TooltipContent>
+                    </Tooltip>
+
+                    <span>inventario Fisico</span>
+
+                </div>
                 <Tabs defaultValue="stock" className="space-y-4">
                     <TabsContent value="stock" className="space-y-4">
                         <Card>
+
                             <CardHeader className="text-xl flex justify-between">
                                 <CardTitle>Filtros</CardTitle>
                                 <Tooltip>
-                                    <TooltipTrigger asChild>                                        
-                                        <Button variant="outline" size="lg"       onClick={() => handleSolicitudes()}>
+                                    <TooltipTrigger asChild>
+                                        <Button variant="outline" size="lg" onClick={() => handleSolicitudes()}>
                                             <Badge variant={"success"}>1</Badge>
                                             <Bell className="h-4 " />
                                         </Button>
@@ -208,6 +237,7 @@ export default function StockManagement() {
                                         <p>Solicitudes de stock</p>
                                     </TooltipContent>
                                 </Tooltip>
+
                             </CardHeader>
                             <CardContent>
                                 <div className="grid  grid-cols-1 md:grid-cols-3 gap-35">
@@ -217,13 +247,13 @@ export default function StockManagement() {
                                         </Label>
                                         <div className="relative w-46">
                                             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                                            <Input id="search" placeholder="Nombre" value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value);setCurrentPage(1);}} className="pl-8"/>
+                                            <Input id="search" placeholder="Nombre" value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="pl-8" />
                                         </div>
                                     </div>
 
                                     <div className="space-y-2">
                                         <Label>Almacén</Label>
-                                        <Select value={selectedAlmacen} onValueChange={(value) => {setselectedAlmacen(value); setCurrentPage(1); }}>
+                                        <Select value={selectedAlmacen} onValueChange={(value) => { setselectedAlmacen(value); setCurrentPage(1); }}>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Seleccionar almacén" />
                                             </SelectTrigger>
@@ -336,9 +366,9 @@ export default function StockManagement() {
                                                         <span className="inline-flex items-center gap-1">
                                                             Stock Actual
                                                             {sortColumn ===
-                                                            "cantidad_actual" ? (
+                                                                "cantidad_actual" ? (
                                                                 sortDirection ===
-                                                                "asc" ? (
+                                                                    "asc" ? (
                                                                     <ArrowUpNarrowWide className="ml-1 h-4 w-4 animate-bounce" />
                                                                 ) : (
                                                                     <ArrowDownWideNarrow className="ml-1 h-4 w-4 animate-bounce" />
@@ -363,9 +393,9 @@ export default function StockManagement() {
                                                         <span className="inline-flex items-center gap-1">
                                                             Stock Mínimo
                                                             {sortColumn ===
-                                                            "stock_minimo" ? (
+                                                                "stock_minimo" ? (
                                                                 sortDirection ===
-                                                                "asc" ? (
+                                                                    "asc" ? (
                                                                     <ArrowUpNarrowWide className="ml-1 h-4 w-4 animate-bounce" />
                                                                 ) : (
                                                                     <ArrowDownWideNarrow className="ml-1 h-4 w-4 animate-bounce" />
@@ -380,41 +410,41 @@ export default function StockManagement() {
                                                 <TableHead className="text-center">
                                                     Estado
                                                 </TableHead>
-                                                <TableHead className="text-center">
+                                                {/*       <TableHead className="text-center">
                                                     Acciones
-                                                </TableHead>
+                                                </TableHead> */}
                                             </TableRow>
                                         </TableHeader>
-                            {isLoading ? (
-                                <DataTableSkeleton columnCount={6} rowCount={5} showHeaders={false}></DataTableSkeleton>
-                            ):(
-                                        <TableBody className="text-center">
-                                            {paginatedStock.map((item) => {
-                                                const stockStatus =
-                                                    getStockStatus(
-                                                        item.cantidad_actual,
-                                                        item.stock_minimo
-                                                    );
-                                                return (
-                                                    <TableRow key={item.id}>
-                                                        <TableCell className="font-medium">{item.producto.nombre}</TableCell>
-                                                        <TableCell>{item.almacen.nombre}</TableCell>
-                                                        {/*  <TableCell>{item.almacen.nombre}</TableCell> */}
-                                                        <TableCell className="font-mono">{item.cantidad_actual}</TableCell>
-                                                        <TableCell className="font-mono">{item.stock_minimo}</TableCell>
-                                                        <TableCell>
-                                                            <Badge variant={stockStatus.color as | "default"| "destructive"| "secondary"| "outline"}>{stockStatus.status}</Badge>                                                     </TableCell>
-                                                        <TableCell>
+                                        {isLoading ? (
+                                            <DataTableSkeleton columnCount={6} rowCount={5} showHeaders={false}></DataTableSkeleton>
+                                        ) : (
+                                            <TableBody className="text-center">
+                                                {paginatedStock.map((item) => {
+                                                    const stockStatus =
+                                                        getStockStatus(
+                                                            item.cantidad_actual,
+                                                            item.stock_minimo
+                                                        );
+                                                    return (
+                                                        <TableRow key={item.id}>
+                                                            <TableCell className="font-medium">{item.producto.nombre}</TableCell>
+                                                            <TableCell>{item.almacen.nombre}</TableCell>
+                                                            {/*  <TableCell>{item.almacen.nombre}</TableCell> */}
+                                                            <TableCell className="font-mono">{item.cantidad_actual}</TableCell>
+                                                            <TableCell className="font-mono">{item.stock_minimo}</TableCell>
+                                                            <TableCell>
+                                                                <Badge variant={stockStatus.color as | "default" | "destructive" | "secondary" | "outline"}>{stockStatus.status}</Badge>                                                     </TableCell>
+                                                            {/*                                                         <TableCell>
                                                             {item.cantidad_actual <= item.stock_minimo && hasSubmenuPermission('inventarioFisico','create') && (
                                                                 <Button size="sm" variant="outline" onClick={() => handleRequestStock( item)} className="text-xs">
                                                                     <Plus className="h-3 w-3 mr-1" /> Solicitar
                                                                 </Button>
                                                             )}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                );
-                                            })}
-                                        </TableBody> )}
+                                                        </TableCell> */}
+                                                        </TableRow>
+                                                    );
+                                                })}
+                                            </TableBody>)}
                                     </Table>
                                 </div>
 
@@ -459,19 +489,24 @@ export default function StockManagement() {
             </div>
 
             {/* Dialog para solicitar stock */}
-            <SolicitarStock
-                solicitudDialogOpen={solicitudDialogOpen}
-                setsolicitudDialogOpen={setsolicitudDialogOpen}
-                selectedProduct={selectedProduct}
-            ></SolicitarStock>
+            {solicitudDialogOpen &&
+                <SolicitarStock
+                    open={solicitudDialogOpen}
+                    onClose={() => setsolicitudDialogOpen(false)}
+                    productos={productosDisponibles}
+
+                />
+            }
+
 
             {/* Dialog Solicitudes de stock para aprobar */}
-
-           <SolicitudesStock isOpen={solicitudesStockDialogOpen} onClose={() => setSolicitudesStockDialogOpen(false)} requests={solicitudes}></SolicitudesStock>
+            {solicitudesStockDialogOpen &&
+                <SolicitudesStock isOpen={solicitudesStockDialogOpen} onClose={() => setSolicitudesStockDialogOpen(false)} requests={solicitudes}></SolicitudesStock>
+            }
 
 
         </AuthenticatedLayout>
 
-        
+
     );
 }

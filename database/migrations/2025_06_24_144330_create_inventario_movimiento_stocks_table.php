@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('cantidad');;
             $table->timestamp('fecha_creacion');
             $table->unsignedBigInteger('usuario_creacion');
-            $table->dateTime('fecha_actualizacion');
+            $table->dateTime('fecha_actualizacion')->nullable();
             $table->unsignedBigInteger('usuario_actualizacion')->nullable();
             
 

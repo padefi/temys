@@ -16,6 +16,7 @@ interface Solicitudes {
     nombre_almacen_proovedor: string;
     estado: string;
     cantidad: number;
+    cantidad_aprobada: number;
     motivo: string;
     prioridad: string;
     fecha: Date;
@@ -187,6 +188,7 @@ export default function SolicitudesStock({ isOpen, onClose, requests,}: Solicitu
                                     <TableHead>Almacén origen</TableHead>
                                     <TableHead>Almacén destino</TableHead>
                                     <TableHead>Estado</TableHead>
+                                    <TableHead>Cantidad solicitada</TableHead>
                                     <TableHead>Cantidad aprobada</TableHead>
                                     <TableHead>Motivo</TableHead>
                                     <TableHead>Fecha</TableHead>
@@ -211,6 +213,7 @@ export default function SolicitudesStock({ isOpen, onClose, requests,}: Solicitu
                                                 </span>
                                     </TableCell>
                                     <TableCell>{solicitud.cantidad}</TableCell>
+                                    <TableCell>{solicitud.cantidad_aprobada}</TableCell>                   
                                     <TableCell>{solicitud.motivo}</TableCell>
                                     <TableCell>{new Date(solicitud.fecha ).toLocaleDateString()}</TableCell>
                                 </TableRow>))) : (

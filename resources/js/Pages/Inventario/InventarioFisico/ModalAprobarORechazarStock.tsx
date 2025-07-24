@@ -1,7 +1,7 @@
-import {useState } from "react"
-import {Check, X } from "lucide-react"
+import { useState } from "react"
+import { AlertTriangle, Check, X } from "lucide-react"
 import { Button } from "@/Components/ui/button"
-import {Dialog,DialogContent,DialogDescription,DialogFooter,DialogHeader,DialogTitle} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/Components/ui/input"
 import { Label } from "@/Components/ui/label"
 import { Textarea } from "@/Components/ui/textarea"
@@ -24,6 +24,7 @@ interface StockApprovalModalProps {
   onRechazado: (requestId: string, motivo: string) => void
 }
 
+
 export default function AceptarStock({ isOpen, onClose, request, onAprobado, onRechazado }: StockApprovalModalProps) {
   const [cantidadAprobada, setCantidadAprobada] = useState("")
   const [motivo, setMotivo] = useState("")
@@ -35,53 +36,53 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
 
   if (!request) return null
 
-  console.log(request)
+  //console.log(request)
 
   const handleSubmit = async () => {
     if (action === "aprobado") {
       const cantidad = Number.parseInt(cantidadAprobada) || 0
-      const estado='Aceptada'
+      const estado = 'Aceptada'
       onAprobado(request.id, cantidad, motivo)
       try {
-      const response = await axios.post('/solicitudes-stock-aceptar', {
-        solicitud_id: request.id,
-        estado,
-        motivo,
-        cantidad,
-      });
+        const response = await axios.post('/solicitudes-stock-aceptar', {
+          solicitud_id: request.id,
+          estado,
+          motivo,
+          cantidad,
+        });
 
 
-    } catch (err: any) {
-      if (err.response?.status === 422) {
-        const errors = err.response.data.errors;
-        setErrorCantidad(Object.values(errors).flat().join(', '));
-      } else {
-        setErrorCantidad('Error al conectar con el servidor');
+      } catch (err: any) {
+        if (err.response?.status === 422) {
+          const errors = err.response.data.errors;
+          setErrorCantidad(Object.values(errors).flat().join(', '));
+        } else {
+          setErrorCantidad('Error al conectar con el servidor');
+        }
+        console.error(err);
       }
-      console.error(err);
-    }
 
 
     } else if (action === "rechazado") {
-      const estado='Cancelada'
-     
+      const estado = 'Cancelada'
+
       onRechazado(request.id, motivo)
       try {
-      const response = await axios.post('/solicitudes-stock-cancelar', {
-        solicitud_id: request.id,
-        estado,
-        motivo,
-       
-      });
-    } catch (err: any) {
-      if (err.response?.status === 422) {
-        const errors = err.response.data.errors;
-        setErrorCantidad(Object.values(errors).flat().join(', '));
-      } else {
-        setErrorCantidad('Error al conectar con el servidor');
+        const response = await axios.post('/solicitudes-stock-cancelar', {
+          solicitud_id: request.id,
+          estado,
+          motivo,
+
+        });
+      } catch (err: any) {
+        if (err.response?.status === 422) {
+          const errors = err.response.data.errors;
+          setErrorCantidad(Object.values(errors).flat().join(', '));
+        } else {
+          setErrorCantidad('Error al conectar con el servidor');
+        }
+        console.error(err);
       }
-      console.error(err);
-    }
     }
 
     // Reset form
@@ -96,11 +97,11 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
     setMotivo("")
     setAction(null)
     onClose()
-    setErrorCantidad("")          
-    setCantidadAprobada("")      
+    setErrorCantidad("")
+    setCantidadAprobada("")
   }
 
- 
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
@@ -110,7 +111,29 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
         </DialogHeader>
 
         <div className="space-y-4">
-          
+
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center gap-2 text-red-800 mb-2">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="font-medium">Stock Bajo Detectado</span>
+            </div>
+
+            <div className="text-sm text-red-700">
+              <div className="font-medium">
+                {/* {selectedProduct?.producto.nombre} */}
+              </div>
+              <div>
+                Stock actual:<span className="font-bold">{/* {selectedProduct?.cantidad_actual} */}</span>| Mínimo:
+                <span className="font-bold">{/* {selectedProduct?.stock_minimo} */}</span>
+              </div>
+              <div>
+                Almacén: {/* {selectedProduct?.almacen.nombre} */}
+              </div>
+            </div>
+          </div>
+
+
+
           {/* detalle de la solicitud */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -130,10 +153,9 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
             </div>
             <div className="space-y-2">
               <Label>Prioridad</Label>
-              <Input value={request.prioridad} className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                request.prioridad === "Alta"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-gray-100 text-gray-700"}`} disabled />
+              <Input value={request.prioridad} className={`px-2 py-1 rounded-full text-xs font-medium ${request.prioridad === "Alta"
+                  ? "bg-red-100 text-red-700"
+                  : "bg-gray-100 text-gray-700"}`} disabled />
             </div>
           </div>
 
@@ -148,7 +170,7 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
             <div className="space-y-4 p-4 border rounded-lg bg-green-50">
               <div className="space-y-2">
                 <Label htmlFor="approved-quantity">Cantidad Aprobada</Label>
-               <Input
+                <Input
                   id="approved-quantity"
                   type="number"
                   placeholder="Ingresa la cantidad a aprobar"
@@ -160,22 +182,22 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
                     if (value > max) {
                       setErrorCantidad(`No puedes aprobar más de ${max}`);
                     } else if (value < 0) {
-                    setErrorCantidad("La cantidad no puede ser negativa");
-                    }else if (value == 0) {
-                    setErrorCantidad("La cantidad no puede ser cero");
+                      setErrorCantidad("La cantidad no puede ser negativa");
+                    } else if (value == 0) {
+                      setErrorCantidad("La cantidad no puede ser cero");
                     } else {
                       setErrorCantidad("");
                       setCantidadAprobada(e.target.value);
                     }
 
-                    
+
                     setCantidadAprobada(e.target.value);
                   }}
                   max={request.cantidad}
                   min="0"
                 />
-              {errorCantidad && (
-                <p className="text-sm text-red-500 mt-1">{errorCantidad}</p>
+                {errorCantidad && (
+                  <p className="text-sm text-red-500 mt-1">{errorCantidad}</p>
                 )}
 
 
@@ -232,7 +254,7 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
           {action === "aprobado" && (
             <Button
               onClick={handleSubmit}
-              disabled={!cantidadAprobada || Number.parseInt(cantidadAprobada) <= 0 || !!errorCantidad }
+              disabled={!cantidadAprobada || Number.parseInt(cantidadAprobada) <= 0 || !!errorCantidad}
               className="gap-2"
             >
               <Check className="h-4 w-4" />

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('recepcion_id');
             $table->unsignedBigInteger('producto_id');
+            $table->unsignedBigInteger('solicitud_id')->nullable();
             $table->integer('cantidad_recibida');
             $table->integer('cantidad_esperada');
             $table->enum('estado', ['completo','Parcial','faltante']);

@@ -25,6 +25,7 @@ public function toArray(Request $request): array
         'estado'=>$this->estado,
         'motivo' => $this->when($mostrarCamposExtra, $this->motivo),
         'cantidad' => $this->when($mostrarCamposExtra, $this->cantidad),
+        'cantidad_aprobada' => $this->when($mostrarCamposExtra, $this->cantidad_aprobada),
     ];
 }
 

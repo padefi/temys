@@ -81,7 +81,7 @@ class ProductoController extends Controller
             ]),
             'fecha_creacion' => Carbon::now(),
             'fecha_actualizacion' => Carbon::now(),
-            'usuario_creacion' => Auth::user()->id,
+            'usuario_creacion' => Auth::id(),
         ]);
 
         return response()->json([
@@ -116,7 +116,7 @@ class ProductoController extends Controller
                 'cod_barras', 'referencia', 'es_inventario', 'es_patrimonio'
             ]),
             'fecha_actualizacion' => Carbon::now(),
-            'usuario_actualizacion' => Auth::user()->id,
+            'usuario_actualizacion' => Auth::id(),
         ]);
 
         return response()->json([
