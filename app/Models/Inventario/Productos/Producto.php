@@ -2,6 +2,7 @@
 
 namespace App\Models\Inventario\Productos;
 
+use App\Models\Compras\OrdenCotizacion\OrdenCotizacionDetalle;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -46,12 +47,12 @@ class Producto extends Model
 
     public function modelo()
     {
-        return $this->belongsTo(ProductoModelo::class, 'id_modelo', 'id_modelo');
+        return $this->belongsTo(ProductoModelo::class, 'modelo_id', 'id');
     }
 
     public function subCategoria()
     {
-        return $this->belongsTo(ProductoSubcategoria::class, 'id_subcategoria', 'id');
+        return $this->belongsTo(ProductoSubcategoria::class, 'subcategoria_id', 'id');
     }
 
     public function caracteristicas()
@@ -63,4 +64,11 @@ class Producto extends Model
             'producto_id'        // FK del otro modelo (Producto)
         );
     }
+
+    public function cotizacionesOrdenesDetalle()
+    {
+        return $this->belongsTo(OrdenCotizacionDetalle::class, 'id');
+    }
+
+
 }

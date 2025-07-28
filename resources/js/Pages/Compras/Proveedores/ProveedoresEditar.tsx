@@ -11,7 +11,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/Components/ui/select";
-import { Proveedor, ProveedoresEditarProps, TipoDocumento } from "@/types/proveedores";
+import { Proveedor, ProveedoresEditarProps, TipoDocumento } from "@/types/Proveedor";
 import TextInput from '@/Components/TextInput';
 import { Label } from '@/Components/ui/label';
 import { Button } from "@/Components/ui/button"

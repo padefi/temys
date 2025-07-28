@@ -3,7 +3,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { PageProps as InertiaPageProps } from '@inertiajs/core';
 import {  columns } from "./ProveedoresColumns"
 import { DataTable } from "./ProveedoresDataTable"
-import { Proveedor } from '@/types/proveedores'; // Cambia la ruta según tu estructura
+import { Proveedor } from '@/types/Proveedor'; // Cambia la ruta según tu estructura
 
 type PageProps = InertiaPageProps & {
     proveedores: {

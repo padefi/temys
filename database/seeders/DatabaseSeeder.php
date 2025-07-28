@@ -39,7 +39,12 @@ class DatabaseSeeder extends Seeder
             MarcaSeeder::class,
             ModeloSeeder::class,
             ProductoSeeder::class,
-            AlmacenSeeder::class
+            AlmacenSeeder::class,
+            SolicitudCompraSeeder::class,
+            OrdenCotizacionSeeder::class,
+            OrdenCotizacionDetalleSeeder::class,
+            ImpuestoSeeder::class,
+            SolicitudCompraOrdenCotizacionSeeder::class,
 
 
         ]);

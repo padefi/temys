@@ -13,6 +13,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_padron');
             $table->string('apellido', 100);
             $table->string('nombre', 100);
+            $table->boolean('habilitado')->default(true);
             $table->timestamps(); // created_at y updated_at
 
             // Definición de la relación con padron

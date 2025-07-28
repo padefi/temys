@@ -8,7 +8,7 @@ import { ArrowUpDown } from "lucide-react"
 import { useEffect, useState } from "react";
 
 import { ProveedoresEditar } from "./ProveedoresEditar";
-import { Proveedor } from '@/types/proveedores'; // Cambia la ruta según tu estructura
+import { Proveedor } from '@/types/Proveedor'; // Cambia la ruta según tu estructura
 
 
 
