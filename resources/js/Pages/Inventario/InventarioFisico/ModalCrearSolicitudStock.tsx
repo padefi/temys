@@ -31,10 +31,12 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
     const [prioridad, setPrioridad] = useState("Alta");
     const [motivo, setMotivo] = useState("");
     const [loading, setLoading] = useState(false);
+    //console.log(selectedProduct.producto.id)
 
     const handleSubmit = async () => {
         try {
             setLoading(true);
+            
 
             await axios.post("/solicitar-stock", {
                 producto_id: selectedProduct.producto.id,
@@ -127,9 +129,7 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
                                         Media
                                     </SelectItem>
                                     <SelectItem value="Alta">Alta</SelectItem>
-{/*                                     <SelectItem value="Urgente">                   
-                                        Urgente
-                                    </SelectItem> */}
+
                                 </SelectContent>
                             </Select>
                         </div>
