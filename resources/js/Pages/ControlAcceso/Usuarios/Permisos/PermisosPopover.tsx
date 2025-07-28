@@ -11,15 +11,17 @@ interface PermisosPopoverProps {
   loadingPermissions: boolean;
   onClick: () => void;
   onPermissionChange: (option: string) => void;
+  disabled: boolean;
 }
 
-export function PermisosPopover({ dataPermission, loadingPermissions, onClick, onPermissionChange }: PropsWithChildren<PermisosPopoverProps>) {
+export function PermisosPopover({ dataPermission, loadingPermissions, onClick, onPermissionChange, disabled }: PropsWithChildren<PermisosPopoverProps>) {  
   return (
     <PopoverDialog modal={false}>
       <PopoverDialogTrigger asChild>
         <Button
           className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
           variant="ghost"
+          disabled={disabled}
           onClick={onClick}>
           <TooltipProvider>
             <Tooltip>

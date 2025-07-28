@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories\almacenes;
+namespace Database\Factories\Almacenes;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Enums\TipoAlmacen;
@@ -27,7 +27,7 @@ class AlmacenFactory extends Factory
         $user = User::inRandomOrder()->first() ?? User::factory()->create();
         //$almacenPadre = Almacen::inRandomOrder()->first();
         return [
-            'nombre' => $this->faker->name,
+            'nombre' => $this->generarNombreAlmacen(),
             'tipo' => $randomAlmacen->value,
             'responsable_id' => $responsable->id,
             'almacen_padre_id' =>1,
@@ -36,5 +36,14 @@ class AlmacenFactory extends Factory
             'fecha_actualizacion' => $this->faker->date,
             'usuario_actualizacion' => $user->id,
         ];
+    }
+
+        private function generarNombreAlmacen(): string
+    {
+        $tipos = ['Secretaria central', 'Tapiales', 'Remedios de escalada', 'Retiro', 'Constitucion', 'Retiro', 'Mar del plata', 'Cordoba'];
+       
+
+        return $this->faker->randomElement($tipos);
+              
     }
 }

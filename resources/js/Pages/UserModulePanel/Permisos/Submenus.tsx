@@ -6,9 +6,9 @@ import { PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { PermisosPopover } from "./PermisosPopover";
-import axios from "axios";
 import { ConfirmPopover } from "./ConfimPopover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+import axios from "axios";
 
 interface Submenu {
     id: number;
@@ -19,12 +19,13 @@ interface Submenu {
 interface SubemnusProps {
     moduleSelected: number;
     moduleSelectedIsAssigned: boolean;
+    moduleSelectedRoleModule: string;
     menuSelected: number;
     menuSelectedIsAssigned: boolean;
     user: number;
 }
 
-export function Submenus({ moduleSelected, moduleSelectedIsAssigned, menuSelected, menuSelectedIsAssigned, user }: SubemnusProps) {
+export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelectedRoleModule, menuSelected, menuSelectedIsAssigned, user }: SubemnusProps) {
     const [dataSubmenus, setDataSubmenus] = useState<Submenu[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadingPermissions, setLoadingPermissions] = useState(true);
@@ -183,8 +184,12 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, menuSelecte
                                                     seccion(submenu.name, submenu.id);
                                                 }}
                                                 onPermissionChange={(option) => togglePermissionAssignment(submenu.id, option)}
-                                                loadingPermissions={loadingPermissions} />
-                                            <ConfirmPopover seccion="submenú" opcion={submenu.name} onClick={() => toggleSubmenuAssignment(moduleSelected, menuSelected, submenu.id, 0)} />
+                                                loadingPermissions={loadingPermissions}
+                                                disabled={moduleSelectedRoleModule == "encargado"} />
+
+                                            <ConfirmPopover seccion="submenú"
+                                                opcion={submenu.name} onClick={() => toggleSubmenuAssignment(moduleSelected, menuSelected, submenu.id, 0)}
+                                                disabled={moduleSelectedRoleModule == "encargado"} />
                                         </div>
                                     )
                                 )}

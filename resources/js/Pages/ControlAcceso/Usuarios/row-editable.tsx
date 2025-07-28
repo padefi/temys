@@ -21,7 +21,7 @@ interface RowEditableProps {
     disabled?: boolean
 }
 
-export const RowEditable: React.FC<RowEditableProps> = ({
+export const RowEditable = React.memo(({
     user,
     type,
     label,
@@ -32,7 +32,7 @@ export const RowEditable: React.FC<RowEditableProps> = ({
     onSaveInlineEdit,
     onCancelInlineEdit,
     disabled,
-}) => {
+}: RowEditableProps) => {
     const [localValue, setLocalValue] = useState(initialValue);
     const [errorMessage, setErrorMessage] = useState('');
     const initialValueSet = useRef(false);
@@ -146,4 +146,4 @@ export const RowEditable: React.FC<RowEditableProps> = ({
             </div>
         );
     }
-};
+});

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('orden_compra_id');
             $table->unsignedBigInteger('producto_id');
-            $table->integer('cantidad_solicitada');
+            $table->integer('cantidad');
             $table->decimal('precio');
             $table->timestamp('fecha_creacion');
             $table->unsignedBigInteger('usuario_creacion');

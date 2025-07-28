@@ -45,6 +45,11 @@ class DatabaseSeeder extends Seeder
             OrdenCotizacionDetalleSeeder::class,
             ImpuestoSeeder::class,
             SolicitudCompraOrdenCotizacionSeeder::class,
+            OrdenCompraSeeder::class,
+            OrdenCompraDetalleSeeder::class,
+            InventarioStockSeeder::class,
+            InventarioMovimientoStockSeeder::class,
+
 
 
         ]);

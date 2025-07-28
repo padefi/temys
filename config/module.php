@@ -260,7 +260,7 @@ return [
                     'key' => 'configuracionSeccionales',
                     'name' => 'Configuracion',
                     'submenus' => [
-                        ['key' => 'usuariosAfiliados', 'name' => 'Usuarios'],
+                        ['key' => 'usuariosSeccionales', 'name' => 'Usuarios'],
                     ]
                 ],
             ]

@@ -63,6 +63,11 @@ class SubmenuController extends Controller
         $menu = Menu::find($request->idMenu);
         $submenu = Submenu::find($request->idSubmenu);
 
+        if ($user->hasRole('admin'))
+        {
+            return response()->json(['message' => 'No puedes agregar o quitar modulos a un administrador', 'success' => false]);
+        }
+
         if (!$user->modules()->where('modules.id', $module->id)->exists())
         {
             return response()->json(['message' => 'El módulo relacionado con el menú no está asignado al usuario', 'success' => false]);
@@ -118,6 +123,11 @@ class SubmenuController extends Controller
         $submenu = Submenu::find($request->idSubmenu);
         $permission = Permission::findByName($request->permission);
 
+        if ($user->hasRole('admin'))
+        {
+            return response()->json(['message' => 'No puedes agregar o quitar permisos a un administrador', 'success' => false]);
+        }
+
         if (!$user->submenus()->where('submenus.id', $submenu->id)->exists())
         {
             return response()->json(['message' => 'El submenú no está asignado al usuario', 'success' => false]);
@@ -140,7 +150,7 @@ class SubmenuController extends Controller
 
             return response()->json(['message' => 'Permiso eliminado con exito', 'action' => 'delete', 'success' => true]);
         }
-        
+
         $submenu->userPermissions()->attach($permission->id, ['model_type' => User::class, 'model_id' => $user->id]);
 
         return response()->json(['message' => 'Permiso agregado con exito', 'action' => 'add', 'success' => true]);

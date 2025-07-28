@@ -1,17 +1,9 @@
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/Components/ui/skeleton"
-import { Link } from "@inertiajs/react";
-import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "@/Components/ui/button";
 import { ScrollArea } from "@/Components/ui/scroll-area"
-import { PlusCircle } from "lucide-react";
 import { toast } from "sonner";
-
 import { PermisosPopover } from "./PermisosPopover";
 import axios from "axios";
-import { ConfirmPopover } from "./ConfimPopover";
-import { RolePopover } from "./RolePopover";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 
 interface Role {
     id: number;
@@ -27,18 +19,15 @@ interface Modulo {
 }
 
 interface ModulosProps {
-    setModuleSelected: (id: number) => void;
-    setModuleSelectedIsAssigned: (status: boolean) => void;
-    setMenuSelected: (id: number) => void;
     user: number;
     module: number;
+    setModuleSelectedRoleModule: (role: string) => void;
 }
 
-export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMenuSelected, user, module }: ModulosProps) {
+export function Modulos({ user, module, setModuleSelectedRoleModule }: ModulosProps) {
     const [dataModulos, setDataModulos] = useState<Modulo[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadingPermissions, setLoadingPermissions] = useState(true);
-    const [isClicked, setIsClicked] = useState(0);
     const [dataPermission, setDataPermission] = useState<{ sectionName: string; option: string, idOption: number, permissionAssigned: [] }>({ sectionName: '', option: '', idOption: 0, permissionAssigned: [] });
 
     useEffect(() => {
@@ -49,9 +38,11 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
         setLoading(true);
 
         try {
+            setModuleSelectedRoleModule('');
             const response = await fetch(`/user-model-panel/get-module-by-user/${user}/${module}`);
             const data = await response.json();
             
+            setModuleSelectedRoleModule(data.data[0].role_module?.toLowerCase());            
             setDataModulos(data.data);
         } catch (error) {
             console.error("Error al obtener los módulos:", error);
@@ -124,17 +115,6 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
                     {dataModulos ? (
                         dataModulos.map((modulo, index) => (
                             <div key={index} className="flex items-center justify-between">
-                                {/* <Link
-                                    href="#"
-                                    className={cn(
-                                        buttonVariants({ variant: isClicked === index ? "default" : "ghost", size: "sm" }),
-                                        isClicked === index &&
-                                        "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white",
-                                        "justify-start w-0 flex-1"
-                                    )}
-                                >
-                                    {modulo.name}
-                                </Link> */}
                                 <p className="inline-flex items-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5 dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white justify-start w-0 flex-1 py-2 cursor-default">{modulo.name}</p>
                                 {modulo.is_assigned === 0 && (
                                     <div key={modulo.id + index} className="flex items-center justify-between gap-3">
@@ -145,7 +125,8 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMen
                                                     seccion(modulo.name, modulo.id);
                                                 }}
                                                 onPermissionChange={(option) => togglePermissionAssignment(modulo.id, option)}
-                                                loadingPermissions={loadingPermissions} />
+                                                loadingPermissions={loadingPermissions}
+                                                disabled={false} />
                                         )}
                                     </div>
                                 )}

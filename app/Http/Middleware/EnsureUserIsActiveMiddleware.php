@@ -19,7 +19,7 @@ class EnsureUserIsActiveMiddleware
         // Verifica si el usuario que se le está haciendo la petisión está activo
         
         // Si la ruta es exactamente 'control-acceso/managed-user-active' (PUT o cualquier método)
-        if ($request->is('control-acceso/managed-user-active*')) {
+        if ($request->is('control-acceso/enable-user-active*')) {
             return $next($request);
         }
     

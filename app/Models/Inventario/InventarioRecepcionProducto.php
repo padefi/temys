@@ -18,8 +18,7 @@ class InventarioRecepcionProducto extends Model
         'tipo_movimiento',
         'movimiento_id',
         'fecha_recepcion',
-        'estado',
-        'fecha_creacion',
+        'estado',      
         'usuario_creacion',
         'fecha_actualizacion',
         'usuario_actualizacion',
@@ -33,12 +32,12 @@ class InventarioRecepcionProducto extends Model
 
      public function remitente()
     {
-        return $this->belongsTo(Almacen::class, 'id_remitente');
+        return $this->belongsTo(Almacen::class, 'remitente_id');
     }
 
     public function destino()
     {
-        return $this->belongsTo(Almacen::class, 'id_destino');
+        return $this->belongsTo(Almacen::class, 'destino_id');
     }
 
     public function usuario()

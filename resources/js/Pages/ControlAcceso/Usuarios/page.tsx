@@ -7,9 +7,10 @@ import { Button } from '@/Components/ui/button';
 import { UserPlus } from 'lucide-react';
 import { links } from '@/types/links';
 import { meta } from '@/types/meta';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useDataTableParams } from '@/hooks/useDataTableParams';
+import { usePermissions } from "@/composables/permissions";
 
 export type User = {
   id: number;
@@ -43,23 +44,33 @@ interface UserPagination {
 
 export default function UsuariosPage() {
   const { users: { data: initialUsers, links, meta }, roles: { data: initialRoles } } = usePage<PageProps>().props;
+  const { hasMenuPermission } = usePermissions();
   const [newUser, setNewUser] = useState(false);
   const [editingNewUserIndex, setEditingNewUserIndex] = useState<number | null>(null);
   const [editingUserIndex, setEditingUserIndex] = useState<number | null>(null);
   const [users, setUsers] = useState<User[]>(initialUsers);
   const { isLoading } = useDataTableParams();
 
+  const memoizedColumns = useMemo(() => columns, []);
+  const memoizedRoles = useMemo(() => initialRoles, [initialRoles]);
+
   useEffect(() => {
-    setUsers(initialUsers);
+    if (users !== initialUsers) setUsers(initialUsers);
   }, [initialUsers]);
 
-  const handleAddNewUser = () => {
+  const handleAddNewUser = useCallback(() => {
     if (users.some(u => u.id === 0) || newUser) {
       toast.error("Ya se encuentra creando un nuevo usuario");
       return;
     }
     setNewUser(true);
-  };
+  }, [users, newUser]);
+
+  const cancelCreateUser = useCallback(() => {
+    setUsers(prevUsers => prevUsers.filter(user => user.id !== 0));
+    setEditingNewUserIndex(null);
+    setNewUser(false);
+  }, []);
 
   useEffect(() => {
     if (newUser && meta.current_page === meta.last_page && !isLoading) {
@@ -76,12 +87,6 @@ export default function UsuariosPage() {
     }
   }, [newUser, meta.current_page, meta.last_page, isLoading, users]);
 
-  const cancelCreateUser = () => {
-    setUsers(prevUsers => prevUsers.filter(user => user.id !== 0));
-    setEditingNewUserIndex(null);
-    setNewUser(false);
-  };
-
   return (
     <AuthenticatedLayout>
       <Head title="Dashboard" />
@@ -90,21 +95,23 @@ export default function UsuariosPage() {
           <div className="p-6 text-gray-900">
             <div className='flex flex-row items-center justify-between'>
               <h1 className="text-2xl my-3 font-bold">Usuarios</h1>
-              <Button
-                variant="outline"
-                className="cursor-pointer"
-                onClick={handleAddNewUser}
-                disabled={newUser || editingUserIndex !== null}>
-                <UserPlus className='w-5! h-5!' />
-                <span>Nuevo usuario</span>
-              </Button>
+              {hasMenuPermission('usuariosControlAcceso', 'create') &&
+                <Button
+                  variant="outline"
+                  className="cursor-pointer"
+                  onClick={handleAddNewUser}
+                  disabled={newUser || editingUserIndex !== null}>
+                  <UserPlus className='w-5! h-5!' />
+                  <span>Nuevo usuario</span>
+                </Button>
+              }
             </div>
             <DataTable
-              columns={columns}
+              columns={memoizedColumns}
               data={users}
               links={links}
               meta={meta}
-              roles={initialRoles}
+              roles={memoizedRoles}
               newUser={newUser}
               setNewUser={setNewUser}
               editingNewUserIndex={editingNewUserIndex}

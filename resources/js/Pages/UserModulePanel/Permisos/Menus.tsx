@@ -8,9 +8,9 @@ import { PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { PermisosPopover } from "./PermisosPopover";
-import axios from "axios";
 import { ConfirmPopover } from "./ConfimPopover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+import axios from "axios";
 
 interface Menu {
     id: number;
@@ -22,12 +22,13 @@ interface Menu {
 interface MenusProps {
     moduleSelected: number;
     moduleSelectedIsAssigned: boolean;
+    moduleSelectedRoleModule: string;
     setMenuSelected: (id: number) => void;
     setMenuSelectedIsAssigned: (status: boolean) => void;
     user: number;
 }
 
-export function Menus({ moduleSelected, moduleSelectedIsAssigned, setMenuSelected, setMenuSelectedIsAssigned, user }: MenusProps) {
+export function Menus({ moduleSelected, moduleSelectedIsAssigned, moduleSelectedRoleModule, setMenuSelected, setMenuSelectedIsAssigned, user }: MenusProps) {
     const [dataMenus, setDataMenus] = useState<Menu[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadingPermissions, setLoadingPermissions] = useState(true);
@@ -100,7 +101,7 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, setMenuSelecte
         }
     };
 
-    useEffect(() => {       
+    useEffect(() => {
         fetchDataMenus();
     }, [moduleSelected, moduleSelectedIsAssigned]);
 
@@ -213,10 +214,13 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, setMenuSelecte
                                                         seccion(menu.name, menu.id)
                                                     }}
                                                     onPermissionChange={(option) => togglePermissionAssignment(menu.id, option)}
-                                                    loadingPermissions={loadingPermissions} />
+                                                    loadingPermissions={loadingPermissions}
+                                                    disabled={moduleSelectedRoleModule == "encargado"} />
                                             )}
 
-                                            <ConfirmPopover seccion="menú" opcion={menu.name} onClick={() => toggleMenuAssignment(moduleSelected, menu.id, 0)} />
+                                            <ConfirmPopover seccion="menú"
+                                                opcion={menu.name} onClick={() => toggleMenuAssignment(moduleSelected, menu.id, 0)}
+                                                disabled={moduleSelectedRoleModule == "encargado"} />
                                         </div>
                                     )
                                 )}
