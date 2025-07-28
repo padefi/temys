@@ -1,5 +1,5 @@
 import { Skeleton } from "@/Components/ui/skeleton";
-import { TableBody, TableCell, TableRow } from "@/Components/ui/table";
+import { TableCell, TableRow } from "@/Components/ui/table";
 import React from "react";
 
 interface DataTableSkeletonProps {
@@ -13,16 +13,14 @@ export const DataTableSkeleton = React.memo(({ columnCount, rowCount = 10 }: Dat
     const skeletonColumns = Array.from({ length: columnCount });
 
     return (
-        <TableBody>
-            {skeletonRows.map((_, rowIndex) => (
-                <TableRow key={rowIndex}>
-                    {skeletonColumns.map((_, colIndex) => (
-                        <TableCell key={colIndex} className="px-6 py-3">
-                            <Skeleton className="h-4 w-full" />
-                        </TableCell>
-                    ))}
-                </TableRow>
-            ))}
-        </TableBody>
+        skeletonRows.map((_, rowIndex) => (
+            <TableRow key={rowIndex}>
+                {skeletonColumns.map((_, colIndex) => (
+                    <TableCell key={colIndex} className="px-6 py-3 h-[52px]">
+                        <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                ))}
+            </TableRow>
+        ))
     );
 });

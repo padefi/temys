@@ -37,29 +37,27 @@ export function usePermissions() {
         auth: { user: userAuth, permissions },
     } = usePage<PageProps>().props;
 
-
-
-    const hasModulePermission = (moduleName: string, permissionName: string) =>
+    const hasModulePermission = (moduleKey: string, permissionName: string) =>
         permissions.module_permissions.some(
             (p) =>
-                p.key === moduleName &&
+                p.key === moduleKey &&
                 p.permissions.find((p) => p.name === permissionName)
         );
 
-    const hasMenuPermission = (menuName: string, permissionName: string) =>
+    const hasMenuPermission = (menKey: string, permissionName: string) =>
         permissions.menu_permissions.some(
             (p) =>
-                p.key === menuName &&
+                p.key === menKey &&
                 p.permissions.find((p) => p.name === permissionName)
         );
 
     const hasSubmenuPermission = (
-        submenuName: string,
+        submenKey: string,
         permissionName: string
     ) =>
         permissions.submenu_permissions.some(
             (p) =>
-                p.key === submenuName &&
+                p.key === submenKey &&
                 p.permissions.find((p) => p.name === permissionName)
         );
 
