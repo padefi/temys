@@ -4,14 +4,14 @@ import { Button } from "@/Components/ui/button";
 import { MinusCircle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 
-interface ConfirmPopoverProps {
+interface RemovePopoverProps {
   seccion: string,
   opcion: string,
   onClick: () => void;
   disabled: boolean;
 }
 
-export function ConfirmPopover({ seccion, opcion, onClick, disabled }: PropsWithChildren<ConfirmPopoverProps>) {
+export function RemovePopover({ seccion, opcion, onClick, disabled }: PropsWithChildren<RemovePopoverProps>) {
   return (
     <PopoverDialog modal={false}>
       <PopoverDialogTrigger asChild>
