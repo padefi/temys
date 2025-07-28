@@ -25,6 +25,6 @@ class RelacionProveedorCondicion extends Model
     // Relación con Proveedor
     public function proveedor()
     {
-        return $this->belongsTo(\App\Models\Padron\Proveedor\Proveedor::class, 'id_proveedor');
+        return $this->belongsTo(Proveedor::class, 'id_proveedor');
     }
 }

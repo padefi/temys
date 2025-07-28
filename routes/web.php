@@ -1,11 +1,13 @@
 <?php
 
-use App\Http\Controllers\Almacenes\AlmacenController;
+use App\Http\Controllers\ControlAcceso\MenuController;
+use App\Http\Controllers\ControlAcceso\ModuleController;
 use App\Http\Controllers\ControlAcceso\ProfileController;
 use App\Http\Controllers\Inventario\SolicitudStockController;
 use App\Http\Controllers\inventario\StockController;
 use App\Http\Controllers\UserModulePanel\UserModuleController;
 use App\Http\Controllers\Inventario\Productos\ProductoController;
+
 use App\Models\ControlAcceso\User;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -29,10 +31,12 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
     require __DIR__.'/afiliados.php';
 
     /* TO-DO Modulo compras */
-    require __DIR__.'/compras.php';
 
-    /* TO-DO Modulo compras */
-    require __DIR__.'/compras.php';
+    // En tu web.php, reemplaza la sección de compras con:
+    Route::middleware('module:compras')->group(function () {
+        Route::prefix('compras')->group(base_path('routes/compras.php'));
+    });
+
 
     /* TO-DO Modulo contabilidad */
     require __DIR__.'/contabilidad.php';

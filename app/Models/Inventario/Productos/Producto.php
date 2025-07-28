@@ -2,6 +2,7 @@
 
 namespace App\Models\Inventario\Productos;
 
+use App\Models\Compras\OrdenCotizacion\OrdenCotizacionDetalle;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -63,4 +64,11 @@ class Producto extends Model
             'producto_id'        // FK del otro modelo (Producto)
         );
     }
+
+    public function cotizacionesOrdenesDetalle()
+    {
+        return $this->belongsTo(OrdenCotizacionDetalle::class, 'id');
+    }
+
+
 }

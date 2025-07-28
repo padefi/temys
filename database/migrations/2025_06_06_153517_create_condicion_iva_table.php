@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('condicion_iva', function (Blueprint $table) {
             $table->id(); // id bigint autoincremental
             $table->string('descripcion', 100)->unique();
+            $table->boolean('habilitado')->default(true);
             $table->timestamps();
         });
     }
