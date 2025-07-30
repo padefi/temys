@@ -275,7 +275,9 @@ export function DataTable<TData extends User, TValue>({
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <TableHead key={header.id}>
+                                        <TableHead key={header.id}
+                                            className={header.column.columnDef.id === 'actions' ? 'w-[100px] whitespace-nowrap' : ''}
+                                        >
                                             {header.isPlaceholder
                                                 ? null
                                                 : flexRender(
@@ -318,10 +320,11 @@ export function DataTable<TData extends User, TValue>({
                                                     <AnimatePresence mode="wait" initial={false}>
                                                         <motion.div
                                                             key={cell.id + (editingUserIndex === row.index ? '_editing' : '_view')}
-                                                            initial={{ rotateX: -90}}
-                                                            animate={{ rotateX: 0}}
+                                                            initial={{ rotateX: -90 }}
+                                                            animate={{ rotateX: 0 }}
                                                             exit={{ rotateX: 90 }}
                                                             transition={{ duration: 0.2 }}
+                                                            className={cell.column.columnDef.id === 'actions' ? 'w-[135px] whitespace-nowrap' : ''}
                                                         >
                                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                                         </motion.div>
