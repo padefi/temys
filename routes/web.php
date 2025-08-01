@@ -15,34 +15,35 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy')->middleware('can:avoid,' . User::class);
 
     /* TO-DO Modulo control accesos */
-    require __DIR__.'/control-acceso.php';    
+    Route::middleware(['module:control-acceso', 'role:admin'])->group(function () {
+        Route::prefix('control-acceso')->group(base_path('routes/control-acceso.php'));
+    });
 
     /* TO-DO Panel de usuarios de todos los modulos */
-    require __DIR__.'/user-module-panel.php';
+    require __DIR__ . '/user-module-panel.php';
 
     /* TO-DO Modulo afiliados */
-    require __DIR__.'/afiliados.php';
+    require __DIR__ . '/afiliados.php';
 
     /* TO-DO Modulo compras */
-    require __DIR__.'/compras.php';
-
-    /* TO-DO Modulo compras */
-    require __DIR__.'/compras.php';
+    Route::middleware('module:compras')->group(function () {
+        Route::prefix('compras')->group(base_path('routes/compras.php'));
+    });
 
     /* TO-DO Modulo contabilidad */
-    require __DIR__.'/contabilidad.php';
+    require __DIR__ . '/contabilidad.php';
 
-     /* TO-DO Modulo inventario */
-    require __DIR__.'/inventario.php';
+    /* TO-DO Modulo inventario */
+    require __DIR__ . '/inventario.php';
 
     /* TO-DO Modulo seccionales */
-    require __DIR__.'/seccionales.php';
+    require __DIR__ . '/seccionales.php';
 
     /* TO-DO Modulo ventas */
-    require __DIR__.'/ventas.php';
+    require __DIR__ . '/ventas.php';
 
     /* TO-DO Modulo patrimonio */
-    require __DIR__.'/patrimonio.php';
+    require __DIR__ . '/patrimonio.php';
 });
 
 require __DIR__ . '/auth.php';

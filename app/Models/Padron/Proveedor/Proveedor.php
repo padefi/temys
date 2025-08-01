@@ -1,9 +1,9 @@
 <?php
-
 namespace App\Models\Padron\Proveedor;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Compras\OrdenCotizacion\OrdenCotizacion;
 
 class Proveedor extends Model
 {
@@ -34,6 +34,11 @@ class Proveedor extends Model
     {
         return $this->belongsToMany(\App\Models\Padron\CondicionIva::class, 'relacion_proveedor_condicion', 'id_proveedor', 'id_iva')
                     ->withTimestamps();
+    }
+
+    public function ordenesCotizacion()
+    {
+        return $this->hasMany(OrdenCotizacion::class, 'proveedor_id');
     }
 
 }

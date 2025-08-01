@@ -135,34 +135,60 @@ export const RowActions = React.memo((
         <div className="text-right flex gap-3">
             <TooltipProvider>
                 <AnimatePresence initial={false}>
-                    {actions.filter(action => action.show && !(action.tooltip === "Permisos" && (user.roles.length === 0 || user.roles.some(role => role.name === 'admin')))).map((action) => (
-                        <motion.div
-                            key={action.tooltip}
-                            layout
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.8 }}
-                            transition={{ duration: 0.35, ease: "easeInOut" }}
-                        >
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        className={`p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_${action.shadowColor}]`}
-                                        onClick={action.onClick}
-                                        disabled={action.disabled && !(isLoadingAction && action.action == loadingAction)}
-                                    >
-                                        {isLoadingAction && action.action == loadingAction ? (
-                                            <Loader2Icon className="animate-spin w-6! h-6!" />
-                                        ) : (
-                                            <action.icon className={`w-6! h-6! ${action.color}`} />
-                                        )}
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent><p>{action.tooltip}</p></TooltipContent>
-                            </Tooltip>
-                        </motion.div>
-                    ))}
+                    {actions.map((action) => {
+                        const shouldShowAction = action.show && !(action.tooltip === "Permisos" && (user.roles.length === 0 || user.roles.some(role => role.name === 'admin')));
+
+                        if (!shouldShowAction) {
+                            return null;
+                        }
+
+                        return (
+                            <motion.div
+                                key={action.action}
+                                layout
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                transition={{ duration: 0.35, ease: "easeInOut" }}
+                            >
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            className={`p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_${action.shadowColor}]`}
+                                            onClick={action.onClick}
+                                            disabled={action.disabled && !(isLoadingAction && action.action == loadingAction)}
+                                        >
+                                            <AnimatePresence mode="wait" initial={false}>
+                                                {isLoadingAction && action.action == loadingAction ? (
+                                                    <motion.div
+                                                        key="loader"
+                                                        initial={{ opacity: 0, scale: 0.8 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        exit={{ opacity: 0, scale: 0.8 }}
+                                                        transition={{ duration: 0.1, ease: "easeInOut" }}
+                                                    >
+                                                        <Loader2Icon className={`animate-spin w-6! h-6!`} />
+                                                    </motion.div>
+                                                ) : (
+                                                    <motion.div
+                                                        key="icon"
+                                                        initial={{ opacity: 0, scale: 0.8 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        exit={{ opacity: 0, scale: 0.8 }}
+                                                        transition={{ duration: 0.1, ease: "easeInOut" }}
+                                                    >
+                                                        <action.icon className={`w-6! h-6! ${action.color}`} />
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent><p>{action.tooltip}</p></TooltipContent>
+                                </Tooltip>
+                            </motion.div>
+                        );
+                    })}
                 </AnimatePresence>
             </TooltipProvider>
 

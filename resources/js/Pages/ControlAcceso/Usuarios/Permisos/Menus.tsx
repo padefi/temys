@@ -8,8 +8,9 @@ import { PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { PermisosPopover } from "./PermisosPopover";
-import { ConfirmPopover } from "./ConfimPopover";
+import { RemovePopover } from "./RemovePopover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+import { AnimatePresence, motion } from "framer-motion";
 import axios from "axios";
 
 interface Menu {
@@ -146,92 +147,125 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, moduleSelected
         }
     };
 
-    if (loading) {
-        return (
-            <div className="flex flex-col gap-4 py-4">
-                <Skeleton className="h-4 w-[200px]" />
-                <Skeleton className="h-4 w-[200px]" />
-                <Skeleton className="h-4 w-[200px]" />
-                <Skeleton className="h-4 w-[200px]" />
-            </div>
-        )
-    }
-
     return (
-        <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-19rem)] lg:h-[calc(100vh-23rem)] xl:h-[calc(100vh-24rem)] 2xl:h-[calc(100vh-39rem)] w-[-webkit-fill-available]">
-            <div className="group flex flex-col gap-4 py-2">
-                <nav className="grid gap-1 px-2">
-                    {dataMenus && dataMenus.length > 0 ? (
-                        dataMenus.map((menu, index) => (
-                            <div key={index} className="flex items-center justify-between">
-                                <Link
-                                    key={index}
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setIsClicked(index);
-                                        setMenuSelected(menu.id);
-                                        setMenuSelectedIsAssigned(menu.is_assigned === 1 ? true : false);
-                                    }}
-                                    className={cn(
-                                        buttonVariants({ variant: isClicked === index ? "default" : "ghost", size: "sm" }),
-                                        isClicked === index &&
-                                        "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white",
-                                        "justify-start w-0 flex-1"
-                                    )}
-                                >
-                                    {menu.name}
-                                </Link>
-                                {moduleSelectedIsAssigned && (
-                                    menu.is_assigned === 0 ? (
-                                        <Button
-                                            className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
-                                            variant="ghost"
+        <AnimatePresence mode="wait">
+            {loading ? (
+                <motion.div
+                    key="skeleton"
+                    className="flex flex-col gap-4 py-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                >
+                    <Skeleton className="h-4 w-[200px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+                </motion.div>
+            ) : (
+                <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-19rem)] lg:h-[calc(100vh-23rem)] xl:h-[calc(100vh-24rem)] 2xl:h-[calc(100vh-39rem)] w-[-webkit-fill-available]">
+                    <motion.div
+                        key="content"
+                        className="group flex flex-col gap-4 py-2"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                    >
+                        <nav className="grid gap-1 px-2">
+                            {dataMenus && dataMenus.length > 0 ? (
+                                dataMenus.map((menu, index) => (
+                                    <div key={index} className="flex items-center justify-between">
+                                        <Link
+                                            key={index}
+                                            href="#"
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                toggleMenuAssignment(moduleSelected, menu.id, 1);
+                                                setIsClicked(index);
+                                                setMenuSelected(menu.id);
+                                                setMenuSelectedIsAssigned(menu.is_assigned === 1 ? true : false);
                                             }}
-                                        >
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <span>
-                                                            <PlusCircle className="w-6! h-6! text-emerald-500" />
-                                                        </span>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p>Agregar menú</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            </TooltipProvider>
-                                        </Button>
-                                    ) : (
-                                        <div key={menu.id + index} className="flex items-center justify-between gap-3">
-                                            {!menu.has_submenus && (
-                                                <PermisosPopover dataPermission={dataPermission}
-                                                    onClick={() => {
-                                                        setLoadingPermissions(true);
-                                                        seccion(menu.name, menu.id)
-                                                    }}
-                                                    onPermissionChange={(option) => togglePermissionAssignment(menu.id, option)}
-                                                    loadingPermissions={loadingPermissions}
-                                                    disabled={moduleSelectedRoleModule == "encargado"} />
+                                            className={cn(
+                                                buttonVariants({ variant: isClicked === index ? "default" : "ghost", size: "sm" }),
+                                                isClicked === index &&
+                                                "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white",
+                                                "justify-start w-0 flex-1"
                                             )}
+                                        >
+                                            {menu.name}
+                                        </Link>
 
-                                            <ConfirmPopover seccion="menú"
-                                                opcion={menu.name}
-                                                onClick={() => toggleMenuAssignment(moduleSelected, menu.id, 0)}
-                                                disabled={moduleSelectedRoleModule == "encargado"} />
-                                        </div>
-                                    )
-                                )}
-                            </div>
-                        ))
-                    ) : (
-                        <p>No se encontraron menús.</p>
-                    )}
-                </nav>
-            </div>
-        </ScrollArea>
+                                        {moduleSelectedIsAssigned && (
+                                            <AnimatePresence mode="wait">
+                                                {menu.is_assigned === 0 ? (
+                                                    <motion.div
+                                                        key={`${menu.id}-assigned-0`}
+                                                        className="flex items-center justify-between gap-3"
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        exit={{ opacity: 0 }}
+                                                        transition={{ duration: 0.25 }}
+                                                    >
+                                                        <Button
+                                                            className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
+                                                            variant="ghost"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                toggleMenuAssignment(moduleSelected, menu.id, 1);
+                                                            }}
+                                                        >
+                                                            <TooltipProvider>
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <span>
+                                                                            <PlusCircle className="w-6! h-6! text-emerald-500" />
+                                                                        </span>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>
+                                                                        <p>Agregar menú</p>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            </TooltipProvider>
+                                                        </Button>
+                                                    </motion.div>
+                                                ) : (
+                                                    <motion.div
+                                                        key={`${menu.id}-assigned-1`}
+                                                        className="flex items-center justify-between gap-3"
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        exit={{ opacity: 0 }}
+                                                        transition={{ duration: 0.25 }}
+                                                    >
+                                                        {!menu.has_submenus && (
+                                                            <PermisosPopover dataPermission={dataPermission}
+                                                                onClick={() => {
+                                                                    setLoadingPermissions(true);
+                                                                    seccion(menu.name, menu.id)
+                                                                }}
+                                                                onPermissionChange={(option) => togglePermissionAssignment(menu.id, option)}
+                                                                loadingPermissions={loadingPermissions}
+                                                                disabled={moduleSelectedRoleModule == "encargado"} />
+                                                        )}
+
+                                                        <RemovePopover seccion="menú"
+                                                            opcion={menu.name}
+                                                            onClick={() => toggleMenuAssignment(moduleSelected, menu.id, 0)}
+                                                            disabled={moduleSelectedRoleModule == "encargado"} />
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        )}
+                                    </div>
+                                ))
+                            ) : (
+                                <p>No se encontraron menús.</p>
+                            )}
+                        </nav>
+                    </motion.div>
+                </ScrollArea>
+            )}
+        </AnimatePresence>
     );
 }

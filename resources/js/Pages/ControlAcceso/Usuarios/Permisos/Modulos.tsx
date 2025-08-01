@@ -8,9 +8,10 @@ import { PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { PermisosPopover } from "./PermisosPopover";
-import { ConfirmPopover } from "./ConfimPopover";
+import { RemovePopover } from "./RemovePopover";
 import { RolePopover } from "./RolePopover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+import { AnimatePresence, motion } from "framer-motion";
 import axios from "axios";
 
 interface Role {
@@ -214,97 +215,130 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMod
         }
     };
 
-    if (loading) {
-        return (
-            <div className="flex flex-col gap-4 py-4">
-                <Skeleton className="h-4 w-[200px]" />
-                <Skeleton className="h-4 w-[200px]" />
-                <Skeleton className="h-4 w-[200px]" />
-                <Skeleton className="h-4 w-[200px]" />
-            </div>
-        )
-    }
-
     return (
-        <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-19rem)] lg:h-[calc(100vh-23rem)] xl:h-[calc(100vh-24rem)] 2xl:h-[calc(100vh-39rem)] w-[-webkit-fill-available]">
-            <div className="group flex flex-col gap-4 py-2">
-                <nav className="grid gap-1 px-2">
-                    {dataModulos && dataModulos.length > 0 ? (
-                        dataModulos.map((modulo, index) => (
-                            <div key={index} className="flex items-center justify-between">
-                                <Link
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setIsClicked(index);
-                                        setModuleSelected(modulo.id);
-                                        setModuleSelectedIsAssigned(modulo.is_assigned === 1 && modulo.has_role_module ? true : false);
-                                        setModuleSelectedRoleModule(modulo.role_module ? modulo.role_module.toLowerCase() : '');
-                                        setMenuSelected(0);
-                                    }}
-                                    className={cn(
-                                        buttonVariants({ variant: isClicked === index ? "default" : "ghost", size: "sm" }),
-                                        isClicked === index &&
-                                        "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white",
-                                        "justify-start w-0 flex-1"
-                                    )}
-                                >
-                                    {modulo.name}
-                                </Link>
-                                {modulo.is_assigned === 0 ? (
-                                    <Button
-                                        className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
-                                        variant="ghost"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            toggleModuleAssignment(modulo.id, 1);
-                                        }}
-                                    >
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <span>
-                                                        <PlusCircle className="w-6! h-6! text-emerald-500" />
-                                                    </span>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>Agregar módulo</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                    </Button>
-                                ) : (
-                                    <div key={modulo.id + index} className="flex items-center justify-between gap-3">
-                                        <RolePopover dataRole={dataRole}
-                                            loadingRole={loadingRole}
-                                            onClick={() => {
-                                                setLoadingRole(true);
-                                                rolesPopover(modulo.name, modulo.id);
+        <AnimatePresence mode="wait">
+            {loading ? (
+                <motion.div
+                    key="skeleton"
+                    className="flex flex-col gap-4 py-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                >
+                    <Skeleton className="h-4 w-[200px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+                </motion.div>
+            ) : (
+                <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-19rem)] lg:h-[calc(100vh-23rem)] xl:h-[calc(100vh-24rem)] 2xl:h-[calc(100vh-39rem)] w-[-webkit-fill-available]">
+                    <motion.div
+                        key="content"
+                        className="group flex flex-col gap-4 py-2"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                    >
+                        <nav className="grid gap-1 px-2">
+                            {dataModulos && dataModulos.length > 0 ? (
+                                dataModulos.map((modulo, index) => (
+                                    <div key={index} className="flex items-center justify-between">
+                                        <Link
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setIsClicked(index);
+                                                setModuleSelected(modulo.id);
+                                                setModuleSelectedIsAssigned(modulo.is_assigned === 1 && modulo.has_role_module ? true : false);
+                                                setModuleSelectedRoleModule(modulo.role_module ? modulo.role_module.toLowerCase() : '');
+                                                setMenuSelected(0);
                                             }}
-                                            onRoleChange={(option) => toggleRoleAssignment(modulo.id, option)}
-                                        />
+                                            className={cn(
+                                                buttonVariants({ variant: isClicked === index ? "default" : "ghost", size: "sm" }),
+                                                isClicked === index &&
+                                                "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white",
+                                                "justify-start w-0 flex-1"
+                                            )}
+                                        >
+                                            {modulo.name}
+                                        </Link>
 
-                                        {!modulo.has_menus && (
-                                            <PermisosPopover dataPermission={dataPermission}
-                                                onClick={() => {
-                                                    setLoadingPermissions(true);
-                                                    seccion(modulo.name, modulo.id);
-                                                }}
-                                                onPermissionChange={(option) => togglePermissionAssignment(modulo.id, option)}
-                                                loadingPermissions={loadingPermissions}
-                                                disabled={false} />
-                                        )}
+                                        <AnimatePresence mode="wait">
+                                            {modulo.is_assigned === 0 ? (
+                                                <motion.div
+                                                    key={`${modulo.id}-assigned-0`}
+                                                    className="flex items-center justify-between gap-3"
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    exit={{ opacity: 0 }}
+                                                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                                                >
+                                                    <Button
+                                                        className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
+                                                        variant="ghost"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            toggleModuleAssignment(modulo.id, 1);
+                                                        }}
+                                                    >
+                                                        <TooltipProvider>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <span>
+                                                                        <PlusCircle className="w-6! h-6! text-emerald-500" />
+                                                                    </span>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Agregar módulo</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        </TooltipProvider>
+                                                    </Button>
+                                                </motion.div>
+                                            ) : (
+                                                <motion.div
+                                                    key={`${modulo.id}-assigned-1`}
+                                                    className="flex items-center justify-between gap-3"
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    exit={{ opacity: 0 }}
+                                                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                                                >
+                                                    <RolePopover dataRole={dataRole}
+                                                        loadingRole={loadingRole}
+                                                        onClick={() => {
+                                                            setLoadingRole(true);
+                                                            rolesPopover(modulo.name, modulo.id);
+                                                        }}
+                                                        onRoleChange={(option) => toggleRoleAssignment(modulo.id, option)}
+                                                    />
 
-                                        <ConfirmPopover seccion="módulo" opcion={modulo.name} onClick={() => toggleModuleAssignment(modulo.id, 0)} disabled={false} />
+                                                    {!modulo.has_menus && (
+                                                        <PermisosPopover dataPermission={dataPermission}
+                                                            onClick={() => {
+                                                                setLoadingPermissions(true);
+                                                                seccion(modulo.name, modulo.id);
+                                                            }}
+                                                            onPermissionChange={(option) => togglePermissionAssignment(modulo.id, option)}
+                                                            loadingPermissions={loadingPermissions}
+                                                            disabled={false} />
+                                                    )}
+
+                                                    <RemovePopover seccion="módulo" opcion={modulo.name} onClick={() => toggleModuleAssignment(modulo.id, 0)} disabled={false} />
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
-                                )}
-                            </div>
-                        ))
-                    ) : (
-                        <p>No se encontraron módulos.</p>
-                    )}
-                </nav>
-            </div>
-        </ScrollArea>
+                                ))
+                            ) : (
+                                <p>No se encontraron módulos.</p>
+                            )}
+                        </nav>
+                    </motion.div>
+                </ScrollArea>
+            )}
+        </AnimatePresence>
     );
 }
