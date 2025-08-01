@@ -16,7 +16,7 @@ class InventarioRecepcionProducto extends Model
         'origen_id',
         'destino_id',
         'solicitud_id',
-        'tipo_movimiento',
+        'tipo_recepcion',
         'movimiento_id',
         'fecha_recepcion',
         'estado',
@@ -57,5 +57,10 @@ class InventarioRecepcionProducto extends Model
     public function solicitud()
     {
         return $this->belongsTo(InventarioSolicitarStock::class, 'solicitud_id');
+    }
+
+     public function movimientos()
+    {
+        return $this->belongsToMany(InventarioMovimientoStock::class, 'relacion_movimiento_recepcion', 'recepcion_id', 'movimiento_id');
     }
 }

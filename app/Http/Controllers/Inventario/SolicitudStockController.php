@@ -8,7 +8,6 @@ use App\Http\Requests\Inventario\CancelStockRequest;
 use App\Http\Requests\Inventario\OrderStockRequest;
 use App\Http\Requests\Inventario\SolicitarStockRequest;
 use App\Http\Resources\inventario\SolicitudRecibidaStockResource;
-use App\Models\Inventario\InventarioMovimientoStock;
 use App\Models\Inventario\InventarioOrdenEntrega;
 use App\Models\Inventario\InventarioOrdenEntregaDetalle;
 use App\Models\Inventario\InventarioRecepcionProducto;
@@ -21,21 +20,17 @@ use Illuminate\Support\Facades\Auth;
 class SolicitudStockController extends Controller
 {
 
-
     public function solicitarStockMultiple(SolicitarStockRequest $request)
     {
         $validated = $request->validated();
 
         try {
-
-
             foreach ($validated['solicitudes'] as $solicitud) {
                 InventarioSolicitarStock::create([
                     'producto_id' => $solicitud['producto_id'],
                     'almacen_solicitante_id' => $solicitud['almacen_solicitante_id'],
                     'almacen_proveedor_id' => $solicitud['almacen_proveedor_id'],
                     'cantidad' => $solicitud['cantidad'],
-
                     'prioridad' => $solicitud['prioridad'],
                     'estado' => 'Pendiente',
                     'motivo' => $solicitud['motivo'] ?? null,
@@ -46,7 +41,6 @@ class SolicitudStockController extends Controller
 
             return response()->json(['message' => 'Solicitudes creadas correctamente'], 201);
         } catch (\Exception $e) {
-
             return response()->json(['error' => 'Error al procesar solicitudes', 'details' => $e->getMessage()], 500);
         }
     }
@@ -180,7 +174,7 @@ class SolicitudStockController extends Controller
         $original = InventarioSolicitarStock::find($request->solicitud_id);
         $original->estado = 'Cancelada';
         $original->save();
-        $nuevaSolicitud = $original->replicate(); // compia el registro
+        $nuevaSolicitud = $original->replicate(); 
 
 
         // Sobrescribir los campos con los valores del request
@@ -188,7 +182,6 @@ class SolicitudStockController extends Controller
         $nuevaSolicitud->motivo = $request->motivo ?? '';
         $nuevaSolicitud->fecha_creacion = now();
         $nuevaSolicitud->usuario_creacion = Auth::id();
-
         $nuevaSolicitud->save();
 
         return response()->json([
@@ -203,8 +196,7 @@ class SolicitudStockController extends Controller
         $userId = Auth::id();
 
         $solicitudes = SolicitudRecibidaStock::with(['producto', 'almacensolicitante'])
-            ->where(function ($query) use ($userId) {
-                // Pendientes creadas por el usuario actual
+            ->where(function ($query) use ($userId) {             
                 $query->where('estado', 'Pendiente')
                     ->where('usuario_creacion', $userId);
             })
@@ -217,5 +209,16 @@ class SolicitudStockController extends Controller
             ->get();
 
         return response()->json(SolicitudRecibidaStockResource::collection($solicitudes));
+    }
+
+    public function stockDisponible($idProducto){
+        $userId = Auth::id();
+        $solicitud=InventarioStock::with(['producto', 'almacen'])
+        -> where ('producto_id',$idProducto)
+        ->where('almacen_id',$userId)
+        ->get();
+
+        return  response()->json($solicitud);
+
     }
 }

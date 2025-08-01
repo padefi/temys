@@ -17,6 +17,7 @@ public function toArray(Request $request): array
     $mostrarCamposExtra = $request->routeIs('inventario.solicitudes.detalle','inventario.misSolicitudes');
     return [
         'id' => $this->id,
+        'id_producto' => optional($this->producto)->id,
         'nombre_producto' => optional($this->producto)->nombre,
         'nombre_almacen_solicitante' => optional($this->almacensolicitante)->nombre,
         'nombre_almacen_proovedor' => optional($this->almacenproovedor)->nombre,

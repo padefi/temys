@@ -7,21 +7,7 @@ import AceptarStock from "./ModalAprobarORechazarStock";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Pagination } from "./components/PaginationSolicitud";
 import { DataTableSkeleton } from "@/Components/Data-table-skeleton"; 
-
-
-interface Solicitudes {
-    id: number;
-    nombre_producto: string;
-    nombre_almacen_solicitante: string;
-    nombre_almacen_proovedor: string;
-    estado: string;
-    cantidad: number;
-    cantidad_aprobada: number;
-    motivo: string;
-    prioridad: string;
-    fecha: Date;
-}
-
+import { Solicitudes } from "./Types";
 interface SolicitudesModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -91,8 +77,7 @@ export default function SolicitudesStock({ isOpen, onClose, requests,}: Solicitu
         }
     };
 
-    const handleAprobado = (id: any, qty: any, notes: any) => {
-       
+    const handleAprobado = (id: any, qty: any, notes: any) => {       
         setSolicitudesStock((prev) => prev.filter((s) => s.id !== id))
         setIsModalOpen(false);
     };

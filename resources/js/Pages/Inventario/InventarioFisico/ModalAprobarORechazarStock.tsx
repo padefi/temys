@@ -1,20 +1,14 @@
-import { useState } from "react"
-import { AlertTriangle, Check, X } from "lucide-react"
+import { useEffect, useState } from "react"
+import { AlertTriangle, Check, CheckCircle, X } from "lucide-react"
 import { Button } from "@/Components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/Components/ui/input"
 import { Label } from "@/Components/ui/label"
 import { Textarea } from "@/Components/ui/textarea"
 import axios from "axios"
+import { StockItem, StockRequest } from "./Types"
 
-interface StockRequest {
-  id: string
-  nombre_producto: string
-  nombre_almacen_solicitante: string
-  cantidad: number
-  prioridad: "Alta" | "Media" | "Baja" | "Urgente"
-  motivo: string
-}
+
 
 interface StockApprovalModalProps {
   isOpen: boolean
@@ -27,16 +21,31 @@ interface StockApprovalModalProps {
 
 export default function AceptarStock({ isOpen, onClose, request, onAprobado, onRechazado }: StockApprovalModalProps) {
   const [cantidadAprobada, setCantidadAprobada] = useState("")
+  const [stockDisponible, setStockDisponible] = useState<StockItem[]>([]);
   const [motivo, setMotivo] = useState("")
   const [action, setAction] = useState<"aprobado" | "rechazado" | null>(null)
 
 
   const [errorCantidad, setErrorCantidad] = useState("");
+  useEffect(() => {
+    if (!request?.id_producto) return; // ✅ Solo cuando request es válido
 
+    axios
+      .get(`/solicitudes-stock-disponible/${request.id_producto}`)
+      .then(res => {
+        setStockDisponible(res.data);
+      })
+      .catch(err => {
+        console.error("Error al obtener detalles:", err);
+      });
+  }, [request]);
+
+  console.log(stockDisponible[0])
 
   if (!request) return null
 
-  //console.log(request)
+
+
 
   const handleSubmit = async () => {
     if (action === "aprobado") {
@@ -111,28 +120,49 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* alerta de stock disponible o no */}
+          {stockDisponible.map((stock, index) => {
+            const stockEsBajo = stock.cantidad_actual < stock.stock_minimo;
 
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-center gap-2 text-red-800 mb-2">
-              <AlertTriangle className="h-4 w-4" />
-              <span className="font-medium">Stock Bajo Detectado</span>
-            </div>
+            return (
+              <div
+                key={index}
+                className={`p-4 rounded-lg border mb-4 ${stockEsBajo
+                    ? 'bg-red-50 border-red-200'
+                    : 'bg-green-50 border-green-200'
+                  }`}
+              >
+                <div
+                  className={`flex items-center gap-2 mb-2 ${stockEsBajo ? 'text-red-800' : 'text-green-800'
+                    }`}
+                >
+                  {stockEsBajo ? (
+                    <>
+                      <AlertTriangle className="h-4 w-4" />
+                      <span className="font-medium">Stock Bajo Detectado</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4" />
+                      <span className="font-medium">Stock Disponible</span>
+                    </>
+                  )}
+                </div>
 
-            <div className="text-sm text-red-700">
-              <div className="font-medium">
-                {/* {selectedProduct?.producto.nombre} */}
+                <div
+                  className={`text-sm ${stockEsBajo ? 'text-red-700' : 'text-green-700'
+                    } border-b pb-2`}
+                >
+                  <div className="font-medium">{stock.producto.nombre}</div>
+                  <div>
+                    Stock actual: <span className="font-bold">{stock.cantidad_actual}</span> | Mínimo:
+                    <span className="font-bold"> {stock.stock_minimo}</span>
+                  </div>
+                  <div>Almacén: {stock.almacen.nombre}</div>
+                </div>
               </div>
-              <div>
-                Stock actual:<span className="font-bold">{/* {selectedProduct?.cantidad_actual} */}</span>| Mínimo:
-                <span className="font-bold">{/* {selectedProduct?.stock_minimo} */}</span>
-              </div>
-              <div>
-                Almacén: {/* {selectedProduct?.almacen.nombre} */}
-              </div>
-            </div>
-          </div>
-
-
+            );
+          })}
 
           {/* detalle de la solicitud */}
           <div className="grid grid-cols-2 gap-4">
@@ -154,8 +184,8 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
             <div className="space-y-2">
               <Label>Prioridad</Label>
               <Input value={request.prioridad} className={`px-2 py-1 rounded-full text-xs font-medium ${request.prioridad === "Alta"
-                  ? "bg-red-100 text-red-700"
-                  : "bg-gray-100 text-gray-700"}`} disabled />
+                ? "bg-red-100 text-red-700"
+                : "bg-gray-100 text-gray-700"}`} disabled />
             </div>
           </div>
 
@@ -189,8 +219,6 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
                       setErrorCantidad("");
                       setCantidadAprobada(e.target.value);
                     }
-
-
                     setCantidadAprobada(e.target.value);
                   }}
                   max={request.cantidad}
@@ -210,12 +238,13 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
                   value={motivo}
                   onChange={(e) => setMotivo(e.target.value)}
                   className="min-h-[80px] resize-none"
+                  
                 />
               </div>
             </div>
           )}
 
-          {/* seccion recazada */}
+          {/* seccion rechazada */}
           {action === "rechazado" && (
             <div className="space-y-4 p-4 border rounded-lg bg-red-50">
               <div className="space-y-2">
@@ -237,7 +266,6 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
           <Button variant="outline" onClick={handleClose}>
             Cancelar
           </Button>
-
           {!action && (
             <>
               <Button variant="destructive" onClick={() => setAction("rechazado")} className="gap-2">
@@ -254,9 +282,9 @@ export default function AceptarStock({ isOpen, onClose, request, onAprobado, onR
           {action === "aprobado" && (
             <Button
               onClick={handleSubmit}
-              disabled={!cantidadAprobada || Number.parseInt(cantidadAprobada) <= 0 || !!errorCantidad}
+              disabled={!cantidadAprobada || Number.parseInt(cantidadAprobada) <= 0 || !!errorCantidad || !motivo.trim()}
               className="gap-2"
-            >
+              >
               <Check className="h-4 w-4" />
               Confirmar Aprobación
             </Button>

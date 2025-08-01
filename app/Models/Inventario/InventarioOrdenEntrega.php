@@ -55,4 +55,9 @@ class InventarioOrdenEntrega extends Model
     {
         return $this->belongsTo(InventarioSolicitarStock::class, 'solicitud_id');
     }
+
+      public function movimientos()
+    {
+        return $this->belongsToMany(InventarioMovimientoStock::class, 'relacion_movimiento_entrega', 'entrega_id', 'movimiento_id');
+    }
 }

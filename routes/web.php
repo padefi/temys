@@ -1,11 +1,6 @@
 <?php
 
-use App\Http\Controllers\Almacenes\AlmacenController;
 use App\Http\Controllers\ControlAcceso\ProfileController;
-use App\Http\Controllers\Inventario\SolicitudStockController;
-use App\Http\Controllers\inventario\StockController;
-use App\Http\Controllers\UserModulePanel\UserModuleController;
-use App\Http\Controllers\Inventario\Productos\ProductoController;
 use App\Models\ControlAcceso\User;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
