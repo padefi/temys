@@ -10,15 +10,16 @@ class InventarioRecepcionProducto extends Model
 {
 
     public $timestamps = false;
-    
+
     protected $fillable = [
-    
         'origen_id',
         'destino_id',
         'tipo_movimiento',
         'movimiento_id',
+        'tipo_recepcion',
+        'movimiento_id',
         'fecha_recepcion',
-        'estado',      
+        'estado',
         'usuario_creacion',
         'fecha_actualizacion',
         'usuario_actualizacion',
@@ -30,7 +31,7 @@ class InventarioRecepcionProducto extends Model
         'fecha_actualizacion' => 'datetime',
     ];
 
-     public function remitente()
+    public function remitente()
     {
         return $this->belongsTo(Almacen::class, 'remitente_id');
     }
@@ -48,5 +49,18 @@ class InventarioRecepcionProducto extends Model
     public function detalles()
     {
         return $this->hasMany(InventarioRecepcionProductoDetalle::class, 'recepcion_id');
+    }
+
+
+
+    // InventarioRecepcionProducto.php
+  /*   public function solicitud()
+    {
+        return $this->belongsTo(InventarioSolicitarStock::class, 'solicitud_id');
+    } */
+
+     public function movimientos()
+    {
+        return $this->belongsToMany(InventarioMovimientoStock::class, 'relacion_movimiento_recepcion', 'recepcion_id', 'movimiento_id');
     }
 }

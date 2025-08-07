@@ -50,6 +50,8 @@ class DatabaseSeeder extends Seeder
             InventarioStockSeeder::class,
             InventarioMovimientoStockSeeder::class,
 
+            InventarioRelacionUserAlmacenSeeder::class
+
 
 
         ]);

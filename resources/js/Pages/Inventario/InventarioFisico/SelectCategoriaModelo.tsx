@@ -49,7 +49,6 @@ export default function Producto() {
         console.error("Error guardando nueva opción:", error);
       }
     }
-
     setSelectedOptions(newSelected);
   };
 

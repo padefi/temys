@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models\Inventario;
 
 use App\Models\Almacenes\Almacen;
@@ -11,15 +12,16 @@ class InventarioSolicitarStock extends Model
 {
     use HasFactory;
 
- 
+
 
     public $timestamps = false;
 
     protected $fillable = [
-        'producto_id',
+      /*   'producto_id', */
         'almacen_solicitante_id',
-        'almacen_proovedor_id',
-        'cantidad',
+        'almacen_proveedor_id',
+  /*       'cantidad',
+        'cantidad_aprobada', */
         'prioridad',
         'estado',
         'motivo',
@@ -41,11 +43,28 @@ class InventarioSolicitarStock extends Model
 
     public function almacenProovedor()
     {
-        return $this->belongsTo(Almacen::class, 'almacen_proovedor_id');
+        return $this->belongsTo(Almacen::class, 'almacen_proveedor_id');
     }
 
     public function creador()
     {
         return $this->belongsTo(User::class, 'usuario_creacion');
     }
+
+
+     public function detalles()
+    {
+        return $this->hasMany(InventarioSolicitudDetalle::class, 'solicitud_id');
+    }
+    // InventarioSolicitarStock.php
+/* 
+    public function ordenEntrega()
+    {
+        return $this->hasOne(InventarioOrdenEntrega::class, 'solicitud_id');
+    }
+
+    public function recepcion()
+    {
+        return $this->hasOne(InventarioRecepcionProducto::class, 'solicitud_id');
+    } */
 }
