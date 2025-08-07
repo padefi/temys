@@ -11,14 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('inventario_ajuste_detalles', function (Blueprint $table) {
-            $table->id();           
-            $table->unsignedBigInteger('ajuste_inventario_id');
+        Schema::create('inventario_solicitud_detalles', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('solicitud_id');
             $table->unsignedBigInteger('producto_id');
-            $table->integer('cantidad_sistema');
-            $table->integer('cantidad_contada');    
-            $table->foreign('ajuste_inventario_id')->references('id')->on('inventario_ajustes');
+            $table->integer('cantidad');
+            $table->integer('cantidad_aprobada')->default(0);
+
+
+            //Relaciones 
             $table->foreign('producto_id')->references('id')->on('productos');
+            $table->foreign('solicitud_id')->references('id')->on('inventario_solicitar_stocks')->onDelete('cascade');
         });
     }
 
@@ -27,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('inventario_ajuste_detalles');
+        Schema::dropIfExists('inventario_solicitud_detalles');
     }
 };

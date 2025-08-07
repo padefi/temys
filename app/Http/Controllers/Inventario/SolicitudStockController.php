@@ -7,11 +7,14 @@ use App\Http\Requests\Inventario\AcceptStockRequest;
 use App\Http\Requests\Inventario\CancelStockRequest;
 use App\Http\Requests\Inventario\OrderStockRequest;
 use App\Http\Requests\Inventario\SolicitarStockRequest;
+use App\Http\Resources\Inventario\SolicitudRecibidaDetalleResource;
 use App\Http\Resources\inventario\SolicitudRecibidaStockResource;
 use App\Models\Inventario\InventarioOrdenEntrega;
 use App\Models\Inventario\InventarioOrdenEntregaDetalle;
 use App\Models\Inventario\InventarioRecepcionProducto;
+use App\Models\Inventario\InventarioSolicitarDetalle;
 use App\Models\Inventario\InventarioSolicitarStock;
+use App\Models\Inventario\InventarioSolicitudDetalle;
 use App\Models\Inventario\InventarioStock;
 use App\Models\Inventario\SolicitudRecibidaStock;
 use Illuminate\Support\Facades\Auth;
@@ -19,54 +22,50 @@ use Illuminate\Support\Facades\Auth;
 
 class SolicitudStockController extends Controller
 {
-
     public function solicitarStockMultiple(SolicitarStockRequest $request)
     {
         $validated = $request->validated();
 
         try {
-            foreach ($validated['solicitudes'] as $solicitud) {
-                InventarioSolicitarStock::create([
-                    'producto_id' => $solicitud['producto_id'],
-                    'almacen_solicitante_id' => $solicitud['almacen_solicitante_id'],
-                    'almacen_proveedor_id' => $solicitud['almacen_proveedor_id'],
-                    'cantidad' => $solicitud['cantidad'],
-                    'prioridad' => $solicitud['prioridad'],
-                    'estado' => 'Pendiente',
-                    'motivo' => $solicitud['motivo'] ?? null,
-                    'fecha_creacion' => now(),
-                    'usuario_creacion' => Auth::id(),
+            $first = $validated['solicitudes'][0];
+
+            // Crear la solicitud general
+            $solicitud = InventarioSolicitarStock::create([
+                'almacen_solicitante_id' => $first['almacen_solicitante_id'],
+                'almacen_proveedor_id' => $first['almacen_proveedor_id'],
+                'prioridad' => $first['prioridad'],
+                'estado' => 'Pendiente',
+                'motivo' => $first['motivo'] ?? null,
+                'fecha_creacion' => now(),
+                'usuario_creacion' => Auth::id(),
+            ]);
+
+            // Agregar productos (detalles)
+            foreach ($validated['solicitudes'] as $detalle) {
+                InventarioSolicitudDetalle::create([
+                    'solicitud_id' => $solicitud->id,
+                    'producto_id' => $detalle['producto_id'],
+                    'cantidad' => $detalle['cantidad'],
                 ]);
             }
 
-            return response()->json(['message' => 'Solicitudes creadas correctamente'], 201);
+            return response()->json([
+                'message' => 'Solicitud creada con múltiples productos.',
+                'solicitud_id' => $solicitud->id
+            ], 201);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al procesar solicitudes', 'details' => $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'Error al procesar la solicitud.',
+                'details' => $e->getMessage()
+            ], 500);
         }
-    }
-
-
-    public function solicitarStock(OrderStockRequest $request)
-    {
-
-        $validated = $request->validated();
-
-        InventarioSolicitarStock::create([
-            'producto_id' => $validated['producto_id'],
-            'almacen_solicitante_id' => $validated['almacen_solicitante_id'],
-            'almacen_proveedor_id' => $validated['almacen_proveedor_id'],
-            'cantidad' => $validated['cantidad'],
-            'prioridad' => $validated['prioridad'],
-            'estado' => 'Pendiente',
-            'motivo' => $validated['motivo'] ?? null,
-            'fecha_creacion' => now(),
-            'usuario_creacion' => Auth::id(),
-        ]);
     }
 
     public function getSolicitudesAll()
     {
-        $solicitudes = SolicitudRecibidaStock::with(['producto', 'almacensolicitante'])
+        $solicitudes = InventarioSolicitarStock::with([
+            'almacensolicitante' 
+        ])
             ->where('almacen_proveedor_id', Auth::id())
             ->where('estado', 'Pendiente')
             ->get();
@@ -76,7 +75,7 @@ class SolicitudStockController extends Controller
     public function getSolicitudDetalle($id)
     {
         $solicitud = InventarioSolicitarStock::with([
-            'producto',
+            'detalles.producto',
             'almacensolicitante',
             'almacenProovedor'
         ])->find($id);
@@ -84,8 +83,7 @@ class SolicitudStockController extends Controller
         if (!$solicitud) {
             return response()->json(['message' => 'Solicitud no encontrada'], 404);
         }
-
-        return response()->json(new SolicitudRecibidaStockResource($solicitud));
+        return response()->json(new SolicitudRecibidaDetalleResource($solicitud));
     }
 
     public function getStockProducto($id, $idAlmacen)
@@ -105,22 +103,28 @@ class SolicitudStockController extends Controller
 
     public function aceptarSolicitud(AcceptStockRequest $request)
     {
-
-        $solicitud = InventarioSolicitarStock::findOrFail($request->solicitud_id);
+        $solicitud = InventarioSolicitarStock::with('detalles')->findOrFail($request->solicitud_id);
 
         $solicitud->estado = 'Aceptada';
-        $solicitud->cantidad_aprobada = $request->cantidad;
         $solicitud->motivo = $request->motivo ?? '';
         $solicitud->usuario_actualizacion = Auth::id();
         $solicitud->fecha_actualizacion = now();
         $solicitud->save();
 
+        // Actualizar cantidades aprobadas por producto
+        foreach ($request->productos as $producto) {
+            $detalle = $solicitud->detalles->firstWhere('producto_id', $producto['producto_id']);
+            if ($detalle) {
+                $detalle->cantidad_aprobada = $producto['cantidad_aprobada'];
+                $detalle->save();
+            }
+        }
 
         // Recepción
         InventarioRecepcionProducto::create([
             'origen_id' => $solicitud->almacen_solicitante_id,
             'destino_id' => $solicitud->almacen_proveedor_id,
-            'solicitud_id' => $solicitud->id,
+            'movimiento_id' => $solicitud->id,
             'tipo_movimiento' => 'restribuccion',
             'fecha_recepcion' => now(),
             'estado' => 'Pendiente',
@@ -131,62 +135,43 @@ class SolicitudStockController extends Controller
         $ordenEntrega = InventarioOrdenEntrega::create([
             'origen_id' => $solicitud->almacen_solicitante_id,
             'destino_id' => $solicitud->almacen_proveedor_id,
-            'solicitud_id' => $solicitud->id,
+            'movimiento_id' => $solicitud->id,
+            'tipo_movimiento' => 'solicitud_stock',
             'fecha_envio' => now(),
             'estado' => 'Pendiente',
             'usuario_creacion' => Auth::id(),
         ]);
 
-
-        /*  InventarioRecepcionProducto::create([
-            'origen_id' => $solicitud->almacen_solicitante_id,
-            'destino_id' => $solicitud->almacen_proveedor_id,
-            'tipo_movimiento' => 'restribuccion',
-            'fecha_recepcion' => now(),
-            'estado' => 'Pendiente',
-            'usuario_creacion' => Auth::id(),
-        ]);
-
-        $ordenEntrega = InventarioOrdenEntrega::create([
-            'origen_id' => $solicitud->almacen_solicitante_id,
-            'destino_id' => $solicitud->almacen_proveedor_id,
-            'fecha_envio' => now(),
-            'estado' => 'Pendiente',
-            'usuario_creacion' => Auth::id(),
-        ]); */
-
-        InventarioOrdenEntregaDetalle::create([
-            'orden_entrega_id' => $ordenEntrega->id,
-            'producto_id' => $solicitud->producto_id,
-            'cantidad_enviada' => -abs($solicitud->cantidad),
-
-        ]);
-
+        // Crear detalle por cada producto aprobado
+        foreach ($request->productos as $producto) {
+            InventarioOrdenEntregaDetalle::create([
+                'orden_entrega_id' => $ordenEntrega->id,
+                'producto_id' => $producto['producto_id'],
+                'cantidad_enviada' => -abs($producto['cantidad_aprobada']),
+            ]);
+        }
 
         return response()->json([
-            'message' => 'Nueva solicitud creada con almacenes invertidos.',
-            'nueva_solicitud_id' => $solicitud->id,
+            'message' => 'Solicitud aceptada y detalles generados.',
+            'solicitud_id' => $solicitud->id,
         ]);
     }
 
+
+
     public function cancelarSolicitud(CancelStockRequest $request)
     {
-        $original = InventarioSolicitarStock::find($request->solicitud_id);
+        $original = InventarioSolicitarStock::with('detalles')->find($request->solicitud_id);
+
         $original->estado = 'Cancelada';
+        $original->motivo = $request->motivo ?? '';
+        $original->usuario_actualizacion = Auth::id();
+        $original->fecha_actualizacion = now();
         $original->save();
-        $nuevaSolicitud = $original->replicate(); 
-
-
-        // Sobrescribir los campos con los valores del request
-        $nuevaSolicitud->estado = $request->estado;
-        $nuevaSolicitud->motivo = $request->motivo ?? '';
-        $nuevaSolicitud->fecha_creacion = now();
-        $nuevaSolicitud->usuario_creacion = Auth::id();
-        $nuevaSolicitud->save();
 
         return response()->json([
-            'message' => 'Nueva solicitud creada con almacenes invertidos.',
-            'nueva_solicitud_id' => $nuevaSolicitud->id,
+            'message' => 'Solicitud cancelada correctamente.',
+            'solicitud_id' => $original->id,
         ]);
     }
 
@@ -195,8 +180,8 @@ class SolicitudStockController extends Controller
     {
         $userId = Auth::id();
 
-        $solicitudes = SolicitudRecibidaStock::with(['producto', 'almacensolicitante'])
-            ->where(function ($query) use ($userId) {             
+        $solicitudes = SolicitudRecibidaStock::with(['almacensolicitante','detalles.producto'])
+            ->where(function ($query) use ($userId) {
                 $query->where('estado', 'Pendiente')
                     ->where('usuario_creacion', $userId);
             })
@@ -208,17 +193,17 @@ class SolicitudStockController extends Controller
             })
             ->get();
 
-        return response()->json(SolicitudRecibidaStockResource::collection($solicitudes));
+        return response()->json(SolicitudRecibidaDetalleResource::collection($solicitudes));
     }
 
-    public function stockDisponible($idProducto){
+    public function stockDisponible($idProducto)
+    {
         $userId = Auth::id();
-        $solicitud=InventarioStock::with(['producto', 'almacen'])
-        -> where ('producto_id',$idProducto)
-        ->where('almacen_id',$userId)
-        ->get();
+        $solicitud = InventarioStock::with(['producto', 'almacen'])
+            ->where('producto_id', $idProducto)
+            ->where('almacen_id', $userId)
+            ->get();
 
         return  response()->json($solicitud);
-
     }
 }

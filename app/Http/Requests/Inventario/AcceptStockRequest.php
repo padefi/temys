@@ -6,26 +6,34 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class AcceptStockRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
             'solicitud_id' => 'required|exists:inventario_solicitar_stocks,id',
-            'estado' => 'required|in:Pendiente,Aceptada,Cancelada',
-            'motivo' => 'nullable|string',
-            'cantidad' => 'required|numeric|min:1',
+            'motivo' => 'required|string|max:500',
+            'productos' => 'required|array|min:1',
+            'productos.*.producto_id' => 'required|exists:productos,id',
+            'productos.*.cantidad_aprobada' => 'required|numeric|min:0',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'solicitud_id.required' => 'La solicitud es obligatoria.',
+            'solicitud_id.exists' => 'La solicitud no existe.',
+            'motivo.required' => 'El motivo es obligatorio.',
+            'productos.required' => 'Debes enviar al menos un producto.',
+            'productos.*.producto_id.required' => 'Falta el ID del producto.',
+            'productos.*.producto_id.exists' => 'El producto no existe.',
+            'productos.*.cantidad_aprobada.required' => 'Falta la cantidad aprobada.',
+            'productos.*.cantidad_aprobada.numeric' => 'La cantidad debe ser numérica.',
+            'productos.*.cantidad_aprobada.min' => 'La cantidad no puede ser negativa.',
         ];
     }
 }

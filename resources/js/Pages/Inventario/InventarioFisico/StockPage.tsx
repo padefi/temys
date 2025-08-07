@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Package, AlertTriangle, Plus, Search, ArrowUpDown, ArrowDownWideNarrow, ArrowUpNarrowWide, Bell, Save, BrushCleaning } from "lucide-react";
+import { Package, AlertTriangle, Plus, Search, ArrowUpDown, ArrowDownWideNarrow, ArrowUpNarrowWide, Bell, Save, BrushCleaning, OctagonAlert, Siren } from "lucide-react";
 import { Button } from "@/Components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Input } from "@/Components/ui/input";
@@ -70,7 +70,7 @@ export default function StockManagement() {
 
     // Manejador de clic en la celda para activar la edición
     const handleCellClick = (id: any, field: any) => {
-        setEditingCell({ rowId: id, field });    
+        setEditingCell({ rowId: id, field });
     };
 
     // Manejador de cambio en el input editable
@@ -79,12 +79,12 @@ export default function StockManagement() {
         id: number,
         field: keyof StockItem
     ) => {
-        const newValue = Number(e.target.value);   
+        const newValue = Number(e.target.value);
         setStock(prevData =>
             prevData.map(item =>
                 item.id === id ? { ...item, [field]: newValue } : item)
         );
-        setEditedRows(prev => ({ ...prev, [id]: newValue }));     
+        setEditedRows(prev => ({ ...prev, [id]: newValue }));
     };
 
     const handleInputBlur = () => {
@@ -154,7 +154,7 @@ export default function StockManagement() {
 
     useEffect(() => {
         setStock(stocks.data);
-        console.log(stocks.data)
+     //   console.log(stocks.data)
         setIsLoading(false)
     }, []);
 
@@ -205,11 +205,9 @@ export default function StockManagement() {
     const handleSolicitudes = async () => {
         try {
             const res = await axios.get(`/solicitudes-stock/`)
-            // console.log(res.data)
+             console.log(res.data)
             setSolicitudes(res.data)
             setSolicitudesStockDialogOpen(true)
-
-
         } catch (err) {
             console.error("Error al cargar detalles de la solicitud", err)
         }
@@ -293,8 +291,8 @@ export default function StockManagement() {
                             <p>Solicitudes de stock</p>
                         </TooltipContent>
                     </Tooltip>
-                
-                     <span>inventario Fisico</span> 
+
+                    <span>inventario Fisico</span>
                 </div>
 
                 <Tabs defaultValue="stock" className="space-y-4">
@@ -433,7 +431,21 @@ export default function StockManagement() {
                                                         <TableRow key={item.id}>
                                                             <TableCell className="font-medium">{item.producto.nombre}</TableCell>
                                                             <TableCell>{item.almacen.nombre}</TableCell>
-                                                            <TableCell className="font-mono">{item.cantidad_actual}</TableCell>
+                                                            <TableCell className="font-mono relative">
+                                                                <div className="flex items-center justify-center gap-2">
+                                                                    {item.cantidad_actual}
+
+                                                                    {item.estado_ajuste?.toLowerCase() === 'nuevo' && (
+                                                                        <Button                                                                                                                                            
+                                                                            size="icon"
+                                                                            className="absolute right-8 top-1/2 -translate-y-1/2 size-8 bg-red"
+                                                                        >
+                                                                            <Siren className="text-red-400" />
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
+                                                            </TableCell>
+
                                                             {/* Celda editable para Cantidades Contadas */}
 
                                                             <TableCell className="py-3 px-4 cursor-pointer" onClick={() => handleCellClick(item.id, 'cantidad_contada')} >
@@ -442,6 +454,7 @@ export default function StockManagement() {
                                                                         onChange={(e) => handleInputChange(e, item.id, 'cantidad_contada')}
                                                                         onBlur={handleInputBlur}
                                                                         onKeyDown={handleKeyDown}
+                                                                        disabled={item.estado_ajuste === 'nuevo'}
                                                                         className="w-24 p-1 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-300" />
                                                                 ) : (
                                                                     <span>
@@ -468,7 +481,7 @@ export default function StockManagement() {
                                                             </TableCell>
 
                                                             <TableCell>
-                                                                {editedRows[item.id] !== undefined   ? (
+                                                                {editedRows[item.id] !== undefined ? (
                                                                     <>
                                                                         <Button size="sm" variant="outline" onClick={() => handleAplicarFila(item.id)} className="text-xs">
                                                                             <Save className="h-3 w-3 mr-1" /> Aplicar

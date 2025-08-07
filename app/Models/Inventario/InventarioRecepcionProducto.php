@@ -12,10 +12,10 @@ class InventarioRecepcionProducto extends Model
     public $timestamps = false;
 
     protected $fillable = [
-
         'origen_id',
         'destino_id',
-        'solicitud_id',
+        'tipo_movimiento',
+        'movimiento_id',
         'tipo_recepcion',
         'movimiento_id',
         'fecha_recepcion',
@@ -54,10 +54,10 @@ class InventarioRecepcionProducto extends Model
 
 
     // InventarioRecepcionProducto.php
-    public function solicitud()
+  /*   public function solicitud()
     {
         return $this->belongsTo(InventarioSolicitarStock::class, 'solicitud_id');
-    }
+    } */
 
      public function movimientos()
     {

@@ -29,7 +29,7 @@ public function index()
         })
         ->with(['producto', 'almacen'])
         ->where('inventario_stocks.almacen_id', $almacenId)
-        ->select('inventario_stocks.*', 'iad.cantidad_contada')
+        ->select('inventario_stocks.*', 'iad.cantidad_contada', 'ia.estado_ajuste')
         ->get();
 
     return Inertia::render('Inventario/InventarioFisico/StockPage', [
@@ -56,8 +56,7 @@ public function index()
         return response()->json(StockResource::collection($stock));
     }
 
-
-  public function updateStock(Request $request, $id)
+public function updateStock(Request $request, $id)
 {
     $request->validate([
         'cantidad_contada' => 'required|numeric|min:0',
@@ -67,8 +66,9 @@ public function index()
     if (!$stock) {
         return response()->json(['error' => 'Stock no encontrado'], 404);
     }
-  
+
     try {
+        // Siempre crear un nuevo ajuste
         $ajuste = InventarioAjuste::create([
             'fecha_ajuste' => now(),
             'almacen_destino_id' => $stock->almacen_id,
@@ -84,14 +84,72 @@ public function index()
             'cantidad_contada' => $request->input('cantidad_contada'),
         ]);
 
-     
-
-        return response()->json(['message' => 'Ajuste creado correctamente.']);
+        return response()->json(['message' => 'Ajuste registrado correctamente.']);
     } catch (\Exception $e) {
-      
-        return response()->json(['error' => 'Error al crear el ajuste.'], 500);
+        return response()->json(['error' => 'Error al registrar el ajuste.'], 500);
     }
 }
+
+public function actualizarMasivo(Request $request)
+{
+    $data = $request->input('data');
+
+    if (!is_array($data)) {
+        return response()->json(['error' => 'Datos inválidos'], 400);
+    }
+
+    $ajustesPorAlmacen = [];
+
+    foreach ($data as $item) {
+        if (!isset($item['id']) || !isset($item['cantidad_contada'])) {
+            continue;
+        }
+
+        $stock = InventarioStock::with('producto')->find($item['id']);
+        if (!$stock) {
+            continue;
+        }
+
+        $almacenId = $stock->almacen_id;
+
+        $ajustesPorAlmacen[$almacenId][] = [
+            'stock' => $stock,
+            'cantidad_contada' => $item['cantidad_contada']
+        ];
+    }
+
+    foreach ($ajustesPorAlmacen as $almacenId => $items) {
+        try {
+            // Siempre crear nuevo ajuste para cada ejecución
+            $ajuste = InventarioAjuste::create([
+                'fecha_ajuste' => now(),
+                'almacen_destino_id' => $almacenId,
+                'usuario_creacion' => Auth::id(),
+                'estado_ajuste' => 'nuevo',
+                'motivo' => 'Ajuste manual masivo',
+            ]);
+
+            foreach ($items as $item) {
+                $stock = $item['stock'];
+                $cantidadContada = $item['cantidad_contada'];
+
+                InventarioAjusteDetalle::create([
+                    'ajuste_inventario_id' => $ajuste->id,
+                    'producto_id' => $stock->producto_id,
+                    'cantidad_sistema' => $stock->cantidad_actual,
+                    'cantidad_contada' => $cantidadContada,
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al crear ajustes masivos: ' . $e->getMessage()], 500);
+        }
+    }
+
+    return response()->json([
+        'message' => 'Ajustes masivos registrados correctamente.'
+    ]);
+}
+
 
 
 

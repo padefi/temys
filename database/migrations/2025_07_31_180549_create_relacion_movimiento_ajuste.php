@@ -19,7 +19,7 @@ return new class extends Migration
 
             //relaciones
             $table->foreign('movimiento_stock_id')->references('id')->on('inventario_movimiento_stocks');
-            $table->foreign('ajuste_detalle_id')->references('id')->on('inventario_ajuste');
+            $table->foreign('ajuste_detalle_id')->references('id')->on('inventario_ajustes');
         });
     }
 

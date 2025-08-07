@@ -16,18 +16,10 @@ export type StockItem = {
     producto: Producto;
     almacen: Almacen;
     cantidad_actual: number;
+    estado_ajuste:string;
     cantidad_contada: number;
     stock_minimo: number;
 };
-
-
-/* diversos */
-
-/* export type Producto = {
-    id: number;
-    nombre: string;
-}; */
-
 
 export type AlmacenStock = {
     id: number;
@@ -37,18 +29,22 @@ export type AlmacenStock = {
     cantidad_actual: number
 };
 
+export interface SolicitudDetalle {
+    producto_id: number;
+    nombre_producto: string;
+    cantidad: number;
+    cantidad_aprobada: number;
+}
 
 export interface Solicitudes {
     id: number;
-    nombre_producto: string;
     nombre_almacen_solicitante: string;
     nombre_almacen_proovedor: string;
     estado: string;
-    cantidad: number;
-    cantidad_aprobada: number;
     motivo: string;
     prioridad: string;
     fecha: Date;
+    detalles: SolicitudDetalle[]; // ahora es una lista de productos
 }
 
 export interface StockRequest {
@@ -59,5 +55,5 @@ export interface StockRequest {
   cantidad: number
   prioridad: "Alta" | "Media" | "Baja" | "Urgente"
   motivo: string
+detalles: SolicitudDetalle[];
 }
-/*  */

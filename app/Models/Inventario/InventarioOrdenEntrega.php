@@ -14,7 +14,8 @@ class InventarioOrdenEntrega extends Model
     protected $fillable = [
         'origen_id',
         'destino_id',
-        'solicitud_id',
+        'movimiento_id',
+        'tipo_movimiento',
         'fecha_envio',
         'estado',
         'fecha_creacion',
@@ -51,10 +52,10 @@ class InventarioOrdenEntrega extends Model
 
 
     // InventarioOrdenEntrega.php
-    public function solicitud()
+/*     public function solicitud()
     {
         return $this->belongsTo(InventarioSolicitarStock::class, 'solicitud_id');
-    }
+    } */
 
       public function movimientos()
     {

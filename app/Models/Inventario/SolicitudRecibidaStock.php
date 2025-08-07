@@ -34,4 +34,9 @@ class SolicitudRecibidaStock extends Model
     {
         return $this->belongsTo(Almacen::class, 'almacen_proveedor_id');
     }
+    public function detalles()
+{
+    return $this->hasMany(InventarioSolicitudDetalle::class, 'solicitud_id');
+}
+
 }

@@ -12,12 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('inventario_solicitar_stocks', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('producto_id');
+            $table->id();          
             $table->unsignedBigInteger('almacen_solicitante_id');
             $table->unsignedBigInteger('almacen_proveedor_id');
-            $table->integer('cantidad');
-            $table->integer('cantidad_aprobada')->default(0);
             $table->enum('prioridad', ['Alta', 'Media', 'Baja']);
             $table->enum('estado',['Pendiente','Aceptada','Cancelada']);
             $table->string('motivo');
@@ -27,9 +24,7 @@ return new class extends Migration
             $table->unsignedBigInteger('usuario_actualizacion')->nullable();
 
 
-            //Relaciones
-
-            $table->foreign('producto_id')->references('id')->on('productos');
+            //Relaciones            
             $table->foreign('almacen_solicitante_id')->references('id')->on('almacenes');
             $table->foreign('almacen_proveedor_id')->references('id')->on('almacenes');
             $table->foreign('usuario_creacion')->references('id')->on('users');
@@ -44,6 +39,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('inventario_solicitar_stock');
+        Schema::dropIfExists('inventario_solicitar_stocks');
     }
 };

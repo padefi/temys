@@ -17,11 +17,11 @@ class InventarioSolicitarStock extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'producto_id',
+      /*   'producto_id', */
         'almacen_solicitante_id',
         'almacen_proveedor_id',
-        'cantidad',
-        'cantidad_aprobada',
+  /*       'cantidad',
+        'cantidad_aprobada', */
         'prioridad',
         'estado',
         'motivo',
@@ -52,9 +52,12 @@ class InventarioSolicitarStock extends Model
     }
 
 
-
+     public function detalles()
+    {
+        return $this->hasMany(InventarioSolicitudDetalle::class, 'solicitud_id');
+    }
     // InventarioSolicitarStock.php
-
+/* 
     public function ordenEntrega()
     {
         return $this->hasOne(InventarioOrdenEntrega::class, 'solicitud_id');
@@ -63,5 +66,5 @@ class InventarioSolicitarStock extends Model
     public function recepcion()
     {
         return $this->hasOne(InventarioRecepcionProducto::class, 'solicitud_id');
-    }
+    } */
 }
