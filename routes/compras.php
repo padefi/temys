@@ -1,12 +1,63 @@
 <?php
 
+use App\Http\Controllers\Compras\ComprasController;
+use App\Http\Controllers\Compras\Proveedores\ProveedoresController;
+use App\Http\Controllers\Compras\OrdenCotizaciones\OrdenCotizacionesController;
+use App\Http\Controllers\UserModulePanel\UserModuleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::middleware('module:compras')->group(function () {
-    Route::get('/compras', function () {
-        return Inertia::render('Compras/Index', [
-            'modulo' => 'compras',
-        ]);
-    })->name('compras');
+Route::get('/compras', function () {
+    return Inertia::render('Compras/Index', [
+        'modulo' => 'compras',
+    ]);
+})->name('compras');
+
+// Grupo para el módulo de compras
+// Rutas para proveedores
+Route::middleware(['menu:ordenesCompras'])->group(function () {
+
+    Route::middleware(['submenu:proveedoresCompras'])
+        ->group(function () {
+            // Vista principal
+            Route::get('compras/proveedores', [ProveedoresController::class, 'index'])
+                ->name('proveedoresCompras');
+
+            // Ruta para actualización
+            Route::middleware('submenu_permission:update proveedoresCompras')->group(function () {
+                Route::put('proveedores/{proveedor}', [ProveedoresController::class, 'update'])
+                    ->name('proveedores.update');
+            });
+        });
+
+    Route::middleware(['submenu:cotizacionesOrdenesCompras'])->prefix('cotizaciones-ordenes')->group(function () {
+
+        // Listado
+        Route::get('/', [OrdenCotizacionesController::class, 'index'])
+            ->name('cotizacionesOrdenesCompras');
+
+        // Formulario para crear
+        Route::get('/nueva', [OrdenCotizacionesController::class, 'nuevaCotizacion'])
+            ->name('cotizacionesCompras.nueva');
+
+        // Guardar cotización
+        Route::post('/', [OrdenCotizacionesController::class, 'store'])
+            ->name('cotizacionesOrdenes.store');
+
+        // Mostrar detalle
+        Route::get('/{solicitud_id}/{orden_id?}', [OrdenCotizacionesController::class, 'show'])
+            ->name('cotizacionesOrdenes.show');
+
+        ///Rechazar Solicitud de compra
+        Route::post('/rechazar-solicitud/{solicitud_id}/{orden_id?}', [OrdenCotizacionesController::class, 'rechazarSolicitud'])
+            ->name('cotizacionesOrdenes.rechazarSolicitud');
+
+        ///Aceptar Solicitud de compra
+        Route::post('/aceptar-solicitud/{solicitud_id}/{orden_id?}', [OrdenCotizacionesController::class, 'aceptarSolicitud'])
+            ->name('cotizacionesOrdenes.aceptarSolicitud');
+
+        ///Generar Orden de compra
+        Route::post('/generar-orden-compra', [OrdenCotizacionesController::class, 'generarOrdenCompra'])
+            ->name('cotizacionesOrdenes.generarOrdenCompra');
+    });
 });

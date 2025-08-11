@@ -1,6 +1,7 @@
 import { Button } from "@/Components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { Ban, KeyRound, Loader2Icon, LockKeyhole, Pencil, Waypoints } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { usePermissions } from "@/composables/permissions";
 import { User } from "./page";
 import { toast } from 'sonner';
@@ -14,8 +15,6 @@ interface RowActionsProps {
     onUserUpdate: (updatedUser: User) => void;
     onEditClick: () => void;
     isEditing: boolean;
-    isLoadingAction?: boolean;
-    hasValidationErrors?: boolean;
     disabled?: boolean
 }
 
@@ -24,6 +23,7 @@ export const RowActions = React.memo((
     const { userAuth, hasMenuPermission } = usePermissions();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isLoadingAction, setIsLoadingAction] = useState(false);
+    const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
     const resetUserPassword = async (user: User) => {
         setIsLoadingAction(true);
@@ -78,103 +78,125 @@ export const RowActions = React.memo((
         {
             icon: Pencil,
             tooltip: "Editar",
+            action: "edit",
             color: "text-amber-500",
             shadowColor: "rgba(217,119,6,0.5)",
-            onClick: onEditClick,
+            onClick: () => { setLoadingAction('edit'), onEditClick() },
             disabled: isLoadingAction || disabled || isEditing,
             show: hasMenuPermission('usuariosControlAcceso', 'update') && user.is_active,
         },
         {
             icon: Waypoints,
             tooltip: "Permisos",
+            action: "permissions",
             color: "text-emerald-500",
             shadowColor: "rgba(0,117,149,0.5)",
-            onClick: () => { setIsDialogOpen(true) },
+            onClick: () => { setLoadingAction('permissions'), setIsDialogOpen(true) },
             disabled: isLoadingAction || disabled,
             show: hasMenuPermission('usuariosControlAcceso', 'update') && user.is_active,
         },
         {
             icon: KeyRound,
             tooltip: "Reestablecer contraseña",
+            action: "reset-password",
             color: "text-cyan-500",
             shadowColor: "rgba(0,117,149,0.5)",
-            onClick: () => { resetUserPassword(user); },
+            onClick: () => { setLoadingAction('reset-password'), resetUserPassword(user); },
             disabled: isLoadingAction || disabled,
             show: hasMenuPermission('usuariosControlAcceso', 'update') && user.is_active,
         },
         {
             icon: Ban,
             tooltip: "Deshabilitar usuario",
+            action: "disable",
             color: "text-red-500",
             shadowColor: "rgba(199,0,54,0.5)",
-            onClick: () => { managedUserActive(user, 'disable') },
+            onClick: () => { setLoadingAction('disable'), managedUserActive(user, 'disable') },
             disabled: isLoadingAction || disabled,
             show: hasMenuPermission('usuariosControlAcceso', 'avoid') && user.is_active,
         },
         {
             icon: LockKeyhole,
             tooltip: "Habilitar usuario",
+            action: "enable",
             color: "text-cyan-500",
             shadowColor: "rgba(0,117,149,0.5)",
-            onClick: () => { managedUserActive(user, 'enable') },
+            onClick: () => { setLoadingAction('enable'), managedUserActive(user, 'enable') },
             disabled: isLoadingAction || disabled,
             show: hasMenuPermission('usuariosControlAcceso', 'restore') && !user.is_active,
-        }
+        },
     ];
-
-    if (isLoadingAction) {
-        return (
-            <div className="text-right flex gap-3 ml-[2.4rem]">
-                <Loader2Icon className="animate-spin" />
-            </div>
-        );
-    }
 
     if (userAuth.id === user.id) {
         return <span className="text-sm text-gray-500">Sin acciones</span>;
     }
 
     return (
-        <>
-            <div className="text-right flex gap-3">
-                <TooltipProvider>
-                    {actions.filter(action => action.show).map((action, index) => (
-                        action.tooltip === "Permisos" && (user.roles.length === 0 || user.roles.some(role => role.name === 'admin')) ? null :
-                            <Tooltip key={index}>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        className={`p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_${action.shadowColor}]`}
-                                        onClick={action.onClick}
-                                        disabled={action.disabled}
-                                    >
-                                        <action.icon className={`w-6! h-6! ${action.color}`} />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent><p>{action.tooltip}</p></TooltipContent>
-                            </Tooltip>
-                    ))}
-                    {/* <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                className="p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(199,0,54,0.5)]"
-                                onClick={managedUserActive}
-                                disabled={isLoadingAction || disabled}
+        <div className="text-right flex gap-3">
+            <TooltipProvider>
+                <AnimatePresence initial={false}>
+                    {actions.map((action) => {
+                        const shouldShowAction = action.show && !(action.tooltip === "Permisos" && (user.roles.length === 0 || user.roles.some(role => role.name === 'admin')));
+
+                        if (!shouldShowAction) {
+                            return null;
+                        }
+
+                        return (
+                            <motion.div
+                                key={action.action}
+                                layout
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                transition={{ duration: 0.35, ease: "easeInOut" }}
                             >
-                                <Ban className='w-6! h-6! text-red-500' />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent><p>Deshabilitar</p></TooltipContent>
-                    </Tooltip> */}
-                </TooltipProvider>
-            </div>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            className={`p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_${action.shadowColor}]`}
+                                            onClick={action.onClick}
+                                            disabled={action.disabled && !(isLoadingAction && action.action == loadingAction)}
+                                        >
+                                            <AnimatePresence mode="wait" initial={false}>
+                                                {isLoadingAction && action.action == loadingAction ? (
+                                                    <motion.div
+                                                        key="loader"
+                                                        initial={{ opacity: 0, scale: 0.8 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        exit={{ opacity: 0, scale: 0.8 }}
+                                                        transition={{ duration: 0.1, ease: "easeInOut" }}
+                                                    >
+                                                        <Loader2Icon className={`animate-spin w-6! h-6!`} />
+                                                    </motion.div>
+                                                ) : (
+                                                    <motion.div
+                                                        key="icon"
+                                                        initial={{ opacity: 0, scale: 0.8 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        exit={{ opacity: 0, scale: 0.8 }}
+                                                        transition={{ duration: 0.1, ease: "easeInOut" }}
+                                                    >
+                                                        <action.icon className={`w-6! h-6! ${action.color}`} />
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent><p>{action.tooltip}</p></TooltipContent>
+                                </Tooltip>
+                            </motion.div>
+                        );
+                    })}
+                </AnimatePresence>
+            </TooltipProvider>
 
             {user.roles.length !== 0 && user.roles.some(role => role.name !== 'admin') &&
                 <Suspense fallback={null}>
                     <PermisosDialog open={isDialogOpen} setOpen={setIsDialogOpen} user={user} />
                 </Suspense>
             }
-        </>
+        </div>
     );
 });

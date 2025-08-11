@@ -16,10 +16,11 @@ return new class extends Migration
             $table->unsignedBigInteger('producto_id');
             $table->unsignedBigInteger('origen_id');
             $table->unsignedBigInteger('destino_id');
-            $table->integer('cantidad');;
+            $table->integer('cantidad');
+            $table->enum('tipo_movimiento', ['ordenCompra', 'ajuste', 'reposicion']);
             $table->timestamp('fecha_creacion');
             $table->unsignedBigInteger('usuario_creacion');
-            $table->dateTime('fecha_actualizacion');
+            $table->dateTime('fecha_actualizacion')->nullable();
             $table->unsignedBigInteger('usuario_actualizacion')->nullable();
             
 

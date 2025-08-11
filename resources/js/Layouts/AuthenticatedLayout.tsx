@@ -8,6 +8,7 @@ import { ReactNode, PropsWithChildren } from 'react';
 import { usePermissions } from '@/composables/permissions';
 import { Toaster } from '@/Components/ui/sonner';
 import { formatString } from '@/utils/formatterFunctions';
+import { AnimatePresence, motion } from "framer-motion";
 
 type Submenu = {
     name: string;
@@ -167,7 +168,19 @@ export default function Authenticated({ children }: PropsWithChildren<Authentica
                     </DropdownMenu>
                 </div>
             </nav >
-            <main>{children}</main>
+            <main>
+                <AnimatePresence>
+                    <motion.div
+                        key={location.pathname}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.35, ease: "easeInOut" }}
+                    >
+                        {children}
+                    </motion.div>
+                </AnimatePresence>
+            </main>
             <Toaster position="top-right" expand={true} richColors />
         </div >
     );

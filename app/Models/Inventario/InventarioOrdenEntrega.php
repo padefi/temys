@@ -9,12 +9,14 @@ use App\Models\Inventario\InventarioOrdenEntregaDetalle;
 
 class InventarioOrdenEntrega extends Model
 {
-    
+
     public $timestamps = false;
 
     protected $fillable = [
         'origen_id',
         'destino_id',
+        'movimiento_id',
+        'tipo_movimiento',
         'fecha_envio',
         'estado',
         'fecha_creacion',
@@ -51,6 +53,18 @@ class InventarioOrdenEntrega extends Model
 
     public function detalles()
     {
-        return $this->hasMany(InventarioOrdenEntregaDetalle::class, 'orden_entrega_id');
-    } 
+        return $this->hasMany(inventarioOrdenEntregaDetalle::class, 'orden_entrega_id');
+    }
+
+
+    // InventarioOrdenEntrega.php
+/*     public function solicitud()
+    {
+        return $this->belongsTo(InventarioSolicitarStock::class, 'solicitud_id');
+    } */
+
+      public function movimientos()
+    {
+        return $this->belongsToMany(InventarioMovimientoStock::class, 'relacion_movimiento_entrega', 'entrega_id', 'movimiento_id');
+    }
 }

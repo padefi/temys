@@ -2,6 +2,12 @@
 
 namespace App\Models\Inventario\Productos;
 
+
+
+use App\Models\Inventario\InventarioMovimientoStock;
+
+use App\Models\Compras\OrdenCotizacion\OrdenCotizacionDetalle;
+use App\Models\Inventario\InventarioAjusteDetalle;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -63,4 +69,23 @@ class Producto extends Model
             'producto_id'        // FK del otro modelo (Producto)
         );
     }
+
+
+      public function movimientosStock()
+    {
+        return $this->hasMany(InventarioMovimientoStock::class, 'producto_id');
+    }
+
+    public function ajustesInventarioDetalles()
+    {
+        return $this->hasMany(InventarioAjusteDetalle::class, 'producto_id');
+    }
+
+    public function cotizacionesOrdenesDetalle()
+    {
+        return $this->belongsTo(OrdenCotizacionDetalle::class, 'id');
+    }
+
+
+
 }

@@ -32,18 +32,26 @@ class DatabaseSeeder extends Seeder
             InmueblesTipoOcupacionSeeder::class,
             InmueblesTipoSeeder::class,
             InmueblesSeeder::class,
-
+            TipoMonedaSeeder::class,
             CaracteristicaSeeder::class,
             CategoriaSeeder::class,
             SubcategoriaSeeder::class,
             MarcaSeeder::class,
             ModeloSeeder::class,
             ProductoSeeder::class,
-            almacenSeeder::class,
+            AlmacenSeeder::class,
+            SolicitudCompraSeeder::class,
+            OrdenCotizacionSeeder::class,
+            OrdenCotizacionDetalleSeeder::class,
+            ImpuestoSeeder::class,
+            SolicitudCompraOrdenCotizacionSeeder::class,
             OrdenCompraSeeder::class,
             OrdenCompraDetalleSeeder::class,
             InventarioStockSeeder::class,
             InventarioMovimientoStockSeeder::class,
+
+            InventarioRelacionUserAlmacenSeeder::class
+
 
 
         ]);
