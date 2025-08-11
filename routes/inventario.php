@@ -4,6 +4,7 @@ use App\Http\Controllers\Almacenes\AlmacenController;
 use App\Http\Controllers\Inventario\Productos\ProductoController;
 use App\Http\Controllers\Inventario\SolicitudStockController;
 use App\Http\Controllers\Inventario\StockController;
+use App\Http\Controllers\Inventario\EntregaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -15,6 +16,10 @@ Route::middleware('module:inventario')->group(function () {
     })->name('inventario');
 
     Route::middleware(['menu:operaciones'])->group(callback: function () {
+        Route::middleware('submenu_permission:read entregas')->group(function () {
+            Route::get('/inventario/entregas', [EntregaController::class, 'index'])->name('entregas');
+        });
+
         Route::middleware('submenu_permission:read inventarioFisico')->group(function () {
             Route::get('inventario/inventarioFisico', [StockController::class, 'index'])->name('inventarioFisico');
             Route::get('/inventario/almacenes', [AlmacenController::class, 'index']);

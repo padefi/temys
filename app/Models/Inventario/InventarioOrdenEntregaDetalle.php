@@ -3,11 +3,13 @@
 namespace App\Models\Inventario;
 
 use App\Models\Inventario\Productos\Producto;
+use App\Models\ControlAcceso\User;
+use App\Models\Inventario\InventarioOrdenEntrega;
 use Illuminate\Database\Eloquent\Model;
 
 class InventarioOrdenEntregaDetalle extends Model
 {
-    protected $table='inventario_orden_entrega_detalle';
+    protected $table='inventario_orden_entrega_detalles';
     
     public $timestamps = false;
    
@@ -34,5 +36,10 @@ class InventarioOrdenEntregaDetalle extends Model
     public function producto()
     {
         return $this->belongsTo(Producto::class, 'producto_id');
+    }
+
+    public function usuarioCreacion()
+    {
+        return $this->belongsTo(User::class, 'usuario_creacion');
     }
 }
