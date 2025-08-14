@@ -4,6 +4,7 @@ namespace App\Models\ControlAcceso;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Models\AjusteInventario;
 use App\Models\Almacenes\Almacen;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -129,4 +130,11 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Almacen::class, 'relacion_almacen_user', 'user_id', 'almacen_id')->withTimestamps();
     }
+
+
+    public function ajustesInventario()
+{
+    return $this->hasMany(AjusteInventario::class, 'usuario_creacion');
+}
+
 }
