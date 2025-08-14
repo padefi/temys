@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import AceptarStock from "./ModalAprobarORechazarStock";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Pagination } from "./components/PaginationSolicitud";
-import { DataTableSkeleton } from "@/Components/Data-table-skeleton"; 
+import { DataTableSkeleton } from "@/Components/DataTableSkeleton"; 
 
 
 interface Solicitudes {

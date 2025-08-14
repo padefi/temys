@@ -16,7 +16,7 @@ import { Head } from "@inertiajs/react";
 import { SolicitarStock } from "./ModalCrearSolicitudStock";
 import {Tooltip,TooltipContent,TooltipTrigger} from "@/Components/ui/tooltip";
 import SolicitudesStock from "./ModalSolicitudesEntrantes";
-import { DataTableSkeleton } from "@/Components/Data-table-skeleton";
+import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
 import { usePermissions } from "@/composables/permissions";
 
 type Producto = {

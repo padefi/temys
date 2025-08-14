@@ -2,14 +2,15 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\ControlAcceso\Menu;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Exceptions\UnauthorizedException;
+use Illuminate\Support\Facades\Redirect;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use App\Http\Middleware\ParseStringableParams; 
+use Spatie\Permission\Exceptions\UnauthorizedException;
+use App\Models\ControlAcceso\Menu;
+use App\Http\Middleware\ParseStringableParams;
 
 class MenuMiddleware
 {
@@ -31,15 +32,21 @@ class MenuMiddleware
         $user = Auth::user();
         $menus = explode('|', self::parseStringableParam($params));
         $menusIds = Menu::whereIn('key', $menus)->pluck('id');
+        $activeBranchId = session('active_branch_id');
 
         $hasMenu = DB::table('model_has_menus')
             ->where('model_id', $user->id)
             ->where('model_type', $user::class)
             ->whereIn('menu_id', $menusIds)
+            ->where('branch_id', $activeBranchId)
             ->exists();
 
         if (!$hasMenu) {
-            throw new HttpException(403, 'User does not have access to the required menus.', null, []);
+            return Redirect::route('welcome')->with('flash', [
+                'type' => 'error',
+                'message' => 'No tiene acceso al menú indicado.',
+            ]);
+            // throw new HttpException(403, 'User does not have access to the required menus.', null, []);
         }
         
         return $next($request);

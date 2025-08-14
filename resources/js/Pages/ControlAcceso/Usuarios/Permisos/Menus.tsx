@@ -21,6 +21,8 @@ interface Menu {
 }
 
 interface MenusProps {
+    branchSelected: number;
+    branchSelectedIsAssigned: boolean;
     moduleSelected: number;
     moduleSelectedIsAssigned: boolean;
     moduleSelectedRoleModule: string;
@@ -29,7 +31,7 @@ interface MenusProps {
     user: number;
 }
 
-export function Menus({ moduleSelected, moduleSelectedIsAssigned, moduleSelectedRoleModule, setMenuSelected, setMenuSelectedIsAssigned, user }: MenusProps) {
+export function Menus({ branchSelected, branchSelectedIsAssigned, moduleSelected, moduleSelectedIsAssigned, moduleSelectedRoleModule, setMenuSelected, setMenuSelectedIsAssigned, user }: MenusProps) {
     const [dataMenus, setDataMenus] = useState<Menu[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadingPermissions, setLoadingPermissions] = useState(true);
@@ -38,7 +40,7 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, moduleSelected
 
     const seccion = async (option: string, idOption: number) => {
         try {
-            const response = await fetch(`/control-acceso/managed-permissions-menus-by-user/${user}/${idOption}`);
+            const response = await fetch(`/control-acceso/managed-permissions-menus-by-user/${user}/${branchSelected}/${idOption}`);
             const data = await response.json();
 
             setDataPermission({ sectionName: 'Menu', option, idOption, permissionAssigned: data });
@@ -53,6 +55,7 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, moduleSelected
         try {
             const response = await axios.post('/control-acceso/managed-permissions-menus-by-user/', {
                 user,
+                idBranch: branchSelected,
                 idMenu,
                 permission
             })
@@ -85,6 +88,7 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, moduleSelected
     const fetchDataMenus = async () => {
         setIsClicked(-1);
         setLoading(true);
+        setMenuSelected(0);
 
         if (moduleSelected === 0) {
             setDataMenus([]);
@@ -92,7 +96,7 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, moduleSelected
         }
 
         try {
-            const response = await fetch(`/control-acceso/show-menus-by-user/${user}/${moduleSelected}`);
+            const response = await fetch(`/control-acceso/show-menus-by-user/${user}/${branchSelected}/${moduleSelected}`);
             const data = await response.json();
             setDataMenus(data.data);
         } catch (error) {
@@ -110,6 +114,7 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, moduleSelected
         try {
             const response = await axios.post('/control-acceso/managed-menus-by-user/', {
                 user,
+                idBranch: branchSelected,
                 idModule,
                 idMenu
             });
@@ -196,7 +201,7 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, moduleSelected
                                             {menu.name}
                                         </Link>
 
-                                        {moduleSelectedIsAssigned && (
+                                        {branchSelectedIsAssigned && moduleSelectedIsAssigned && (
                                             <AnimatePresence mode="wait">
                                                 {menu.is_assigned === 0 ? (
                                                     <motion.div

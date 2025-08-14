@@ -6,10 +6,7 @@ return [
             'key' => 'control-acceso',
             'name' => 'Control de Acceso',
             'menus' => [
-                ['key' => 'roles', 'name' => 'Roles'],
-                ['key' => 'modulos', 'name' => 'Modulos'],
-                ['key' => 'menus', 'name' => 'Menus'],
-                ['key' => 'submenus', 'name' => 'Submenus'],
+                ['key' => 'branches', 'name' => 'Sucursales'],
                 ['key' => 'usuariosControlAcceso', 'name' => 'Usuarios'],
             ]
         ],

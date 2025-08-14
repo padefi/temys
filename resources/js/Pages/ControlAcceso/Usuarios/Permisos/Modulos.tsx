@@ -29,6 +29,8 @@ interface Modulo {
 }
 
 interface ModulosProps {
+    branchSelected: number;
+    branchSelectedIsAssigned: boolean;
     setModuleSelected: (id: number) => void;
     setModuleSelectedIsAssigned: (status: boolean) => void;
     setModuleSelectedRoleModule: (role: string) => void;
@@ -37,7 +39,7 @@ interface ModulosProps {
     user: number;
 }
 
-export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setModuleSelectedRoleModule, setMenuSelected, setMenuSelectedIsAssigned, user }: ModulosProps) {
+export function Modulos({ branchSelected, branchSelectedIsAssigned, setModuleSelected, setModuleSelectedIsAssigned, setModuleSelectedRoleModule, setMenuSelected, setMenuSelectedIsAssigned, user }: ModulosProps) {
     const [dataModulos, setDataModulos] = useState<Modulo[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadingPermissions, setLoadingPermissions] = useState(true);
@@ -46,10 +48,6 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMod
     const [dataPermission, setDataPermission] = useState<{ sectionName: string; option: string, idOption: number, permissionAssigned: [] }>({ sectionName: '', option: '', idOption: 0, permissionAssigned: [] });
     const [dataRole, setDataRole] = useState<{ sectionName: string; option: string, idOption: number, roles: Role[], roleAssigned: string }>({ sectionName: '', option: '', idOption: 0, roles: [], roleAssigned: '' });
     const [roles, setRoles] = useState([]);
-
-    useEffect(() => {
-        fetchRoles();
-    }, []);
 
     const fetchRoles = async () => {
         try {
@@ -63,7 +61,7 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMod
     }
 
     const rolesPopover = async (option: string, idOption: number) => {
-        const response = await fetch(`/control-acceso/get-role-module-by-user/${user}/${idOption}`);
+        const response = await fetch(`/control-acceso/get-role-module-by-user/${user}/${branchSelected}/${idOption}`);
         const data = await response.json();
         const roleAssigned = data.data ? data.data.name : '';
 
@@ -75,8 +73,9 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMod
         try {
             setModuleSelectedIsAssigned(false);
             setModuleSelectedRoleModule('');
-            const response = await axios.post('/control-acceso/managed-role-modulos-by-user/', {
+            const response = await axios.post('/control-acceso/managed-role-modules-by-user/', {
                 user,
+                idBranch: branchSelected,
                 idModule,
                 role
             });
@@ -109,7 +108,7 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMod
 
     const seccion = async (option: string, idOption: number) => {
         try {
-            const response = await fetch(`/control-acceso/managed-permissions-modulos-by-user/${user}/${idOption}`);
+            const response = await fetch(`/control-acceso/managed-permissions-modules-by-user/${user}/${branchSelected}/${idOption}`);
             const data = await response.json();
 
             setDataPermission({ sectionName: 'Modulo', option, idOption, permissionAssigned: data });
@@ -122,8 +121,9 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMod
 
     const togglePermissionAssignment = async (idModule: number, permission: string) => {
         try {
-            const response = await axios.post('/control-acceso/managed-permissions-modulos-by-user/', {
+            const response = await axios.post('/control-acceso/managed-permissions-modules-by-user/', {
                 user,
+                idBranch: branchSelected,
                 idModule,
                 permission
             });
@@ -156,9 +156,15 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMod
     const fetchDataModulos = async () => {
         setLoading(true);
         setIsClicked(-1);
+        setModuleSelected(0);
+
+        if (branchSelected === 0 || branchSelectedIsAssigned === false) {
+            setDataModulos([]);
+            return;
+        }
 
         try {
-            const response = await fetch(`/control-acceso/show-modulos-by-user/${user}`);
+            const response = await fetch(`/control-acceso/show-modules-by-user/${user}/${branchSelected}`);
             const data = await response.json();
 
             setDataModulos(data.data);
@@ -166,17 +172,19 @@ export function Modulos({ setModuleSelected, setModuleSelectedIsAssigned, setMod
             console.error("Error al obtener los módulos:", error);
         } finally {
             setLoading(false);
+            fetchRoles();
         }
     };
 
     useEffect(() => {
         fetchDataModulos();
-    }, []);
+    }, [branchSelected, branchSelectedIsAssigned]);
 
     const toggleModuleAssignment = async (idModule: number, isAssigned: number) => {
         try {
-            const response = await axios.post(`/control-acceso/managed-modulos-by-user`, {
+            const response = await axios.post(`/control-acceso/managed-modules-by-user`, {
                 user,
+                idBranch: branchSelected,
                 idModule
             });
 

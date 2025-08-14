@@ -4,15 +4,13 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
+use Spatie\Permission\Exceptions\UnauthorizedException;
 use App\Http\Middleware\ParseStringableParams;
 use App\Models\ControlAcceso\Module;
 use App\Models\ControlAcceso\RoleModule;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Exceptions\UnauthorizedException;
-use Spatie\Permission\Models\Permission;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class RoleModuleMiddleware
 {
@@ -52,6 +50,9 @@ class RoleModuleMiddleware
             $role = RoleModule::where('name', trim($roleName))->first();
             if (!$role) continue;
 
+            $activeBranchId = session('active_branch_id');
+            if (!$activeBranchId) continue;
+
             if ($moduleKey)
             {
                 $module = Module::where('key', trim($moduleKey))->first();
@@ -62,6 +63,7 @@ class RoleModuleMiddleware
                     ->where('role_id', $role->id)
                     ->where('model_type', $user::class)
                     ->where('model_id', $user->id)
+                    ->where('branch_id', $activeBranchId)
                     ->exists();
             }
             else
@@ -70,6 +72,7 @@ class RoleModuleMiddleware
                     ->where('role_id', $role->id)
                     ->where('model_type', $user::class)
                     ->where('model_id', $user->id)
+                    ->where('branch_id', $activeBranchId)
                     ->exists();
             }
 
@@ -82,7 +85,11 @@ class RoleModuleMiddleware
 
         if (!$hasRole)
         {
-            throw new HttpException(403, 'User does not have the role to the required action.', null, []);
+            return Redirect::route('welcome')->with('flash', [
+                'type' => 'error',
+                'message' => 'No tiene el rol requerido.',
+            ]);
+            // throw new HttpException(403, 'User does not have the role to the required action.', null, []);
         }
 
         return $next($request);

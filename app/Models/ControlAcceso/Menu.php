@@ -28,11 +28,11 @@ class Menu extends Model
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'model_has_menus', 'menu_id', 'model_id');
+        return $this->belongsToMany(User::class, 'model_has_menus', 'menu_id', 'model_id')->withPivot('branch_id');
     }
 
     public function userPermissions()
     {
-        return $this->belongsToMany(Permission::class, 'model_has_menu_permissions', 'menu_id', 'permission_id');
+        return $this->belongsToMany(Permission::class, 'model_has_menu_permissions', 'menu_id', 'permission_id')->withPivot('branch_id');
     }
 }

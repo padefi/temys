@@ -2,14 +2,15 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\ControlAcceso\Module;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Exceptions\UnauthorizedException;
+use Illuminate\Support\Facades\Redirect;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use App\Http\Middleware\ParseStringableParams; 
+use Spatie\Permission\Exceptions\UnauthorizedException;
+use App\Models\ControlAcceso\Module;
+use App\Http\Middleware\ParseStringableParams;
 
 class ModuleMiddleware
 {
@@ -31,15 +32,21 @@ class ModuleMiddleware
         $user = Auth::user();
         $modules = explode('|', self::parseStringableParam($params));
         $moduleIds = Module::whereIn('key', $modules)->pluck('id');
+        $activeBranchId = session('active_branch_id');
 
         $hasModule = DB::table('model_has_modules')
             ->where('model_id', $user->id)
             ->where('model_type', $user::class)
             ->whereIn('module_id', $moduleIds)
+            ->where('branch_id', $activeBranchId)
             ->exists();
 
         if (!$hasModule) {
-            throw new HttpException(403, 'User does not have access to the required modules.', null, []);
+            return Redirect::route('welcome')->with('flash', [
+                'type' => 'error',
+                'message' => 'No tiene acceso al módulo indicado.',
+            ]);
+            // throw new HttpException(403, 'User does not have access to the required modules.', null, []);
         }
         
         return $next($request);

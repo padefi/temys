@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ControlAcceso\ProfileController;
+use App\Http\Controllers\ControlAcceso\Users\UsuarioController;
 use App\Models\ControlAcceso\User;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -10,6 +11,7 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
         return Inertia::render('Welcome');
     })->name('welcome');;
 
+    Route::post('/user/branch', [UsuarioController::class, 'updateActiveBranch'])->name('user.update_branch');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy')->middleware('can:avoid,' . User::class);
