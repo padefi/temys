@@ -6,6 +6,8 @@ import { ErrorMessage } from "@/Components/ui/error-message";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Button } from '@/Components/ui/button';
 import { Loader2Icon, Save, XCircle } from 'lucide-react';
+import { AnimatePresence, motion } from "framer-motion";
+import { usePermissions } from "@/composables/permissions";
 import { User } from './page';
 
 interface RowEditableProps {
@@ -34,6 +36,8 @@ export const RowEditable = React.memo(({
     disabled,
 }: RowEditableProps) => {
     const [localValue, setLocalValue] = useState(initialValue);
+    const { hasMenuPermission } = usePermissions();
+    const [isLoadingAction, setIsLoadingAction] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const initialValueSet = useRef(false);
 
@@ -101,47 +105,87 @@ export const RowEditable = React.memo(({
                     />
                 )}
 
-                {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
+                {/* {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>} */}
+                <AnimatePresence initial={false}>
+                    {errorMessage && (
+                        <motion.div
+                            key="error-message" // Key única para que AnimatePresence lo detecte
+                            initial={{ opacity: 0, height: 0 }} // Comienza invisible y sin altura
+                            animate={{ opacity: 1, height: 'auto' }} // Anima a visible y altura automática
+                            exit={{ opacity: 0, height: 0 }} // Desaparece y altura a 0
+                            transition={{ duration: 0.2, ease: "easeInOut" }} // Duración y tipo de easing
+                            style={{ overflow: 'hidden' }} // Importante para que height: 0 oculte el contenido
+                        >
+                            <ErrorMessage>{errorMessage}</ErrorMessage>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         );
     } else {
-        if (disabled) {
-            return (
-                <div className="text-right flex gap-3 ml-[2.4rem]">
-                    <Loader2Icon className="animate-spin" />
-                </div>
-            );
-        }
+        const actions = [
+            {
+                icon: Save,
+                tooltip: "Guardar",
+                action: "save",
+                color: "text-green-500",
+                shadowColor: "rgba(34,197,94,0.5)",
+                onClick: () => { setIsLoadingAction(true), setTimeout(() => onSaveInlineEdit(user), 100) },
+                disabled: disabled || isLoadingAction,
+                show: hasMenuPermission('usuariosControlAcceso', 'update') && user.is_active,
+            },
+            {
+                icon: XCircle,
+                tooltip: "Cancelar",
+                action: "cancel",
+                color: "text-red-500",
+                shadowColor: "rgba(34,197,94,0.5)",
+                onClick: () => onCancelInlineEdit(),
+                disabled: disabled || isLoadingAction,
+                show: true,
+            }
+        ];
 
         return (
-            <div className="text-right flex gap-3">
+            <div className="text-right flex gap-2">
                 <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                className="p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(34,197,94,0.5)]"
-                                onClick={() => onSaveInlineEdit(user)}
-                                disabled={disabled}
-                            >
-                                <Save className='w-6! h-6! text-green-500' />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent><p>Guardar</p></TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                className="p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(239,68,68,0.5)]"
-                                onClick={onCancelInlineEdit}
-                                disabled={disabled}
-                            >
-                                <XCircle className='w-6! h-6! text-red-500' />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent><p>Cancelar</p></TooltipContent>
-                    </Tooltip>
+                    {actions.filter(action => action.show).map((action) => (
+                        <Tooltip key={action.action}>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    className={`p-0! cursor-pointer hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_${action.shadowColor}]`}
+                                    onClick={action.onClick}
+                                    disabled={action.disabled}
+                                >
+                                    <AnimatePresence mode="wait" initial={false}>
+                                        {action.action === "save" && (isLoadingAction || disabled) ? (
+                                            <motion.div
+                                                key="loader-save"
+                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.8 }}
+                                                transition={{ duration: 0.1, ease: "easeInOut" }}
+                                            >
+                                                <Loader2Icon className={`animate-spin w-6! h-6!`} />
+                                            </motion.div>
+                                        ) : (
+                                            <motion.div
+                                                key={`icon-${action.action}`}
+                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.8 }}
+                                                transition={{ duration: 0.1, ease: "easeInOut" }}
+                                            >
+                                                <action.icon className={`w-6! h-6! ${action.color}`} />
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent><p>{action.tooltip}</p></TooltipContent>
+                        </Tooltip>
+                    ))}
                 </TooltipProvider>
             </div>
         );

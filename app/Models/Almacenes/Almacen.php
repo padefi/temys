@@ -2,10 +2,11 @@
 
 namespace App\Models\Almacenes;
 
-
+use App\Models\AjusteInventario;
 use App\Models\Compras\OrdenCompra;
 use App\Models\Compras\OrdenCotizacion\OrdenCotizacion;
 use App\Models\ControlAcceso\User;
+use App\Models\Inventario\InventarioMovimientoStock;
 use App\Models\Inventario\InventarioStock;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -80,5 +81,21 @@ class Almacen extends Model
     }
 
 
+
+
+ public function movimientosOrigen()
+    {
+        return $this->hasMany(InventarioMovimientoStock::class, 'almacen_origen_id');
+    }
+
+    public function movimientosDestino()
+    {
+        return $this->hasMany(InventarioMovimientoStock::class, 'almacen_destino_id');
+    }
+
+    public function ajustesInventario()
+    {
+        return $this->hasMany(AjusteInventario::class, 'almacen_destino_id');
+    }
 
 }

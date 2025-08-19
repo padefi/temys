@@ -17,6 +17,8 @@ class StockResource extends JsonResource
         return [
             'id' => $this->id,
             'cantidad_actual' => $this->cantidad_actual,
+            'cantidad_contada' => $this->cantidad_contada,
+            'estado_ajuste'=>$this->estado_ajuste,
             'stock_minimo' => $this->stock_minimo,
             'producto' => new ProductoResource($this->whenLoaded('producto')),
             'almacen' => new AlmacenResource($this->whenLoaded('almacen')),

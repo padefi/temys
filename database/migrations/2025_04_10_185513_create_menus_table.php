@@ -43,14 +43,20 @@ return new class extends Migration
             $table->unsignedBigInteger('menu_id');
             $table->string('model_type');
             $table->unsignedBigInteger('model_id');
+            $table->unsignedBigInteger('branch_id');
 
             $table->foreign('menu_id')
                 ->references('id')
                 ->on('menus')
                 ->onDelete('cascade');
 
+            $table->foreign('branch_id')
+                ->references('id')
+                ->on('branches')
+                ->onDelete('cascade');
+
             $table->index(['model_id', 'model_type'], 'model_has_menus_model_id_model_type_index');
-            $table->primary(['menu_id', 'model_id', 'model_type'], 'model_has_menus_menu_model_type_primary');
+            $table->primary(['menu_id', 'branch_id', 'model_id', 'model_type'], 'model_has_menus_menu_branch_model_type_primary');
         });
 
         Schema::create('model_has_menu_permissions', function (Blueprint $table)
@@ -59,6 +65,7 @@ return new class extends Migration
             $table->unsignedBigInteger('permission_id');
             $table->string('model_type');
             $table->unsignedBigInteger('model_id');
+            $table->unsignedBigInteger('branch_id');
 
             $table->foreign('menu_id')
                 ->references('id')
@@ -70,8 +77,13 @@ return new class extends Migration
                 ->on('permissions')
                 ->onDelete('cascade');
 
+            $table->foreign('branch_id')
+                ->references('id')
+                ->on('branches')
+                ->onDelete('cascade');
+
             $table->index(['model_id', 'model_type'], 'model_has_menu_permission_model_id_model_type_index');
-            $table->primary(['menu_id', 'permission_id', 'model_id', 'model_type'], 'model_has_menu_permissions_menu_permission_model_type_primary');
+            $table->primary(['menu_id', 'permission_id', 'branch_id', 'model_id', 'model_type'], 'model_has_menu_permissions_menu_permission_branch_model_type_primary');
         });
     }
 
@@ -89,12 +101,14 @@ return new class extends Migration
         Schema::table('model_has_menus', function (Blueprint $table)
         {
             $table->dropForeign(['menu_id']);
+            $table->dropForeign(['branch_id']);
         });
 
         Schema::table('model_has_menu_permissions', function (Blueprint $table)
         {
             $table->dropForeign(['menu_id']);
             $table->dropForeign(['permission_id']);
+            $table->dropForeign(['branch_id']);
         });
 
         Schema::dropIfExists('menus');

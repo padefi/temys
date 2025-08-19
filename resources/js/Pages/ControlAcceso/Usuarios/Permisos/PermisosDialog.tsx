@@ -7,6 +7,7 @@ import { Separator } from "@/Components/ui/separator";
 import { Modulos } from "./Modulos";
 import { Menus } from "./Menus";
 import { Submenus } from "./Submenus";
+import { Sucursales } from "./Sucursales";
 
 interface user {
     id: number,
@@ -20,6 +21,8 @@ interface PermisosDialogProps {
 }
 
 const PermisosDialog = ({ open, setOpen, user }: PropsWithChildren<PermisosDialogProps>) => {
+    const [branchSelected, setBranchSelected] = useState(0);
+    const [branchSelectedIsAssigned, setBranchSelectedIsAssigned] = useState(false);
     const [moduleSelected, setModuleSelected] = useState(0);
     const [moduleSelectedIsAssigned, setModuleSelectedIsAssigned] = useState(false);
     const [moduleSelectedRoleModule, setModuleSelectedRoleModule] = useState('');
@@ -27,6 +30,8 @@ const PermisosDialog = ({ open, setOpen, user }: PropsWithChildren<PermisosDialo
     const [menuSelectedIsAssigned, setMenuSelectedIsAssigned] = useState(false);
 
     useEffect(() => {
+        setBranchSelected(0);
+        setBranchSelectedIsAssigned(false);
         setModuleSelected(0);
         setModuleSelectedIsAssigned(false);
         setModuleSelectedRoleModule('');
@@ -50,13 +55,29 @@ const PermisosDialog = ({ open, setOpen, user }: PropsWithChildren<PermisosDialo
                     direction="horizontal"
                     className="min-h-[calc(100vh-10rem)] max-h-[calc(100vh-10rem)] md:min-h-[calc(100vh-15rem)] md:max-h-[calc(100vh-15rem)] lg:min-h-[calc(100vh-20rem)] lg:max-h-[calc(100vh-20rem)] xl:min-h-[calc(100vh-20rem)] xl:max-h-[calc(100vh-25rem)] 2xl:min-h-[calc(100vh-35rem)] 2xl:max-h-[calc(100vh-35rem)] rounded-lg border"
                 >
-                    <ResizablePanel defaultSize={33}>
+                    <ResizablePanel defaultSize={25}>
+                        <div className="flex h-[52px] items-center justify-center">
+                            <span className="font-semibold">Sucursales</span>
+                        </div>
+                        <Separator />
+                        <div className="flex items-center justify-center">
+                            <Sucursales setBranchSelected={setBranchSelected}
+                                setBranchSelectedIsAssigned={setBranchSelectedIsAssigned}
+                                setModuleSelected={setModuleSelected}
+                                setModuleSelectedIsAssigned={setModuleSelectedIsAssigned}
+                                user={user.id} />
+                        </div>
+                    </ResizablePanel>
+                    <ResizableHandle withHandle />
+                    <ResizablePanel defaultSize={25}>
                         <div className="flex h-[52px] items-center justify-center">
                             <span className="font-semibold">Modulos</span>
                         </div>
                         <Separator />
                         <div className="flex items-center justify-center">
-                            <Modulos setModuleSelected={setModuleSelected}
+                            <Modulos branchSelected={branchSelected}
+                                branchSelectedIsAssigned={branchSelectedIsAssigned}
+                                setModuleSelected={setModuleSelected}
                                 setModuleSelectedIsAssigned={setModuleSelectedIsAssigned}
                                 setMenuSelected={setMenuSelected}
                                 setMenuSelectedIsAssigned={setMenuSelectedIsAssigned}
@@ -65,13 +86,15 @@ const PermisosDialog = ({ open, setOpen, user }: PropsWithChildren<PermisosDialo
                         </div>
                     </ResizablePanel>
                     <ResizableHandle withHandle />
-                    <ResizablePanel defaultSize={33}>
+                    <ResizablePanel defaultSize={25}>
                         <div className="flex h-[52px] items-center justify-center">
                             <span className="font-semibold">Menus</span>
                         </div>
                         <Separator />
                         <div className="flex items-center justify-center">
-                            <Menus moduleSelected={moduleSelected}
+                            <Menus branchSelected={branchSelected}
+                                branchSelectedIsAssigned={branchSelectedIsAssigned}
+                                moduleSelected={moduleSelected}
                                 moduleSelectedIsAssigned={moduleSelectedIsAssigned}
                                 moduleSelectedRoleModule={moduleSelectedRoleModule}
                                 setMenuSelected={setMenuSelected}
@@ -80,13 +103,15 @@ const PermisosDialog = ({ open, setOpen, user }: PropsWithChildren<PermisosDialo
                         </div>
                     </ResizablePanel>
                     <ResizableHandle withHandle />
-                    <ResizablePanel defaultSize={34}>
+                    <ResizablePanel defaultSize={25}>
                         <div className="flex h-[52px] items-center justify-center">
                             <span className="font-semibold">Submenus</span>
                         </div>
                         <Separator />
                         <div className="flex items-center justify-center">
-                            <Submenus moduleSelected={moduleSelected}
+                            <Submenus branchSelected={branchSelected}
+                                branchSelectedIsAssigned={branchSelectedIsAssigned}
+                                moduleSelected={moduleSelected}
                                 moduleSelectedIsAssigned={moduleSelectedIsAssigned}
                                 moduleSelectedRoleModule={moduleSelectedRoleModule}
                                 menuSelected={menuSelected}

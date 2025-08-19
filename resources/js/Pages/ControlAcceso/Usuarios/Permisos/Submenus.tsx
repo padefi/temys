@@ -6,8 +6,9 @@ import { PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { PermisosPopover } from "./PermisosPopover";
-import { ConfirmPopover } from "./ConfimPopover";
+import { RemovePopover } from "./RemovePopover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
+import { AnimatePresence, motion } from "framer-motion";
 import axios from "axios";
 
 interface Submenu {
@@ -17,6 +18,8 @@ interface Submenu {
 }
 
 interface SubemnusProps {
+    branchSelected: number;
+    branchSelectedIsAssigned: boolean;
     moduleSelected: number;
     moduleSelectedIsAssigned: boolean;
     moduleSelectedRoleModule: string;
@@ -25,7 +28,7 @@ interface SubemnusProps {
     user: number;
 }
 
-export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelectedRoleModule, menuSelected, menuSelectedIsAssigned, user }: SubemnusProps) {
+export function Submenus({ branchSelected, branchSelectedIsAssigned, moduleSelected, moduleSelectedIsAssigned, moduleSelectedRoleModule, menuSelected, menuSelectedIsAssigned, user }: SubemnusProps) {
     const [dataSubmenus, setDataSubmenus] = useState<Submenu[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadingPermissions, setLoadingPermissions] = useState(true);
@@ -33,7 +36,7 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelec
 
     const seccion = async (option: string, idOption: number) => {
         try {
-            const response = await fetch(`/control-acceso/managed-permissions-submenus-by-user/${user}/${idOption}`);
+            const response = await fetch(`/control-acceso/managed-permissions-submenus-by-user/${user}/${branchSelected}/${idOption}`);
             const data = await response.json();
 
             setDataPermission({ sectionName: 'Submenu', option, idOption, permissionAssigned: data });
@@ -48,6 +51,7 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelec
         try {
             const response = await axios.post('/control-acceso/managed-permissions-submenus-by-user/', {
                 user,
+                idBranch: branchSelected,
                 idSubmenu,
                 permission
             })
@@ -86,7 +90,7 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelec
         }
 
         try {
-            const response = await fetch(`/control-acceso/show-submenus-by-user/${user}/${menuSelected}`);
+            const response = await fetch(`/control-acceso/show-submenus-by-user/${user}/${branchSelected}/${menuSelected}`);
             const data = await response.json();
             setDataSubmenus(data.data);
         } catch (error) {
@@ -98,12 +102,13 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelec
 
     useEffect(() => {
         fetchDataSubmenus();
-    }, [menuSelected]);
+    }, [menuSelected, menuSelectedIsAssigned]);
 
     const toggleSubmenuAssignment = async (idModule: number, idMenu: number, idSubmenu: number, isAssigned: number) => {
         try {
             const response = await axios.post('/control-acceso/managed-submenus-by-user/', {
                 user,
+                idBranch: branchSelected,
                 idModule,
                 idMenu,
                 idSubmenu
@@ -146,61 +151,104 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelec
     }
 
     return (
-        <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-19rem)] lg:h-[calc(100vh-23rem)] xl:h-[calc(100vh-24rem)] 2xl:h-[calc(100vh-39rem)] w-[-webkit-fill-available]">
-            <div className="group flex flex-col gap-4 py-2">
-                <nav className="grid gap-1 px-2">
-                    {dataSubmenus && dataSubmenus.length > 0 ? (
-                        dataSubmenus.map((submenu, index) => (
-                            <div key={index} className="flex items-center justify-between">
-                                <p className="text-sm font-medium py-2 cursor-default">{submenu.name}</p>
-                                {moduleSelectedIsAssigned && menuSelectedIsAssigned && (
-                                    submenu.is_assigned === 0 ? (
-                                        <Button
-                                            className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
-                                            variant="ghost"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                toggleSubmenuAssignment(moduleSelected, menuSelected, submenu.id, 1);
-                                            }}
-                                        >
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <span>
-                                                            <PlusCircle className="w-6! h-6! text-emerald-500" />
-                                                        </span>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p>Agregar submenú</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            </TooltipProvider>
-                                        </Button>
-                                    ) : (
-                                        <div key={submenu.id + index} className="flex items-center justify-between gap-3">
-                                            <PermisosPopover dataPermission={dataPermission}
-                                                onClick={() => {
-                                                    setLoadingPermissions(true);
-                                                    seccion(submenu.name, submenu.id);
-                                                }}
-                                                onPermissionChange={(option) => togglePermissionAssignment(submenu.id, option)}
-                                                loadingPermissions={loadingPermissions}
-                                                disabled={moduleSelectedRoleModule == "encargado"} />
+        <AnimatePresence mode="wait">
+            {loading ? (
+                <motion.div
+                    key="skeleton"
+                    className="flex flex-col gap-4 py-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                >
+                    <Skeleton className="h-4 w-[200px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+                </motion.div>
+            ) : (
+                <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-19rem)] lg:h-[calc(100vh-23rem)] xl:h-[calc(100vh-24rem)] 2xl:h-[calc(100vh-39rem)] w-[-webkit-fill-available]">
+                    <motion.div
+                        key="content"
+                        className="group flex flex-col gap-4 py-2"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                    >
+                        <nav className="grid gap-1 px-2">
+                            {dataSubmenus && dataSubmenus.length > 0 ? (
+                                dataSubmenus.map((submenu, index) => (
+                                    <div key={index} className="flex items-center justify-between">
+                                        <p className="text-sm font-medium py-2 cursor-default">{submenu.name}</p>
+                                        {branchSelectedIsAssigned && moduleSelectedIsAssigned && menuSelectedIsAssigned && (
+                                            <AnimatePresence mode="wait">
+                                                {submenu.is_assigned === 0 ? (
+                                                    <motion.div
+                                                        key={`${submenu.id}-assigned-0`}
+                                                        className="flex items-center justify-between gap-3"
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        exit={{ opacity: 0 }}
+                                                        transition={{ duration: 0.25 }}
+                                                    >
+                                                        <Button
+                                                            className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
+                                                            variant="ghost"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                toggleSubmenuAssignment(moduleSelected, menuSelected, submenu.id, 1);
+                                                            }}
+                                                        >
+                                                            <TooltipProvider>
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <span>
+                                                                            <PlusCircle className="w-6! h-6! text-emerald-500" />
+                                                                        </span>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>
+                                                                        <p>Agregar submenú</p>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            </TooltipProvider>
+                                                        </Button>
+                                                    </motion.div>
+                                                ) : (
+                                                    <motion.div
+                                                        key={`${submenu.id}-assigned-1`}
+                                                        className="flex items-center justify-between gap-3"
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        exit={{ opacity: 0 }}
+                                                        transition={{ duration: 0.25 }}
+                                                    >
+                                                        <PermisosPopover dataPermission={dataPermission}
+                                                            onClick={() => {
+                                                                setLoadingPermissions(true);
+                                                                seccion(submenu.name, submenu.id);
+                                                            }}
+                                                            onPermissionChange={(option) => togglePermissionAssignment(submenu.id, option)}
+                                                            loadingPermissions={loadingPermissions}
+                                                            disabled={moduleSelectedRoleModule == "encargado"} />
 
-                                            <ConfirmPopover seccion="submenú"
-                                                opcion={submenu.name}
-                                                onClick={() => toggleSubmenuAssignment(moduleSelected, menuSelected, submenu.id, 0)}
-                                                disabled={moduleSelectedRoleModule == "encargado"} />
-                                        </div>
-                                    )
-                                )}
-                            </div>
-                        ))
-                    ) : (
-                        <p>No se encontraron submenús.</p>
-                    )}
-                </nav>
-            </div>
-        </ScrollArea>
+                                                        <RemovePopover seccion="submenú"
+                                                            opcion={submenu.name}
+                                                            onClick={() => toggleSubmenuAssignment(moduleSelected, menuSelected, submenu.id, 0)}
+                                                            disabled={moduleSelectedRoleModule == "encargado"} />
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        )}
+                                    </div>
+                                ))
+                            ) : (
+                                <p>No se encontraron submenús.</p>
+                            )}
+                        </nav>
+                    </motion.div>
+                </ScrollArea>
+            )}
+        </AnimatePresence>
     );
 }

@@ -9,10 +9,12 @@ use App\Http\Resources\UserModulePanel\UserModuleResource;
 use App\Models\ControlAcceso\Module;
 use App\Models\ControlAcceso\RoleModule;
 use App\Models\ControlAcceso\User;
+use App\QueryBuilders\Filters\RoleModuleFilter;
 use App\QueryBuilders\Sorts\RoleModuleSort;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\AllowedSort;
@@ -23,21 +25,22 @@ class UserModuleController extends Controller
     public function index(Request $request)
     {
         $modulo = $request->segment(1); // extrae el nombre del módulo de la URL
+        $branch = Session::get('active_branch_id') ?? null;
         $module = Module::where('name', $modulo)->firstOrFail();
 
         $baseQuery = User::query()
             ->select(['users.id', 'users.name', 'users.last_name', 'users.email', 'users.is_active', 'users.reset_password'])
-            ->whereHas('modules', function ($query) use ($module)
+            ->whereHas('modules', function ($query) use ($module, $branch)
             {
-                $query->where('modules.id', $module->id);
+                $query->where([['modules.id', $module->id], ['branch_id', $branch]]);
             })
             ->whereHas('userRoles', function ($query)
             {
                 $query->where('name', '!=', 'admin');
             })
-            ->with(['modulesRole' => function ($query) use ($module)
+            ->with(['modulesRole' => function ($query) use ($module, $branch)
             {
-                $query->where('modules.id', $module->id);
+                $query->where([['modules.id', $module->id], ['branch_id', $branch]]);
             }]);
 
         $users = QueryBuilder::for($baseQuery)
@@ -45,21 +48,7 @@ class UserModuleController extends Controller
                 AllowedFilter::partial('name'),
                 AllowedFilter::partial('last_name'),
                 AllowedFilter::partial('email'),
-                AllowedFilter::callback('module_roles', function ($query, $value) use ($module)
-                {
-                    if ($value === '__NO_ROLE__')
-                    {
-                        $query->doesntHave('modulesRole');
-                    }
-                    else if (!empty($value))
-                    {
-                        $query->whereHas('modulesRole', function ($q) use ($value, $module)
-                        {
-                            $q->where('modules.id', $module->id)
-                                ->where('model_has_module_role.role_id', RoleModule::where('name', $value)->first()->id);
-                        });
-                    }
-                }),
+                AllowedFilter::custom('module_roles', new RoleModuleFilter()),
             ])
             ->allowedSorts([
                 'name',
@@ -89,6 +78,7 @@ class UserModuleController extends Controller
             'module' => $module->id,
             'module_roles' => RoleModuleResource::collection($roles),
             'filters' => $activeFilters,
+            'branch' => $branch,
         ]);
     }
 

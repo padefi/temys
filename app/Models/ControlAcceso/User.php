@@ -4,6 +4,7 @@ namespace App\Models\ControlAcceso;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Models\AjusteInventario;
 use App\Models\Almacenes\Almacen;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -61,38 +62,45 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class, 'model_has_roles', 'model_id', 'role_id');
     }
 
+    public function branches()
+    {
+        return $this->belongsToMany(Branch::class, 'model_has_branches', 'model_id', 'branch_id');
+    }
+
     public function modules()
     {
-        return $this->belongsToMany(Module::class, 'model_has_modules', 'model_id', 'module_id');
+        return $this->belongsToMany(Module::class, 'model_has_modules', 'model_id', 'module_id')->withPivot('branch_id');
     }
 
     public function menus()
     {
-        return $this->belongsToMany(Menu::class, 'model_has_menus', 'model_id', 'menu_id');
+        return $this->belongsToMany(Menu::class, 'model_has_menus', 'model_id', 'menu_id')->withPivot('branch_id');
     }
 
     public function submenus()
     {
-        return $this->belongsToMany(Submenu::class, 'model_has_submenus', 'model_id', 'submenu_id');
+        return $this->belongsToMany(Submenu::class, 'model_has_submenus', 'model_id', 'submenu_id')->withPivot('branch_id');
     }
 
     public function modulesRole()
     {
-        return $this->belongsToMany(Module::class, 'model_has_module_role', 'model_id', 'module_id')->withPivot('role_id');
+        return $this->belongsToMany(Module::class, 'model_has_module_role', 'model_id', 'module_id')->withPivot('role_id', 'branch_id');
     }
 
     public function modulePermissions()
     {
-        return $this->belongsToMany(Module::class, 'model_has_module_permissions', 'model_id', 'module_id')->withPivot('permission_id');
+        return $this->belongsToMany(Module::class, 'model_has_module_permissions', 'model_id', 'module_id')->withPivot('permission_id', 'branch_id');
     }
 
 
-    public function menuPermissions() {
-        return $this->belongsToMany(Menu::class, 'model_has_menu_permissions', 'model_id', 'menu_id')->withPivot('permission_id');
+    public function menuPermissions()
+    {
+        return $this->belongsToMany(Menu::class, 'model_has_menu_permissions', 'model_id', 'menu_id')->withPivot('permission_id', 'branch_id');
     }
 
-    public function submenuPermissions() {
-        return $this->belongsToMany(Submenu::class, 'model_has_submenu_permissions', 'model_id', 'submenu_id')->withPivot('permission_id');
+    public function submenuPermissions()
+    {
+        return $this->belongsToMany(Submenu::class, 'model_has_submenu_permissions', 'model_id', 'submenu_id')->withPivot('permission_id', 'branch_id');
     }
 
     public function permissions()
@@ -102,22 +110,31 @@ class User extends Authenticatable
 
     public static function moduleUsers(Module $module)
     {
-        return User::whereHas('modules', function ($query) use ($module) {
+        return User::whereHas('modules', function ($query) use ($module)
+        {
             $query->where('modules.id', $module->id);
         })
-            ->whereHas('userRoles', function ($query) {
+            ->whereHas('userRoles', function ($query)
+            {
                 $query->where('name', '!=', 'admin');
             })
             ->get();
     }
+
     public function almacenesResponsables()
     {
         return $this->hasMany(Almacen::class, 'id_responsable');
     }
 
-
     public function almacenes()
     {
         return $this->belongsToMany(Almacen::class, 'relacion_almacen_user', 'user_id', 'almacen_id')->withTimestamps();
     }
+
+
+    public function ajustesInventario()
+{
+    return $this->hasMany(AjusteInventario::class, 'usuario_creacion');
+}
+
 }

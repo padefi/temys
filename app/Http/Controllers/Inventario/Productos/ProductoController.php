@@ -43,8 +43,8 @@ class ProductoController extends Controller
             'es_inventario' => 'boolean',
             'es_patrimonio' => 'boolean',
             'referencia' => 'nullable|string|max:100',
-        ]);
-
+        ]
+                                   
         Producto::create($data);
 
         return redirect()->route('productos.index')->with('success', 'Producto creado correctamente.');
@@ -75,7 +75,16 @@ class ProductoController extends Controller
             'referencia' => 'nullable|string|max:100',
         ]);
 
-        $producto->update($data);
+
+        $producto->update([
+            ...$request->only([
+                'nombre', 'descripcion', 'modelo_id', 'subcategoria_id',
+                'peso', 'alto', 'ancho', 'volumen', 'profundidad',
+                'cod_barras', 'referencia', 'es_inventario', 'es_patrimonio'
+            ]),
+            'fecha_actualizacion' => Carbon::now(),
+            'usuario_actualizacion' => Auth::id(),
+        ]);
 
         return redirect()->route('productos.index')->with('success', 'Producto actualizado correctamente.');
     }
