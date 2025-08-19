@@ -43,14 +43,20 @@ return new class extends Migration
             $table->unsignedBigInteger('module_id');
             $table->string('model_type');
             $table->unsignedBigInteger('model_id');
+            $table->unsignedBigInteger('branch_id');
 
             $table->foreign('module_id')
                 ->references('id')
                 ->on('modules')
                 ->onDelete('cascade');
 
+            $table->foreign('branch_id')
+                ->references('id')
+                ->on('branches')
+                ->onDelete('cascade');
+
             $table->index(['model_id', 'model_type'], 'model_has_modules_model_id_model_type_index');
-            $table->primary(['module_id', 'model_id', 'model_type'], 'model_has_modules_module_model_type_primary');
+            $table->primary(['module_id', 'branch_id', 'model_id', 'model_type'], 'model_has_modules_branch_module_model_type_primary');
         });
 
         Schema::create('model_has_module_role', function (Blueprint $table)
@@ -59,19 +65,25 @@ return new class extends Migration
             $table->unsignedBigInteger('role_id');
             $table->string('model_type');
             $table->unsignedBigInteger('model_id');
+            $table->unsignedBigInteger('branch_id');
 
             $table->foreign('module_id')
                 ->references('id')
                 ->on('modules')
                 ->onDelete('cascade');
-                
+
             $table->foreign('role_id')
                 ->references('id')
                 ->on('role_modules')
                 ->onDelete('cascade');
 
+            $table->foreign('branch_id')
+                ->references('id')
+                ->on('branches')
+                ->onDelete('cascade');
+
             $table->index(['model_id', 'model_type'], 'model_has_module_role_model_id_model_type_index');
-            $table->primary(['module_id', 'role_id', 'model_id', 'model_type'], 'model_has_module_role_module_model_type_role_id_primary');
+            $table->primary(['module_id', 'role_id', 'branch_id', 'model_id', 'model_type'], 'model_has_module_role_module_branch_model_type_role_id_primary');
         });
 
         Schema::create('model_has_module_permissions', function (Blueprint $table)
@@ -80,6 +92,7 @@ return new class extends Migration
             $table->unsignedBigInteger('permission_id');
             $table->string('model_type');
             $table->unsignedBigInteger('model_id');
+            $table->unsignedBigInteger('branch_id');
 
             $table->foreign('module_id')
                 ->references('id')
@@ -91,8 +104,13 @@ return new class extends Migration
                 ->on('permissions')
                 ->onDelete('cascade');
 
+            $table->foreign('branch_id')
+                ->references('id')
+                ->on('branches')
+                ->onDelete('cascade');
+
             $table->index(['model_id', 'model_type'], 'model_has_module_permission_model_id_model_type_index');
-            $table->primary(['module_id', 'permission_id', 'model_id', 'model_type'], 'model_has_module_permissions_module_permission_model_type_primary');
+            $table->primary(['module_id', 'permission_id', 'branch_id', 'model_id', 'model_type'], 'model_has_module_permissions_module_permission_branch_model_type_primary');
         });
     }
 
@@ -110,18 +128,21 @@ return new class extends Migration
         Schema::table('model_has_modules', function (Blueprint $table)
         {
             $table->dropForeign(['module_id']);
+            $table->dropForeign(['branch_id']);
         });
 
         Schema::table('model_has_module_role', function (Blueprint $table)
         {
             $table->dropForeign(['module_id']);
             $table->dropForeign(['role_id']);
+            $table->dropForeign(['branch_id']);
         });
 
         Schema::table('model_has_module_permissions', function (Blueprint $table)
         {
             $table->dropForeign(['module_id']);
             $table->dropForeign(['permission_id']);
+            $table->dropForeign(['branch_id']);
         });
 
         Schema::dropIfExists('modules');

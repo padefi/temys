@@ -2,14 +2,15 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\ControlAcceso\Submenu;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Exceptions\UnauthorizedException;
+use Illuminate\Support\Facades\Redirect;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use App\Http\Middleware\ParseStringableParams; 
+use Spatie\Permission\Exceptions\UnauthorizedException;
+use App\Models\ControlAcceso\Submenu;
+use App\Http\Middleware\ParseStringableParams;
 
 class SubmenuMiddleware
 {
@@ -31,15 +32,21 @@ class SubmenuMiddleware
         $user = Auth::user();
         $submenus = explode('|', self::parseStringableParam($params));
         $submenusIds = Submenu::whereIn('key', $submenus)->pluck('id');
+        $activeBranchId = session('active_branch_id');
 
         $hasSubmenu = DB::table('model_has_submenus')
             ->where('model_id', $user->id)
             ->where('model_type', $user::class)
             ->whereIn('submenu_id', $submenusIds)
+            ->where('branch_id', $activeBranchId)
             ->exists();
 
         if (!$hasSubmenu) {
-            throw new HttpException(403, 'User does not have access to the required submenus.', null, []);
+            return Redirect::route('welcome')->with('flash', [
+                'type' => 'error',
+                'message' => 'No tiene acceso al submenú indicado.',
+            ]);
+            // throw new HttpException(403, 'User does not have access to the required submenus.', null, []);
         }
         
         return $next($request);

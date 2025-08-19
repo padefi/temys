@@ -3,6 +3,7 @@ import createServer from '@inertiajs/react/server';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import ReactDOMServer from 'react-dom/server';
 import { route } from '../../vendor/tightenco/ziggy/src/js';
+import { ActiveBranchProvider } from './contexts/active-branch';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Temys';
 
@@ -27,7 +28,11 @@ createServer((page) =>
                     location: new URL((page.props.ziggy as Record<string, any>).location || ''),
                 });
 
-            return <App {...props} />;
+            return (
+                <ActiveBranchProvider>
+                    <App {...props} />
+                </ActiveBranchProvider>
+            );
         },
     }),
 );

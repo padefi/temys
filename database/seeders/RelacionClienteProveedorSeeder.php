@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Padron\Proveedor\RelacionClienteProveedor;
+use App\Models\Padron\RelacionClienteProveedor;
 
 class RelacionClienteProveedorSeeder extends Seeder
 {

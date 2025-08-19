@@ -18,7 +18,7 @@ interface RolePopoverProps {
   onRoleChange: (option: string) => void;
 }
 
-export function RolePopover({ dataRole, loadingRole, onClick, onRoleChange }: PropsWithChildren<RolePopoverProps>) {  
+export function RolePopover({ dataRole, loadingRole, onClick, onRoleChange }: PropsWithChildren<RolePopoverProps>) {   
   return (
     <PopoverDialog modal={false}>
       <PopoverDialogTrigger asChild>

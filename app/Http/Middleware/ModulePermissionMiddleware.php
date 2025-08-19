@@ -4,14 +4,13 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
-use App\Http\Middleware\ParseStringableParams;
-use App\Models\ControlAcceso\Module;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Spatie\Permission\Exceptions\UnauthorizedException;
 use Spatie\Permission\Models\Permission;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use App\Http\Middleware\ParseStringableParams;
+use App\Models\ControlAcceso\Module;
 
 class ModulePermissionMiddleware
 {
@@ -48,11 +47,15 @@ class ModulePermissionMiddleware
             $permission = Permission::where('name', trim($permissionName))->first();
             if (!$permission) continue;
 
+            $activeBranchId = session('active_branch_id');
+            if (!$activeBranchId) continue;
+
             $exists = DB::table('model_has_module_permissions')
                 ->where('menu_id', $module->id)
                 ->where('permission_id', $permission->id)
                 ->where('model_type', $user::class)
                 ->where('model_id', $user->id)
+                ->where('branch_id', $activeBranchId)
                 ->exists();
 
             if ($exists)
@@ -64,7 +67,8 @@ class ModulePermissionMiddleware
 
         if (!$hasPermission)
         {
-            throw new HttpException(403, 'User does not have permission to the required action.', null, []);
+            throw new HttpException(403, 'No tiene permiso para realizar la acción requerida.', null, []);
+            // throw new HttpException(403, 'User does not have permission to the required action.', null, []);
         }
 
         return $next($request);

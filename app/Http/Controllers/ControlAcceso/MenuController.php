@@ -4,6 +4,7 @@ namespace App\Http\Controllers\ControlAcceso;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ControlAcceso\MenuResource;
+use App\Models\ControlAcceso\Branch;
 use App\Models\ControlAcceso\Menu;
 use App\Models\ControlAcceso\Module;
 use App\Models\ControlAcceso\User;
@@ -28,20 +29,19 @@ class MenuController extends Controller
         return MenuResource::collection($module->menus);
     }
 
-    public function showMenusByUser(User $user, Module $module)
+    public function showMenusByUser(User $user, Branch $branch, Module $module)
     {
-        $userId = $user->id;
         $menus = Menu::leftJoin('module_has_menus', 'menus.id', '=', 'module_has_menus.menu_id')
-            ->leftJoin('model_has_menus', function ($join) use ($userId)
+            ->leftJoin('model_has_menus', function ($join) use ($user, $branch)
             {
                 $join->on('menus.id', '=', 'model_has_menus.menu_id')
-                    ->where('model_has_menus.model_id', '=', $userId);
+                    ->where([
+                        ['model_has_menus.model_id', '=', $user->id],
+                        ['model_has_menus.branch_id', '=', $branch->id]
+                    ]);
             })
-            ->where('module_has_menus.module_id', $module->id) // Verifica que el menú pertenece al módulo
-            ->select(
-                'menus.*',
-                DB::raw('IF(model_has_menus.menu_id IS NOT NULL, true, false) as is_assigned') // Verifica si el menú está asignado al usuario
-            )
+            ->where('module_has_menus.module_id', $module->id) // Verifica que el menú pertenezca al módulo
+            ->select('menus.*', DB::raw('(model_has_menus.menu_id IS NOT NULL AND model_has_menus.branch_id IS NOT NULL) as is_assigned')) // Verifica si el menú está asignado al usuario
             ->orderBy('menus.name', 'asc')
             ->get();
 
@@ -58,12 +58,14 @@ class MenuController extends Controller
     public function managedMenusByUser(Request $request)
     {
         $request->validate([
+            'idBranch' => ['required', 'exists:branches,id'],
             'idModule' => ['required', 'exists:modules,id'],
             'idMenu' => ['required', 'exists:menus,id'],
             'user' => ['required', 'exists:users,id'],
         ]);
 
         $user = User::find($request->user);
+        $branch = Branch::find($request->idBranch);
         $module = Module::find($request->idModule);
         $menu = Menu::find($request->idMenu);
 
@@ -72,12 +74,17 @@ class MenuController extends Controller
             return response()->json(['message' => 'No puedes agregar o quitar modulos a un administrador', 'success' => false]);
         }
 
-        if (!$user->modules()->where('modules.id', $module->id)->exists())
+        if ($branch->status === 'inactive')
+        {
+            return response()->json(['message' => 'La sucursal se encuentra deshabilitada', 'success' => false]);
+        }
+
+        if (!$user->modules()->where([['modules.id', $module->id], ['branch_id', $branch->id]])->exists())
         {
             return response()->json(['message' => 'El módulo no ha sido asignado al usuario', 'success' => false]);
         }
 
-        if (!$user->modulesRole()->where('modules.id', $module->id)->exists())
+        if (!$user->modulesRole()->where([['modules.id', $module->id], ['branch_id', $branch->id]])->exists())
         {
             return response()->json(['message' => 'No ha sido asignado el rol del usuario al módulo', 'success' => false]);
         }
@@ -87,33 +94,48 @@ class MenuController extends Controller
             return response()->json(['message' => 'El menú no pertenece a dicho módulo', 'success' => false]);
         }
 
-        if ($user->menus()->where('menus.id', $menu->id)->exists())
+        if ($user->menus()->where([['menus.id', $menu->id], ['branch_id', $branch->id]])->exists())
         {
             $submenuIds = $menu->submenus()->pluck('id');
-            $user->menus()->detach($menu->id);
-            $user->submenus()->detach($submenuIds);
+
+            DB::table('model_has_menus')
+                ->where('model_id', $user->id)
+                ->where('menu_id', $menu->id)
+                ->where('branch_id', $branch->id)
+                ->delete();
+
+            DB::table('model_has_submenus')
+                ->where('model_id', $user->id)
+                ->whereIn('submenu_id', $submenuIds)
+                ->where('branch_id', $branch->id)
+                ->delete();
 
             DB::table('model_has_menu_permissions')
                 ->where('model_id', $user->id)
                 ->where('menu_id', $menu->id)
+                ->where('branch_id', $branch->id)
                 ->delete();
 
             DB::table('model_has_submenu_permissions')
                 ->where('model_id', $user->id)
                 ->whereIn('submenu_id', $submenuIds)
+                ->where('branch_id', $branch->id)
                 ->delete();
 
             return response()->json(['message' => 'Menú quitado con exito', 'action' => 'delete', 'success' => true]);
         }
 
-        $user->menus()->attach($menu->id, ['model_type' => User::class]);
+        $user->menus()->attach($request->idMenu, [
+            'model_type' => User::class,
+            'branch_id' => $branch->id
+        ]);
 
         // Solo asigna permisos si el menú NO tiene submenús
         if ($menu->submenus()->count() === 0)
         {
             $menu->userPermissions()->attach(
                 Permission::findByName('read')->id,
-                ['model_type' => User::class, 'model_id' => $user->id]
+                ['model_type' => User::class, 'model_id' => $user->id, 'branch_id' => $branch->id]
             );
         }
 
@@ -134,17 +156,24 @@ class MenuController extends Controller
     {
         $request->validate([
             'user' => ['required', 'exists:users,id'],
+            'idBranch' => ['required', 'exists:branches,id'],
             'idMenu' => ['required', 'exists:menus,id'],
             'permission' => ['required', 'exists:permissions,name'],
         ]);
 
         $user = User::find($request->user);
+        $branch = Branch::find($request->idBranch);
         $menu = Menu::find($request->idMenu);
         $permission = Permission::findByName($request->permission);
 
         if ($user->hasRole('admin'))
         {
             return response()->json(['message' => 'No puedes agregar o quitar permisos a un administrador', 'success' => false]);
+        }
+
+        if ($branch->status === 'inactive')
+        {
+            return response()->json(['message' => 'La sucursal se encuentra deshabilitada', 'success' => false]);
         }
 
         if (!$user->menus()->where('menus.id', $menu->id)->exists())
@@ -156,6 +185,7 @@ class MenuController extends Controller
             ->where('permissions.id', $permission->id)
             ->where('model_id', $user->id)
             ->where('model_type', User::class)
+            ->where('branch_id', $branch->id)
             ->exists();
 
         if ($hasPermission)
@@ -165,6 +195,7 @@ class MenuController extends Controller
                 ->where('permission_id', $permission->id)
                 ->where('model_id', $user->id)
                 ->where('model_type', User::class)
+                ->where('branch_id', $branch->id)
                 ->delete();
 
             return response()->json(['message' => 'Permiso eliminado con exito', 'action' => 'delete', 'success' => true]);

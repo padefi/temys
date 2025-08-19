@@ -2,14 +2,11 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\ControlAcceso\Menu;
-use App\Models\ControlAcceso\Module;
-use App\Models\ControlAcceso\Submenu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\ControlAcceso\User;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
+use App\Models\ControlAcceso\User;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -44,6 +41,7 @@ class HandleInertiaRequests extends Middleware
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
+            'flash' => fn() => $request->session()->get('flash'),
         ]);
     }
 

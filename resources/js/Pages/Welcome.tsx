@@ -1,9 +1,8 @@
-import { usePermissions } from '@/composables/permissions';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { PageProps as InertiaPageProps } from '@inertiajs/core';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
-import { ChevronDown } from 'lucide-react';
 import { AnimatePresence, motion } from "framer-motion";
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { useModuleConfig } from '@/contexts/active-module';
 
 type Module = {
     name: string;
@@ -13,51 +12,29 @@ type Module = {
 type PageProps = InertiaPageProps & {
     modules: {
         data: Array<Module>;
-    };
+    }
 };
 
 export default function Welcome() {
     const { modules } = usePage<PageProps>().props;
-    const { userAuth } = usePermissions();
+    const { setActiveModule } = useModuleConfig();    
 
     return (
-        <div className="min-h-screen bg-gray-100">
+        <AuthenticatedLayout>
             <Head title="Dashboard" />
 
-            <nav className="border-b border-gray-100 bg-white flex">
-                <div className="hidden my-2 ml-auto mr-4 sm:flex sm:items-center">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger
-                            className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 ring-0 focus:outline-none focus:ring-0 group"
-                        >
-                            {userAuth.name}
-                            <ChevronDown className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:rotate-180" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem>
-                                <Link href={route('profile.edit')}>Perfil</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <Link method="post" href={route('logout')} className='cursor-pointer'>Cerrar sesión</Link>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </nav >
-
             <AnimatePresence>
-                <motion.div
-                    key="modules"
-                    className="py-12"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.35, ease: "easeInOut" }}
-                >
-                    <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                        <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                            <div className="p-6 text-gray-900">
-                                {modules.data && modules.data.length > 0 && (
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 py-6">
+                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                        <div className="p-6 text-gray-900">
+                            {modules.data && modules.data.length > 0 ? (
+                                <motion.div
+                                    key="modules"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                                >
                                     <div
                                         className="grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                                         {modules.data.map((module: Module) => (
@@ -70,6 +47,7 @@ export default function Welcome() {
                                                 </div>
                                                 {route().has(module.key) ? (
                                                     <Link
+                                                        onClick={() => setActiveModule(module.key)}
                                                         href={route(module.key)}
                                                         className="mt-auto text-center font-semibold text-gray-700 hover:text-emerald-600 transition"
                                                     >
@@ -81,12 +59,24 @@ export default function Welcome() {
                                             </div>
                                         ))}
                                     </div>
-                                )}
-                            </div>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="without-modules"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                                >
+                                    <span className="text-center font-semibold text-gray-500">
+                                        No hay módulos disponibles
+                                    </span>
+                                </motion.div>
+                            )}
                         </div>
                     </div>
-                </motion.div>
+                </div>
             </AnimatePresence>
-        </div>
+        </AuthenticatedLayout >
     );
 }

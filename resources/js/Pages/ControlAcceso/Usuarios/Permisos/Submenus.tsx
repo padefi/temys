@@ -18,6 +18,8 @@ interface Submenu {
 }
 
 interface SubemnusProps {
+    branchSelected: number;
+    branchSelectedIsAssigned: boolean;
     moduleSelected: number;
     moduleSelectedIsAssigned: boolean;
     moduleSelectedRoleModule: string;
@@ -26,7 +28,7 @@ interface SubemnusProps {
     user: number;
 }
 
-export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelectedRoleModule, menuSelected, menuSelectedIsAssigned, user }: SubemnusProps) {
+export function Submenus({ branchSelected, branchSelectedIsAssigned, moduleSelected, moduleSelectedIsAssigned, moduleSelectedRoleModule, menuSelected, menuSelectedIsAssigned, user }: SubemnusProps) {
     const [dataSubmenus, setDataSubmenus] = useState<Submenu[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadingPermissions, setLoadingPermissions] = useState(true);
@@ -34,7 +36,7 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelec
 
     const seccion = async (option: string, idOption: number) => {
         try {
-            const response = await fetch(`/control-acceso/managed-permissions-submenus-by-user/${user}/${idOption}`);
+            const response = await fetch(`/control-acceso/managed-permissions-submenus-by-user/${user}/${branchSelected}/${idOption}`);
             const data = await response.json();
 
             setDataPermission({ sectionName: 'Submenu', option, idOption, permissionAssigned: data });
@@ -49,6 +51,7 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelec
         try {
             const response = await axios.post('/control-acceso/managed-permissions-submenus-by-user/', {
                 user,
+                idBranch: branchSelected,
                 idSubmenu,
                 permission
             })
@@ -87,7 +90,7 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelec
         }
 
         try {
-            const response = await fetch(`/control-acceso/show-submenus-by-user/${user}/${menuSelected}`);
+            const response = await fetch(`/control-acceso/show-submenus-by-user/${user}/${branchSelected}/${menuSelected}`);
             const data = await response.json();
             setDataSubmenus(data.data);
         } catch (error) {
@@ -99,12 +102,13 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelec
 
     useEffect(() => {
         fetchDataSubmenus();
-    }, [menuSelected]);
+    }, [menuSelected, menuSelectedIsAssigned]);
 
     const toggleSubmenuAssignment = async (idModule: number, idMenu: number, idSubmenu: number, isAssigned: number) => {
         try {
             const response = await axios.post('/control-acceso/managed-submenus-by-user/', {
                 user,
+                idBranch: branchSelected,
                 idModule,
                 idMenu,
                 idSubmenu
@@ -177,7 +181,7 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelec
                                 dataSubmenus.map((submenu, index) => (
                                     <div key={index} className="flex items-center justify-between">
                                         <p className="text-sm font-medium py-2 cursor-default">{submenu.name}</p>
-                                        {moduleSelectedIsAssigned && menuSelectedIsAssigned && (
+                                        {branchSelectedIsAssigned && moduleSelectedIsAssigned && menuSelectedIsAssigned && (
                                             <AnimatePresence mode="wait">
                                                 {submenu.is_assigned === 0 ? (
                                                     <motion.div

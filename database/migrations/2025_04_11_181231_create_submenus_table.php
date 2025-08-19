@@ -43,14 +43,20 @@ return new class extends Migration
             $table->unsignedBigInteger('submenu_id');
             $table->string('model_type');
             $table->unsignedBigInteger('model_id');
+            $table->unsignedBigInteger('branch_id');
 
             $table->foreign('submenu_id')
                 ->references('id')
                 ->on('submenus')
                 ->onDelete('cascade');
 
+            $table->foreign('branch_id')
+                ->references('id')
+                ->on('branches')
+                ->onDelete('cascade');
+
             $table->index(['model_id', 'model_type'], 'model_has_submenus_model_id_model_type_index');
-            $table->primary(['submenu_id', 'model_id', 'model_type'], 'model_has_submenus_submenu_model_type_primary');
+            $table->primary(['submenu_id', 'branch_id', 'model_id', 'model_type'], 'model_has_submenus_branch_submenu_model_type_primary');
         });
 
         Schema::create('model_has_submenu_permissions', function (Blueprint $table)
@@ -59,6 +65,7 @@ return new class extends Migration
             $table->unsignedBigInteger('permission_id');
             $table->string('model_type');
             $table->unsignedBigInteger('model_id');
+            $table->unsignedBigInteger('branch_id');
 
             $table->foreign('submenu_id')
                 ->references('id')
@@ -70,8 +77,13 @@ return new class extends Migration
                 ->on('permissions')
                 ->onDelete('cascade');
 
+            $table->foreign('branch_id')
+                ->references('id')
+                ->on('branches')
+                ->onDelete('cascade');
+
             $table->index(['model_id', 'model_type'], 'model_has_submenu_permission_model_id_model_type_index');
-            $table->primary(['submenu_id', 'permission_id', 'model_id', 'model_type'], 'model_has_submenu_permissions_submenu_permission_model_type_primary');
+            $table->primary(['submenu_id', 'permission_id', 'branch_id', 'model_id', 'model_type'], 'model_has_submenu_permissions_submenu_permission_branch_model_type_primary');
         });
     }
 
@@ -89,12 +101,14 @@ return new class extends Migration
         Schema::table('model_has_submenus', function (Blueprint $table)
         {
             $table->dropForeign(['submenu_id']);
+            $table->dropForeign(['branch_id']);
         });
 
         Schema::table('model_has_submenu_permissions', function (Blueprint $table)
         {
             $table->dropForeign(['submenu_id']);
             $table->dropForeign(['permission_id']);
+            $table->dropForeign(['branch_id']);
         });
 
         Schema::dropIfExists('submenus');
