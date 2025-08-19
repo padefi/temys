@@ -2,17 +2,14 @@
 
 import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, useReactTable, CellContext } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { DataTableSkeleton } from "./data-table-skeleton";
 import { useDataTableParams } from "@/hooks/useDataTableParams";
 import { RowActions } from "./row-actions";
-import { Role, User } from "./page";
-import { toast } from "sonner";
-import { isEmpty, isUndefined, validateEmail } from "@/utils/validateFunctions";
+import { User } from "./page";
 import { Footer } from "./footer";
 import { links } from "@/types/links";
 import { meta } from "@/types/meta";
-import axios from "axios";
 
 
 interface DataTableProps<TData, TValue> {
@@ -43,7 +40,7 @@ export function DataTable<TData extends User, TValue>({
         return initialColumns.map(col => {
             return {
                 ...col,
-                cell: ({ getValue, row: { index, original } }: CellContext<TData, TValue>) => {
+                cell: ({ getValue, row: { original } }: CellContext<TData, TValue>) => {
                     const cellValue = getValue();
                     const initialCellOriginalValue = Array.isArray(cellValue)
                         ? (cellValue[0] as { name: string })?.name as string ?? "SIN ROL"

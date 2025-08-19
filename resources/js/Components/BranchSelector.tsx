@@ -7,7 +7,6 @@ import { Branch, PageProps } from '../types/index';
 import { router, usePage } from '@inertiajs/react';
 import { Hotel } from 'lucide-react';
 import { toast } from 'sonner';
-import axios from 'axios';
 
 export default function BranchSelector() {
     const { branches } = usePage<PageProps>().props;
@@ -15,52 +14,28 @@ export default function BranchSelector() {
 
     const handleBranchChange = async (newBranchId: string) => {
         setProcessingBranch(true);
-        
+
         router.post(
             route('user.update_branch'), { branch_id: newBranchId },
             {
                 // Esto hará que el `Inertia::share` se ejecute nuevamente
                 // y la página se actualice con los nuevos módulos y menús.
-                only: ['modules', 'menus'],
+                // only: ['modules', 'menus', 'active_branch_id'],
+                // replace: true,
                 preserveState: true,
                 preserveScroll: true,
-                onSuccess: (page) => {
+                onSuccess: () => {
                     setActiveBranch(newBranchId);
                 },
                 onError: (errors: any) => {
                     toast.error(errors.message);
                     console.error(errors);
                 },
-                onFinish: (exception) => {
+                onFinish: () => {
                     setProcessingBranch(false);
-                    /* if (exception?.response?.status === 403) {
-                        toast.error(exception.response?.data?.message || 'Error desconocido');
-                        window.location.href = route('welcome');
-                    } */
                 }
             }
         );
-        /* setProcessingBranch(true);
-        await axios.post(route('user.update_branch'), { branch_id: newBranchId });
-        router.reload({ only: ['modules', 'menus'] });
-        setActiveBranch(newBranchId);
-        setProcessingBranch(false); */
-
-        /* try {
-            await axios.post(route('user.update_branch'), { branch_id: newBranchId });
-            router.reload({ only: ['modules', 'menus'] });
-            setActiveBranch(newBranchId);
-        } catch (error: any) {
-            if (error.response?.status === 403) {
-                toast.error(error.response?.data?.message || 'Error desconocido');
-                window.location.href = route('welcome');
-            } else {
-                toast.error(error.response?.data?.message || 'Error desconocido');
-                console.error(error);
-            }
-        } finally {
-            setProcessingBranch(false);
-        } */
     };
 
     return (

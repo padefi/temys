@@ -8,10 +8,10 @@ use App\Http\Resources\ControlAcceso\RoleResource;
 use App\Http\Resources\ControlAcceso\UserResource;
 use App\Http\Resources\UserModulePanel\RoleModuleResource;
 use App\Models\ControlAcceso\Branch;
-use App\Models\ControlAcceso\Menu;
 use App\Models\ControlAcceso\Module;
 use App\Models\ControlAcceso\RoleModule;
 use App\Models\ControlAcceso\User;
+use App\QueryBuilders\Filters\RolesFilter;
 use App\QueryBuilders\Sorts\RoleSort;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -37,20 +37,7 @@ class UsuarioController extends Controller
                 AllowedFilter::partial('name'), // Filtros de búsqueda parcial (LIKE %valor%)
                 AllowedFilter::partial('last_name'),
                 AllowedFilter::partial('email'),
-                AllowedFilter::callback('roles', function ($query, $value)
-                {
-                    if ($value === '__NO_ROLE__')
-                    {
-                        $query->doesntHave('roles');
-                    }
-                    else if (!empty($value))
-                    {
-                        $query->whereHas('roles', function ($q) use ($value)
-                        {
-                            $q->where('name', $value);
-                        });
-                    }
-                }),
+                AllowedFilter::custom('roles', new RolesFilter()),
                 // AllowedFilter::exact('is_active'), // Para booleanos o valores exactos
             ])
 

@@ -59,7 +59,7 @@ export const columns: ColumnDef<User>[] = [
                 </span>
             )
         },
-        filterFn: (row, id, value) => {
+        filterFn: (row, value) => {
             if (!value) return true;
             const userRoleName = row.original.module_roles[0]?.name?.toUpperCase();
             return userRoleName === value;
