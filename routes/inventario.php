@@ -29,6 +29,7 @@ Route::middleware('module:inventario')->group(function () {
             Route::post('/solicitudes-stock-aceptar', [SolicitudStockController::class, 'aceptarSolicitud']);
             Route::post('/solicitudes-stock-cancelar', [SolicitudStockController::class, 'cancelarSolicitud']);
             Route::get('/solicitudes-stock-aceptadas', [SolicitudStockController::class, 'solicitudesAceptadas'])->name('inventario.misSolicitudes');
+        });    
 
         Route::middleware(['submenu:inventarioFisico'])->group(function () {
             Route::middleware('submenu_permission:read inventarioFisico')->group(function () {
