@@ -15,7 +15,7 @@ class SolicitudCompraOrdenCotizacionFactory extends Factory
     {
         return [
             'solicitud_compra_id' => SolicitudCompra::factory(),
-            'orden_cotizacion_id' => OrdenCotizacion::factory(),
+            'orden_cotizaciones_id' => OrdenCotizacion::factory(),
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models\Compras\OrdenCotizacion;
 
+use App\Models\Almacenes\Almacen;
 use App\Models\Compras\OrdenCompra;
 use App\Models\Compras\SolicitudCompra;
 use App\Models\ControlAcceso\User;
@@ -19,6 +20,7 @@ class OrdenCotizacion extends Model
     protected $fillable = [
         'proveedor_id',
         'moneda_id',
+        'almacen_destino_id',
         'cotizar_antes_de',
         'entrega_esperada',
         'entregar_a',
@@ -49,6 +51,11 @@ class OrdenCotizacion extends Model
         return $this->belongsTo(TipoMoneda::class, 'moneda_id');
     }
 
+    public function almacen()
+    {
+        return $this->belongsTo(Almacen::class, 'almacen_destino_id');
+    }
+
     public function creador()
     {
         return $this->belongsTo(User::class, 'usuario_id');
@@ -65,7 +72,7 @@ class OrdenCotizacion extends Model
         return $this->belongsToMany(
             SolicitudCompra::class,
             'solicitud_compra_orden_cotizaciones',
-            'orden_cotizacion_id',
+            'orden_cotizaciones_id',
             'solicitud_compra_id'
         );
     }
@@ -75,8 +82,8 @@ class OrdenCotizacion extends Model
         return $this->belongsToMany(
             OrdenCompra::class,
             'orden_compra_orden_cotizaciones',
-            'orden_cotizacion_id',
-            'orden_compra_id'
+            'orden_cotizaciones_id',
+            'orden_compras_id'
         );
     }
 }

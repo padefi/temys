@@ -4,6 +4,7 @@ namespace App\Models\Almacenes;
 
 
 use App\Models\Compras\OrdenCompra;
+use App\Models\Compras\OrdenCotizacion\OrdenCotizacion;
 use App\Models\ControlAcceso\User;
 use App\Models\Inventario\InventarioStock;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,8 +16,8 @@ class Almacen extends Model
     protected $table='almacenes';
     public $timestamps = false;
 
-    
-    protected $fillable = [   
+
+    protected $fillable = [
         'nombre',
         'tipo',
         'responsable_id',
@@ -64,8 +65,20 @@ class Almacen extends Model
     }
 
     public function usuarios()
-{
-    return $this->belongsToMany(User::class, 'relacion_almacen_user', 'almacen_id', 'user_id')->withTimestamps();
-}
+    {
+        return $this->belongsToMany(User::class, 'relacion_almacen_user', 'almacen_id', 'user_id')->withTimestamps();
+    }
+
+    public function ordenCompra()
+    {
+        return $this->belongsTo(OrdenCompra::class, 'id');
+    }
+
+    public function ordenCotizacion()
+    {
+        return $this->belongsTo(OrdenCotizacion::class, 'id');
+    }
+
+
 
 }

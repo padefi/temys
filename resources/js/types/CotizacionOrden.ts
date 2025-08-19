@@ -2,6 +2,7 @@ import { Proveedor } from "./Proveedor";
 import { TipoMoneda } from "./TipoMoneda";
 import { SolicitudCompra } from "./SolicitudCompra";
 import { OrdenesCompra } from "./OrdenCompra";
+import { Almacen } from "./Almacen";
 
 // types/CotizacionOrdenes.ts
 export interface CotizacionOrden {
@@ -11,8 +12,10 @@ export interface CotizacionOrden {
     moneda_id: string;
     tipo_moneda: TipoMoneda;
     cotizar_antes_de: Date;
-    entrega_esperada: Date;
     entregar_a: string;
+    entrega_esperada: Date;
+    almacen_destino: number
+    almacen: Almacen;
     observaciones: string;
     estado: string;
     usuario_id: number;
@@ -30,6 +33,7 @@ export interface DetalleCotizacion {
     id: number
     orden_cotizaciones_id: number
     producto_id: number
+    entrega_esperada: Date
     descripcion: string
     codigo_barras: string
     referencia?: string

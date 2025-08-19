@@ -3,7 +3,7 @@ import { Head, usePage, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import { Terminal } from 'lucide-react';
-import CotizacionOrdenesListado from './CotizacionOrdenesListado/Index';
+import ComprasOrdenesListado from './ComprasOrdenesListado/Index';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
 
@@ -22,7 +22,7 @@ export default function Index() {
   const handleGenerarOrdenCompra = () => {
 
     if (selectedOrders.length === 0) {
-      toast.error('No se han seleccionado órdenes para cotizar.');
+      toast.error('No se han seleccionado órdenes de compra.');
       return;
     }
 
@@ -33,8 +33,7 @@ export default function Index() {
         setSelectedOrders([]);
       },
       onError: (errors) => {
-        console.error(errors);
-        toast.error("Hubo un error al generar la orden de compra");
+        toast.error(errors.message);
       }
     });
 
@@ -44,7 +43,7 @@ export default function Index() {
     <AuthenticatedLayout
       header={
         <h2 className="text-xl font-semibold leading-tight text-gray-800">
-          CotizacionesOrdenes
+           Ordenes de Compra
         </h2>
       }
     >
@@ -55,7 +54,7 @@ export default function Index() {
           <AlertDescription>La cotización fue registrada correctamente.</AlertDescription>
         </Alert>
       )}
-      <Head title="CotizacionesOrdenes" />
+      <Head title="Ordenes de Compra" />
 
       <div className="py-12">
         <div className="mx-auto max-w sm:px-6 lg:px-8">
@@ -64,9 +63,9 @@ export default function Index() {
               <div className="flex gap-4 mt-6 justify-end">
                 <Button
                   variant="success"
-                  onClick={() => router.visit('/compras/cotizaciones-ordenes/nueva')}
+                  onClick={() => router.visit('/compras/ordenes-compras/nueva')}
                 >
-                  Nueva Cotización
+                  Nueva Orden de Compra
                 </Button>
 
                 {selectedOrders.length > 0 && (
@@ -79,10 +78,10 @@ export default function Index() {
                 )}
               </div>
 
-              <h1 className="text-2xl my-3 font-bold">Solicitudes de Compra</h1>
+              <h1 className="text-2xl my-3 font-bold">Ordenes de Compra</h1>
               <hr className="my-3" />
 
-              <CotizacionOrdenesListado onSelectionChange={setSelectedOrders} />
+              <ComprasOrdenesListado onSelectionChange={setSelectedOrders} />
 
             </div>
           </div>

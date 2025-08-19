@@ -16,7 +16,7 @@ class OrdenCompraDetalleSeeder extends Seeder
             OrdenCompraDetalle::factory()
                 ->count(rand(1, 5))
                 ->create([
-                    'orden_compra_id' => $orden->id,
+                    'orden_compras_id' => $orden->id,
                 ]);
         }
     }

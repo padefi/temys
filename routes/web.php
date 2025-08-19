@@ -22,7 +22,7 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy')->middleware('can:avoid,' . User::class);
 
     /* TO-DO Modulo control accesos */
-    require __DIR__.'/control-acceso.php';    
+    require __DIR__.'/control-acceso.php';
 
     /* TO-DO Panel de usuarios de todos los modulos */
     require __DIR__.'/user-module-panel.php';
@@ -32,11 +32,12 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
 
     /* TO-DO Modulo compras */
 
-    // En tu web.php, reemplaza la sección de compras con:
     Route::middleware('module:compras')->group(function () {
         Route::prefix('compras')->group(base_path('routes/compras.php'));
     });
 
+    /* TO-DO Modulo General */
+    require __DIR__.'/general.php';
 
     /* TO-DO Modulo contabilidad */
     require __DIR__.'/contabilidad.php';

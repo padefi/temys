@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { usePage } from '@inertiajs/react'
+import { router, usePage } from '@inertiajs/react'
 import {
   Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow
 } from '@/Components/ui/table'
@@ -16,7 +16,13 @@ import {
   DropdownMenuTrigger
 } from '@/Components/ui/dropdown-menu'
 
+import { CirclePlus  } from 'lucide-react';
+import * as Dialog from '@radix-ui/react-dialog'
+import ProductosIndex from '../../../../General/Productos/Index'
+
 import { ProductosDisponibles } from '@/types/Producto'
+
+
 
 type PageProps = {
     auth: {
@@ -57,7 +63,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
 
     const [productos, setLocalProductos] = useState<ProductoEditable[]>([])
     const { impuestos, auth, productos: productosDisponibles = [], } = usePage<PageProps>().props
-
+    const [modalAbierto, setModalAbierto] = useState(false)
     const [columnasVisibles, setColumnasVisibles] = useState({
         entrega_esperada: true,
         descripcion: true,
@@ -66,10 +72,10 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
         codigo_barras: false,
         referencia: false,
         cantidad: true,
-        precio_unitario: false,
-        impuestos: false,
-        porcentaje_descuento: false,
-        importe: false
+        precio_unitario: true,
+        impuestos: true,
+        porcentaje_descuento: true,
+        importe: true
     })
 
     const agregarLinea = () => {
@@ -200,10 +206,30 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
         </div>
 
         <Table>
-          <TableCaption>Productos seleccionados para la cotización.</TableCaption>
+          <TableCaption>Productos seleccionados para la orden de compra.</TableCaption>
           <TableHeader>
             <TableRow>
-                <TableHead>Producto</TableHead>
+                <TableHead>
+                    Producto
+                    <Dialog.Root open={modalAbierto} onOpenChange={setModalAbierto}>
+                        <Dialog.Trigger asChild>
+                        <Button
+                            variant="secondary"
+                            size="icon"
+                            onClick={() => setModalAbierto(true)}
+                        >
+                            <CirclePlus />
+                        </Button>
+                        </Dialog.Trigger>
+                        <Dialog.Portal>
+                        <Dialog.Overlay className="fixed inset-0 bg-black/50" />
+                        <Dialog.Content className="fixed top-1/2 left-1/2 w-[120vw] max-w-6xl max-h-[120vh] overflow-auto rounded-md bg-white p-6 shadow-lg transform -translate-x-1/2 -translate-y-1/2">
+                            <ProductosIndex />
+                        </Dialog.Content>
+                        </Dialog.Portal>
+                    </Dialog.Root>
+
+                </TableHead>
                 {columnasVisibles.entrega_esperada && <TableHead>Fecha Entrega Esperada</TableHead>}
                 {columnasVisibles.descripcion && <TableHead>Descripción</TableHead>}
                 {columnasVisibles.modelo && <TableHead>Modelo</TableHead>}
@@ -212,7 +238,13 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                 {columnasVisibles.referencia && <TableHead>Referencia</TableHead>}
                 {columnasVisibles.cantidad && <TableHead>Cantidad</TableHead>}
                 {columnasVisibles.precio_unitario && <TableHead>Precio Unitario</TableHead>}
-                {columnasVisibles.impuestos && <TableHead>Impuestos</TableHead>}
+                {columnasVisibles.impuestos &&
+                <TableHead>
+                    Impuestos
+                    <Button variant="secondary" size="icon" className="size-8">
+                        <CirclePlus />
+                    </Button>
+                </TableHead>}
                 {columnasVisibles.porcentaje_descuento && <TableHead>% Desc.</TableHead>}
                 {columnasVisibles.importe && <TableHead>Importe</TableHead>}
                 <TableHead>Acciones</TableHead>
@@ -225,13 +257,14 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                   <input
                     list="sugerencias-productos"
                     type="text"
+                    disabled={producto.producto_id > 0}
                     value={producto.nombre}
                     onChange={(e) => handleChangeProducto(index, e.target.value)}
                     placeholder="Buscar producto"
                     className="w-full border px-2 py-1 rounded"
                   />
                 </TableCell>
-                 {columnasVisibles.entrega_esperada && (
+                {columnasVisibles.entrega_esperada && (
                   <TableCell>
                     <input
                       type="text"
@@ -373,7 +406,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                   <TableCell>
                     <input
                       type="number"
-                      value={producto.cantidad * producto.precio_unitario * (1 - producto.porcentaje_descuento / 100)}
+                      value={parseFloat((producto.cantidad * producto.precio_unitario * (1 - producto.porcentaje_descuento / 100)).toFixed(2))}
 
                       className="w-40 border px-2 py-1 rounded bg-gray-100"
                       readOnly

@@ -14,14 +14,14 @@ return new class extends Migration
         Schema::create('solicitud_compra_orden_cotizaciones', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('solicitud_compra_id');
-            $table->unsignedBigInteger('orden_cotizacion_id');
+            $table->unsignedBigInteger('orden_cotizaciones_id');
             $table->timestamps();
 
-            $table->foreign('solicitud_compra_id')->references('id')->on('solicitud_compras')->onDelete('cascade');
-            $table->foreign('orden_cotizacion_id')->references('id')->on('orden_cotizaciones')->onDelete('cascade');
+            $table->foreign('solicitud_compra_id', 'fk_solicitud_compra')->references('id')->on('solicitud_compras')->onDelete('cascade');
+            $table->foreign('orden_cotizaciones_id', 'fk_orden_cotizaciones')->references('id')->on('orden_cotizaciones')->onDelete('cascade');
 
 
-            $table->unique(['solicitud_compra_id', 'orden_cotizacion_id'], 'solicitud_orden_unique');
+            $table->unique(['solicitud_compra_id', 'orden_cotizaciones_id'], 'solicitud_orden_unique');
         });
     }
 

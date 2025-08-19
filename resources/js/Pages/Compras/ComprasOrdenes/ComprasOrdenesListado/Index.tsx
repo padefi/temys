@@ -21,60 +21,45 @@ import {
   TableHeader,
   TableRow,
 } from "@/Components/ui/table";
+import { OrdenesCompraDetalle } from '@/types/OrdenCompraDetalle';
 
 
 type OrdenCompra = {
-  id: number;
-  almacen_destino: number;
+    id: number;
+    almacen_destino?: {
+        nombre: string;
+        id: number; // ⚠️ Asegurate que exista un ID único del almaceb
+    };
+    proveedor?: {
+        razon_social: string;
+        nombre_fantasia: string;
+        id: number; // ⚠️ Asegurate que exista un ID único del proveedor
+    };
+    detalles?: OrdenesCompraDetalle[]
+    fecha_creacion: Date;
+    estado: string;
 }
 
 
-type OrdenCotizacion = {
-  id: number;
-  estado: string;
-  ordenes_compra?: OrdenCompra[]
-  proveedor?: {
-    razon_social: string;
-    nombre_fantasia: string;
-    id: number; // ⚠️ Asegurate que exista un ID único del proveedor
-  };
-  tipo_moneda?: {
-    descripcion: string;
-    simbolo: string;
-  };
-};
 
-
-export interface Origenes {
-  id: number;
-  descripcion: string;
-}
-
-type SolicitudCompra = {
-  id: number;
-  origen?: Origenes;
-  descripcion: string;
-  estado: string;
-  created_at: string;
-  updated_at: string;
-  ordenes_cotizacion?: OrdenCotizacion[];
-};
 
 type PageProps = {
-  solicitudesComprasListado: SolicitudCompra[];
+  ordenesComprasListado: OrdenCompra[];
 };
 
 type CotizacionOrdenesListadoProps = {
   onSelectionChange: (ids: number[]) => void;
 };
 
-export default function CotizacionOrdenesListado({ onSelectionChange }: CotizacionOrdenesListadoProps) {
+export default function ComprasOrdenesListado({ onSelectionChange }: CotizacionOrdenesListadoProps) {
 
-    const { props: { solicitudesComprasListado } } = usePage<PageProps & { auth: any }>();
+    const { props: { ordenesComprasListado } } = usePage<PageProps & { auth: any }>();
     const [expanded, setExpanded] = useState<number | null>(null);
     const [selectedOrderIds, setSelectedOrderIds] = useState<number[]>([]);
     const [selectedProveedorId, setSelectedProveedorId] = useState<number | null>(null);
     const [selectedProveedorNombre, setSelectedProveedorNombre] = useState<string | null>(null);
+
+
 
     const toggleExpand = (id: number) => {
         setExpanded(expanded === id ? null : id);
@@ -124,7 +109,7 @@ export default function CotizacionOrdenesListado({ onSelectionChange }: Cotizaci
         })
     }
 
-    const toggleSelectOrder = (orden: OrdenCotizacion) => {
+    const toggleSelectOrder = (orden: OrdenCompra) => {
     const proveedorId = orden.proveedor?.id;
     const proveedorNombre = orden.proveedor?.razon_social + ' ' + orden.proveedor?.nombre_fantasia;
 
@@ -173,38 +158,39 @@ export default function CotizacionOrdenesListado({ onSelectionChange }: Cotizaci
       )}
 
     <Table>
-      <TableCaption>Lista de Solicitudes de Compra</TableCaption>
+      <TableCaption>Lista de Ordenes de Compra</TableCaption>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[100px]">N° Solicitud</TableHead>
-          <TableHead>Origen</TableHead>
-          <TableHead>Descripción</TableHead>
+          <TableHead className="w-[100px]">N° Orden</TableHead>
+          <TableHead>Proveedor</TableHead>
+          <TableHead>Almacen Destino</TableHead>
           <TableHead>Estado</TableHead>
           <TableHead>Fecha</TableHead>
+          <TableHead>Acciones</TableHead>
         </TableRow>
       </TableHeader>
 
       <TableBody>
-        {solicitudesComprasListado.map((solicitud) => (
+        {ordenesComprasListado.map((orden) => (
           <>
             <TableRow
-              key={solicitud.id}
+              key={orden.id}
               className="cursor-pointer hover:bg-gray-50"
               onClick={() => {
-                if (solicitud.ordenes_cotizacion?.length) {
-                  toggleExpand(solicitud.id);
+                if (orden.detalles?.length) {
+                  toggleExpand(orden.id);
                 }
               }}
             >
               <TableCell>
                 <ContextMenu>
                             <ContextMenuTrigger className="w-full p-2 border rounded text-center">
-                                S{solicitud.id}
+                                C{orden.id}
                             </ContextMenuTrigger>
 
                                 <ContextMenuContent>
-                                    {solicitud.estado === 'Pendiente' ? (
-                                    <ContextMenuItem onClick={() => handleAceptarSolicitud(solicitud.id)}>
+                                    {orden.estado === 'Pendiente' ? (
+                                    <ContextMenuItem onClick={() => handleAceptarSolicitud(orden.id)}>
                                         Aceptar Solicitud
                                     </ContextMenuItem>
                                     ):(
@@ -212,8 +198,8 @@ export default function CotizacionOrdenesListado({ onSelectionChange }: Cotizaci
                                         Aceptar Solicitud
                                     </ContextMenuItem>
                                     )}
-                                    {solicitud.estado === 'Aceptada' ? (
-                                    <ContextMenuItem onClick={() => handleRechazarSolicitud(solicitud.id)}>
+                                    {orden.estado === 'Aceptada' ? (
+                                    <ContextMenuItem onClick={() => handleRechazarSolicitud(orden.id)}>
                                         Rechazar Solicitud
                                     </ContextMenuItem>
                                     ):(
@@ -222,8 +208,8 @@ export default function CotizacionOrdenesListado({ onSelectionChange }: Cotizaci
                                     </ContextMenuItem>
                                     )}
                                     <ContextMenuSeparator />
-                                    {(solicitud.estado === 'Pendiente' || solicitud.estado === 'Aceptada') ? (
-                                    <ContextMenuItem onClick={() => handleAgregarOrden(solicitud.id)}>
+                                    {(orden.estado === 'Pendiente' || orden.estado === 'Aceptada') ? (
+                                    <ContextMenuItem onClick={() => handleAgregarOrden(orden.id)}>
                                         Agregar Orden
                                     </ContextMenuItem>
                                     ):(
@@ -232,9 +218,9 @@ export default function CotizacionOrdenesListado({ onSelectionChange }: Cotizaci
                                     </ContextMenuItem>
                                     )}
                                     <ContextMenuSeparator />
-                                    {(solicitud.ordenes_cotizacion?.length ?? 0) > 0 ? (
+                                    {(orden.detalles?.length ?? 0) > 0 ? (
                                     <ContextMenuItem >
-                                        {expanded === solicitud.id ? 'Cerrar' : 'Ver Órdenes'}
+                                        {expanded === orden.id ? 'Cerrar' : 'Ver Órdenes'}
                                     </ContextMenuItem>
                                     ):(
                                     <ContextMenuItem disabled>
@@ -243,82 +229,73 @@ export default function CotizacionOrdenesListado({ onSelectionChange }: Cotizaci
                                     )}
                                 </ContextMenuContent>
                         </ContextMenu>
-              </TableCell>
-              <TableCell>{solicitud.origen?.descripcion}</TableCell>
-              <TableCell>{solicitud.descripcion}</TableCell>
-              <TableCell className={
-                        solicitud.estado === 'Aceptada'
+                </TableCell>
+                <TableCell>{orden.proveedor?.razon_social}</TableCell>
+                <TableCell>{orden.almacen_destino?.nombre}</TableCell>
+                <TableCell className={
+                        orden.estado === 'Aceptada'
                             ? 'text-green-600'
-                            : solicitud.estado === 'Pendiente'
+                            : orden.estado === 'Pendiente'
                             ? 'text-yellow-600'
-                            : solicitud.estado === 'Rechazada'
+                            : orden.estado === 'Rechazada'
                             ? 'text-red-600'
                             : ''
-                        }>{solicitud.estado}
-                    </TableCell>
-              <TableCell>
-                {new Date(solicitud.created_at).toLocaleDateString('es-AR')}
-              </TableCell>
-            </TableRow>
+                        }>{orden.estado}
 
-            {expanded === solicitud.id && (
-              <TableRow className="bg-gray-50">
-                <TableCell colSpan={5}>
-                  <Table className="w-full border border-gray-200 rounded-md mt-2">
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>✔️</TableHead>
-                        <TableHead># Orden</TableHead>
-                        <TableHead>Proveedor</TableHead>
-                        <TableHead>Moneda</TableHead>
-                        <TableHead>Estado</TableHead>
-                            <TableHead>Acciones</TableHead>
-                      </TableRow>
-                    </TableHeader>
+                </TableCell>
+                <TableCell>
+                    {new Date(orden.fecha_creacion).toLocaleDateString('es-AR')}
+                </TableCell>
 
-                    <TableBody>
-                      {solicitud.ordenes_cotizacion?.length ? (
-                        solicitud.ordenes_cotizacion.map((orden) => (
-
-                          <TableRow key={orden.id}>
-                            <TableCell>
-                                {!orden.ordenes_compra?.[0]?.id && orden.estado === 'Confirmada' ? (
-                              <Checkbox
-                                checked={selectedOrderIds.includes(orden.id)}
-                                onCheckedChange={() => toggleSelectOrder(orden)}
-                              />
-                            ):orden.ordenes_compra?.[0]?.id ? (
-                                    <div
-                                        className="text-red-600"
-                                    >
-                                        Orden de compra N° {orden.ordenes_compra?.[0]?.id}
-                                    </div>
-                            ):(
-                                <div className="text-red-600"></div>
-                            )}
-                            </TableCell>
-                            <TableCell>P{orden.id}</TableCell>
-                            <TableCell>{orden.proveedor?.razon_social || 'Sin proveedor'}</TableCell>
-                            <TableCell>{orden.tipo_moneda?.simbolo || '-'}</TableCell>
-                            <TableCell>{orden.estado}</TableCell>
                             <TableCell>
                                 <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={(e) => {
                                     e.stopPropagation();
-                                    router.visit(`/compras/cotizaciones-ordenes/${solicitud.id}/${orden.id}`);
+                                    router.visit(`/compras/ordenes-compras/${orden.id}`);
                                     }}
                                 >
-                                    Ver Cotización
+                                    Ver Orden de Compra
                                 </Button>
                             </TableCell>
+            </TableRow>
+
+            {expanded === orden.id && (
+              <TableRow className="bg-gray-50">
+                <TableCell colSpan={6}>
+                  <Table className="w-full border border-gray-200 rounded-md mt-2">
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead># Producto</TableHead>
+                            <TableHead>Producto</TableHead>
+                            <TableHead>Descripción</TableHead>
+
+                            <TableHead>Cantidad</TableHead>
+
+                            <TableHead>Importe</TableHead>
+
+                        </TableRow>
+                    </TableHeader>
+
+                    <TableBody>
+                      {orden.detalles?.length ? (
+                        orden.detalles.map((detalle) => (
+
+                          <TableRow key={detalle.id}>
+
+                            <TableCell>{detalle.id}</TableCell>
+                            <TableCell>{detalle.producto?.nombre}</TableCell>
+                            <TableCell>{detalle.descripcion}</TableCell>
+                            <TableCell>{detalle.cantidad}</TableCell>
+                            <TableCell>{detalle.importe}</TableCell>
+
                           </TableRow>
                         ))
                       ) : (
                         <TableRow>
                           <TableCell colSpan={5} className="text-center">
-                            No hay órdenes de cotización.
+                            No hay órdenes de Compra.
                           </TableCell>
                         </TableRow>
                       )}

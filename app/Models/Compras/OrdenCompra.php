@@ -4,20 +4,26 @@ namespace App\Models\Compras;
 
 use App\Models\Almacenes\Almacen;
 use App\Models\Compras\OrdenCotizacion\OrdenCotizacion;
-
+use App\Models\General\TipoMoneda;
+use App\Models\Inventario\Productos\Producto;
+use App\Models\Padron\Proveedor\Proveedor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class OrdenCompra extends Model
 {
-
+    protected $table = 'orden_compras';
     use HasFactory;
 
     public $timestamps = false;
 
     protected $fillable = [
         'proveedor_id',
+        'moneda_id',
         'almacen_destino_id',
+        'entrega_esperada',
+        'entregar_a',
+        'observaciones',
         'estado',
         'fecha_creacion',
         'usuario_creacion',
@@ -30,22 +36,46 @@ class OrdenCompra extends Model
         'fecha_actualizacion' => 'datetime',
     ];
 
-      public function almacenDestino()
+    public function almacenDestino()
     {
         return $this->belongsTo(Almacen::class, 'almacen_destino_id');
     }
 
     public function detalles()
     {
-        return $this->hasMany(OrdenCompraDetalle::class, 'orden_compra_id');
+        return $this->hasMany(OrdenCompraDetalle::class, 'orden_compras_id');
     }
+
     public function ordenesCotizacion()
     {
         return $this->belongsToMany(
             OrdenCotizacion::class,
             'orden_compra_orden_cotizaciones',
-            'orden_compra_id',
-            'orden_cotizacion_id'
+            'orden_compras_id',
+            'orden_cotizaciones_id'
         );
     }
+
+    public function proveedor()
+    {
+        return $this->belongsTo(Proveedor::class, 'proveedor_id');
+    }
+
+    public function producto()
+    {
+        return $this->belongsTo(Producto::class, 'producto_id');
+    }
+
+    // Relación con el almacen que creó la orden
+    public function almacen()
+    {
+        return $this->belongsTo(Almacen::class, 'almacen_destino_id');
+    }
+
+    public function tipoMoneda()
+    {
+        return $this->belongsTo(TipoMoneda::class, 'moneda_id');
+    }
+
+
 }

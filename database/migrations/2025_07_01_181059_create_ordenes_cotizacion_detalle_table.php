@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orden_cotizaciones_detalle', function (Blueprint $table) {
+        Schema::create('orden_cotizaciones_detalles', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('orden_cotizaciones_id');
             $table->unsignedBigInteger('producto_id');
+            $table->date('entrega_esperada')->nullable();
             $table->string('descripcion');
             $table->string('codigo_barras');
             $table->string('referencia');

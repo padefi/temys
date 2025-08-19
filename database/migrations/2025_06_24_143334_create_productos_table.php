@@ -23,16 +23,16 @@ return new class extends Migration
             $table->decimal('volumen');
             $table->decimal('profundidad');
             $table->string('cod_barras');
-            $table->string('es_inventario');
+            $table->boolean('es_inventario');
             $table->boolean('es_patrimonio');
             $table->string('referencia');
             $table->timestamp('fecha_creacion');
             $table->unsignedBigInteger('usuario_creacion');
             $table->dateTime('fecha_actualizacion');
             $table->unsignedBigInteger('usuario_actualizacion')->nullable();
-            
 
-            
+
+
              //Relaciones
             $table->foreign('modelo_id')->references('id')->on('producto_modelos');
             $table->foreign('subcategoria_id')->references('id')->on('producto_subcategorias');

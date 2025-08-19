@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('orden_compra_orden_cotizaciones', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('orden_compra_id');
-            $table->unsignedBigInteger('orden_cotizacion_id');
+            $table->unsignedBigInteger('orden_compras_id');
+            $table->unsignedBigInteger('orden_cotizaciones_id');
             $table->timestamps();
 
-            $table->foreign('orden_compra_id')->references('id')->on('orden_compras')->onDelete('cascade');
-            $table->foreign('orden_cotizacion_id')->references('id')->on('orden_cotizaciones')->onDelete('cascade');
+            $table->foreign('orden_compras_id')->references('id')->on('orden_compras')->onDelete('cascade');
+            $table->foreign('orden_cotizaciones_id')->references('id')->on('orden_cotizaciones')->onDelete('cascade');
 
 
-            $table->unique(['orden_compra_id', 'orden_cotizacion_id'], 'compra_orden_unique');
+            $table->unique(['orden_compras_id', 'orden_cotizaciones_id'], 'compra_orden_unique');
         });
     }
 
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('orden_compra_orden_cotizaciones');
+        Schema::dropIfExists('orden_compras_orden_cotizaciones');
     }
 };
