@@ -16,13 +16,11 @@ interface RolePopoverProps {
   loadingRole: boolean;
   onClick: () => void;
   onRoleChange: (option: string) => void;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
 }
 
-export function RolePopover({ dataRole, loadingRole, onClick, onRoleChange, open, onOpenChange }: PropsWithChildren<RolePopoverProps>) {   
+export function RolePopover({ dataRole, loadingRole, onClick, onRoleChange }: PropsWithChildren<RolePopoverProps>) {
   return (
-    <PopoverDialog modal={false} open={open} onOpenChange={onOpenChange}>
+    <PopoverDialog modal={false}>
       <PopoverDialogTrigger asChild>
         <Button
           className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"

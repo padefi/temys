@@ -49,7 +49,6 @@ export function Modulos({ branchSelected, branchSelectedIsAssigned, setModuleSel
     const [dataPermission, setDataPermission] = useState<{ sectionName: string; option: string, idOption: number, permissionAssigned: [] }>({ sectionName: '', option: '', idOption: 0, permissionAssigned: [] });
     const [dataRole, setDataRole] = useState<{ sectionName: string; option: string, idOption: number, roles: Role[], roleAssigned: string }>({ sectionName: '', option: '', idOption: 0, roles: [], roleAssigned: '' });
     const [roles, setRoles] = useState([]);
-    const [open, setOpen] = useState(false);
 
     const fetchRoles = async () => {
         try {
@@ -102,8 +101,6 @@ export function Modulos({ branchSelected, branchSelectedIsAssigned, setModuleSel
                         : modulo
                 );
             });
-
-            setOpen(false);
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) toast.error(error.response.data.message || "Error desconocido del servidor");
             else toast.error("Error al asignar el rol al módulo");
@@ -318,15 +315,12 @@ export function Modulos({ branchSelected, branchSelectedIsAssigned, setModuleSel
                                                     <RolePopover dataRole={dataRole}
                                                         loadingRole={loadingRole}
                                                         onClick={() => {
-                                                            setOpen(true);
                                                             setLoadingRole(true);
                                                             rolesPopover(modulo.name, modulo.id);
                                                         }}
                                                         onRoleChange={(option) => {
                                                             toggleRoleAssignment(modulo.id, option);
                                                         }}
-                                                        open={open}
-                                                        onOpenChange={setOpen}
                                                     />
 
                                                     {!modulo.has_menus && (
