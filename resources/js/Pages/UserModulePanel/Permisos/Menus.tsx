@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Skeleton } from "@/Components/ui/skeleton"
 import { Link } from "@inertiajs/react";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/Components/ui/button";
@@ -11,6 +10,8 @@ import { PermisosPopover } from "./PermisosPopover";
 import { RemovePopover } from "./RemovePopover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
+import { useBranchConfig } from "@/contexts/active-branch";
+import { DialogSkeleton } from "../../../Components/DialogSkeleton";
 import axios from "axios";
 
 interface Menu {
@@ -30,6 +31,7 @@ interface MenusProps {
 }
 
 export function Menus({ moduleSelected, moduleSelectedIsAssigned, moduleSelectedRoleModule, setMenuSelected, setMenuSelectedIsAssigned, user }: MenusProps) {
+    const { activeBranch } = useBranchConfig();
     const [dataMenus, setDataMenus] = useState<Menu[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadingPermissions, setLoadingPermissions] = useState(true);
@@ -38,7 +40,7 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, moduleSelected
 
     const seccion = async (option: string, idOption: number) => {
         try {
-            const response = await fetch(`/user-model-panel/managed-permissions-menus-by-user/${user}/${idOption}`);
+            const response = await fetch(`/user-model-panel/managed-permissions-menus-by-user/${user}/${activeBranch}/${idOption}`);
             const data = await response.json();
 
             setDataPermission({ sectionName: 'Menu', option, idOption, permissionAssigned: data });
@@ -53,6 +55,7 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, moduleSelected
         try {
             const response = await axios.post('/user-model-panel/managed-permissions-menus-by-user/', {
                 user,
+                idBranch: activeBranch,
                 idMenu,
                 permission
             })
@@ -92,7 +95,7 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, moduleSelected
         }
 
         try {
-            const response = await fetch(`/user-model-panel/show-menus-by-user/${user}/${moduleSelected}`);
+            const response = await fetch(`/user-model-panel/show-menus-by-user/${user}/${activeBranch}/${moduleSelected}`);
             const data = await response.json();
             setDataMenus(data.data);
         } catch (error) {
@@ -110,6 +113,7 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, moduleSelected
         try {
             const response = await axios.post('/user-model-panel/managed-menus-by-user/', {
                 user,
+                idBranch: activeBranch,
                 idModule,
                 idMenu
             });
@@ -158,10 +162,7 @@ export function Menus({ moduleSelected, moduleSelectedIsAssigned, moduleSelected
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.25, ease: "easeInOut" }}
                 >
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[200px]" />
+                    <DialogSkeleton rowCount={4} className="w-2xs" />
                 </motion.div>
             ) : (
                 <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-19rem)] lg:h-[calc(100vh-23rem)] xl:h-[calc(100vh-24rem)] 2xl:h-[calc(100vh-39rem)] w-[-webkit-fill-available]">

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Skeleton } from "@/Components/ui/skeleton"
 import { Button } from "@/Components/ui/button";
 import { ScrollArea } from "@/Components/ui/scroll-area"
 import { PlusCircle } from "lucide-react";
@@ -9,6 +8,8 @@ import { PermisosPopover } from "./PermisosPopover";
 import { RemovePopover } from "./RemovePopover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
+import { useBranchConfig } from "@/contexts/active-branch";
+import { DialogSkeleton } from "../../../Components/DialogSkeleton";
 import axios from "axios";
 
 interface Submenu {
@@ -27,6 +28,7 @@ interface SubemnusProps {
 }
 
 export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelectedRoleModule, menuSelected, menuSelectedIsAssigned, user }: SubemnusProps) {
+    const { activeBranch } = useBranchConfig();
     const [dataSubmenus, setDataSubmenus] = useState<Submenu[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadingPermissions, setLoadingPermissions] = useState(true);
@@ -34,7 +36,7 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelec
 
     const seccion = async (option: string, idOption: number) => {
         try {
-            const response = await fetch(`/user-model-panel/managed-permissions-submenus-by-user/${user}/${idOption}`);
+            const response = await fetch(`/user-model-panel/managed-permissions-submenus-by-user/${user}/${activeBranch}/${idOption}`);
             const data = await response.json();
 
             setDataPermission({ sectionName: 'Submenu', option, idOption, permissionAssigned: data });
@@ -49,6 +51,7 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelec
         try {
             const response = await axios.post('/user-model-panel/managed-permissions-submenus-by-user/', {
                 user,
+                idBranch: activeBranch,
                 idSubmenu,
                 permission
             })
@@ -87,7 +90,7 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelec
         }
 
         try {
-            const response = await fetch(`/user-model-panel/show-submenus-by-user/${user}/${menuSelected}`);
+            const response = await fetch(`/user-model-panel/show-submenus-by-user/${user}/${activeBranch}/${menuSelected}`);
             const data = await response.json();
             setDataSubmenus(data.data);
         } catch (error) {
@@ -105,6 +108,7 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelec
         try {
             const response = await axios.post('/user-model-panel/managed-submenus-by-user/', {
                 user,
+                idBranch: activeBranch,
                 idModule,
                 idMenu,
                 idSubmenu
@@ -146,10 +150,7 @@ export function Submenus({ moduleSelected, moduleSelectedIsAssigned, moduleSelec
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.25, ease: "easeInOut" }}
                 >
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[200px]" />
+                    <DialogSkeleton rowCount={4} className="w-2xs" />
                 </motion.div>
             ) : (
                 <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-19rem)] lg:h-[calc(100vh-23rem)] xl:h-[calc(100vh-24rem)] 2xl:h-[calc(100vh-39rem)] w-[-webkit-fill-available]">

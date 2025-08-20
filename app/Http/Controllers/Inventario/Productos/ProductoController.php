@@ -43,7 +43,7 @@ class ProductoController extends Controller
             'es_inventario' => 'boolean',
             'es_patrimonio' => 'boolean',
             'referencia' => 'nullable|string|max:100',
-        ]
+        ]);
                                    
         Producto::create($data);
 

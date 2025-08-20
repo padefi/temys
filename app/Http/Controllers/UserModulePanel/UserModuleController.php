@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ControlAcceso\ModuleResource;
 use App\Http\Resources\UserModulePanel\RoleModuleResource;
 use App\Http\Resources\UserModulePanel\UserModuleResource;
+use App\Models\ControlAcceso\Branch;
 use App\Models\ControlAcceso\Module;
 use App\Models\ControlAcceso\RoleModule;
 use App\Models\ControlAcceso\User;
@@ -88,27 +89,36 @@ class UserModuleController extends Controller
         return RoleModuleResource::collection($moduleRoles);
     }
 
-    public function showModuleByUser(User $user, Module $module)
+    public function showModuleByUser(User $user, Branch $branch, Module $module)
     {
         $modules = Module::where('modules.id', $module->id)
-            ->leftJoin('model_has_modules', function ($join) use ($user)
+            ->leftJoin('model_has_modules', function ($join) use ($user, $branch)
             {
                 $join->on('modules.id', '=', 'model_has_modules.module_id')
-                    ->where('model_has_modules.model_id', '=', $user->id);
+                    ->where([
+                        ['model_has_modules.model_id', '=', $user->id],
+                        ['model_has_modules.branch_id', '=', $branch->id]
+                    ]);
             })
             ->join('role_has_modules', 'modules.id', '=', 'role_has_modules.module_id')
             ->where('role_has_modules.role_id', $user->userRoles()->pluck('role_id')->first())
-            ->select('modules.*', DB::raw('IF(model_has_modules.module_id IS NOT NULL, true, false) as is_assigned')) // Verifica si el módulo estaba asignado al usuario
+            ->select('modules.*', DB::raw('(model_has_modules.module_id IS NOT NULL AND model_has_modules.branch_id IS NOT NULL) as is_assigned')) // Verifica si el módulo está asignado al usuario
             ->orderBy('modules.name', 'asc')
             ->get();
 
         // Agrega el campo has_menus a cada módulo
-        $modules->map(function ($module) use ($user)
+        $modules->map(function ($module) use ($user, $branch)
         {
             $module->has_menus = $module->menus()->exists();
-            $module->has_role_module = $user->modulesRole()->where('modules.id', $module->id)->exists();
+            $module->has_role_module = $user->modulesRole()->where([
+                ['modules.id', '=', $module->id],
+                ['branch_id', '=', $branch->id],
+            ])->exists();
 
-            $roleModuleId = $user->modulesRole()->where('modules.id', $module->id)->pluck('role_id')->first();
+            $roleModuleId = $user->modulesRole()->where([
+                ['modules.id', '=', $module->id],
+                ['branch_id', '=', $branch->id],
+            ])->pluck('role_id')->first();
             $module->role_module = $roleModuleId ? RoleModule::findById($roleModuleId)?->name : null;
             return $module;
         });

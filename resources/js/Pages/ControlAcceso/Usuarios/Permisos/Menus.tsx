@@ -12,6 +12,7 @@ import { RemovePopover } from "./RemovePopover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
 import axios from "axios";
+import { DialogSkeleton } from "@/Components/DialogSkeleton";
 
 interface Menu {
     id: number;
@@ -163,10 +164,7 @@ export function Menus({ branchSelected, branchSelectedIsAssigned, moduleSelected
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.25, ease: "easeInOut" }}
                 >
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[200px]" />
+                    <DialogSkeleton rowCount={4} className="w-100" />
                 </motion.div>
             ) : (
                 <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-19rem)] lg:h-[calc(100vh-23rem)] xl:h-[calc(100vh-24rem)] 2xl:h-[calc(100vh-39rem)] w-[-webkit-fill-available]">
