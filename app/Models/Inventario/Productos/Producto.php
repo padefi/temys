@@ -2,10 +2,8 @@
 
 namespace App\Models\Inventario\Productos;
 
-
-
+use App\Models\Compras\OrdenCompraDetalle;
 use App\Models\Inventario\InventarioMovimientoStock;
-
 use App\Models\Compras\OrdenCotizacion\OrdenCotizacionDetalle;
 use App\Models\Inventario\InventarioAjusteDetalle;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -84,6 +82,11 @@ class Producto extends Model
     public function cotizacionesOrdenesDetalle()
     {
         return $this->belongsTo(OrdenCotizacionDetalle::class, 'id');
+    }
+
+    public function ordenCompraDetalle()
+    {
+        return $this->belongsTo(OrdenCompraDetalle::class, 'id');
     }
 
 

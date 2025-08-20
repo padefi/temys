@@ -14,7 +14,7 @@ class SolicitudCompraOrdenCotizacion extends Model
 
     protected $fillable = [
         'solicitud_compra_id',
-        'orden_cotizacion_id',
+        'orden_cotizaciones_id',
     ];
 
 
@@ -25,6 +25,6 @@ class SolicitudCompraOrdenCotizacion extends Model
 
     public function ordenCotizacion()
     {
-        return $this->belongsTo(OrdenCotizacion::class, 'orden_cotizacion_id');
+        return $this->belongsTo(OrdenCotizacion::class, 'orden_cotizaciones_id');
     }
 }

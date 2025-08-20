@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react'
+import { Terminal } from 'lucide-react'
 import { Head, usePage, router } from '@inertiajs/react'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
 import { PageProps as InertiaPageProps } from '@inertiajs/core'
@@ -15,8 +16,7 @@ import { ProductosDisponibles } from '@/types/Producto'
 import { Textarea } from "@/Components/ui/textarea"
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert"
 
-import { CotizacionOrden } from '@/types/CotizacionOrden'
-import { SolicitudCompra } from '@/types/SolicitudCompra'
+import { OrdenesCompra } from '@/types/OrdenCompra'
 import { toast } from 'sonner'
 import { Almacen } from '@/types/Almacen'
 
@@ -24,60 +24,58 @@ type PageProps = InertiaPageProps & {
   auth: { user: { id: number; name: string; email: string } }
   proveedores: { data: Proveedor[] }
   tipoMonedas: TipoMoneda[]
-  almacen: Almacen[]
   productos: ProductosDisponibles[]
+  almacenDestino: Almacen[]
   impuestos: Impuesto[]
-  solicitudCompraElegida?: SolicitudCompra
+  ordenCompraElegida?: OrdenesCompra
 }
 
 
 export default function Index() {
 
-  const { proveedores: { data: proveedores }, auth, tipoMonedas,almacen,solicitudCompraElegida } = usePage<PageProps>().props
+    const { proveedores: { data: proveedores }, auth, tipoMonedas, almacenDestino, ordenCompraElegida } = usePage<PageProps>().props
 
+    const ordenCompra = ordenCompraElegida;
 
-    const solicitudCompra = solicitudCompraElegida
-    const ordenCotizacion = solicitudCompra?.ordenes_cotizacion
-    console.log(ordenCotizacion?.[0]?.ordenes_compra)
-    const [busqueda, setBusqueda] = useState( ordenCotizacion?.[0]?.proveedor?.nombre_fantasia || '')
+    const [busqueda, setBusqueda] = useState( ordenCompra?.proveedor?.nombre_fantasia || '')
     const [mostrarLista, setMostrarLista] = useState(false)
-    const [busquedaMoneda, setBusquedaMoneda] = useState(ordenCotizacion?.[0]?.tipo_moneda?.descripcion || '')
+    const [busquedaMoneda, setBusquedaMoneda] = useState(ordenCompra?.tipo_moneda?.descripcion || '')
     const [busquedaMonedaId, setBusquedaMonedaId] = useState<number | null>(
-        ordenCotizacion?.[0]?.tipo_moneda?.id || null
-        )
-
-    const [almacenId, setAlmacenId] = useState<number | null>(ordenCotizacion?.[0].almacen?.id || null)
-    const [almacenNombre, setAlmacenNombre] = useState(ordenCotizacion?.[0].almacen?.nombre || '')
-    const [almacenInvalida, setAlmacenInvalida] = useState(false)
-
+    ordenCompra?.tipo_moneda?.id || null
+    )
     const [monedaInvalida, setMonedaInvalida] = useState(false)
-    const [cotizar_antes_de, setCotizar_antes_de] = useState(ordenCotizacion?.[0]?.cotizar_antes_de ? new Date(ordenCotizacion?.[0]?.cotizar_antes_de).toISOString().slice(0,10) : '')
-    const [entrega_esperada, setEntregaEsperada] = useState(ordenCotizacion?.[0]?.entrega_esperada ? new Date(ordenCotizacion?.[0]?.entrega_esperada).toISOString().slice(0,10) : '')
+    const [entrega_esperada, setEntregaEsperada] = useState(ordenCompra?.entrega_esperada ? new Date(ordenCompra?.entrega_esperada).toISOString().slice(0,10) : '')
 
-    const [observaciones, setObservaciones] = useState(ordenCotizacion?.[0]?.observaciones || '')
+    const [almacenId, setAlmacenId] = useState<number | null>(ordenCompra?.almacen?.id || null)
+    const [almacenNombre, setAlmacenNombre] = useState(ordenCompra?.almacen?.nombre || '')
+
+    const [almacenInvalida, setAlmacenInvalida] = useState(false)
+    const [observaciones, setObservaciones] = useState(ordenCompra?.observaciones || '')
     const [productos, setProductos] = useState<any[]>([])
     const [productosValidos, setProductosValidos] = useState(false)
 
+    const [estadoOrden, setEstadoOrden] = useState(ordenCompra?.estado || '');
 
 
-  //////////Filtro de Proveedores
-  const proveedoresFiltrados = useMemo(() =>
-    busqueda.length >= 3
-      ? proveedores.filter(p =>
-          p.nombre_fantasia.toLowerCase().includes(busqueda.toLowerCase()) ||
-          p.razon_social.toLowerCase().includes(busqueda.toLowerCase())
-        )
-      : [], [busqueda, proveedores]
-  )
 
-  ////////////Muestra Mensaje de que el Proveedor no Existe
-  const mostrarMensaje = busqueda.length >= 3 && proveedoresFiltrados.length === 0
+    //////////Filtro de Proveedores
+    const proveedoresFiltrados = useMemo(() =>
+        busqueda.length >= 3
+        ? proveedores.filter(p =>
+            p.nombre_fantasia.toLowerCase().includes(busqueda.toLowerCase()) ||
+            p.razon_social.toLowerCase().includes(busqueda.toLowerCase())
+            )
+        : [], [busqueda, proveedores]
+    )
 
-  ///////////Handle de seleccion del proveedor
-  const handleSeleccion = (nombre: string) => {
-    setBusqueda(nombre)
-    setMostrarLista(false)
-  }
+    ////////////Muestra Mensaje de que el Proveedor no Existe
+    const mostrarMensaje = busqueda.length >= 3 && proveedoresFiltrados.length === 0
+
+    ///////////Handle de seleccion del proveedor
+    const handleSeleccion = (nombre: string) => {
+        setBusqueda(nombre)
+        setMostrarLista(false)
+    }
 
     ////////////Validacion de Moneda
     const validarMoneda = () => {
@@ -89,83 +87,85 @@ export default function Index() {
 
     ////////////Validacion de Almacen
     const validarAlmacen = () => {
-        const existe = almacen?.some(
+    const existe = almacenDestino.some(
         a => `${a.nombre} - ${a.tipo}`.toLowerCase() === almacenNombre.toLowerCase()
     )
     setAlmacenInvalida(!existe)
     }
 
-  /////////////Validacion de Campos Obligatorios
-  const formularioCompleto =
-    busqueda.trim() !== '' &&
-    busquedaMoneda.trim() !== '' &&
-    !monedaInvalida &&
-    almacenNombre.trim() !== '' &&
-    !almacenInvalida &&
-    cotizar_antes_de !== '' &&
-    entrega_esperada !== '' &&
-    productosValidos
 
-  const totalCampos = 5
-  const completados = [
-    busqueda.trim(),
-    busquedaMoneda.trim() !== '' &&
-    !monedaInvalida &&
-    almacenNombre.trim() !== '' &&
-    !almacenInvalida,
-    cotizar_antes_de,
-    entrega_esperada,
-    productosValidos,
-    //observaciones.trim()
-  ].filter(Boolean).length
-  const porcentaje = (completados / totalCampos) * 100
+    /////////////Validacion de Campos Obligatorios
+    const formularioCompleto =
+        busqueda.trim() !== '' &&
+        busquedaMoneda.trim() !== '' &&
+        !monedaInvalida &&
+        almacenNombre.trim() !== '' &&
+        !almacenInvalida &&
+        entrega_esperada !== '' &&
+        productosValidos
+
+    const totalCampos = 4
+    const completados = [
+        busqueda.trim(),
+        busquedaMoneda.trim() !== '' &&
+        !monedaInvalida &&
+        almacenNombre.trim() !== '' &&
+        !almacenInvalida,
+        entrega_esperada,
+        productosValidos,
+        //observaciones.trim()
+    ].filter(Boolean).length
+
+    const porcentaje = (completados / totalCampos) * 100
 
   ///////////Handle de Envio de Cotizacion
-  const enviarCotizacion = () => {
-    router.post('/compras/cotizaciones-ordenes/', {
-      solicitudCompra: solicitudCompra?.id,
-      ordenCotizacion: ordenCotizacion?.[0]?.id,
-      proveedor: busqueda,
-      moneda: busquedaMoneda,
-      cotizar_antes_de: cotizar_antes_de,
-      entrega_esperada: entrega_esperada,
-      observaciones,
-      productos,
-      usuario_id: auth.user.id,
-    }, {
-        onSuccess: () => {
+  const cancelaOrdenCompra = () => {
+    if (!ordenCompra?.id) return;
 
-        router.visit('/compras/cotizaciones-ordenes/');
-        //return redirect()->back()->with('success', 'Orden de cotización guardada.');
+    router.post(
+        '/compras/ordenes-compras/cancelar',
+        { ordenCompra: ordenCompra.id },
+        {
+        onSuccess: () => {
+            toast("Orden de compra cancelada.");
+            setEstadoOrden('Cancelada'); // Actualizamos el estado localmente
         },
         onError: (errors) => {
-        console.log(errors);
-        const mensajes = Object.values(errors).flat().join('\n');
-        toast("Error al generar la cotización", {
-            description: mensajes,
-        });
+            const mensajes = Object.values(errors).flat().join('\n');
+            toast("Error al cancelar la orden de compra: " + mensajes);
         }
-    })
+        }
+    );
+    };
+
+    const generarFactura = () => {
+     /* router.post('/compras/facturas/', {
+        solicitudCompra: solicitudCompra?.id,
+        ordenCotizacion: ordenCotizacion?.[0]?.id,
+        proveedor: busqueda,
+        moneda: busquedaMoneda,
+        entrega_esperada: entrega_esperada,
+        entregar_a,
+      })*/
     }
 
 
-
     /////////////Confirmar Orden Cotizacion
-    const confirmarOrdenCotizacion= () => {
-    router.post('/compras/cotizaciones-ordenes/confirmar', {
-      solicitudCompra: solicitudCompra?.id,
-      ordenCotizacion: ordenCotizacion?.[0]?.id,
+    const confirmarOrdenCompra= () => {
+    router.post('/compras/ordenes-compras/confirmar', {
+      ordenCompra: ordenCompra?.id,
+
       proveedor: busqueda,
-      moneda: busquedaMoneda,
-      cotizar_antes_de: cotizar_antes_de,
+      moneda: busquedaMonedaId,
       entrega_esperada: entrega_esperada,
+      almacen: almacenId,
       observaciones,
       productos,
       usuario_id: auth.user.id,
         }, {
         onSuccess: () => {
 
-        router.visit('/compras/cotizaciones-ordenes/');
+        router.visit('/compras/ordenes-compras/');
         //return redirect()->back()->with('success', 'Orden de cotización guardada.');
         },
         onError: (errors) => {
@@ -180,8 +180,8 @@ export default function Index() {
 
     ///////////Guardar Orden Compra
     const guardar = () => {
-      router.post('/compras/cotizaciones-ordenes/guardar', {
-        ordenCompra: ordenCotizacion?.[0]?.id,
+      router.post('/compras/ordenes-compras/guardar', {
+        ordenCompra: ordenCompra?.id,
         proveedor: busqueda,
         moneda: busquedaMonedaId,
         entrega_esperada: entrega_esperada,
@@ -205,48 +205,36 @@ export default function Index() {
 
 
   return (
-    <AuthenticatedLayout header={<h2 className="text-xl font-semibold">Nueva Cotización</h2>}>
-      <Head title="Nueva Cotización" />
+    <AuthenticatedLayout header={<h2 className="text-xl font-semibold">Nueva Orden de Compra</h2>}>
+      <Head title="Nueva Orden de Compra"></Head>
       <div className="py-12">
         <div className="mx-auto px-10">
         <Button
             variant="outline"
             size="lg"
-            onClick={() => router.visit('/compras/cotizaciones-ordenes')}
+            onClick={() => router.visit('/compras/ordenes-compras')}
         >
             Volver
         </Button>
          <Button
             variant="outline"
             size="lg"
-            disabled={!formularioCompleto || ordenCotizacion?.[0]?.estado === 'Cancelada'}
+            disabled={!formularioCompleto || ordenCompra?.estado === 'Cancelada'}
             onClick={() => guardar()}
         >
             Guardar
         </Button>
         <div className="items-end">
             <div className="flex flex-col items-end">
-                {solicitudCompra?.id ? (
+                {!ordenCompra?.id && (
                     <div>
-                    N° Solicitud : {solicitudCompra?.id}
-                    </div>
-                ) : (
-                    <div>
-                        Solicitud de compra nueva
+                    Orden de Compra Nueva
                     </div>
                 )}
-                {ordenCotizacion?.[0]?.id ? (
-                    <div>
-                    N° Orden : {ordenCotizacion?.[0]?.id}
-                    </div>
-                ) : (
-                    <div>
-                        Orden de cotización nueva
-                    </div>
-                )}
-                {ordenCotizacion?.[0]?.created_at && (
+
+                {ordenCompra?.created_at && (
                 <div className="text-sm text-gray-500">
-                    {new Date(ordenCotizacion?.[0]?.created_at || '').toLocaleDateString('es-AR', {
+                    {new Date(ordenCompra?.created_at || '').toLocaleDateString('es-AR', {
                         day: '2-digit',
                         month: '2-digit',
                         year: 'numeric',
@@ -257,9 +245,9 @@ export default function Index() {
                     }
                 </div>
                 )}
-                {ordenCotizacion?.[0]?.estado && (
+               {estadoOrden && (
                 <div>
-                    Estado : {ordenCotizacion?.[0]?.estado}
+                    Estado : {estadoOrden}
                 </div>
                 )}
             </div>
@@ -322,19 +310,14 @@ export default function Index() {
             </div>
 
             <div>
-              <Label>Cotizar antes de</Label>
-              <Input
-                type="date"
-                value={cotizar_antes_de}
-                onChange={e => setCotizar_antes_de(e.target.value)}
-              />
-              <Label className="mt-4">Entrega Esperada</Label>
+              <Label>Entrega Esperada</Label>
               <Input
                 type="date"
                 value={entrega_esperada}
                 onChange={e => setEntregaEsperada(e.target.value)}
               />
-              <Label className="mt-4 block">Entregar a</Label>
+
+                <Label className="mt-4 block">Entregar a</Label>
                 <Input
                 list="almacenes"
                 onBlur={validarAlmacen}
@@ -342,63 +325,54 @@ export default function Index() {
                 onChange={e => {
                     const valor = e.target.value
                     setAlmacenNombre(valor)
-                    const seleccionado = almacen.find(a => `${a.nombre} - ${a.tipo}` === valor)
+                    const seleccionado = almacenDestino.find(a => `${a.nombre} - ${a.tipo}` === valor)
                     setAlmacenId(seleccionado?.id || null)
                 }}
                 placeholder="Seleccionar almacén"
                 className={almacenInvalida ? 'border-red-500' : ''}
                 />
                 <datalist id="almacenes">
-                {almacen.map(a => (
+                {almacenDestino.map(a => (
                     <option key={a.id} value={`${a.nombre} - ${a.tipo}`} />
                 ))}
                 </datalist>
+
+
             </div>
           </div>
 
-          <div className="mt-6">
-            <CargaProductos setProductosValidos={setProductosValidos} setProductos={setProductos} detalles={ordenCotizacion?.[0]?.detalles}/>
+          <div className="mt-4">
+            <CargaProductos setProductosValidos={setProductosValidos} setProductos={setProductos} detalles={ordenCompra?.detalles}/>
             <Textarea placeholder="Observaciones." value={observaciones} onChange={e => setObservaciones(e.target.value)} />
           </div>
 
           <div className="flex gap-4 mt-6 justify-end">
                 <Button
-                onClick={confirmarOrdenCotizacion}
-                disabled={!formularioCompleto || (ordenCotizacion?.[0]?.estado === 'Confirmada' || ordenCotizacion?.[0]?.estado === 'Rechazada')}
+                onClick={confirmarOrdenCompra}
+                disabled={!formularioCompleto || (ordenCompra?.estado === 'Confirmada' || ordenCompra?.estado === 'Cancelada')}
                 >
-                    Confirmar Orden de Cotización
+                    Confirmar Orden de Compra
                 </Button>
 
                 <Button
+                className="bg-red-600 hover:bg-red-700 text-white"
                 variant="outline"
-                onClick={enviarCotizacion} disabled={!formularioCompleto || (ordenCotizacion?.[0]?.estado === 'Confirmada' || ordenCotizacion?.[0]?.estado === 'Rechazada')}
+                onClick={cancelaOrdenCompra} disabled={!formularioCompleto || (ordenCompra?.estado === 'Confirmada' || ordenCompra?.estado === 'Cancelada')}
                 >
-                    Enviar Cotización
+                    Cancelar
                 </Button>
-
-            {ordenCotizacion?.[0]?.ordenes_compra?.[0]?.id !== undefined ? (
-
-                <div>
-                    Orden de Compra : {ordenCotizacion?.[0]?.ordenes_compra?.[0]?.id}
-                </div>
-
-            ):(
 
                 <Button
                 variant="success"
-                disabled={!formularioCompleto || (ordenCotizacion?.[0]?.estado === 'Rechazada')}
+                onClick={generarFactura}
+                disabled={!formularioCompleto || (ordenCompra?.estado === 'Cancelada')}
                 >
-                    Generar Orden de Compra
+                    Generar Factura
                 </Button>
-
-            )}
 
           </div>
         </div>
       </div>
-
-
-
 
 
     </AuthenticatedLayout>

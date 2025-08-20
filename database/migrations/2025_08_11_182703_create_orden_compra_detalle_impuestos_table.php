@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orden_cotizaciones_detalles_impuestos', function (Blueprint $table) {
+        Schema::create('orden_compras_detalles_impuestos', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('orden_cotizaciones_detalles_id');
+            $table->unsignedBigInteger('orden_compras_detalles_id');
             $table->unsignedBigInteger('impuesto_id');
             $table->timestamps();
 
-            $table->foreign('orden_cotizaciones_detalles_id', 'ocd_impuestos_detalle_fk')
+            $table->foreign('orden_compras_detalles_id', 'ocompras_impuestos_detalle_fk')
                 ->references('id')
-                ->on('orden_cotizaciones_detalles');
+                ->on('orden_compras_detalles');
             $table->foreign('impuesto_id')->references('id')->on('impuestos');
         });
     }
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('orden_cotizaciones_detalles_impuestos');
+        Schema::dropIfExists('orden_compras_detalles_impuestos');
     }
 };

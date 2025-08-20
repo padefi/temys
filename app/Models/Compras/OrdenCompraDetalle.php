@@ -8,31 +8,38 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrdenCompraDetalle extends Model
 {
+    protected $table = 'orden_compras_detalles';
     use HasFactory;
     public $timestamps = false;
 
-    
+
     protected $fillable = [
-    
-        'orden_compra_id',
+
+        'id',
+        'orden_compras_id',
+        'orden_cotizaciones_id',
         'producto_id',
-        'cantidad_solicitada',
-        'precio',
-        'fecha_creacion',
+        'descripcion',
+        'cantidad',
+        'precio_unitario',
+        'porcentaje_descuento',
+        'importe',
         'usuario_creacion',
         'fecha_actualizacion',
-        'usuario_actualizacion',
+        'created_at',
+        'updated_at'
     ];
 
     protected $casts = [
-        'fecha_creacion' => 'datetime',
-        'fecha_actualizacion' => 'datetime',
-        'precio'=>'float',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'precio_unitario'=>'float',
+        'importe'=>'float',
     ];
 
         public function ordenCompra()
     {
-        return $this->belongsTo(OrdenCompra::class, 'orden_compra_id');
+        return $this->belongsTo(OrdenCompra::class, 'orden_compras_id');
     }
 
     public function producto()

@@ -4,6 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
+
     "content-hash": "1904a53f29e3d36c88f5df54ed7c90b7",
     "packages": [
         {
@@ -1125,6 +1126,7 @@
         },
         {
             "name": "laravel/framework",
+
             "version": "v12.24.0",
             "source": {
                 "type": "git",
@@ -7552,6 +7554,7 @@
         },
         {
             "name": "phpunit/phpunit",
+
             "version": "12.3.5",
             "source": {
                 "type": "git",
@@ -7653,6 +7656,7 @@
                     "type": "tidelift"
                 }
             ],
+
             "time": "2025-08-16T05:20:09+00:00"
         },
         {

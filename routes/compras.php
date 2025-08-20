@@ -3,6 +3,7 @@
 use App\Http\Controllers\Compras\ComprasController;
 use App\Http\Controllers\Compras\Proveedores\ProveedoresController;
 use App\Http\Controllers\Compras\OrdenCotizaciones\OrdenCotizacionesController;
+use App\Http\Controllers\Compras\OrdenCompras\OrdenComprasController;
 use App\Http\Controllers\UserModulePanel\UserModuleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -41,8 +42,12 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
             ->name('cotizacionesCompras.nueva');
 
         // Guardar cotización
-        Route::post('/', [OrdenCotizacionesController::class, 'store'])
+        Route::post('/', [OrdenCotizacionesController::class, 'enviarCotizacion'])
             ->name('cotizacionesOrdenes.store');
+
+       // Confirmar cotización
+        Route::post('/confirmar', [OrdenCotizacionesController::class, 'confirmarCotizacion'])
+            ->name('cotizacionesOrdenes.confirmarCotizacion');
 
         // Mostrar detalle
         Route::get('/{solicitud_id}/{orden_id?}', [OrdenCotizacionesController::class, 'show'])
@@ -59,5 +64,38 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
         ///Generar Orden de compra
         Route::post('/generar-orden-compra', [OrdenCotizacionesController::class, 'generarOrdenCompra'])
             ->name('cotizacionesOrdenes.generarOrdenCompra');
+
+        // Guardar
+        Route::post('/guardar', [OrdenCotizacionesController::class, 'guardar'])
+            ->name('cotizacionesOrdenes.guardar');
+
+    });
+
+
+    Route::middleware(['submenu:ordenesCompras'])->prefix('ordenes-compras')->group(function () {
+        // Listado
+        Route::get('/', [OrdenComprasController::class, 'index'])
+            ->name('ordenesCompras');
+
+        // Formulario para crear
+        Route::get('/nueva', [OrdenComprasController::class, 'nuevaOrdenCompra'])
+            ->name('ordenesCompras.nueva');
+
+        // Guardar orden de compra
+        Route::post('/confirmar', [OrdenComprasController::class, 'confirmarOrdenCompra'])
+            ->name('ordenesCompras.confirmarOrdenCompra');
+
+        // Mostrar detalle
+        Route::get('/{orden_compra_id}', [OrdenComprasController::class, 'show'])
+            ->name('ordenesCompras.show');
+
+        // Guardar
+        Route::post('/guardar', [OrdenComprasController::class, 'guardar'])
+            ->name('ordenesCompras.guardar');
+
+        // Cancelar
+        Route::post('/cancelar', [OrdenComprasController::class, 'cancelar'])
+            ->name('ordenesCompras.cancelar');
+
     });
 });

@@ -42,7 +42,7 @@ class SolicitudCompra extends Model
             OrdenCotizacion::class,
             'solicitud_compra_orden_cotizaciones',
             'solicitud_compra_id',
-            'orden_cotizacion_id'
+            'orden_cotizaciones_id'
         );
     }
 

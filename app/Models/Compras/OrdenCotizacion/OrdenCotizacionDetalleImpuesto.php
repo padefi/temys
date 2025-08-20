@@ -14,7 +14,7 @@ class OrdenCotizacionDetalleImpuesto extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'orden_cotizaciones_detalle_id',
+        'orden_cotizaciones_detalles_id',
         'impuesto_id',
     ];
 
@@ -27,7 +27,7 @@ class OrdenCotizacionDetalleImpuesto extends Model
 
     public function ordenCotizacionDetalle()
     {
-        return $this->belongsTo(OrdenCotizacionDetalle::class, 'orden_cotizaciones_detalle_id');
+        return $this->belongsTo(OrdenCotizacionDetalle::class, 'orden_cotizaciones_detalles_id');
     }
 
      public function impuesto()

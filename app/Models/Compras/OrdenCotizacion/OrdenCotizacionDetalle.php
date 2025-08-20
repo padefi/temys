@@ -11,7 +11,7 @@ class OrdenCotizacionDetalle extends Model
     use HasFactory;
     public $timestamps = false;
 
-    protected $table = 'orden_cotizaciones_detalle';
+    protected $table = 'orden_cotizaciones_detalles';
 
     protected $fillable = [
         'orden_cotizaciones_id',
