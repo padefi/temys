@@ -1,5 +1,5 @@
 import { PropsWithChildren } from "react";
-import { PopoverDialog, PopoverDialogContent, PopoverDialogTrigger } from "@/Components/ui/popoverDialog"
+import { PopoverDialog, PopoverDialogContent, PopoverDialogTrigger } from "@/Components/ui/popover-dialog"
 import { Button } from "@/Components/ui/button";
 import { MinusCircle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";

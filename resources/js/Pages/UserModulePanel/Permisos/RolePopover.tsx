@@ -1,5 +1,5 @@
 import { PropsWithChildren, useEffect, useState } from "react";
-import { PopoverDialog, PopoverDialogContent, PopoverDialogTrigger } from "@/Components/ui/popoverDialog"
+import { PopoverDialog, PopoverDialogContent, PopoverDialogTrigger } from "@/Components/ui/popover-dialog"
 import { Button } from "@/Components/ui/button";
 import { UserRound } from "lucide-react";
 import { Skeleton } from "@/Components/ui/skeleton";

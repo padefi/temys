@@ -1,5 +1,5 @@
 import { PropsWithChildren, useEffect, useState } from "react";
-import { PopoverDialog, PopoverDialogContent, PopoverDialogTrigger } from "@/Components/ui/popoverDialog"
+import { PopoverDialog, PopoverDialogContent, PopoverDialogTrigger } from "@/Components/ui/popover-dialog"
 import { Button } from "@/Components/ui/button";
 import { UserRound } from "lucide-react";
 import { Skeleton } from "@/Components/ui/skeleton";
@@ -16,11 +16,13 @@ interface RolePopoverProps {
   loadingRole: boolean;
   onClick: () => void;
   onRoleChange: (option: string) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function RolePopover({ dataRole, loadingRole, onClick, onRoleChange }: PropsWithChildren<RolePopoverProps>) {   
+export function RolePopover({ dataRole, loadingRole, onClick, onRoleChange, open, onOpenChange }: PropsWithChildren<RolePopoverProps>) {   
   return (
-    <PopoverDialog modal={false}>
+    <PopoverDialog modal={false} open={open} onOpenChange={onOpenChange}>
       <PopoverDialogTrigger asChild>
         <Button
           className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"

@@ -12,6 +12,7 @@ import { RemovePopover } from "./RemovePopover";
 import { RolePopover } from "./RolePopover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
+import { DialogSkeleton } from "@/Components/DialogSkeleton";
 import axios from "axios";
 
 interface Role {
@@ -48,6 +49,7 @@ export function Modulos({ branchSelected, branchSelectedIsAssigned, setModuleSel
     const [dataPermission, setDataPermission] = useState<{ sectionName: string; option: string, idOption: number, permissionAssigned: [] }>({ sectionName: '', option: '', idOption: 0, permissionAssigned: [] });
     const [dataRole, setDataRole] = useState<{ sectionName: string; option: string, idOption: number, roles: Role[], roleAssigned: string }>({ sectionName: '', option: '', idOption: 0, roles: [], roleAssigned: '' });
     const [roles, setRoles] = useState([]);
+    const [open, setOpen] = useState(false);
 
     const fetchRoles = async () => {
         try {
@@ -100,6 +102,8 @@ export function Modulos({ branchSelected, branchSelectedIsAssigned, setModuleSel
                         : modulo
                 );
             });
+
+            setOpen(false);
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) toast.error(error.response.data.message || "Error desconocido del servidor");
             else toast.error("Error al asignar el rol al módulo");
@@ -234,10 +238,7 @@ export function Modulos({ branchSelected, branchSelectedIsAssigned, setModuleSel
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.25, ease: "easeInOut" }}
                 >
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[200px]" />
+                    <DialogSkeleton rowCount={4} className="w-[14rem]" />
                 </motion.div>
             ) : (
                 <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-19rem)] lg:h-[calc(100vh-23rem)] xl:h-[calc(100vh-24rem)] 2xl:h-[calc(100vh-39rem)] w-[-webkit-fill-available]">
@@ -317,10 +318,15 @@ export function Modulos({ branchSelected, branchSelectedIsAssigned, setModuleSel
                                                     <RolePopover dataRole={dataRole}
                                                         loadingRole={loadingRole}
                                                         onClick={() => {
+                                                            setOpen(true);
                                                             setLoadingRole(true);
                                                             rolesPopover(modulo.name, modulo.id);
                                                         }}
-                                                        onRoleChange={(option) => toggleRoleAssignment(modulo.id, option)}
+                                                        onRoleChange={(option) => {
+                                                            toggleRoleAssignment(modulo.id, option);
+                                                        }}
+                                                        open={open}
+                                                        onOpenChange={setOpen}
                                                     />
 
                                                     {!modulo.has_menus && (
