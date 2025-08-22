@@ -154,7 +154,7 @@ export default function StockManagement() {
 
     useEffect(() => {
         setStock(stocks.data);
-     //   console.log(stocks.data)
+        //   console.log(stocks.data)
         setIsLoading(false)
     }, []);
 
@@ -205,7 +205,7 @@ export default function StockManagement() {
     const handleSolicitudes = async () => {
         try {
             const res = await axios.get(`/solicitudes-stock/`)
-             console.log(res.data)
+            console.log(res.data)
             setSolicitudes(res.data)
             setSolicitudesStockDialogOpen(true)
         } catch (err) {
@@ -422,7 +422,9 @@ export default function StockManagement() {
                                             </TableRow>
                                         </TableHeader>
                                         {isLoading ? (
-                                            <DataTableSkeleton columnCount={6} rowCount={5} showHeaders={false}></DataTableSkeleton>
+                                            <TableBody>
+                                                <DataTableSkeleton columnCount={6} rowCount={5} showHeaders={false}></DataTableSkeleton>
+                                            </TableBody>
                                         ) : (
                                             <TableBody className="text-center">
                                                 {paginatedStock.map((item) => {
@@ -436,7 +438,7 @@ export default function StockManagement() {
                                                                     {item.cantidad_actual}
 
                                                                     {item.estado_ajuste?.toLowerCase() === 'nuevo' && (
-                                                                        <Button                                                                                                                                            
+                                                                        <Button
                                                                             size="icon"
                                                                             className="absolute right-8 top-1/2 -translate-y-1/2 size-8 bg-red"
                                                                         >

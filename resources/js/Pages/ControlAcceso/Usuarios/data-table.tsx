@@ -3,7 +3,7 @@
 import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, useReactTable, CellContext } from "@tanstack/react-table";
 import { Table, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { DataTableSkeleton } from "./data-table-skeleton";
+import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
 import { useDataTableParams } from "@/hooks/useDataTableParams";
 import { RowActions } from "./row-actions";
 import { Role, User } from "./page";

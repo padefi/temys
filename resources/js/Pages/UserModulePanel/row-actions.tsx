@@ -15,7 +15,7 @@ interface RowActionsProps {
 
 export const RowActions = React.memo((
     { user, module, disabled }: RowActionsProps) => {
-    const { userAuth, hasSubmenuPermission } = usePermissions();
+    const { userAuth, hasSubmenuPermission, createCamelCaseFromUrlPath } = usePermissions();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const actions = [
@@ -26,9 +26,9 @@ export const RowActions = React.memo((
             shadowColor: "rgba(0,117,149,0.5)",
             onClick: () => { setIsDialogOpen(true) },
             disabled: disabled,
-            show: hasSubmenuPermission('usuariosAfiliados', 'update'),
+            show: hasSubmenuPermission(createCamelCaseFromUrlPath(window.location.pathname), 'update'),
         },
-    ];
+    ];    
 
     if (userAuth.id === user.id || user.module_roles.length === 0 || user.module_roles.some(role => role.name === 'encargado')) {
         return <span className="text-sm text-gray-500">Sin acciones</span>;

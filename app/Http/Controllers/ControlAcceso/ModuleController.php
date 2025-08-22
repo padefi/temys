@@ -92,7 +92,8 @@ class ModuleController extends Controller
             return response()->json(['message' => 'La sucursal no ha sido asignada al usuario', 'success' => false]);
         }
 
-        if ($branch->status === 'inactive') {
+        if ($branch->status === 'inactive')
+        {
             return response()->json(['message' => 'La sucursal se encuentra deshabilitada', 'success' => false]);
         }
 
@@ -108,7 +109,7 @@ class ModuleController extends Controller
         }
         else $user->modulesRole()->attach($module->id, ['role_id' => $role->id, 'model_type' => User::class, 'branch_id' => $branch->id]);
 
-        $this->cleanPermissionsModulesByUser($user, $module, $branch);
+        $this->cleanPermissionsModulesByUser($user,  $branch, $module);
         if ($role->name === 'encargado') $this->assingDefaultPermissions($branch, $module, $role, $user);
 
         return response()->json(['message' => 'Rol asignado con exito', 'success' => true]);
@@ -136,7 +137,8 @@ class ModuleController extends Controller
             return response()->json(['message' => 'La sucursal no ha sido asignada al usuario', 'success' => false]);
         }
 
-        if ($branch->status === 'inactive') {
+        if ($branch->status === 'inactive')
+        {
             return response()->json(['message' => 'La sucursal se encuentra deshabilitada', 'success' => false]);
         }
 
@@ -268,7 +270,7 @@ class ModuleController extends Controller
         return response()->json(['message' => 'Permiso agregado con exito', 'action' => 'add', 'success' => true]);
     }
 
-    private function cleanPermissionsModulesByUser(User $user, Module $module, Branch $branch)
+    private function cleanPermissionsModulesByUser(User $user, Branch $branch, Module $module)
     {
         DB::table('model_has_module_permissions')
             ->where('model_id', $user->id)
@@ -297,10 +299,10 @@ class ModuleController extends Controller
             foreach ($submenus as $submenu)
             {
                 DB::table('model_has_submenus')
-                ->where('model_id', $user->id)
-                ->where('submenu_id', $submenu->id)
-                ->where('branch_id', $branch->id)
-                ->delete();
+                    ->where('model_id', $user->id)
+                    ->where('submenu_id', $submenu->id)
+                    ->where('branch_id', $branch->id)
+                    ->delete();
 
                 DB::table('model_has_submenu_permissions')
                     ->where('model_id', $user->id)

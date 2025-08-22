@@ -142,12 +142,13 @@ class MenuController extends Controller
         return response()->json(['message' => 'Menú agregado con exito', 'action' => 'add', 'success' => true]);
     }
 
-    public function getPermissionsMenusByUser(User $user, Menu $menu)
+    public function getPermissionsMenusByUser(User $user, Branch $branch, Menu $menu)
     {
         $permissions = $menu->userPermissions()
             ->select('permissions.name')
             ->where('model_id', $user->id)
-            ->where('model_type', User::class)->get();
+            ->where('model_type', User::class)
+            ->where('branch_id', $branch->id)->get();
 
         return $permissions;
     }
@@ -201,7 +202,7 @@ class MenuController extends Controller
             return response()->json(['message' => 'Permiso eliminado con exito', 'action' => 'delete', 'success' => true]);
         }
 
-        $menu->userPermissions()->attach($permission->id, ['model_type' => User::class, 'model_id' => $user->id]);
+        $menu->userPermissions()->attach($permission->id, ['model_type' => User::class, 'model_id' => $user->id, 'branch_id' => $branch->id]);
 
         return response()->json(['message' => 'Permiso agregado con exito', 'action' => 'add', 'success' => true]);
     }

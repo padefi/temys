@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Skeleton } from "@/Components/ui/skeleton"
 import { ScrollArea } from "@/Components/ui/scroll-area"
 import { toast } from "sonner";
 import { PermisosPopover } from "./PermisosPopover";
 import { AnimatePresence, motion } from "framer-motion";
+import { useBranchConfig } from "@/contexts/active-branch";
+import { DialogSkeleton } from "../../../Components/DialogSkeleton";
 import axios from "axios";
 
 interface Role {
@@ -26,6 +27,7 @@ interface ModulosProps {
 }
 
 export function Modulos({ user, module, setModuleSelectedRoleModule }: ModulosProps) {
+    const { activeBranch } = useBranchConfig();
     const [dataModulos, setDataModulos] = useState<Modulo[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadingPermissions, setLoadingPermissions] = useState(true);
@@ -40,7 +42,7 @@ export function Modulos({ user, module, setModuleSelectedRoleModule }: ModulosPr
 
         try {
             setModuleSelectedRoleModule('');
-            const response = await fetch(`/user-model-panel/get-module-by-user/${user}/${module}`);
+            const response = await fetch(`/user-model-panel/get-module-by-user/${user}/${activeBranch}/${module}`);
             const data = await response.json();
 
             setModuleSelectedRoleModule(data.data[0].role_module?.toLowerCase());
@@ -54,7 +56,7 @@ export function Modulos({ user, module, setModuleSelectedRoleModule }: ModulosPr
 
     const seccion = async (option: string, idOption: number) => {
         try {
-            const response = await fetch(`/user-model-panel/managed-permissions-modulos-by-user/${user}/${idOption}`);
+            const response = await fetch(`/user-model-panel/managed-permissions-modulos-by-user/${user}/${activeBranch}/${idOption}`);
             const data = await response.json();
 
             setDataPermission({ sectionName: 'Modulo', option, idOption, permissionAssigned: data });
@@ -69,6 +71,7 @@ export function Modulos({ user, module, setModuleSelectedRoleModule }: ModulosPr
         try {
             const response = await axios.post('/user-model-panel/managed-permissions-modulos-by-user/', {
                 user,
+                idBranch: activeBranch,
                 idModule,
                 permission
             });
@@ -109,10 +112,7 @@ export function Modulos({ user, module, setModuleSelectedRoleModule }: ModulosPr
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.25, ease: "easeInOut" }}
                 >
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-4 w-[200px]" />
+                    <DialogSkeleton rowCount={1} className="w-2xs" />
                 </motion.div>
             ) : (
                 <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-19rem)] lg:h-[calc(100vh-23rem)] xl:h-[calc(100vh-24rem)] 2xl:h-[calc(100vh-39rem)] w-[-webkit-fill-available]">

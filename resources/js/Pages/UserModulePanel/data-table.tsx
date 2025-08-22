@@ -1,16 +1,16 @@
 "use client";
 
 import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, useReactTable, CellContext } from "@tanstack/react-table";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
+import { Table, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
 import { useState, useEffect, useMemo } from "react";
-import { DataTableSkeleton } from "./data-table-skeleton";
+import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
 import { useDataTableParams } from "@/hooks/useDataTableParams";
 import { RowActions } from "./row-actions";
 import { User } from "./page";
 import { Footer } from "./footer";
 import { links } from "@/types/links";
 import { meta } from "@/types/meta";
-
+import { AnimatePresence, motion } from "framer-motion";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
@@ -112,32 +112,48 @@ export function DataTable<TData extends User, TValue>({
                             </TableRow>
                         ))}
                     </TableHeader>
-                    {isLoading ? (
-                        <DataTableSkeleton columnCount={columns.length} rowCount={10} showHeaders={false} />
-                    ) : (
-                        <TableBody>
-                            {tableData.length ? (
-                                table.getRowModel().rows.map((row) => (
-                                    <TableRow
-                                        key={row.id}
-                                        data-state={row.getIsSelected() && "selected"}
-                                    >
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>
-                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                            </TableCell>
-                                        ))}
+                    <AnimatePresence mode="wait">
+                        {isLoading ? (
+                            <motion.tbody
+                                key="skeleton"
+                                initial={{ opacity: 0, y: -20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 20 }}
+                                transition={{ duration: 0.35, ease: "easeInOut" }}
+                            >
+                                <DataTableSkeleton columnCount={columns.length} rowCount={tableData.length || 10} showHeaders={false} />
+                            </motion.tbody>
+                        ) : (
+                            <motion.tbody
+                                key="tbody"
+                                initial={{ opacity: 0, y: -20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 20 }}
+                                transition={{ duration: 0.35, ease: "easeInOut" }}
+                            >
+                                {tableData.length ? (
+                                    table.getRowModel().rows.map((row) => (
+                                        <TableRow
+                                            key={row.id}
+                                            data-state={row.getIsSelected() && "selected"}
+                                        >
+                                            {row.getVisibleCells().map((cell) => (
+                                                <TableCell key={cell.id}>
+                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={columns.length} className="h-24 text-center">
+                                            Sin resultados.
+                                        </TableCell>
                                     </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                                        Sin resultados.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    )}
+                                )}
+                            </motion.tbody>
+                        )}
+                    </AnimatePresence>
                 </Table>
             </div>
 
