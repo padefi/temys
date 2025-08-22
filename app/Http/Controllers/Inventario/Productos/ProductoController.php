@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Inventario\Productos;
 
 use App\Http\Controllers\Controller;
 use App\Models\Inventario\Productos\Producto;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProductoController extends Controller
 {
@@ -43,8 +45,8 @@ class ProductoController extends Controller
             'es_inventario' => 'boolean',
             'es_patrimonio' => 'boolean',
             'referencia' => 'nullable|string|max:100',
-        ]
-                                   
+        ]);
+
         Producto::create($data);
 
         return redirect()->route('productos.index')->with('success', 'Producto creado correctamente.');
