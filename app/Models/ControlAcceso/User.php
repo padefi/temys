@@ -6,6 +6,7 @@ namespace App\Models\ControlAcceso;
 
 use App\Models\AjusteInventario;
 use App\Models\Almacenes\Almacen;
+use App\Models\Inventario\InventarioAjuste;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -134,7 +135,7 @@ class User extends Authenticatable
 
     public function ajustesInventario()
 {
-    return $this->hasMany(AjusteInventario::class, 'usuario_creacion');
+    return $this->hasMany(InventarioAjuste::class, 'usuario_creacion');
 }
 
 }

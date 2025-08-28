@@ -7,7 +7,6 @@ use App\Http\Resources\Inventario\OrdenEntregaResource;
 use App\Models\Inventario\InventarioOrdenEntrega;
 use App\Models\Almacenes\Almacen;
 use App\Http\Requests\Inventario\Entregas\FiltroEntregaRequest;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class EntregaController extends Controller

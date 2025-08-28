@@ -1,31 +1,36 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Package, AlertTriangle, Plus, Search, ArrowUpDown, ArrowDownWideNarrow, ArrowUpNarrowWide, Bell, Save, BrushCleaning, OctagonAlert, Siren } from "lucide-react";
-import { Button } from "@/Components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/Components/ui/table";
-import { Tabs, TabsContent } from "@/Components/ui/tabs";
-import { Badge } from "@/Components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import axios from "axios";
-import { usePage } from "@inertiajs/react";
-import { PageProps as InertiaPageProps } from "@inertiajs/core";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head } from "@inertiajs/react";
-import { SolicitarStock } from "./ModalCrearSolicitudStock";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/Components/ui/tooltip";
-import SolicitudesStock from "./ModalSolicitudesEntrantes";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/Components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { Tabs, TabsContent } from "@/Components/ui/tabs";
 import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
 import { usePermissions } from "@/composables/permissions";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { Label } from "@/Components/ui/label";
+import { Package, AlertTriangle, Plus, Search, ArrowUpDown, ArrowDownWideNarrow, ArrowUpNarrowWide, Bell, Save, BrushCleaning, TriangleAlert, Clock10 } from "lucide-react";
+import { Input } from "@/Components/ui/input";
+import { usePage } from "@inertiajs/react";
+import { Head } from "@inertiajs/react";
+import { PageProps as InertiaPageProps } from "@inertiajs/core";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { SolicitarStock } from "./ModalCrearSolicitudStock";
+import SolicitudesStock from "./ModalSolicitudesEntrantes";
+import { AjusteInventarioModal } from "./ModalConfirmarAjuste";
 import { Almacen, StockItem } from "./Types";
+import axios from "axios";
+
 
 type PageProps = InertiaPageProps & {
     stocks: {
         data: StockItem[];
     };
 };
-
+interface AjusteSeleccionado {
+    ajusteId: number;
+    productoId: number;
+}
 export default function StockManagement() {
     const [productosDisponibles, setProductosDisponibles] = useState<StockItem[]>([]);
     const [almacenes, setAlmacenes] = useState<Almacen[]>([]);
@@ -47,6 +52,8 @@ export default function StockManagement() {
     const inputRef = useRef<HTMLInputElement>(null);
     const cellBeingEditedRef = useRef<HTMLTableCellElement>(null);
     const [editedRows, setEditedRows] = useState<Record<number, number>>({})
+    const [isModalOpenInventario, setIsModalOpenInventario] = useState(false)
+    const [ajusteSeleccionado, setAjusteSeleccionado] = useState<AjusteSeleccionado | null>(null);
 
     // Efecto para enfocar el input cuando se entra en modo de edición
     useEffect(() => {
@@ -119,6 +126,15 @@ export default function StockManagement() {
             await axios.post("/actualizar-cantidad-contadas-masivo", {
                 data: dataRows,
             });
+
+            setStock((prev) =>
+                prev.map((item) =>
+                    dataRows.find((row) => row.id === item.id)
+                        ? { ...item, estado_ajuste: "nuevo" }
+                        : item
+                )
+            );
+
             setEditedRows({});
         } catch (error) {
             console.error("Error al aplicar todo:", error);
@@ -133,6 +149,11 @@ export default function StockManagement() {
             await axios.post(`/actualizar-cantidad-contadas/${id}`, {
                 cantidad_contada: row.cantidad_contada,
             });
+            setStock((prev) =>
+                prev.map((item) =>
+                    item.id === id ? { ...item, estado_ajuste: "nuevo" } : item
+                )
+            );
             const updated = { ...editedRows };
             delete updated[id];
             setEditedRows(updated);
@@ -154,9 +175,10 @@ export default function StockManagement() {
 
     useEffect(() => {
         setStock(stocks.data);
-        //   console.log(stocks.data)
         setIsLoading(false)
-    }, []);
+    }, [stocks]);
+
+    console.log(stocks)
 
     useEffect(() => {
         axios
@@ -188,7 +210,7 @@ export default function StockManagement() {
         if (actual === 0) return { status: "Sin stock", color: "destructive" };
         if (actual <= minimo) return { status: "Stock bajo", color: "custom" };
         if (actual <= minimo * 1.5)
-            return { status: "Stock medio", color: "secondary" };
+            return { status: "Stock medio", color: "warning" };
         return { status: "Stock normal", color: "success" };
     };
 
@@ -205,7 +227,6 @@ export default function StockManagement() {
     const handleSolicitudes = async () => {
         try {
             const res = await axios.get(`/solicitudes-stock/`)
-            console.log(res.data)
             setSolicitudes(res.data)
             setSolicitudesStockDialogOpen(true)
         } catch (err) {
@@ -245,10 +266,12 @@ export default function StockManagement() {
         return sorted;
     }, [filteredStock, sortColumn, sortDirection]);
 
+
     const paginatedStock = sortedStock.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
     );
+
 
     const handleSort = (column: keyof StockItem) => {
         if (sortColumn !== column) {
@@ -436,34 +459,59 @@ export default function StockManagement() {
                                                             <TableCell className="font-mono relative">
                                                                 <div className="flex items-center justify-center gap-2">
                                                                     {item.cantidad_actual}
-
-                                                                    {item.estado_ajuste?.toLowerCase() === 'nuevo' && (
-                                                                        <Button
-                                                                            size="icon"
-                                                                            className="absolute right-8 top-1/2 -translate-y-1/2 size-8 bg-red"
-                                                                        >
-                                                                            <Siren className="text-red-400" />
-                                                                        </Button>
-                                                                    )}
                                                                 </div>
                                                             </TableCell>
 
                                                             {/* Celda editable para Cantidades Contadas */}
 
-                                                            <TableCell className="py-3 px-4 cursor-pointer" onClick={() => handleCellClick(item.id, 'cantidad_contada')} >
+                                                            <TableCell className={`py-3 px-4 relative ${item.estado_ajuste !== 'nuevo' ? 'cursor-pointer' : ''}`}
+                                                                onClick={() => {
+                                                                    if (item.estado_ajuste !== 'nuevo') {
+                                                                        handleCellClick(item.id, 'cantidad_contada');
+                                                                    }
+                                                                }}>
                                                                 {editingCell && editingCell.rowId === item.id && editingCell.field === 'cantidad_contada' ? (
-                                                                    <input ref={inputRef} type="text" value={item.cantidad_contada === 0 ? '' : item.cantidad_contada ?? ''}
+                                                                    <input
+                                                                        ref={inputRef}
+                                                                        type="text"
+                                                                        value={item.cantidad_contada === 0 ? '' : item.cantidad_contada ?? ''}
                                                                         onChange={(e) => handleInputChange(e, item.id, 'cantidad_contada')}
                                                                         onBlur={handleInputBlur}
                                                                         onKeyDown={handleKeyDown}
                                                                         disabled={item.estado_ajuste === 'nuevo'}
-                                                                        className="w-24 p-1 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-300" />
+
+                                                                        className={`w-24 p-1 border border-neutral-200 rounded-md
+                                                                                ${item.estado_ajuste === 'nuevo'
+                                                                                ? 'bg-neutral-100 text-gray-500 cursor-not-allowed focus:ring-0 focus:outline-none'
+                                                                                : 'focus:ring-2 focus:ring-neutral-300'}
+                                                                            `}
+                                                                    />
                                                                 ) : (
-                                                                    <span>
-                                                                        {item.cantidad_contada === 0 || item.cantidad_contada == null
-                                                                            ? ''
-                                                                            : item.cantidad_contada}
-                                                                    </span>
+                                                                    <div className="flex items-center justify-center gap-1">
+                                                                        <span>
+                                                                            {item.cantidad_contada === 0 || item.cantidad_contada == null
+                                                                                ? ''
+                                                                                : item.cantidad_contada}
+                                                                        </span>
+
+                                                                        {item.estado_ajuste === 'nuevo' && (
+                                                                            <span className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-orange-100 text-orange-800 cursor-pointer"
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    if (item.ajuste_id) {
+                                                                                        setAjusteSeleccionado({
+                                                                                            ajusteId: item.ajuste_id,
+                                                                                            productoId: item.producto.id
+                                                                                        });
+                                                                                        setIsModalOpenInventario(true);
+                                                                                    }
+                                                                                }}>
+                                                                                <Clock10 className="inline h-4 w-4 mr-1" />
+                                                                                Pendiente
+                                                                            </span>
+
+                                                                        )}
+                                                                    </div>
                                                                 )}
                                                             </TableCell>
 
@@ -473,8 +521,7 @@ export default function StockManagement() {
                                                                     : calculaDiferencia(item.cantidad_actual, item.cantidad_contada)! < 0
                                                                         ? 'text-red-600'
                                                                         : 'text-gray-500'
-                                                                    }`}
-                                                            >
+                                                                    }`} >
                                                                 {calculaDiferencia(item.cantidad_actual, item.cantidad_contada)}
                                                             </TableCell>
 
@@ -526,6 +573,23 @@ export default function StockManagement() {
             {solicitudDialogOpen && <SolicitarStock open={solicitudDialogOpen} onClose={() => setsolicitudDialogOpen(false)} productos={productosDisponibles} />}
             {/* Dialog Solicitudes de stock para aprobar */}
             {solicitudesStockDialogOpen && <SolicitudesStock isOpen={solicitudesStockDialogOpen} onClose={() => setSolicitudesStockDialogOpen(false)} requests={solicitudes}></SolicitudesStock>}
+            {/* Dialog Inventario modal */}
+            {isModalOpenInventario && ajusteSeleccionado && (
+                <AjusteInventarioModal
+                    isOpen={isModalOpenInventario}
+                    onClose={() => setIsModalOpenInventario(false)}
+                    idAjuste={ajusteSeleccionado.ajusteId} // id del ajuste
+                    productoId={ajusteSeleccionado.productoId} // id del producto
+                    onApprove={() => {
+                        console.log("Ajuste aprobado");
+                        setIsModalOpenInventario(false);
+                    }}
+                    onReject={() => {
+                        console.log("Ajuste rechazado");
+                        setIsModalOpenInventario(false);
+                    }}
+                />
+            )}
 
         </AuthenticatedLayout>
 
