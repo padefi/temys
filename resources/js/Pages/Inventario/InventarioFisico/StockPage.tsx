@@ -9,7 +9,7 @@ import { usePermissions } from "@/composables/permissions";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { Label } from "@/Components/ui/label";
-import { Package, AlertTriangle, Plus, Search, ArrowUpDown, ArrowDownWideNarrow, ArrowUpNarrowWide, Bell, Save, BrushCleaning, TriangleAlert, Clock10 } from "lucide-react";
+import { Package, AlertTriangle, Plus, Search, ArrowUpDown, ArrowDownWideNarrow, ArrowUpNarrowWide, Bell, Save, BrushCleaning, Clock10 } from "lucide-react";
 import { Input } from "@/Components/ui/input";
 import { usePage } from "@inertiajs/react";
 import { Head } from "@inertiajs/react";
@@ -20,7 +20,8 @@ import SolicitudesStock from "./ModalSolicitudesEntrantes";
 import { AjusteInventarioModal } from "./ModalConfirmarAjuste";
 import { Almacen, StockItem } from "./Types";
 import axios from "axios";
-
+import { toast } from 'sonner';
+import { AnimatePresence, motion } from "framer-motion";
 
 type PageProps = InertiaPageProps & {
     stocks: {
@@ -48,6 +49,7 @@ export default function StockManagement() {
     const { stocks } = usePage<PageProps>().props;
     const [isLoading, setIsLoading] = useState(true);
     const { hasSubmenuPermission } = usePermissions();
+    const { hasRole } = usePermissions();
     const [editingCell, setEditingCell] = useState<{ rowId: number, field: string } | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const cellBeingEditedRef = useRef<HTMLTableCellElement>(null);
@@ -55,130 +57,15 @@ export default function StockManagement() {
     const [isModalOpenInventario, setIsModalOpenInventario] = useState(false)
     const [ajusteSeleccionado, setAjusteSeleccionado] = useState<AjusteSeleccionado | null>(null);
 
-    // Efecto para enfocar el input cuando se entra en modo de edición
-    useEffect(() => {
-        if (editingCell && inputRef.current) {
-            inputRef.current.focus();
-        }
-    }, [editingCell]);
 
-    // Efecto para manejar clics fuera del input editable
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (editingCell && cellBeingEditedRef.current && !cellBeingEditedRef.current.contains(event.target as Node)) {
-                inputRef.current?.blur();
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [editingCell]);
 
-    // Manejador de clic en la celda para activar la edición
-    const handleCellClick = (id: any, field: any) => {
-        setEditingCell({ rowId: id, field });
-    };
-
-    // Manejador de cambio en el input editable
-    const handleInputChange = (
-        e: React.ChangeEvent<HTMLInputElement>,
-        id: number,
-        field: keyof StockItem
-    ) => {
-        const newValue = Number(e.target.value);
-        setStock(prevData =>
-            prevData.map(item =>
-                item.id === id ? { ...item, [field]: newValue } : item)
-        );
-        setEditedRows(prev => ({ ...prev, [id]: newValue }));
-    };
-
-    const handleInputBlur = () => {
-        if (editingCell) {
-            const editedItem = stock.find(item => item.id === editingCell.rowId);
-            if (!editedItem) return;
-            setEditingCell(null);
-        }
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            inputRef.current?.blur();
-        }
-    };
-
-    // Función para calcular la diferencia
-    const calculaDiferencia = (aMano: number, contada: number) => {
-        if (contada > 0) {
-            return (contada !== undefined ? contada : aMano) - aMano;
-        }
-    };
-
-    const handleAplicarTodo = async () => {
-        const dataRows = Object.entries(editedRows).map(([id, cantidad]) => ({
-            id: Number(id),
-            cantidad_contada: cantidad,
-        }));
-
-        try {
-            await axios.post("/actualizar-cantidad-contadas-masivo", {
-                data: dataRows,
-            });
-
-            setStock((prev) =>
-                prev.map((item) =>
-                    dataRows.find((row) => row.id === item.id)
-                        ? { ...item, estado_ajuste: "nuevo" }
-                        : item
-                )
-            );
-
-            setEditedRows({});
-        } catch (error) {
-            console.error("Error al aplicar todo:", error);
-        }
-    };
-
-    const handleAplicarFila = async (id: number) => {
-        const row = stock.find((item) => item.id === id);
-        if (!row) return;
-
-        try {
-            await axios.post(`/actualizar-cantidad-contadas/${id}`, {
-                cantidad_contada: row.cantidad_contada,
-            });
-            setStock((prev) =>
-                prev.map((item) =>
-                    item.id === id ? { ...item, estado_ajuste: "nuevo" } : item
-                )
-            );
-            const updated = { ...editedRows };
-            delete updated[id];
-            setEditedRows(updated);
-        } catch (error) {
-            console.error("Error al aplicar fila:", error);
-        }
-    };
-
-    const handleLimpiarFila = (id: number) => {
-        setStock(prev =>
-            prev.map(item =>
-                item.id === id ? { ...item, cantidad_contada: 0 } : item
-            )
-        );
-        const updated = { ...editedRows };
-        delete updated[id];
-        setEditedRows(updated);
-    };
 
     useEffect(() => {
         setStock(stocks.data);
         setIsLoading(false)
     }, [stocks]);
 
-    console.log(stocks)
+
 
     useEffect(() => {
         axios
@@ -186,6 +73,9 @@ export default function StockManagement() {
             .then((res) => setAlmacenes(res.data.data))
             .catch((err) => console.error("Error al cargar almacenes", err));
     }, []);
+
+
+
 
     const filteredStock = stock.filter((item) => {
         const matchesSearch = item.producto.nombre
@@ -274,26 +164,133 @@ export default function StockManagement() {
 
 
     const handleSort = (column: keyof StockItem) => {
-        if (sortColumn !== column) {
-            // Primer clic en nueva columna: orden ascendente
+        if (sortColumn !== column) { // Primer clic en nueva columna: orden ascendente
+
             setSortColumn(column);
             setSortDirection("asc");
         } else {
-            // Si ya está ordenado en ascendente → cambia a descendente
-            if (sortDirection === "asc") {
+
+            if (sortDirection === "asc") {// Si ya está ordenado en ascendente → cambia a descendente
                 setSortDirection("desc");
             }
-            // Si ya está ordenado en descendente → elimina orden
-            else if (sortDirection === "desc") {
+
+            else if (sortDirection === "desc") { // Si ya está ordenado en descendente → elimina orden
                 setSortColumn(null);
                 setSortDirection(null);
             }
-            // Si no hay orden (null) → orden ascendente
+
             else {
-                setSortDirection("asc");
+                setSortDirection("asc");// Si no hay orden (null) → orden ascendente
             }
         }
     };
+
+    /* INPUT EDITABLE CANTIDADES CONTADAS  */
+    useEffect(() => {
+        if (editingCell && inputRef.current) {
+            inputRef.current.focus();
+        }
+
+        const handleClickOutside = (event: MouseEvent) => {
+            if (editingCell && cellBeingEditedRef.current && !cellBeingEditedRef.current.contains(event.target as Node)) {
+                inputRef.current?.blur();
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [editingCell]);
+
+    // Manejador de clic en la celda para activar la edición
+    const handleCellClick = (id: any, field: any) => {
+        setEditingCell({ rowId: id, field });
+    };
+
+    // Manejador de cambio en el input editable
+    const handleInputChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        id: number,
+        field: keyof StockItem
+    ) => {
+        const newValue = Number(e.target.value);
+        setStock(prevData =>
+            prevData.map(item =>
+                item.id === id ? { ...item, [field]: newValue } : item)
+        );
+        setEditedRows(prev => ({ ...prev, [id]: newValue }));
+    };
+
+    const handleInputBlur = () => {
+        if (editingCell) {
+            const editedItem = stock.find(item => item.id === editingCell.rowId);
+            if (!editedItem) return;
+            setEditingCell(null);
+        }
+    };
+
+    // Función para calcular la diferencia
+    const calculaDiferencia = (aMano: number, contada: number) => {
+        if (contada > 0) {
+            return (contada !== undefined ? contada : aMano) - aMano;
+        }
+    };
+
+    const handleAplicarTodo = async () => {
+        const dataRows = Object.entries(editedRows).map(([id, cantidad]) => ({
+            id: Number(id),
+            cantidad_contada: cantidad,
+        }));
+
+        try {
+            const response = await axios.post("/actualizar-cantidad-contadas-masivo", {
+                data: dataRows,
+            });
+            const data = await response.data;
+            toast.success(data.message);
+
+            setEditedRows({});
+
+        } catch (error: any) {
+            toast.error(error.response.data.message)
+            console.error("Error al aplicar todo:", error);
+        }
+    };
+
+    const handleAplicarFila = async (id: number) => {
+        const row = stock.find((item) => item.id === id);
+        if (!row) return;
+
+        try {
+            const response = await axios.post(`/actualizar-cantidad-contadas/${id}`, {
+                cantidad_contada: row.cantidad_contada,
+            });
+            const data = await response.data;
+
+            toast.success(data.message);
+
+            const updated = { ...editedRows };
+            delete updated[id];
+
+            setEditedRows(updated);
+        } catch (error: any) {
+            toast.error(error.response.data.message)
+            console.error("Error al aplicar fila:", error);
+        }
+    };
+
+    const handleLimpiarFila = (id: number) => {
+        setStock(prev =>
+            prev.map(item =>
+                item.id === id ? { ...item, cantidad_contada: 0 } : item
+            )
+        );
+        const updated = { ...editedRows };
+        delete updated[id];
+        setEditedRows(updated);
+    };
+
+
 
     return (
         <AuthenticatedLayout
@@ -304,16 +301,17 @@ export default function StockManagement() {
 
             <div className="mx-auto w-full p-6 space-y-6">
                 <div className=" flex justify-between">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            {hasSubmenuPermission("inventarioFisico", "create") && (
-                                <Button size="sm" variant="outline" onClick={handleAbrirModal} className="text-xs"> <Plus className="h-3 w-3 mr-1" /> Solicitar </Button>
-                            )}
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Solicitudes de stock</p>
-                        </TooltipContent>
-                    </Tooltip>
+                    {hasSubmenuPermission('inventarioFisico', 'confirm') &&
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                {hasSubmenuPermission("inventarioFisico", "create") && (
+                                    <Button size="sm" variant="outline" onClick={handleAbrirModal} className="text-xs"> <Plus className="h-3 w-3 mr-1" /> Solicitar </Button>
+                                )}
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Solicitudes de stock</p>
+                            </TooltipContent>
+                        </Tooltip>}
 
                     <span>inventario Fisico</span>
                 </div>
@@ -411,9 +409,11 @@ export default function StockManagement() {
                                     <CardDescription>Lista completa de productos con información de stock y ubicación</CardDescription>
                                 </div>
                                 <div>
-                                    <Button size="sm" variant="outline" onClick={handleAplicarTodo} className="text-xs" disabled={Object.keys(editedRows).length === 0} >
-                                        <Plus className="h-3 w-3 mr-1" /> Aplicar todo
-                                    </Button>
+                                    {hasSubmenuPermission('inventarioFisico', 'update') &&
+                                        <Button size="sm" variant="outline" onClick={handleAplicarTodo} className="text-xs" disabled={Object.keys(editedRows).length === 0} >
+                                            <Plus className="h-3 w-3 mr-1" /> Aplicar todo
+                                        </Button>
+                                    }
 
                                 </div>
                             </CardHeader>
@@ -438,116 +438,167 @@ export default function StockManagement() {
                                                         </span>
                                                     </Button>
                                                 </TableHead>
-                                                <TableHead className="text-center">Cantidades contadas </TableHead>
-                                                <TableHead className="text-center">Diferencias</TableHead>
+                                                {hasSubmenuPermission('inventarioFisico', 'update') && hasSubmenuPermission('inventarioFisico', 'create') &&
+                                                    <>
+                                                        <TableHead className="text-center">Cantidades contadas </TableHead>
+                                                        <TableHead className="text-center">Diferencias</TableHead>
+                                                    </>}
                                                 <TableHead className="text-center">Estado</TableHead>
                                                 <TableHead className="text-center">Acciones</TableHead>
                                             </TableRow>
                                         </TableHeader>
-                                        {isLoading ? (
-                                            <TableBody>
-                                                <DataTableSkeleton columnCount={6} rowCount={5} showHeaders={false}></DataTableSkeleton>
-                                            </TableBody>
-                                        ) : (
-                                            <TableBody className="text-center">
-                                                {paginatedStock.map((item) => {
-                                                    const stockStatus = getStockStatus(item.cantidad_actual, item.stock_minimo);
-                                                    return (
-                                                        <TableRow key={item.id}>
-                                                            <TableCell className="font-medium">{item.producto.nombre}</TableCell>
-                                                            <TableCell>{item.almacen.nombre}</TableCell>
-                                                            <TableCell className="font-mono relative">
-                                                                <div className="flex items-center justify-center gap-2">
-                                                                    {item.cantidad_actual}
-                                                                </div>
-                                                            </TableCell>
-
-                                                            {/* Celda editable para Cantidades Contadas */}
-
-                                                            <TableCell className={`py-3 px-4 relative ${item.estado_ajuste !== 'nuevo' ? 'cursor-pointer' : ''}`}
-                                                                onClick={() => {
-                                                                    if (item.estado_ajuste !== 'nuevo') {
-                                                                        handleCellClick(item.id, 'cantidad_contada');
-                                                                    }
-                                                                }}>
-                                                                {editingCell && editingCell.rowId === item.id && editingCell.field === 'cantidad_contada' ? (
-                                                                    <input
-                                                                        ref={inputRef}
-                                                                        type="text"
-                                                                        value={item.cantidad_contada === 0 ? '' : item.cantidad_contada ?? ''}
-                                                                        onChange={(e) => handleInputChange(e, item.id, 'cantidad_contada')}
-                                                                        onBlur={handleInputBlur}
-                                                                        onKeyDown={handleKeyDown}
-                                                                        disabled={item.estado_ajuste === 'nuevo'}
-
-                                                                        className={`w-24 p-1 border border-neutral-200 rounded-md
-                                                                                ${item.estado_ajuste === 'nuevo'
-                                                                                ? 'bg-neutral-100 text-gray-500 cursor-not-allowed focus:ring-0 focus:outline-none'
-                                                                                : 'focus:ring-2 focus:ring-neutral-300'}
-                                                                            `}
-                                                                    />
-                                                                ) : (
-                                                                    <div className="flex items-center justify-center gap-1">
-                                                                        <span>
-                                                                            {item.cantidad_contada === 0 || item.cantidad_contada == null
-                                                                                ? ''
-                                                                                : item.cantidad_contada}
-                                                                        </span>
-
-                                                                        {item.estado_ajuste === 'nuevo' && (
-                                                                            <span className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-orange-100 text-orange-800 cursor-pointer"
-                                                                                onClick={(e) => {
-                                                                                    e.stopPropagation();
-                                                                                    if (item.ajuste_id) {
-                                                                                        setAjusteSeleccionado({
-                                                                                            ajusteId: item.ajuste_id,
-                                                                                            productoId: item.producto.id
-                                                                                        });
-                                                                                        setIsModalOpenInventario(true);
-                                                                                    }
-                                                                                }}>
-                                                                                <Clock10 className="inline h-4 w-4 mr-1" />
-                                                                                Pendiente
-                                                                            </span>
-
-                                                                        )}
+                                        <AnimatePresence mode="wait">
+                                            {isLoading ? (
+                                                <motion.tbody
+                                                    key="skeleton"
+                                                    initial={{ opacity: 0, y: -20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: 20 }}
+                                                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                                                >
+                                                    <DataTableSkeleton columnCount={6} rowCount={5} showHeaders={false} />
+                                                </motion.tbody>
+                                            ) : (
+                                                <motion.tbody
+                                                    key="tbody"
+                                                    initial={{ opacity: 0, y: -20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: 20 }}
+                                                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                                                    className="text-center"
+                                                >
+                                                    {paginatedStock.map((item: StockItem, index: number) => {
+                                                        const stockStatus = getStockStatus(item.cantidad_actual, item.stock_minimo);
+                                                        return (
+                                                            <TableRow key={item.id + index}>
+                                                                <TableCell className="font-medium">{item.producto.nombre}</TableCell>
+                                                                <TableCell>{item.almacen.nombre}</TableCell>
+                                                                <TableCell className="font-mono relative">
+                                                                    <div className="flex items-center justify-center gap-2">
+                                                                        {item.cantidad_actual}
                                                                     </div>
-                                                                )}
-                                                            </TableCell>
+                                                                </TableCell>
 
-                                                            <TableCell
-                                                                className={`py-3 px-4 font-medium ${calculaDiferencia(item.cantidad_actual, item.cantidad_contada)! > 0
-                                                                    ? 'text-green-600'
-                                                                    : calculaDiferencia(item.cantidad_actual, item.cantidad_contada)! < 0
-                                                                        ? 'text-red-600'
-                                                                        : 'text-gray-500'
-                                                                    }`} >
-                                                                {calculaDiferencia(item.cantidad_actual, item.cantidad_contada)}
-                                                            </TableCell>
-
-                                                            <TableCell>
-                                                                <Badge variant={stockStatus.color as | "default" | "destructive" | "secondary" | "outline"}>{stockStatus.status}</Badge>
-                                                            </TableCell>
-
-                                                            <TableCell>
-                                                                {editedRows[item.id] !== undefined ? (
+                                                                {/* Celda editable para Cantidades Contadas */}
+                                                                {hasSubmenuPermission('inventarioFisico', 'update') && hasSubmenuPermission('inventarioFisico', 'create') &&
                                                                     <>
-                                                                        <Button size="sm" variant="outline" onClick={() => handleAplicarFila(item.id)} className="text-xs">
-                                                                            <Save className="h-3 w-3 mr-1" /> Aplicar
-                                                                        </Button>
-                                                                        <Button size="sm" variant="outline" onClick={() => handleLimpiarFila(item.id)} className="text-xs ml-2">
-                                                                            <BrushCleaning className="h-3 w-3 mr-1" /> Limpiar
-                                                                        </Button>
-                                                                    </>
-                                                                ) : (
-                                                                    <span className="text-muted-foreground text-xs"></span>
-                                                                )}
-                                                            </TableCell>
 
-                                                        </TableRow>
-                                                    );
-                                                })}
-                                            </TableBody>)}
+                                                                        <TableCell
+                                                                            className={`py-3 px-4 relative ${item.estado_ajuste !== 'nuevo' && hasSubmenuPermission('inventarioFisico', 'update')
+                                                                                ? 'cursor-pointer'
+                                                                                : ''
+                                                                                }`}
+                                                                            onClick={() => {
+                                                                                if (item.estado_ajuste !== 'nuevo' && hasSubmenuPermission('inventarioFisico', 'update')) {
+                                                                                    handleCellClick(item.id, 'cantidad_contada');
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            {editingCell &&
+                                                                                editingCell.rowId === item.id &&
+                                                                                editingCell.field === 'cantidad_contada' ? (
+                                                                                <input
+                                                                                    ref={inputRef}
+                                                                                    type="text"
+                                                                                    value={item.cantidad_contada === 0 ? '' : item.cantidad_contada ?? ''}
+                                                                                    onChange={(e) => handleInputChange(e, item.id, 'cantidad_contada')}
+                                                                                    onBlur={handleInputBlur}
+                                                                                    disabled={item.estado_ajuste === 'nuevo' || !hasSubmenuPermission('inventarioFisico', 'update')}
+                                                                                    className={`w-24 p-1 border border-neutral-200 rounded-md ${item.estado_ajuste === 'nuevo' || !hasSubmenuPermission('inventarioFisico', 'update')
+                                                                                        ? 'bg-neutral-100 text-gray-500 cursor-not-allowed focus:ring-0 focus:outline-none'
+                                                                                        : 'focus:ring-2 focus:ring-neutral-300'
+                                                                                        }`}
+                                                                                />
+                                                                            ) : (
+                                                                                <div className="flex items-center justify-center gap-1">
+                                                                                    <span>
+                                                                                        {item.cantidad_contada === 0 || item.cantidad_contada == null ? '' : item.cantidad_contada}
+                                                                                    </span>
+
+
+                                                                                    {item.estado_ajuste === 'nuevo' && (
+                                                                                        <>
+                                                                                            {hasSubmenuPermission('inventarioFisico', 'confirm') && hasRole('admin') &&
+                                                                                                <span
+                                                                                                    className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-orange-100 text-orange-800 cursor-pointer"
+                                                                                                    onClick={(e) => {
+                                                                                                        e.stopPropagation();
+                                                                                                        if (item.ajuste_id) {
+                                                                                                            setAjusteSeleccionado({
+                                                                                                                ajusteId: item.ajuste_id,
+                                                                                                                productoId: item.producto.id,
+                                                                                                            });
+                                                                                                            setIsModalOpenInventario(true);
+                                                                                                        }
+                                                                                                    }}>
+                                                                                                    <Clock10 className="inline h-4 w-4 mr-1" />
+                                                                                                    Pendiente
+                                                                                                </span>
+                                                                                            }
+                                                                                        </>
+
+                                                                                    )}
+                                                                                </div>
+                                                                            )}
+                                                                        </TableCell>
+
+
+
+
+                                                                        <TableCell
+                                                                            className={`py-3 px-4 font-medium ${calculaDiferencia(item.cantidad_actual, item.cantidad_contada)! > 0
+                                                                                ? 'text-green-600'
+                                                                                : calculaDiferencia(item.cantidad_actual, item.cantidad_contada)! < 0
+                                                                                    ? 'text-red-600'
+                                                                                    : 'text-gray-500'
+                                                                                }`} >
+                                                                            {calculaDiferencia(item.cantidad_actual, item.cantidad_contada)}
+                                                                        </TableCell>
+
+                                                                    </>
+                                                                }
+                                                                <TableCell>
+                                                                    <Badge variant={stockStatus.color as | "default" | "destructive" | "secondary" | "outline"}>{stockStatus.status}</Badge>
+                                                                </TableCell>
+
+                                                                <TableCell>
+
+                                                                    {editedRows[item.id] !== undefined ? (
+                                                                        <>
+                                                                            {hasSubmenuPermission('inventarioFisico', 'update') && (
+                                                                                <>
+                                                                                    <Button
+                                                                                        size="sm"
+                                                                                        variant="outline"
+                                                                                        onClick={() => handleAplicarFila(item.id)}
+                                                                                        className="text-xs"
+                                                                                    >
+                                                                                        <Save className="h-3 w-3 mr-1" /> Aplicar
+                                                                                    </Button>
+                                                                                    <Button
+                                                                                        size="sm"
+                                                                                        variant="outline"
+                                                                                        onClick={() => handleLimpiarFila(item.id)}
+                                                                                        className="text-xs ml-2"
+                                                                                    >
+                                                                                        <BrushCleaning className="h-3 w-3 mr-1" /> Limpiar
+                                                                                    </Button>
+                                                                                </>
+                                                                            )}
+                                                                        </>
+                                                                    ) : (
+                                                                        <span className="text-muted-foreground text-xs"></span>
+                                                                    )}
+
+                                                                </TableCell>
+
+                                                            </TableRow>
+                                                        );
+                                                    })}
+                                                </motion.tbody>
+                                            )}
+                                        </AnimatePresence>
+
                                     </Table>
                                 </div>
 

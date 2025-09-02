@@ -94,9 +94,9 @@ class StockController extends Controller
                 'cantidad_contada' => $request->input('cantidad_contada'),
             ]);
 
-            return response()->json(['message' => 'Ajuste registrado correctamente.']);
+            return response()->json(['message' => 'Ajuste registrado correctamente.','success' => true]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al registrar el ajuste.'], 500);
+            return response()->json(['error' => 'Error al registrar el ajuste.','success' =>false]);
         }
     }
 
@@ -152,12 +152,12 @@ class StockController extends Controller
                     ]);
                 }
             } catch (\Exception $e) {
-                return response()->json(['error' => 'Error al crear ajustes masivos: ' . $e->getMessage()], 500);
+                return response()->json(['error' => 'Error al crear ajustes masivos: ' . $e->getMessage(),'success' =>false], 500);
             }
         }
 
         return response()->json([
-            'message' => 'Ajustes masivos registrados correctamente.'
+            'message' => 'Ajustes masivos registrados correctamente.','success' => true
         ]);
     }
 
@@ -185,6 +185,6 @@ class StockController extends Controller
             )
             ->get();
 
-        return response()->json(['data' => $ajusteData]);
+        return response()->json(['data' => $ajusteData ,'success' =>true]);
     }
 }

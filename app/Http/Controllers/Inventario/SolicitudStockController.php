@@ -52,12 +52,15 @@ class SolicitudStockController extends Controller
 
             return response()->json([
                 'message' => 'Solicitud creada con múltiples productos.',
-                'solicitud_id' => $solicitud->id
+                'solicitud_id' => $solicitud->id,
+                'success' =>true
+
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Error al procesar la solicitud.',
-                'details' => $e->getMessage()
+                'details' => $e->getMessage(),
+                'success' =>false
             ], 500);
         }
     }
@@ -163,6 +166,7 @@ class SolicitudStockController extends Controller
         return response()->json([
             'message' => 'Solicitud aceptada y detalles generados.',
             'solicitud_id' => $solicitud->id,
+            'success' =>true
         ]);
     }
 
@@ -181,6 +185,7 @@ class SolicitudStockController extends Controller
         return response()->json([
             'message' => 'Solicitud cancelada correctamente.',
             'solicitud_id' => $original->id,
+            'success' =>true
         ]);
     }
 

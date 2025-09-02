@@ -2,12 +2,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/Components/ui/table";
 import { Button } from "@/Components/ui/button";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import AceptarStock from "./ModalAprobarORechazarStock";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Pagination } from "./components/PaginationSolicitud";
 import { Solicitudes } from "./Types";
 import { Calendar, ChevronDown, ChevronRight, MapPin, Package } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
 interface SolicitudesModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -34,18 +36,18 @@ export default function SolicitudesStock({ isOpen, onClose, requests, }: Solicit
     const currentItemsMisSolicitudes = solicitudesAceptadas.slice(startIndexMisSolicitudes, endIndexMisSolicitudes);
     const [activeTab, setActiveTab] = useState("solicitadas");
     const [isLoading, setIsLoading] = useState(true);
-    const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
-
+    const [expandedRow, setExpandedRow] = useState<string | null>(null)
 
     const toggleRow = (solicitudId: string) => {
-        const newExpandedRows = new Set(expandedRows)
-        if (newExpandedRows.has(solicitudId)) {
-            newExpandedRows.delete(solicitudId)
+        if (expandedRow === solicitudId) {
+
+            setExpandedRow(null)
         } else {
-            newExpandedRows.add(solicitudId)
+
+            setExpandedRow(solicitudId)
         }
-        setExpandedRows(newExpandedRows)
     }
+
 
     const getEstadoBadge = (estado: string) => {
         const normalizado = estado.charAt(0).toUpperCase() + estado.slice(1).toLowerCase()
@@ -144,6 +146,7 @@ export default function SolicitudesStock({ isOpen, onClose, requests, }: Solicit
                                         <TableHead>Acciones</TableHead>
                                     </TableRow>
                                 </TableHeader>
+
                                 <TableBody>
                                     {currentItems.length > 0 ? (currentItems.map((solicitud) => (
                                         <TableRow key={solicitud.id}>
@@ -209,114 +212,146 @@ export default function SolicitudesStock({ isOpen, onClose, requests, }: Solicit
                                         <TableHead>Fecha</TableHead>
                                     </TableRow>
                                 </TableHeader>
-                                <TableBody>
-                                    {solicitudesAceptadas.map((solicitud: any) => {
-                                        const isExpanded = expandedRows.has(solicitud.id)
-                                        return [
-                                            // Fila principal
-                                            <TableRow key={solicitud.id} className="hover:bg-muted/50 cursor-pointer" onClick={() => toggleRow(solicitud.id)} >
-                                                <TableCell>
-                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            toggleRow(solicitud.id)
-                                                        }}
-                                                    >
-                                                        {isExpanded ? (
-                                                            <ChevronDown className="h-4 w-4" />
-                                                        ) : (
-                                                            <ChevronRight className="h-4 w-4" />
-                                                        )}
-                                                    </Button>
-                                                </TableCell>
-                                                <TableCell className="font-medium">SOL-0{solicitud.id}</TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-2">
-                                                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                                                        {solicitud.nombre_almacen_solicitante}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-2">
-                                                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                                                        {solicitud.nombre_almacen_proveedor}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className={getEstadoBadge(solicitud.estado)}>
-                                                        {solicitud.estado}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-2">
-                                                        <Package className="h-4 w-4 text-muted-foreground" />
-                                                        <span className="font-medium">{solicitud.detalles.length}</span>
-                                                        <span className="text-muted-foreground">productos</span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="max-w-[200px] truncate">
-                                                    {solicitud.motivo}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-2">
-                                                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                                                        {new Date(solicitud.fecha).toLocaleDateString()}
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>,
+                                <AnimatePresence mode="wait">
+                                    {isLoading ? (
+                                        <motion.tbody
+                                            key="skeleton"
+                                            initial={{ opacity: 0, y: -20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 20 }}
+                                            transition={{ duration: 0.35, ease: "easeInOut" }}
+                                        >
+                                            <DataTableSkeleton columnCount={7} rowCount={4} showHeaders={false} />
+                                        </motion.tbody>
+                                    ) : (
+                                        <motion.tbody
+                                            key="tbody"
+                                            initial={{ opacity: 0, y: -20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 20 }}
+                                            transition={{ duration: 0.35, ease: "easeInOut" }}
+                                            className="text-center"
+                                        >
 
-                                            // Fila expandida
-                                            isExpanded && (
-                                                <TableRow key={`${solicitud.id}-expanded`}>
-                                                    <TableCell colSpan={8} className="p-0">
-                                                        <div className="bg-muted/20 border-t">
-                                                            <div className="p-4">
-                                                                <h4 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">
-                                                                    Productos en esta solicitud
-                                                                </h4>
-                                                                <div className="space-y-2">
-                                                                    {solicitud.detalles.map((producto: any) => (
-                                                                        <div
-                                                                            key={producto.producto_id}
-                                                                            className="flex items-center justify-between p-3 bg-background rounded-lg border"
-                                                                        >
-                                                                            <div className="flex items-center gap-3">
-                                                                                <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                                                                                    <Package className="h-5 w-5 text-primary" />
-                                                                                </div>
-                                                                                <div>
-                                                                                    <p className="font-medium">{producto.nombre_producto}</p>
-                                                                                    <p className="text-sm text-muted-foreground">
-                                                                                        Código: {producto.codigo_producto}
-                                                                                    </p>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div className="flex items-center gap-6 text-sm">
-                                                                                <div className="text-center">
-                                                                                    <p className="font-medium">{producto.cantidad}</p>
-                                                                                    <p className="text-muted-foreground">Solicitada</p>
-                                                                                </div>
-                                                                                <div className="text-center">
-                                                                                    <p className="font-medium text-green-600">
-                                                                                        {producto.cantidad_aprobada}
-                                                                                    </p>
-                                                                                    <p className="text-muted-foreground">Aprobada</p>
-                                                                                </div>
-                                                                                <div className="text-center">
-                                                                                    <p className="text-muted-foreground">unidades</p>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    ))}
+                                            {currentItemsMisSolicitudes.map((solicitud: any, index: number) => {
+                                                const isExpanded = expandedRow === solicitud.id
+                                                return (
+                                                    <Fragment key={solicitud.id}>
+                                                        <TableRow className="hover:bg-muted/50 cursor-pointer" onClick={() => toggleRow(solicitud.id)} >
+                                                            <TableCell>
+                                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation()
+                                                                        toggleRow(solicitud.id)
+                                                                    }}
+                                                                >
+                                                                    {isExpanded ? (
+                                                                        <ChevronDown className="h-4 w-4" />
+                                                                    ) : (
+                                                                        <ChevronRight className="h-4 w-4" />
+                                                                    )}
+                                                                </Button>
+                                                            </TableCell>
+                                                            <TableCell className="font-medium">SOL-0{solicitud.id}</TableCell>
+                                                            <TableCell>
+                                                                <div className="flex items-center gap-2">
+                                                                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                                                                    {solicitud.nombre_almacen_solicitante}
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            )
-                                        ]
-                                    })}
-                                </TableBody>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex items-center gap-2">
+                                                                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                                                                    {solicitud.nombre_almacen_proveedor}
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className={getEstadoBadge(solicitud.estado)}>
+                                                                    {solicitud.estado}
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex items-center gap-2">
+                                                                    <Package className="h-4 w-4 text-muted-foreground" />
+                                                                    <span className="font-medium">{solicitud.detalles.length}</span>
+                                                                    <span className="text-muted-foreground">productos</span>
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className="max-w-[200px] truncate">
+                                                                {solicitud.motivo}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex items-center gap-2">
+                                                                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                                                                    {new Date(solicitud.fecha).toLocaleDateString()}
+                                                                </div>
+                                                            </TableCell>
+                                                        </TableRow>
+
+
+                                                        <AnimatePresence initial={false}>
+                                                            {isExpanded && (
+                                                                <TableRow key={`${solicitud.id}-expanded`}>
+                                                                    <TableCell colSpan={8} className="p-0">
+                                                                        <motion.div
+                                                                            initial={{ height: 0, opacity: 0 }}
+                                                                            animate={{ height: "auto", opacity: 1 }}
+                                                                            exit={{ height: 0, opacity: 0 }}
+                                                                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                                                                            style={{ overflow: "hidden" }}
+                                                                        >
+                                                                            <div className="bg-muted/20 border-t">
+                                                                                <div className="p-4">
+                                                                                    <h4 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">
+                                                                                        Productos en esta solicitud
+                                                                                    </h4>
+                                                                                    <div className="space-y-2">
+                                                                                        {solicitud.detalles.map((producto: any) => (
+                                                                                            <div
+                                                                                                key={producto.producto_id}
+                                                                                                className="flex items-center justify-between p-3 bg-background rounded-lg border"
+                                                                                            >
+                                                                                                <div className="flex items-center gap-3">
+                                                                                                    <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                                                                                        <Package className="h-5 w-5 text-primary" />
+                                                                                                    </div>
+                                                                                                    <div>
+                                                                                                        <p className="font-medium">{producto.nombre_producto}</p>
+                                                                                                        <p className="text-sm text-muted-foreground">
+                                                                                                            Código: {producto.codigo_producto}
+                                                                                                        </p>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                                <div className="flex items-center gap-6 text-sm">
+                                                                                                    <div className="text-center">
+                                                                                                        <p className="font-medium">{producto.cantidad}</p>
+                                                                                                        <p className="text-muted-foreground">Solicitada</p>
+                                                                                                    </div>
+                                                                                                    <div className="text-center">
+                                                                                                        <p className="font-medium text-green-600">{producto.cantidad_aprobada}</p>
+                                                                                                        <p className="text-muted-foreground">Aprobada</p>
+                                                                                                    </div>
+                                                                                                    <div className="text-center">
+                                                                                                        <p className="text-muted-foreground">unidades</p>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </motion.div>
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            )}
+                                                        </AnimatePresence>
+                                                    </Fragment>
+                                                )
+                                            })}
+
+                                        </motion.tbody>
+                                    )}
+                                </AnimatePresence>
                             </Table>
 
                             <Pagination
