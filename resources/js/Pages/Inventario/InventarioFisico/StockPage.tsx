@@ -9,7 +9,7 @@ import { usePermissions } from "@/composables/permissions";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { Label } from "@/Components/ui/label";
-import { Package, AlertTriangle, Plus, Search, ArrowUpDown, ArrowDownWideNarrow, ArrowUpNarrowWide, Bell, Save, BrushCleaning, Clock10 } from "lucide-react";
+import { Package, AlertTriangle, Plus, Search, ArrowUpDown, ArrowDownWideNarrow, ArrowUpNarrowWide, Bell, Save, BrushCleaning, Clock10, SquarePen, Pencil } from "lucide-react";
 import { Input } from "@/Components/ui/input";
 import { usePage } from "@inertiajs/react";
 import { Head } from "@inertiajs/react";
@@ -447,158 +447,227 @@ export default function StockManagement() {
                                                 <TableHead className="text-center">Acciones</TableHead>
                                             </TableRow>
                                         </TableHeader>
-                                        <AnimatePresence mode="wait">
-                                            {isLoading ? (
-                                                <motion.tbody
-                                                    key="skeleton"
-                                                    initial={{ opacity: 0, y: -20 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: 20 }}
-                                                    transition={{ duration: 0.35, ease: "easeInOut" }}
-                                                >
-                                                    <DataTableSkeleton columnCount={6} rowCount={5} showHeaders={false} />
-                                                </motion.tbody>
-                                            ) : (
-                                                <motion.tbody
-                                                    key="tbody"
-                                                    initial={{ opacity: 0, y: -20 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: 20 }}
-                                                    transition={{ duration: 0.35, ease: "easeInOut" }}
-                                                    className="text-center"
-                                                >
-                                                    {paginatedStock.map((item: StockItem, index: number) => {
-                                                        const stockStatus = getStockStatus(item.cantidad_actual, item.stock_minimo);
-                                                        return (
-                                                            <TableRow key={item.id + index}>
-                                                                <TableCell className="font-medium">{item.producto.nombre}</TableCell>
-                                                                <TableCell>{item.almacen.nombre}</TableCell>
-                                                                <TableCell className="font-mono relative">
-                                                                    <div className="flex items-center justify-center gap-2">
-                                                                        {item.cantidad_actual}
+                                        {isLoading ? (
+                                            <TableBody>
+                                                <DataTableSkeleton columnCount={6} rowCount={5} showHeaders={false}></DataTableSkeleton>
+                                            </TableBody>
+                                        ) : (
+                                            <TableBody className="text-center">
+                                                {paginatedStock.map((item: StockItem, index: number) => {
+                                                    const stockStatus = getStockStatus(item.cantidad_actual, item.stock_minimo);
+                                                    return (
+                                                        <TableRow key={item.id + index}>
+                                                            <TableCell className="font-medium">{item.producto.nombre}</TableCell>
+                                                            <TableCell>{item.almacen.nombre}</TableCell>
+                                                            <TableCell className="font-mono relative">
+                                                                <div className="flex items-center justify-center gap-2">
+                                                                    {item.cantidad_actual}
+                                                                </div>
+                                                            </TableCell>
+
+                                                            {/* Celda editable para Cantidades Contadas */}
+                                                            {hasSubmenuPermission('inventarioFisico', 'update') && hasSubmenuPermission('inventarioFisico', 'create') &&
+                                                                <>
+
+                                                                    {/* <TableCell
+                                                                className={`py-3 px-4 relative flex justify-center ${item.estado_ajuste !== 'nuevo' && hasSubmenuPermission('inventarioFisico', 'update')
+                                                                        ? 'cursor-pointer'
+                                                                        : ''
+                                                                    }`}
+                                                                
+                                                            >
+                                                                <Button   onClick={() => {
+                                                                    if (item.estado_ajuste !== 'nuevo' && hasSubmenuPermission('inventarioFisico', 'update')) {
+                                                                        handleCellClick(item.id, 'cantidad_contada');
+                                                                    }
+                                                                }} > <SquarePen /></Button>
+                                                                {editingCell &&
+                                                                    editingCell.rowId === item.id &&
+                                                                    editingCell.field === 'cantidad_contada' ? (                                                              
+                                                                     <input
+                                                                        ref={inputRef}
+                                                                        type="text"
+                                                                        value={item.cantidad_contada === 0 ? '' : item.cantidad_contada ?? ''}
+                                                                        onChange={(e) => handleInputChange(e, item.id, 'cantidad_contada')}
+                                                                        onBlur={handleInputBlur}
+                                                                        disabled={item.estado_ajuste === 'nuevo' || !hasSubmenuPermission('inventarioFisico', 'update')}
+                                                                        className={`w-24 p-1 border border-neutral-200 rounded-md ${item.estado_ajuste === 'nuevo' || !hasSubmenuPermission('inventarioFisico', 'update')
+                                                                                ? 'bg-neutral-100 text-gray-500 cursor-not-allowed focus:ring-0 focus:outline-none'
+                                                                                : 'focus:ring-2 focus:ring-neutral-300'
+                                                                            }`}
+                                                                    /> 
+                                                                      
+                                                                ) : (
+                                                                    <div  className={`flex items-center justify-center gap-1 rounded-md w-24 h-9 `}>
+                                                                        <span>
+                                                                            {item.cantidad_contada === 0 || item.cantidad_contada == null ? '' : item.cantidad_contada}
+                                                                        </span>
+                                                                        
+
+                                                                        {item.estado_ajuste === 'nuevo' && (
+                                                                            <>
+                                                                              {hasSubmenuPermission('inventarioFisico', 'confirm') && hasRole('admin') &&
+                                                                             <span
+                                                                                className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-orange-100 text-orange-800 cursor-pointer"
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    if (item.ajuste_id) {
+                                                                                        setAjusteSeleccionado({
+                                                                                            ajusteId: item.ajuste_id,
+                                                                                            productoId: item.producto.id,
+                                                                                        });
+                                                                                        setIsModalOpenInventario(true);
+                                                                                    }
+                                                                                }}>
+                                                                                <Clock10 className="inline h-4 w-4 mr-1" />
+                                                                                Pendiente
+                                                                            </span>
+                                                                            }
+                                                                            </>
+                                                                           
+                                                                        )}
                                                                     </div>
-                                                                </TableCell>
-
-                                                                {/* Celda editable para Cantidades Contadas */}
-                                                                {hasSubmenuPermission('inventarioFisico', 'update') && hasSubmenuPermission('inventarioFisico', 'create') &&
-                                                                    <>
-
-                                                                        <TableCell
-                                                                            className={`py-3 px-4 relative ${item.estado_ajuste !== 'nuevo' && hasSubmenuPermission('inventarioFisico', 'update')
-                                                                                ? 'cursor-pointer'
-                                                                                : ''
-                                                                                }`}
-                                                                            onClick={() => {
-                                                                                if (item.estado_ajuste !== 'nuevo' && hasSubmenuPermission('inventarioFisico', 'update')) {
-                                                                                    handleCellClick(item.id, 'cantidad_contada');
-                                                                                }
-                                                                            }}
-                                                                        >
-                                                                            {editingCell &&
-                                                                                editingCell.rowId === item.id &&
-                                                                                editingCell.field === 'cantidad_contada' ? (
+                                                                )}
+                                                            </TableCell> */}
+                                                                    <TableCell
+                                                                        className="py-3 px-4 relative flex justify-center"
+                                                                    >
+                                                                        {/* Caso: edición activa */}
+                                                                        {editingCell &&
+                                                                            editingCell.rowId === item.id &&
+                                                                            editingCell.field === "cantidad_contada" ? (
+                                                                            <AnimatePresence
+                                                                                initial={false}
+                                                                                mode="popLayout">
                                                                                 <input
                                                                                     ref={inputRef}
                                                                                     type="text"
-                                                                                    value={item.cantidad_contada === 0 ? '' : item.cantidad_contada ?? ''}
-                                                                                    onChange={(e) => handleInputChange(e, item.id, 'cantidad_contada')}
+                                                                                    value={item.cantidad_contada === 0 ? "" : item.cantidad_contada ?? ""}
+                                                                                    onChange={(e) => handleInputChange(e, item.id, "cantidad_contada")}
                                                                                     onBlur={handleInputBlur}
-                                                                                    disabled={item.estado_ajuste === 'nuevo' || !hasSubmenuPermission('inventarioFisico', 'update')}
-                                                                                    className={`w-24 p-1 border border-neutral-200 rounded-md ${item.estado_ajuste === 'nuevo' || !hasSubmenuPermission('inventarioFisico', 'update')
-                                                                                        ? 'bg-neutral-100 text-gray-500 cursor-not-allowed focus:ring-0 focus:outline-none'
-                                                                                        : 'focus:ring-2 focus:ring-neutral-300'
+                                                                                    disabled={
+                                                                                        item.estado_ajuste === "nuevo" ||
+                                                                                        !hasSubmenuPermission("inventarioFisico", "update")
+                                                                                    }
+                                                                                    className={`w-24 p-1 border border-neutral-200 rounded-md ${item.estado_ajuste === "nuevo" ||
+                                                                                        !hasSubmenuPermission("inventarioFisico", "update")
+                                                                                        ? "bg-neutral-100 text-gray-500 cursor-not-allowed focus:ring-0 focus:outline-none"
+                                                                                        : "focus:ring-2 focus:ring-neutral-300"
                                                                                         }`}
                                                                                 />
-                                                                            ) : (
-                                                                                <div className="flex items-center justify-center gap-1">
-                                                                                    <span>
-                                                                                        {item.cantidad_contada === 0 || item.cantidad_contada == null ? '' : item.cantidad_contada}
-                                                                                    </span>
+
+                                                                            </AnimatePresence>
+
+                                                                        ) : (
+                                                                            <div className="flex items-center justify-center gap-1 rounded-md w-24 h-9 ">
+                                                                                {/* Mostrar cantidad si existe */}
+                                                                                {item.cantidad_contada !== 0 && item.cantidad_contada != null ? (
+                                                                                    <span>{item.cantidad_contada}</span>
+                                                                                ) : (
+                                                                                    // Mostrar botón solo si no hay cantidad
+                                                                                    item.estado_ajuste !== "nuevo" &&
+                                                                                    hasSubmenuPermission("inventarioFisico", "update") && (
+
+                                                                                        <Tooltip>
+                                                                                            <TooltipTrigger asChild>
+                                                                                                <motion.button initial={false} whileTap={{ scale: 0.9 }}
 
 
-                                                                                    {item.estado_ajuste === 'nuevo' && (
-                                                                                        <>
-                                                                                            {hasSubmenuPermission('inventarioFisico', 'confirm') && hasRole('admin') &&
-                                                                                                <span
-                                                                                                    className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-orange-100 text-orange-800 cursor-pointer"
-                                                                                                    onClick={(e) => {
-                                                                                                        e.stopPropagation();
-                                                                                                        if (item.ajuste_id) {
-                                                                                                            setAjusteSeleccionado({
-                                                                                                                ajusteId: item.ajuste_id,
-                                                                                                                productoId: item.producto.id,
-                                                                                                            });
-                                                                                                            setIsModalOpenInventario(true);
-                                                                                                        }
-                                                                                                    }}>
-                                                                                                    <Clock10 className="inline h-4 w-4 mr-1" />
-                                                                                                    Pendiente
-                                                                                                </span>
-                                                                                            }
-                                                                                        </>
+                                                                                                    onClick={() =>
+                                                                                                        handleCellClick(item.id, "cantidad_contada")
+                                                                                                    }
+                                                                                                >
+                                                                                                    <Pencil className="color: text-amber-500" />
 
+                                                                                                </motion.button>
+                                                                                            </TooltipTrigger>
+                                                                                            <TooltipContent>
+                                                                                                <p>Agregar cantidad</p>
+                                                                                            </TooltipContent>
+                                                                                        </Tooltip>
+                                                                                    )
+                                                                                )}
+
+                                                                                {/* Badge "Pendiente" */}
+                                                                                {item.estado_ajuste === "nuevo" &&
+                                                                                    hasSubmenuPermission("inventarioFisico", "confirm") &&
+                                                                                    hasRole("admin") && (
+                                                                                        <span
+                                                                                            className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-orange-100 text-orange-800 cursor-pointer"
+                                                                                            onClick={(e) => {
+                                                                                                e.stopPropagation();
+                                                                                                if (item.ajuste_id) {
+                                                                                                    setAjusteSeleccionado({
+                                                                                                        ajusteId: item.ajuste_id,
+                                                                                                        productoId: item.producto.id,
+                                                                                                    });
+                                                                                                    setIsModalOpenInventario(true);
+                                                                                                }
+                                                                                            }}
+                                                                                        >
+                                                                                            <Clock10 className="inline h-4 w-4 mr-1" />
+                                                                                            Pendiente
+                                                                                        </span>
                                                                                     )}
-                                                                                </div>
-                                                                            )}
-                                                                        </TableCell>
+                                                                            </div>
+                                                                        )}
+                                                                    </TableCell>
 
 
 
 
-                                                                        <TableCell
-                                                                            className={`py-3 px-4 font-medium ${calculaDiferencia(item.cantidad_actual, item.cantidad_contada)! > 0
-                                                                                ? 'text-green-600'
-                                                                                : calculaDiferencia(item.cantidad_actual, item.cantidad_contada)! < 0
-                                                                                    ? 'text-red-600'
-                                                                                    : 'text-gray-500'
-                                                                                }`} >
-                                                                            {calculaDiferencia(item.cantidad_actual, item.cantidad_contada)}
-                                                                        </TableCell>
 
+                                                                    <TableCell
+                                                                        className={`py-3 px-4 font-medium ${calculaDiferencia(item.cantidad_actual, item.cantidad_contada)! > 0
+                                                                            ? 'text-green-600'
+                                                                            : calculaDiferencia(item.cantidad_actual, item.cantidad_contada)! < 0
+                                                                                ? 'text-red-600'
+                                                                                : 'text-gray-500'
+                                                                            }`} >
+                                                                        {calculaDiferencia(item.cantidad_actual, item.cantidad_contada)}
+                                                                    </TableCell>
+
+                                                                </>
+                                                            }
+                                                            <TableCell>
+                                                                <Badge variant={stockStatus.color as | "default" | "destructive" | "secondary" | "outline"}>{stockStatus.status}</Badge>
+                                                            </TableCell>
+
+                                                            <TableCell>
+
+                                                                {editedRows[item.id] !== undefined ? (
+                                                                    <>
+                                                                        {hasSubmenuPermission('inventarioFisico', 'update') && (
+                                                                            <>
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    variant="outline"
+                                                                                    onClick={() => handleAplicarFila(item.id)}
+                                                                                    className="text-xs"
+                                                                                >
+                                                                                    <Save className="h-3 w-3 mr-1" /> Aplicar
+                                                                                </Button>
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    variant="outline"
+                                                                                    onClick={() => handleLimpiarFila(item.id)}
+                                                                                    className="text-xs ml-2"
+                                                                                >
+                                                                                    <BrushCleaning className="h-3 w-3 mr-1" /> Limpiar
+                                                                                </Button>
+                                                                            </>
+                                                                        )}
                                                                     </>
-                                                                }
-                                                                <TableCell>
-                                                                    <Badge variant={stockStatus.color as | "default" | "destructive" | "secondary" | "outline"}>{stockStatus.status}</Badge>
-                                                                </TableCell>
+                                                                ) : (
+                                                                    <span className="text-muted-foreground text-xs"></span>
+                                                                )}
 
-                                                                <TableCell>
+                                                            </TableCell>
 
-                                                                    {editedRows[item.id] !== undefined ? (
-                                                                        <>
-                                                                            {hasSubmenuPermission('inventarioFisico', 'update') && (
-                                                                                <>
-                                                                                    <Button
-                                                                                        size="sm"
-                                                                                        variant="outline"
-                                                                                        onClick={() => handleAplicarFila(item.id)}
-                                                                                        className="text-xs"
-                                                                                    >
-                                                                                        <Save className="h-3 w-3 mr-1" /> Aplicar
-                                                                                    </Button>
-                                                                                    <Button
-                                                                                        size="sm"
-                                                                                        variant="outline"
-                                                                                        onClick={() => handleLimpiarFila(item.id)}
-                                                                                        className="text-xs ml-2"
-                                                                                    >
-                                                                                        <BrushCleaning className="h-3 w-3 mr-1" /> Limpiar
-                                                                                    </Button>
-                                                                                </>
-                                                                            )}
-                                                                        </>
-                                                                    ) : (
-                                                                        <span className="text-muted-foreground text-xs"></span>
-                                                                    )}
-
-                                                                </TableCell>
-
-                                                            </TableRow>
-                                                        );
-                                                    })}
-                                                </motion.tbody>
-                                            )}
-                                        </AnimatePresence>
-
+                                                        </TableRow>
+                                                    );
+                                                })}
+                                            </TableBody>)}
                                     </Table>
                                 </div>
 
