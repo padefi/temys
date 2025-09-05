@@ -52,7 +52,7 @@ class StockController extends Controller
             ->with(['producto', 'almacen'])
             ->get();
 
-        return Inertia::render('Inventario/InventarioFisico/StockPage', [
+        return Inertia::render('Inventario/InventarioFisico/StockManagement', [
             'stocks' => StockResource::collection($stock),
         ]);
     }

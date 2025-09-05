@@ -4,7 +4,7 @@ import { Button } from "@/Components/ui/button"
 import { Badge } from "@/Components/ui/badge"
 import { Separator } from "@/Components/ui/separator"
 import { Package, MapPin, Calendar, User, FileText, TrendingUp, TrendingDown } from "lucide-react"
-import { AjusteData } from "./Types"
+import { AjusteData } from "../Types"
 import axios from "axios"
 
 

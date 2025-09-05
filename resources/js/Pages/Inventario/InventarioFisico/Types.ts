@@ -69,3 +69,10 @@ export interface AjusteData {
     usuario: string
     motivo: string
 }
+
+export interface Permissions {
+  canUpdate: boolean;
+  canCreate: boolean;
+  canConfirm: boolean;
+  isAdmin: boolean;
+}
