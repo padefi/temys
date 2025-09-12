@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class InventarioRecepcionProductoDetalle extends Model
 {
-    protected $table = 'inventario_recepcion_productos_detalle';
+    protected $table = 'inventario_recepcion_detalles';
 
     public $timestamps = false;
 
     protected $fillable = [
-        'recepcion_producto_id',
+        'recepcion_id',
         'producto_id',
         'cantidad_recibida',
         'cantidad_esperada',

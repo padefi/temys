@@ -12,6 +12,7 @@ use App\Http\Resources\inventario\SolicitudRecibidaStockResource;
 use App\Models\Inventario\InventarioOrdenEntrega;
 use App\Models\Inventario\InventarioOrdenEntregaDetalle;
 use App\Models\Inventario\InventarioRecepcionProducto;
+use App\Models\Inventario\InventarioRecepcionProductoDetalle;
 use App\Models\Inventario\InventarioSolicitarDetalle;
 use App\Models\Inventario\InventarioSolicitarStock;
 use App\Models\Inventario\InventarioSolicitudDetalle;
@@ -53,14 +54,14 @@ class SolicitudStockController extends Controller
             return response()->json([
                 'message' => 'Solicitud creada con múltiples productos.',
                 'solicitud_id' => $solicitud->id,
-                'success' =>true
+                'success' => true
 
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Error al procesar la solicitud.',
                 'details' => $e->getMessage(),
-                'success' =>false
+                'success' => false
             ], 500);
         }
     }
@@ -133,7 +134,7 @@ class SolicitudStockController extends Controller
         }
 
         // Recepción
-        InventarioRecepcionProducto::create([
+        $ordenRecepcion = InventarioRecepcionProducto::create([
             'origen_id' => $solicitud->almacen_solicitante_id,
             'destino_id' => $solicitud->almacen_proveedor_id,
             'movimiento_id' => $solicitud->id,
@@ -142,6 +143,16 @@ class SolicitudStockController extends Controller
             'estado' => 'Pendiente',
             'usuario_creacion' => Auth::id(),
         ]);
+
+        // Crear detalle por cada producto aprobado
+        foreach ($request->productos as $producto) {
+            InventarioRecepcionProductoDetalle::insert([
+                'recepcion_id' => $ordenRecepcion->id,
+                'producto_id' => $producto['producto_id'],
+                'cantidad_esperada' => abs($producto['cantidad_aprobada']),
+            ]);
+        }
+
 
         // Orden de entrega
         $ordenEntrega = InventarioOrdenEntrega::create([
@@ -159,14 +170,14 @@ class SolicitudStockController extends Controller
             InventarioOrdenEntregaDetalle::create([
                 'orden_entrega_id' => $ordenEntrega->id,
                 'producto_id' => $producto['producto_id'],
-                'cantidad_enviada' => -abs($producto['cantidad_aprobada']),
+                'cantidad_enviada' => abs($producto['cantidad_aprobada']),
             ]);
         }
 
         return response()->json([
             'message' => 'Solicitud aceptada y detalles generados.',
             'solicitud_id' => $solicitud->id,
-            'success' =>true
+            'success' => true
         ]);
     }
 
@@ -185,7 +196,7 @@ class SolicitudStockController extends Controller
         return response()->json([
             'message' => 'Solicitud cancelada correctamente.',
             'solicitud_id' => $original->id,
-            'success' =>true
+            'success' => true
         ]);
     }
 

@@ -9,7 +9,7 @@ import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import { toast } from "sonner";
 import axios from "axios";
-import { AjusteInventarioModal } from "./modals/ModalConfirmarAjuste"; 
+import { AjusteInventarioModal } from "./modals/ModalConfirmarAjuste";
 
 interface Props {
   item: StockItem;
@@ -20,8 +20,8 @@ interface Props {
     status: string;
     color: string;
   };
-    editedRows: Record<number, number>;
-    setEditedRows: React.Dispatch<React.SetStateAction<Record<number, number>>>;
+  editedRows: Record<number, number>;
+  setEditedRows: React.Dispatch<React.SetStateAction<Record<number, number>>>;
 }
 interface AjusteSeleccionado {
   ajusteId: number;
@@ -42,7 +42,7 @@ export function StockTableRow({
   const { hasRole } = usePermissions();
   const [editingCell, setEditingCell] = useState<{ rowId: number, field: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
- // const [editedRows, setEditedRows] = useState<Record<number, number>>({})
+  // const [editedRows, setEditedRows] = useState<Record<number, number>>({})
   const [ajusteSeleccionado, setAjusteSeleccionado] = useState<AjusteSeleccionado | null>(null);
   const [isModalOpenInventario, setIsModalOpenInventario] = useState(false)
 
@@ -59,8 +59,8 @@ export function StockTableRow({
     id: number,
     field: keyof StockItem
   ) => {
-    const value=e.target.value;
-// solo dígitos
+    const value = e.target.value;
+    // solo dígitos
     if (!/^\d+$/.test(value)) {
       toast.error("Solo se permiten números");
       return;
@@ -74,15 +74,15 @@ export function StockTableRow({
       return;
     }
 
-  
 
-     ///Validar
+
+    ///Validar
     const newValue = Number(e.target.value);
     setStock(prevData =>
       prevData.map(item =>
         item.id === id ? { ...item, [field]: newValue } : item)
     );
-    
+
     setEditedRows(prev => ({ ...prev, [id]: newValue }));
   };
 
@@ -90,7 +90,7 @@ export function StockTableRow({
     if (editingCell) {
       const editedItem = stock.find(item => item.id === editingCell.rowId);
       if (!editedItem) return;
-     // setEditingCell(null);
+      // setEditingCell(null);
     }
   };
   // Función para calcular la diferencia
@@ -102,13 +102,13 @@ export function StockTableRow({
 
 
   const handleAplicarFila = async (id: number) => {
-    console.log('hola')
     const row = stock.find((item) => item.id === id);
     if (!row) return;
 
     try {
       const response = await axios.post(`/actualizar-cantidad-contadas/${id}`, {
         cantidad_contada: row.cantidad_contada,
+        motivo: 'Ajuste manual individual',
       });
       const data = await response.data;
 
@@ -138,8 +138,8 @@ export function StockTableRow({
   };
 
   return (
-    <>                    
-      <TableRow key={item.id + index}>        
+    <>
+      <TableRow key={item.id + index}>
         <TableCell className="font-medium">{item.producto.nombre}</TableCell>
         <TableCell>{item.almacen.nombre}</TableCell>
         <TableCell className="font-mono relative">
@@ -194,7 +194,7 @@ export function StockTableRow({
                               handleCellClick(item.id, "cantidad_contada")
                             }
                           >
-                          <Pencil className="color: text-amber-500" />
+                            <Pencil className="color: text-amber-500" />
                           </motion.button>
                         </TooltipTrigger>
                         <TooltipContent>

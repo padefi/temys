@@ -42,7 +42,6 @@ export function AjusteInventarioModal({
     }, [idAjuste, productoId]);
 
 
-
     if (!ajusteData) {
         return (
             <Dialog open={isOpen} onOpenChange={onClose}>
@@ -58,7 +57,7 @@ export function AjusteInventarioModal({
         );
     }
 
-    // 🔹 Ahora sí, ya tenemos datos
+  
     const isDiferenciaPositiva = ajusteData.diferencia > 0;
     const diferenciaColor = isDiferenciaPositiva ? "text-green-600" : "text-red-600";
     const diferenciaIcon = isDiferenciaPositiva ? TrendingUp : TrendingDown;

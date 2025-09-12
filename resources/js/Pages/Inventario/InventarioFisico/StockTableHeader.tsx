@@ -18,7 +18,7 @@ export function StockTableHeader({
   const { hasSubmenuPermission } = usePermissions();
   
   return (
-    <TableHeader className="sticky-header">
+    <TableHeader className="sticky-header"> 
       <TableRow>
         <TableHead className="text-center">Producto</TableHead>
         <TableHead className="text-center">Almacén Origen</TableHead>

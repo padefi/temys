@@ -49,8 +49,12 @@ class StockController extends Controller
                     ->where('estado_ajuste', 'nuevo');
             })
             ->where('inventario_stocks.almacen_id', $almacenId)
+            ->whereHas('producto', function ($q) {
+                $q->where('es_inventario', 1); 
+            })
             ->with(['producto', 'almacen'])
             ->get();
+
 
         return Inertia::render('Inventario/InventarioFisico/StockManagement', [
             'stocks' => StockResource::collection($stock),
@@ -58,47 +62,46 @@ class StockController extends Controller
     }
 
 
-    public function updateStock(Request $request, $id)
-    {
+public function updateStock(Request $request, $id)
+{
+    $request->validate([
+        'cantidad_contada' => 'required|numeric|min:0',
+        'motivo' => 'nullable|string|max:255', 
+    ]);
 
-        $request->validate([
-            'cantidad_contada' => 'required|numeric|min:0',
+    $branchId = Session::get('active_branch_id') ?? null;
+
+    $stock = InventarioStock::with('producto')
+        ->where('id', $id)
+        ->where('almacen_id', $branchId)
+        ->first();
+
+    if (!$stock) {
+        return response()->json(['error' => 'Stock no encontrado'], 404);
+    }
+
+    try {
+        $ajuste = InventarioAjuste::create([
+            'fecha_ajuste' => now(),
+            'almacen_destino_id' => $branchId,
+            'usuario_creacion' => Auth::id(),
+            'estado_ajuste' => 'nuevo',
+            'motivo' => $request->input('motivo'),
         ]);
 
-        //  Tomo el branch_id activo desde la sesión      
-        $branchId = Session::get('active_branch_id') ?? null;
+        InventarioAjusteDetalle::create([
+            'ajuste_inventario_id' => $ajuste->id,
+            'producto_id' => $stock->producto_id,
+            'cantidad_sistema' => $stock->cantidad_actual,
+            'cantidad_contada' => $request->input('cantidad_contada'),
+        ]);
 
-        // $stock = InventarioStock::with('producto')->find($id);
-        $stock = InventarioStock::with('producto')
-            ->where('id', $id)
-            ->where('almacen_id', $branchId) // o almacen_id según tu diseño
-            ->first();
-        if (!$stock) {
-            return response()->json(['error' => 'Stock no encontrado'], 404);
-        }
-
-        try {
-            // Siempre crear un nuevo ajuste
-            $ajuste = InventarioAjuste::create([
-                'fecha_ajuste' => now(),
-                'almacen_destino_id' => $branchId,
-                'usuario_creacion' => Auth::id(),
-                'estado_ajuste' => 'nuevo',
-                'motivo' => 'Ajuste manual individual',
-            ]);
-
-            InventarioAjusteDetalle::create([
-                'ajuste_inventario_id' => $ajuste->id,
-                'producto_id' => $stock->producto_id,
-                'cantidad_sistema' => $stock->cantidad_actual,
-                'cantidad_contada' => $request->input('cantidad_contada'),
-            ]);
-
-            return response()->json(['message' => 'Ajuste registrado correctamente.','success' => true]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al registrar el ajuste.','success' =>false]);
-        }
+        return response()->json(['message' => 'Ajuste registrado correctamente.', 'success' => true]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Error al registrar el ajuste.', 'success' => false]);
     }
+}
+
 
     public function actualizarMasivo(Request $request)
     {
@@ -152,12 +155,13 @@ class StockController extends Controller
                     ]);
                 }
             } catch (\Exception $e) {
-                return response()->json(['error' => 'Error al crear ajustes masivos: ' . $e->getMessage(),'success' =>false], 500);
+                return response()->json(['error' => 'Error al crear ajustes masivos: ' . $e->getMessage(), 'success' => false], 500);
             }
         }
 
         return response()->json([
-            'message' => 'Ajustes masivos registrados correctamente.','success' => true
+            'message' => 'Ajustes masivos registrados correctamente.',
+            'success' => true
         ]);
     }
 
@@ -185,6 +189,6 @@ class StockController extends Controller
             )
             ->get();
 
-        return response()->json(['data' => $ajusteData ,'success' =>true]);
+        return response()->json(['data' => $ajusteData, 'success' => true]);
     }
 }
