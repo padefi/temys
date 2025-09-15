@@ -17,10 +17,18 @@ return new class extends Migration
             $table->unsignedBigInteger('impuesto_id');
             $table->timestamps();
 
-            $table->foreign('orden_compras_detalles_id', 'ocompras_impuestos_detalle_fk')
+            // 🔹 Nombres de constraints personalizados (más cortos)
+            $table->foreign('orden_compras_detalles_id', 'ocd_impuesto_ocd_fk')
                 ->references('id')
-                ->on('orden_compras_detalles');
-            $table->foreign('impuesto_id')->references('id')->on('impuestos');
+                ->on('orden_compras_detalles')
+                ->onDelete('cascade');
+
+            $table->foreign('impuesto_id', 'ocd_impuesto_imp_fk')
+                ->references('id')
+                ->on('impuestos')
+                ->onDelete('cascade');
+
+
         });
     }
 

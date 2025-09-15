@@ -10,10 +10,12 @@ use App\Models\Padron\Proveedor\Proveedor;
 use App\Models\General\TipoMoneda;
 use Illuminate\Http\Request;
 use App\Models\Compras\OrdenCotizacion\OrdenCotizacion;
+use App\Models\Compras\OrdenCotizacion\OrdenCotizacionArchivo;
 use App\Models\Compras\OrdenCotizacion\OrdenCotizacionDetalle;
 use App\Models\Compras\SolicitudCompra;
 use Illuminate\Support\Facades\DB;
 use App\Models\Inventario\Productos\Producto;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 use function Laravel\Prompts\alert;
@@ -30,7 +32,7 @@ class OrdenCotizacionesController extends Controller
             'ordenesCotizacion.tipoMoneda',
             'origen',
             'ordenesCotizacion.ordenesCompra',
-            'ordenesCotizacion.almacen'
+            'ordenesCotizacion.almacenDestino'
         ])->get();
 
 
@@ -59,19 +61,21 @@ class OrdenCotizacionesController extends Controller
     ////////////Enviar Cotizacion
     public function enviarCotizacion(Request $request)
     {
+
         $validated = $request->validate([
             'solicitudCompra' => 'nullable|numeric',
             'ordenCotizacion' => 'nullable|numeric',
             'proveedor' => 'required|string',
-            'moneda' => 'required|string',
+            'moneda' => 'required|numeric',
             'cotizar_antes_de' => 'required|date',
             'entrega_esperada' => 'required|date',
-            'entregar_a' => 'required|string',
+            'almacen' => 'required|numeric',
             'observaciones' => 'nullable|string',
             'usuario_id' => 'required|numeric',
             'productos' => 'required|array|min:1',
             'productos.*.producto_id' => 'required|exists:productos,id',
             'productos.*.descripcion' => 'required|string',
+            'productos.*.entrega_esperada' => 'required|date',
             'productos.*.codigo_barras' => 'nullable|string',
             'productos.*.referencia' => 'nullable|string',
             'productos.*.cantidad' => 'required|numeric|min:1',
@@ -81,12 +85,11 @@ class OrdenCotizacionesController extends Controller
         ]);
 
         $proveedor = Proveedor::where('nombre_fantasia', $validated['proveedor'])->firstOrFail();
-        $moneda = TipoMoneda::where('descripcion', $validated['moneda'])->firstOrFail();
 
         DB::beginTransaction();
 
         try {
-            // 🔵 1) Solicitud
+             // 🔵 1) Solicitud
             if (!empty($validated['solicitudCompra'])) {
                 $solicitud = SolicitudCompra::findOrFail($validated['solicitudCompra']);
                 $solicitud->update([
@@ -102,32 +105,30 @@ class OrdenCotizacionesController extends Controller
                     'usuario_actualizacion' => null,
                 ]);
             }
-
-            // 🔵 2) Orden
+            // 2) Orden de compra
             if (!empty($validated['ordenCotizacion'])) {
                 $orden = OrdenCotizacion::findOrFail($validated['ordenCotizacion']);
                 $orden->update([
-                    'proveedor_id' => $proveedor->id,
-                    'moneda_id' => $moneda->id,
-                    'cotizar_antes_de' => $validated['cotizar_antes_de'],
-                    'entrega_esperada' => $validated['entrega_esperada'],
-                    'entregar_a' => $validated['entregar_a'],
-                    'observaciones' => $validated['observaciones'] ?? '',
+                    'proveedor_id'          => $proveedor->id,
+                    'moneda_id'             => $validated['moneda'],
+                    'cotizar_antes_de'      => $validated['cotizar_antes_de'],
+                    'entrega_esperada'      => $validated['entrega_esperada'],
+                    'almacen_destino_id'    => $validated['almacen'],
+                    'observaciones'         => $validated['observaciones'] ?? '',
                     'usuario_actualizacion' => $validated['usuario_id'],
+                    'estado'                => 'Confirmada',
                 ]);
-
-                $orden->detalles()->delete();
             } else {
                 $orden = OrdenCotizacion::create([
-                    'proveedor_id' => $proveedor->id,
-                    'moneda_id' => $moneda->id,
-                    'cotizar_antes_de' => $validated['cotizar_antes_de'],
-                    'entrega_esperada' => $validated['entrega_esperada'],
-                    'entregar_a' => $validated['entregar_a'],
-                    'observaciones' => $validated['observaciones'] ?? '',
-                    'usuario_id' => $validated['usuario_id'],
+                    'proveedor_id'          => $proveedor->id,
+                    'moneda_id'             => $validated['moneda'],
+                    'cotizar_antes_de'      => $validated['cotizar_antes_de'],
+                    'entrega_esperada'      => $validated['entrega_esperada'],
+                    'almacen_destino_id'    => $validated['almacen'],
+                    'observaciones'         => $validated['observaciones'] ?? '',
+                    'usuario_id'            => $validated['usuario_id'],
                     'usuario_actualizacion' => null,
-                    'estado' => 'Pendiente',
+                    'estado'                => 'Confirmada',
                 ]);
             }
 
@@ -136,52 +137,86 @@ class OrdenCotizacionesController extends Controller
                 $orden->solicitudCompra()->attach($solicitud->id);
             }
 
-            // 🔵 4) Detalles
+            // 4) Detalles
+            $productosIds = [];
+
             foreach ($validated['productos'] as $producto) {
-                OrdenCotizacionDetalle::create([
-                    'orden_cotizaciones_id' => $orden->id,
-                    'producto_id' => $producto['producto_id'],
-                    'descripcion' => $producto['descripcion'] ?? '',
-                    'codigo_barras' => $producto['codigo_barras'] ?? '',
-                    'referencia' => $producto['referencia'] ?? '',
-                    'cantidad' => $producto['cantidad'],
-                    'precio_unitario' => $producto['precio_unitario'] ?? 0,
-                    'porcentaje_descuento' => $producto['porcentaje_descuento'] ?? 0,
-                    'importe' => $producto['importe'] ?? 0,
-                    'usuario_id' => $validated['usuario_id'],
-                ]);
+                if (!empty($producto['id'])) {
+                    // 🔄 Actualiza detalle existente
+                    $detalle = OrdenCotizacionDetalle::where('id', $producto['id'])
+                        ->where('orden_cotizaciones_id', $orden->id)
+                        ->first();
+
+                    if ($detalle) {
+                        $detalle->update([
+                            'entrega_esperada'     => $producto['entrega_esperada'],
+                            'descripcion'          => $producto['descripcion'] ?? '',
+                            'codigo_barras'        => $producto['codigo_barras'] ?? '',
+                            'referencia'           => $producto['referencia'] ?? '',
+                            'cantidad'             => $producto['cantidad'] ?? 0,
+                            'precio_unitario'      => $producto['precio_unitario'] ?? 0,
+                            'porcentaje_descuento' => $producto['porcentaje_descuento'] ?? 0,
+                            'importe'              => $producto['importe'] ?? 0,
+                            'usuario_actualizacion'=> $validated['usuario_id'],
+                        ]);
+                    }
+                } else {
+                    // 🆕 Crea nuevo detalle
+                    $detalle = OrdenCotizacionDetalle::create([
+                        'orden_cotizaciones_id' => $orden->id,
+                        'producto_id'           => $producto['producto_id'],
+                        'entrega_esperada'      => $producto['entrega_esperada'],
+                        'descripcion'           => $producto['descripcion'] ?? '',
+                        'codigo_barras'         => $producto['codigo_barras'] ?? '',
+                        'referencia'            => $producto['referencia'] ?? '',
+                        'cantidad'              => $producto['cantidad'] ?? 0,
+                        'precio_unitario'       => $producto['precio_unitario'] ?? 0,
+                        'porcentaje_descuento'  => $producto['porcentaje_descuento'] ?? 0,
+                        'importe'               => $producto['importe'] ?? 0,
+                        'usuario_id'            => $validated['usuario_id'],
+                    ]);
+                }
+
+                $productosIds[] = $detalle->id;
             }
+
+            // 🔴 Borrar los detalles que ya no están en el request
+            $orden->detalles()
+                ->whereNotIn('id', $productosIds)
+                ->delete();
 
             DB::commit();
 
 
-
+            return redirect()->back()->with('success', 'Orden de cotización confirmada correctamente.');
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return response()->json([
-                'message' => 'Error interno: ' . $e->getMessage(),
-            ], 500);
+            return redirect()->back()->with('danger', 'Error al enviada la orden de cotización.');
         }
+
     }
 
 
     ////////////Confirmar Cotizacion
     public function confirmarCotizacion(Request $request)
     {
+
+
         $validated = $request->validate([
             'solicitudCompra' => 'nullable|numeric',
             'ordenCotizacion' => 'nullable|numeric',
             'proveedor' => 'required|string',
-            'moneda' => 'required|string',
+            'moneda' => 'required|numeric',
             'cotizar_antes_de' => 'required|date',
             'entrega_esperada' => 'required|date',
-            'entregar_a' => 'required|string',
+            'almacen' => 'required|numeric',
             'observaciones' => 'nullable|string',
             'usuario_id' => 'required|numeric',
             'productos' => 'required|array|min:1',
             'productos.*.producto_id' => 'required|exists:productos,id',
             'productos.*.descripcion' => 'required|string',
+            'productos.*.entrega_esperada' => 'required|date',
             'productos.*.codigo_barras' => 'nullable|string',
             'productos.*.referencia' => 'nullable|string',
             'productos.*.cantidad' => 'required|numeric|min:1',
@@ -191,12 +226,11 @@ class OrdenCotizacionesController extends Controller
         ]);
 
         $proveedor = Proveedor::where('nombre_fantasia', $validated['proveedor'])->firstOrFail();
-        $moneda = TipoMoneda::where('descripcion', $validated['moneda'])->firstOrFail();
 
         DB::beginTransaction();
 
         try {
-            // 🔵 1) Solicitud
+             // 🔵 1) Solicitud
             if (!empty($validated['solicitudCompra'])) {
                 $solicitud = SolicitudCompra::findOrFail($validated['solicitudCompra']);
                 $solicitud->update([
@@ -212,34 +246,30 @@ class OrdenCotizacionesController extends Controller
                     'usuario_actualizacion' => null,
                 ]);
             }
-
-            // 🔵 2) Orden
+            // 2) Orden de compra
             if (!empty($validated['ordenCotizacion'])) {
                 $orden = OrdenCotizacion::findOrFail($validated['ordenCotizacion']);
                 $orden->update([
-                    'proveedor_id' => $proveedor->id,
-                    'moneda_id' => $moneda->id,
-                    'cotizar_antes_de' => $validated['cotizar_antes_de'],
-                    'entrega_esperada' => $validated['entrega_esperada'],
-                    'entregar_a' => $validated['entregar_a'],
-                    'estado' => 'Confirmada',
-                    'observaciones' => $validated['observaciones'] ?? '',
+                    'proveedor_id'          => $proveedor->id,
+                    'moneda_id'             => $validated['moneda'],
+                    'cotizar_antes_de'      => $validated['cotizar_antes_de'],
+                    'entrega_esperada'      => $validated['entrega_esperada'],
+                    'almacen_destino_id'    => $validated['almacen'],
+                    'observaciones'         => $validated['observaciones'] ?? '',
                     'usuario_actualizacion' => $validated['usuario_id'],
+                    'estado'                => 'Confirmada',
                 ]);
-
-                $orden->detalles()->delete();
             } else {
                 $orden = OrdenCotizacion::create([
-                    'proveedor_id' => $proveedor->id,
-                    'moneda_id' => $moneda->id,
-                    'cotizar_antes_de' => $validated['cotizar_antes_de'],
-                    'entrega_esperada' => $validated['entrega_esperada'],
-                    'entregar_a' => $validated['entregar_a'],
-                    'estado' => 'Confirmada',
-                    'observaciones' => $validated['observaciones'] ?? '',
-                    'usuario_id' => $validated['usuario_id'],
+                    'proveedor_id'          => $proveedor->id,
+                    'moneda_id'             => $validated['moneda'],
+                    'cotizar_antes_de'      => $validated['cotizar_antes_de'],
+                    'entrega_esperada'      => $validated['entrega_esperada'],
+                    'almacen_destino_id'    => $validated['almacen'],
+                    'observaciones'         => $validated['observaciones'] ?? '',
+                    'usuario_id'            => $validated['usuario_id'],
                     'usuario_actualizacion' => null,
-                    'estado' => 'Pendiente',
+                    'estado'                => 'Confirmada',
                 ]);
             }
 
@@ -248,32 +278,64 @@ class OrdenCotizacionesController extends Controller
                 $orden->solicitudCompra()->attach($solicitud->id);
             }
 
-            // 🔵 4) Detalles
+            // 4) Detalles
+            $productosIds = [];
+
             foreach ($validated['productos'] as $producto) {
-                OrdenCotizacionDetalle::create([
-                    'orden_cotizaciones_id' => $orden->id,
-                    'producto_id' => $producto['producto_id'],
-                    'descripcion' => $producto['descripcion'] ?? '',
-                    'codigo_barras' => $producto['codigo_barras'] ?? '',
-                    'referencia' => $producto['referencia'] ?? '',
-                    'cantidad' => $producto['cantidad'],
-                    'precio_unitario' => $producto['precio_unitario'] ?? 0,
-                    'porcentaje_descuento' => $producto['porcentaje_descuento'] ?? 0,
-                    'importe' => $producto['importe'] ?? 0,
-                    'usuario_id' => $validated['usuario_id'],
-                ]);
+                if (!empty($producto['id'])) {
+                    // 🔄 Actualiza detalle existente
+                    $detalle = OrdenCotizacionDetalle::where('id', $producto['id'])
+                        ->where('orden_cotizaciones_id', $orden->id)
+                        ->first();
+
+                    if ($detalle) {
+                        $detalle->update([
+                            'entrega_esperada'     => $producto['entrega_esperada'],
+                            'descripcion'          => $producto['descripcion'] ?? '',
+                            'codigo_barras'        => $producto['codigo_barras'] ?? '',
+                            'referencia'           => $producto['referencia'] ?? '',
+                            'cantidad'             => $producto['cantidad'] ?? 0,
+                            'precio_unitario'      => $producto['precio_unitario'] ?? 0,
+                            'porcentaje_descuento' => $producto['porcentaje_descuento'] ?? 0,
+                            'importe'              => $producto['importe'] ?? 0,
+                            'usuario_actualizacion'=> $validated['usuario_id'],
+                        ]);
+                    }
+                } else {
+                    // 🆕 Crea nuevo detalle
+                    $detalle = OrdenCotizacionDetalle::create([
+                        'orden_cotizaciones_id' => $orden->id,
+                        'producto_id'           => $producto['producto_id'],
+                        'entrega_esperada'      => $producto['entrega_esperada'],
+                        'descripcion'           => $producto['descripcion'] ?? '',
+                        'codigo_barras'         => $producto['codigo_barras'] ?? '',
+                        'referencia'            => $producto['referencia'] ?? '',
+                        'cantidad'              => $producto['cantidad'] ?? 0,
+                        'precio_unitario'       => $producto['precio_unitario'] ?? 0,
+                        'porcentaje_descuento'  => $producto['porcentaje_descuento'] ?? 0,
+                        'importe'               => $producto['importe'] ?? 0,
+                        'usuario_id'            => $validated['usuario_id'],
+                    ]);
+                }
+
+                $productosIds[] = $detalle->id;
             }
+
+            // 🔴 Borrar los detalles que ya no están en el request
+            $orden->detalles()
+                ->whereNotIn('id', $productosIds)
+                ->delete();
 
             DB::commit();
 
 
+        return redirect()->back()->with('success', 'Orden de cotización confirmada correctamente.');
 
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return response()->json([
-                'message' => 'Error interno: ' . $e->getMessage(),
-            ], 500);
+        return redirect()->back()->with('danger', $e);
+
         }
     }
 
@@ -292,11 +354,13 @@ class OrdenCotizacionesController extends Controller
                 'ordenesCotizacion.proveedor',
                 'ordenesCotizacion.tipoMoneda',
                 'ordenesCotizacion.detalles',
+                'ordenesCotizacion.almacenDestino',
                 'ordenesCotizacion.almacen',
                 'ordenesCotizacion.detalles.producto',
                 'ordenesCotizacion.detalles.producto.modelo',
                 'ordenesCotizacion.detalles.producto.subCategoria',
                 'ordenesCotizacion.ordenesCompra',
+                'ordenesCotizacion.archivos',
             ]);
         }
 
@@ -309,7 +373,7 @@ class OrdenCotizacionesController extends Controller
             'proveedores' => [
                 'data' => Proveedor::with('padron')->get()
             ],
-            'almacen' => Almacen::all(),
+            'almacenDestino' => Almacen::all(),
             'tipoMonedas' => TipoMoneda::all(),
             'productos' => Producto::with('modelo', 'subCategoria')->get(),
         ]);
@@ -337,7 +401,6 @@ class OrdenCotizacionesController extends Controller
 
     public function generarOrdenCompra(Request $request)
     {
-        //dd($request->all());
         $validated = $request->validate([
             'ordenes' => 'required|array',
             'ordenes.*' => 'integer',
@@ -350,44 +413,37 @@ class OrdenCotizacionesController extends Controller
             return back()->with('error', 'No se seleccionaron órdenes para generar la orden de compra.');
         }
 
-        // ⚡ 1. Traer las órdenes de cotización
-        $ordenesCotizacion = OrdenCotizacion::whereIn('id', $ordenesCotizacionIds)->get();
+        $ordenesCotizacion = OrdenCotizacion::whereIn('id', $ordenesCotizacionIds)->with('detalles')->get();
 
         if ($ordenesCotizacion->isEmpty()) {
-            return redirect()->back()->with('error', 'No se encontraron órdenes de cotización.');
-        }
-
-        // ⚡ 2. Validar que tengan el mismo proveedor (opcional, pero recomendado)
-        $proveedorId = $ordenesCotizacion->first()->proveedor_id;
-        $proveedorMismo = $ordenesCotizacion->every(fn ($oc) => $oc->proveedor_id === $proveedorId);
-
-        if (!$proveedorMismo) {
-            return redirect()->back()->with('error', 'Todas las órdenes deben ser del mismo proveedor.');
+            return back()->with('error', 'No se encontraron órdenes de cotización.');
         }
 
         DB::beginTransaction();
 
         try {
-            // ⚡ 3. Crear la orden de compra principal
-            $ordenCompra = OrdenCompra::create([
-                'proveedor_id' => $proveedorId,
-                'almacen_destino_id' => null, // Usa el campo correcto según tu tabla
-                'estado' => 'Enviada',
-                'fecha_creacion' => now(),
-                'usuario_creacion' => $validated['usuario_id'],
-                'fecha_actualizacion' => null,
-            ]);
+            foreach ($ordenesCotizacion as $oc) {
+                // Crear la orden de compra individual para cada orden de cotización
+                $ordenCompra = OrdenCompra::create([
+                    'proveedor_id' => $oc->proveedor_id,
+                    'moneda_id' => $oc->moneda_id,
+                    'entrega_esperada' => $oc->entrega_esperada,
+                    'almacen_destino_id' => $oc->almacen_destino_id,
+                    'observacion' => $oc->observacion,
+                    'estado' => 'Pendiente',
+                    'fecha_creacion' => now(),
+                    'usuario_creacion' => $validated['usuario_id'],
+                    'fecha_actualizacion' => null,
+                ]);
 
-            // ⚡ 4. Relacionar con las órdenes de cotización
-            $ordenCompra->ordenesCotizacion()->attach($ordenesCotizacionIds);
+                // Relacionar la orden de compra con la orden de cotización
+                $ordenCompra->ordenesCotizacion()->attach($oc->id);
 
-
-            // ⚡ 5. Insertar los detalles desde cada orden de cotización
-            foreach ($ordenesCotizacion as $ordenCotizacion) {
-                foreach ($ordenCotizacion->detalles as $detalle) {
+                // Copiar los detalles
+                foreach ($oc->detalles as $detalle) {
                     OrdenCompraDetalle::create([
                         'orden_compras_id' => $ordenCompra->id,
-                        'orden_cotizaciones_id' => $ordenCotizacion->id,
+                        'orden_cotizaciones_id' => $oc->id,
                         'producto_id' => $detalle->producto_id,
                         'descripcion' => $detalle->descripcion ?? '',
                         'cantidad' => $detalle->cantidad,
@@ -398,30 +454,31 @@ class OrdenCotizacionesController extends Controller
                         'created_at' => now(),
                     ]);
                 }
-            // ⚡ 6. Cambiar estado de la OC
-                $ordenCotizacion->estado = 'Confirmada';
-                $ordenCotizacion->save();
+
+                // Cambiar estado de la orden de cotización
+                $oc->estado = 'Confirmada';
+                $oc->save();
             }
 
             DB::commit();
 
-            return back()->with('success', 'Orden de compra generada y vinculada correctamente.');
+            return back()->with('success', 'Ordenes de compra generadas correctamente.');
 
         } catch (\Exception $e) {
-            Log::error('Error al generar orden de compra', ['error' => $e->getMessage()]);
-            return back()->with('error', 'Error al generar la orden de compra: ' . $e->getMessage());
+            DB::rollBack();
+            Log::error('Error al generar ordenes de compra', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Error al generar las órdenes de compra: ' . $e->getMessage());
         }
     }
 
-    ////////////Guardar
+
     public function guardar(Request $request)
     {
-
         $validated = $request->validate([
             'solicitudCompra' => 'nullable|numeric',
             'ordenCotizacion' => 'nullable|numeric',
             'proveedor' => 'required|string',
-            'moneda' => 'required|string',
+            'moneda' => 'required|numeric',
             'cotizar_antes_de' => 'required|date',
             'entrega_esperada' => 'required|date',
             'almacen' => 'required|numeric',
@@ -444,44 +501,60 @@ class OrdenCotizacionesController extends Controller
         DB::beginTransaction();
 
         try {
-           /// 1)orden de compra
-            if (!empty($validated['ordenCompra'])) {
-                $orden = OrdenCotizacion::findOrFail($validated['ordenCompra']);
+            // 1) Orden de compra
+            if (!empty($validated['ordenCotizacion'])) {
+                $orden = OrdenCotizacion::findOrFail($validated['ordenCotizacion']);
                 $orden->update([
-                    'proveedor_id' => $proveedor->id,
-                    'moneda_id' => $validated['moneda'],
-                    'entrega_esperada' => $validated['entrega_esperada'],
-                    'almacen_destino_id' => $validated['almacen'],
-                    'observaciones' => $validated['observaciones'] ?? '',
+                    'proveedor_id'          => $proveedor->id,
+                    'moneda_id'             => $validated['moneda'],
+                    'cotizar_antes_de'      => $validated['cotizar_antes_de'],
+                    'entrega_esperada'      => $validated['entrega_esperada'],
+                    'almacen_destino_id'    => $validated['almacen'],
+                    'observaciones'         => $validated['observaciones'] ?? '',
                     'usuario_actualizacion' => $validated['usuario_id'],
                 ]);
-
-
             } else {
                 $orden = OrdenCotizacion::create([
-                    'proveedor_id' => $proveedor->id,
-                    'moneda_id' => $validated['moneda'],
-                    'entrega_esperada' => $validated['entrega_esperada'],
-                    'almacen_destino_id' => $validated['almacen'],
-                    'observaciones' => $validated['observaciones'] ?? '',
-                    'usuario_creacion' => $validated['usuario_id'],
+                    'proveedor_id'          => $proveedor->id,
+                    'moneda_id'             => $validated['moneda'],
+                    'cotizar_antes_de'      => $validated['cotizar_antes_de'],
+                    'entrega_esperada'      => $validated['entrega_esperada'],
+                    'almacen_destino_id'    => $validated['almacen'],
+                    'observaciones'         => $validated['observaciones'] ?? '',
+                    'usuario_id'            => $validated['usuario_id'],
                     'usuario_actualizacion' => null,
-                    'estado' => 'Pendiente',
+                    'estado'                => 'Pendiente',
                 ]);
             }
 
-
-             // 🔵 2) Detalles
+            // 2) Detalles
             $productosIds = [];
 
             foreach ($validated['productos'] as $producto) {
-                $detalle = OrdenCotizacionDetalle::updateOrCreate(
-                    [
-                        // 🔑 Claves para identificar si ya existe
-                        'orden_cotizaciones_id'   => $orden->id,
-                        'producto_id'        => $producto['producto_id'],
-                    ],
-                    [
+                if (!empty($producto['id'])) {
+                    // 🔄 Actualiza detalle existente
+                    $detalle = OrdenCotizacionDetalle::where('id', $producto['id'])
+                        ->where('orden_cotizaciones_id', $orden->id)
+                        ->first();
+
+                    if ($detalle) {
+                        $detalle->update([
+                            'entrega_esperada'     => $producto['entrega_esperada'],
+                            'descripcion'          => $producto['descripcion'] ?? '',
+                            'codigo_barras'        => $producto['codigo_barras'] ?? '',
+                            'referencia'           => $producto['referencia'] ?? '',
+                            'cantidad'             => $producto['cantidad'] ?? 0,
+                            'precio_unitario'      => $producto['precio_unitario'] ?? 0,
+                            'porcentaje_descuento' => $producto['porcentaje_descuento'] ?? 0,
+                            'importe'              => $producto['importe'] ?? 0,
+                            'usuario_actualizacion'=> $validated['usuario_id'],
+                        ]);
+                    }
+                } else {
+                    // 🆕 Crea nuevo detalle
+                    $detalle = OrdenCotizacionDetalle::create([
+                        'orden_cotizaciones_id' => $orden->id,
+                        'producto_id'           => $producto['producto_id'],
                         'entrega_esperada'      => $producto['entrega_esperada'],
                         'descripcion'           => $producto['descripcion'] ?? '',
                         'codigo_barras'         => $producto['codigo_barras'] ?? '',
@@ -490,20 +563,14 @@ class OrdenCotizacionesController extends Controller
                         'precio_unitario'       => $producto['precio_unitario'] ?? 0,
                         'porcentaje_descuento'  => $producto['porcentaje_descuento'] ?? 0,
                         'importe'               => $producto['importe'] ?? 0,
-                        // 👇 esto evita el error en INSERT
-                        'usuario_creacion'      => $validated['usuario_id'],
-                    ]
-                );
-                // si fue update, setear usuario_actualizacion
-                if (! $detalle->wasRecentlyCreated) {
-                    $detalle->usuario_actualizacion = $validated['usuario_id'];
-                    $detalle->save();
+                        'usuario_id'            => $validated['usuario_id'],
+                    ]);
                 }
 
                 $productosIds[] = $detalle->id;
             }
 
-            // 🔴 Opcional: borrar detalles que ya no están en el request
+            // 🔴 Borrar los detalles que ya no están en el request
             $orden->detalles()
                 ->whereNotIn('id', $productosIds)
                 ->delete();
@@ -511,14 +578,65 @@ class OrdenCotizacionesController extends Controller
             DB::commit();
 
 
-
+            return redirect()->back()->with('success', 'Orden de cotización guardada correctamente.');
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return response()->json([
-                'message' => 'Error interno: ' . $e->getMessage(),
-            ], 500);
+            return redirect()->back()->with('danger', 'Error al guardar la orden de cotización.');
         }
+    }
+
+     // Guarda el archivo asociado
+    public function subirArchivo(Request $request, $id)
+    {
+        $request->validate([
+            'archivo' => 'required|file|max:10240',
+        ]);
+
+        $orden = OrdenCotizacion::findOrFail($id);
+
+        $file = $request->file('archivo');
+        $path = $file->store('cotizaciones_ordenes');
+
+        $orden->archivos()->create([
+            'nombre' => $file->getClientOriginalName(),
+            'path'   => $path,
+            'mime'   => $file->getMimeType(),
+            'size'   => $file->getSize(),
+        ]);
+
+        return redirect()->back()->with('success', 'Archivo subido correctamente');
+    }
+
+    public function eliminarArchivo(OrdenCotizacionArchivo $archivo)
+    {
+        try {
+            // Eliminar el archivo físico
+            if (Storage::exists($archivo->path)) {
+                Storage::delete($archivo->path);
+            }
+
+            // Eliminar registro en la DB
+            $archivo->delete();
+
+            return redirect()->back()->with('success', 'Archivo eliminado correctamente');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('success', 'El archivo no pudo ser eliminado', 500);
+        }
+    }
+
+
+    public function visualizarArchivo(OrdenCotizacionArchivo $archivo)
+    {
+
+    $path = storage_path('app/private/' . ltrim($archivo->path, '/'));
+
+
+    if (!file_exists($path)) {
+        abort(404, 'Archivo no encontrado: ' . $path);
+    }
+
+    return response()->file($path);
     }
 
 }

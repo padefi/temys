@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Compras\OrdenCompras;
 use App\Http\Controllers\Controller;
 use App\Models\Almacenes\Almacen;
 use App\Models\Compras\OrdenCompra;
+use App\Models\Compras\OrdenCompraArchivo;
 use App\Models\Compras\OrdenCompraDetalle;
 use App\Models\General\Impuesto;
 use App\Models\General\TipoMoneda;
@@ -11,6 +12,8 @@ use App\Models\Inventario\Productos\Producto;
 use App\Models\Padron\Proveedor\Proveedor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 
@@ -64,7 +67,7 @@ class OrdenComprasController extends Controller
             'ordenCotizacion' => 'nullable|numeric',
             'ordenCompra' => 'nullable|numeric',
             'proveedor' => 'required|string',
-            'moneda' => 'required|string',
+            'moneda' => 'required|numeric',
             'entrega_esperada' => 'required|date',
             'almacen' => 'required|numeric',
             'observaciones' => 'nullable|string',
@@ -79,6 +82,8 @@ class OrdenComprasController extends Controller
             'productos.*.precio_unitario' => 'nullable|numeric',
             'productos.*.porcentaje_descuento' => 'nullable|numeric',
             'productos.*.importe' => 'nullable|numeric',
+            'productos.*.impuestos_seleccionados' => 'nullable|array',
+            'productos.*.impuestos_seleccionados.*' => 'exists:impuestos,id',
         ]);
 
         $proveedor = Proveedor::where('nombre_fantasia', $validated['proveedor'])->firstOrFail();
@@ -86,83 +91,87 @@ class OrdenComprasController extends Controller
         DB::beginTransaction();
 
         try {
-
-            // 🔵 1) Orden Compra
+            /// 1)orden de compra
             if (!empty($validated['ordenCompra'])) {
-                $orden = OrdenCompra::findOrFail($validated['ordenCompra']);
+                $orden = ordenCompra::findOrFail($validated['ordenCompra']);
                 $orden->update([
                     'proveedor_id' => $proveedor->id,
                     'moneda_id' => $validated['moneda'],
-                    'almacen_destino_id' => $validated['almacen'],
                     'entrega_esperada' => $validated['entrega_esperada'],
-                    'estado' => 'Confirmada',
+                    'almacen_destino_id' => $validated['almacen'],
                     'observaciones' => $validated['observaciones'] ?? '',
                     'usuario_actualizacion' => $validated['usuario_id'],
+                    'estado' => 'Confirmada',
                 ]);
 
+
             } else {
-                $orden = OrdenCompra::create([
+                $orden = ordenCompra::create([
                     'proveedor_id' => $proveedor->id,
                     'moneda_id' => $validated['moneda'],
-                    'almacen_destino_id' => $validated['almacen'],
                     'entrega_esperada' => $validated['entrega_esperada'],
-                    'estado' => 'Confirmada',
+                    'almacen_destino_id' => $validated['almacen'],
                     'observaciones' => $validated['observaciones'] ?? '',
                     'usuario_creacion' => $validated['usuario_id'],
                     'usuario_actualizacion' => null,
+                    'estado' => 'Confirmada',
                 ]);
             }
 
 
-            // 🔵 2) Detalles
+             // 🔵 2) Detalles
             $productosIds = [];
 
             foreach ($validated['productos'] as $producto) {
                 $detalle = OrdenCompraDetalle::updateOrCreate(
                     [
-                        // 🔑 Claves para identificar si ya existe
-                        'orden_compras_id'   => $orden->id,
-                        'producto_id'        => $producto['producto_id'],
+                        'orden_compras_id' => $orden->id,
+                        'producto_id' => $producto['producto_id'],
                     ],
                     [
                         'orden_cotizaciones_id' => $orden->orden_cotizaciones_id,
-                        'entrega_esperada'      => $producto['entrega_esperada'],
-                        'descripcion'           => $producto['descripcion'] ?? '',
-                        'codigo_barras'         => $producto['codigo_barras'] ?? '',
-                        'referencia'            => $producto['referencia'] ?? '',
-                        'cantidad'              => $producto['cantidad'],
-                        'precio_unitario'       => $producto['precio_unitario'] ?? 0,
-                        'porcentaje_descuento'  => $producto['porcentaje_descuento'] ?? 0,
-                        'importe'               => $producto['importe'] ?? 0,
+                        'entrega_esperada' => $producto['entrega_esperada'],
+                        'descripcion' => $producto['descripcion'] ?? '',
+                        'codigo_barras' => $producto['codigo_barras'] ?? '',
+                        'referencia' => $producto['referencia'] ?? '',
+                        'cantidad' => $producto['cantidad'] ?? 0,
+                        'precio_unitario' => $producto['precio_unitario'] ?? 0,
+                        'porcentaje_descuento' => $producto['porcentaje_descuento'] ?? 0,
+                        'importe' => $producto['importe'] ?? 0,
+                        'usuario_creacion' => $validated['usuario_id'],
                     ]
                 );
-                // 👇 Diferenciar si es un insert o un update
-                if ($detalle->wasRecentlyCreated) {
-                    $detalle->usuario_creacion = $validated['usuario_id'];
-                } else {
+
+                if (! $detalle->wasRecentlyCreated) {
                     $detalle->usuario_actualizacion = $validated['usuario_id'];
+                    $detalle->save();
                 }
 
-                $detalle->save();
 
+                // Guardar impuestos (pivot)
+                $impuestos = $producto['impuestos_seleccionados'] ?? [];
+                if (!is_array($impuestos)) $impuestos = [];
+
+                // esto borra SOLO los vínculos de la pivot, nunca los impuestos
+                $detalle->impuestos()->sync($impuestos);
                 $productosIds[] = $detalle->id;
             }
+
 
             // 🔴 Opcional: borrar detalles que ya no están en el request
             $orden->detalles()
                 ->whereNotIn('id', $productosIds)
                 ->delete();
 
+
             DB::commit();
 
-
+        return redirect()->back()->with('success', 'Orden de cotización confirmada correctamente.');
 
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return response()->json([
-                'message' => 'Error interno: ' . $e->getMessage(),
-            ], 500);
+            return redirect()->back()->with('danger', $e);
         }
     }
 
@@ -172,10 +181,13 @@ class OrdenComprasController extends Controller
             'almacen',
             'proveedor',
             'tipoMoneda',
+            'archivos',
+            'ordenesCotizacion.archivos', // 👈 carga los archivos de cada OC
             'detalles',
             'detalles.producto',
             'detalles.producto.modelo',
             'detalles.producto.subCategoria',
+            'detalles.impuestos',
             ]);
 
         /*if ($orden_compra_id) {
@@ -231,6 +243,8 @@ class OrdenComprasController extends Controller
             'productos.*.precio_unitario' => 'nullable|numeric',
             'productos.*.porcentaje_descuento' => 'nullable|numeric',
             'productos.*.importe' => 'nullable|numeric',
+            'productos.*.impuestos_seleccionados' => 'nullable|array',
+            'productos.*.impuestos_seleccionados.*' => 'exists:impuestos,id',
         ]);
 
         $proveedor = Proveedor::where('nombre_fantasia', $validated['proveedor'])->firstOrFail();
@@ -238,6 +252,8 @@ class OrdenComprasController extends Controller
         DB::beginTransaction();
 
         try {
+
+
            /// 1)orden de compra
             if (!empty($validated['ordenCompra'])) {
                 $orden = ordenCompra::findOrFail($validated['ordenCompra']);
@@ -271,32 +287,38 @@ class OrdenComprasController extends Controller
             foreach ($validated['productos'] as $producto) {
                 $detalle = OrdenCompraDetalle::updateOrCreate(
                     [
-                        // 🔑 Claves para identificar si ya existe
-                        'orden_compras_id'   => $orden->id,
-                        'producto_id'        => $producto['producto_id'],
+                        'orden_compras_id' => $orden->id,
+                        'producto_id' => $producto['producto_id'],
                     ],
                     [
                         'orden_cotizaciones_id' => $orden->orden_cotizaciones_id,
-                        'entrega_esperada'      => $producto['entrega_esperada'],
-                        'descripcion'           => $producto['descripcion'] ?? '',
-                        'codigo_barras'         => $producto['codigo_barras'] ?? '',
-                        'referencia'            => $producto['referencia'] ?? '',
-                        'cantidad'              => $producto['cantidad'] ?? 0,
-                        'precio_unitario'       => $producto['precio_unitario'] ?? 0,
-                        'porcentaje_descuento'  => $producto['porcentaje_descuento'] ?? 0,
-                        'importe'               => $producto['importe'] ?? 0,
-                        // 👇 esto evita el error en INSERT
-                        'usuario_creacion'      => $validated['usuario_id'],
+                        'entrega_esperada' => $producto['entrega_esperada'],
+                        'descripcion' => $producto['descripcion'] ?? '',
+                        'codigo_barras' => $producto['codigo_barras'] ?? '',
+                        'referencia' => $producto['referencia'] ?? '',
+                        'cantidad' => $producto['cantidad'] ?? 0,
+                        'precio_unitario' => $producto['precio_unitario'] ?? 0,
+                        'porcentaje_descuento' => $producto['porcentaje_descuento'] ?? 0,
+                        'importe' => $producto['importe'] ?? 0,
+                        'usuario_creacion' => $validated['usuario_id'],
                     ]
                 );
-                // si fue update, setear usuario_actualizacion
+
                 if (! $detalle->wasRecentlyCreated) {
                     $detalle->usuario_actualizacion = $validated['usuario_id'];
                     $detalle->save();
                 }
 
+
+                // Guardar impuestos (pivot)
+                $impuestos = $producto['impuestos_seleccionados'] ?? [];
+                if (!is_array($impuestos)) $impuestos = [];
+
+                // esto borra SOLO los vínculos de la pivot, nunca los impuestos
+                $detalle->impuestos()->sync($impuestos);
                 $productosIds[] = $detalle->id;
             }
+
 
             // 🔴 Opcional: borrar detalles que ya no están en el request
             $orden->detalles()
@@ -306,13 +328,11 @@ class OrdenComprasController extends Controller
             DB::commit();
 
 
-
+        return redirect()->back()->with('success', 'Orden de Compra guardada correctamente.');
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return response()->json([
-                'message' => 'Error interno: ' . $e->getMessage(),
-            ], 500);
+            return redirect()->back()->with('danger', 'Error al guardar la orden de Compra.');
         }
     }
 
@@ -333,6 +353,52 @@ class OrdenComprasController extends Controller
         $orden->save();
 
         return redirect()->back()->with('success', 'Orden de compra cancelada correctamente');
+    }
+
+    // Guarda el archivo asociado
+    public function subirArchivo(Request $request, $id)
+    {
+        $request->validate([
+            'archivo' => 'required|file|max:10240',
+        ]);
+
+        $orden = OrdenCompra::findOrFail($id);
+
+        $file = $request->file('archivo');
+        $path = $file->store('ordenes_compras');
+
+        $orden->archivos()->create([
+            'nombre' => $file->getClientOriginalName(),
+            'path'   => $path,
+            'mime'   => $file->getMimeType(),
+            'size'   => $file->getSize(),
+        ]);
+
+        return redirect()->back()->with('success', 'Archivo subido correctamente');
+    }
+
+    public function eliminarArchivo(OrdenCompraArchivo $archivo)
+    {
+        try {
+            // Eliminar el archivo físico
+            if (Storage::exists($archivo->path)) {
+                Storage::delete($archivo->path);
+            }
+
+            // Eliminar registro en la DB
+            $archivo->delete();
+
+            return redirect()->back()->with('success', 'Archivo eliminado correctamente');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('danger', 'El archivo no pudo ser eliminado', 500);
+        }
+    }
+
+
+    public function visualizarArchivo(OrdenCompraArchivo $archivo)
+    {
+        // Esto asume que los archivos están en storage/app/private/ordenes-compras
+        return response()->file(storage_path('app/private/' . $archivo->path));
     }
 
 }

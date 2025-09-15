@@ -16,10 +16,9 @@ return new class extends Migration
             $table->unsignedBigInteger('proveedor_id');
             $table->unsignedBigInteger('moneda_id');
             $table->date('entrega_esperada');
-            $table->string('entregar_a');
             $table->string('observaciones')->nullable();
             $table->unsignedBigInteger('almacen_destino_id')->nullable();
-            $table->enum('estado', ['Enviada', 'Cerrada', 'Cancelada']);
+            $table->enum('estado', ['Pendiente', 'Confirmada','Finalizada', 'Cancelada']);
             $table->timestamp('fecha_creacion');
             $table->unsignedBigInteger('usuario_creacion');
             $table->dateTime('fecha_actualizacion')->nullable();

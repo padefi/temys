@@ -4,6 +4,7 @@ namespace App\Models\Compras;
 
 use App\Models\Almacenes\Almacen;
 use App\Models\Compras\OrdenCotizacion\OrdenCotizacion;
+use App\Models\Compras\OrdenCotizacion\OrdenCotizacionArchivo;
 use App\Models\General\TipoMoneda;
 use App\Models\Inventario\Productos\Producto;
 use App\Models\Padron\Proveedor\Proveedor;
@@ -22,7 +23,6 @@ class OrdenCompra extends Model
         'moneda_id',
         'almacen_destino_id',
         'entrega_esperada',
-        'entregar_a',
         'observaciones',
         'estado',
         'fecha_creacion',
@@ -75,6 +75,19 @@ class OrdenCompra extends Model
     public function tipoMoneda()
     {
         return $this->belongsTo(TipoMoneda::class, 'moneda_id');
+    }
+
+    public function archivos()
+    {
+        return $this->hasMany(OrdenCompraArchivo::class);
+    }
+
+    public function archivosOrdenCotizacion()
+    {
+        return OrdenCotizacionArchivo::whereIn(
+            'orden_cotizacion_id',
+            $this->ordenesCotizacion()->pluck('orden_cotizaciones.id')
+        );
     }
 
 

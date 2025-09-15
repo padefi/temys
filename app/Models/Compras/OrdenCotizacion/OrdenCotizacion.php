@@ -51,7 +51,7 @@ class OrdenCotizacion extends Model
         return $this->belongsTo(TipoMoneda::class, 'moneda_id');
     }
 
-    public function almacen()
+    public function almacenDestino()
     {
         return $this->belongsTo(Almacen::class, 'almacen_destino_id');
     }
@@ -64,6 +64,12 @@ class OrdenCotizacion extends Model
     public function actualizador()
     {
         return $this->belongsTo(User::class, 'usuario_actualizacion');
+    }
+
+    // Relación con el almacen que creó la orden
+    public function almacen()
+    {
+        return $this->belongsTo(Almacen::class, 'almacen_destino_id');
     }
 
     /////SOLICITUD DE COMPRA RELACIONADA
@@ -85,5 +91,10 @@ class OrdenCotizacion extends Model
             'orden_cotizaciones_id',
             'orden_compras_id'
         );
+    }
+
+    public function archivos()
+    {
+        return $this->hasMany(OrdenCotizacionArchivo::class, 'orden_cotizacion_id');
     }
 }

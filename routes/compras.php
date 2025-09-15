@@ -33,6 +33,9 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
 
     Route::middleware(['submenu:cotizacionesOrdenesCompras'])->prefix('cotizaciones-ordenes')->group(function () {
 
+        Route::get('/archivo/{archivo}', [OrdenCotizacionesController::class, 'visualizarArchivo'])
+        ->name('cotizacionesOrdenes.visualizarArchivo')
+        ->middleware('auth'); // protege el archivo
         // Listado
         Route::get('/', [OrdenCotizacionesController::class, 'index'])
             ->name('cotizacionesOrdenesCompras');
@@ -69,6 +72,18 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
         Route::post('/guardar', [OrdenCotizacionesController::class, 'guardar'])
             ->name('cotizacionesOrdenes.guardar');
 
+
+        //SUBE ARCHIVO
+        Route::post('{orden}/archivo', [OrdenCotizacionesController::class, 'subirArchivo'])
+        ->name('cotizacionesOrdenes.subirArchivo');
+
+        Route::post('/archivo/{archivo}/eliminar', [OrdenCotizacionesController::class, 'eliminarArchivo'])
+        ->name('cotizacionesOrdenes.eliminar');
+
+
+
+
+
     });
 
 
@@ -96,6 +111,18 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
         // Cancelar
         Route::post('/cancelar', [OrdenComprasController::class, 'cancelar'])
             ->name('ordenesCompras.cancelar');
+
+        //SUBE ARCHIVO
+        Route::post('{orden}/archivo', [OrdenComprasController::class, 'subirArchivo'])
+        ->name('ordenesCompras.subirArchivo');
+
+        Route::post('/archivo/{archivo}/eliminar', [OrdenComprasController::class, 'eliminarArchivo'])
+        ->name('ordenesCompras.eliminar');
+
+        Route::get('/archivo/{archivo}', [OrdenComprasController::class, 'visualizarArchivo'])
+        ->name('ordenesCompras.visualizarArchivo')
+        ->middleware('auth'); // protege el archivo
+
 
     });
 });

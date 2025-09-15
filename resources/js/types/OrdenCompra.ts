@@ -1,4 +1,6 @@
 import { Almacen } from "./Almacen";
+import { Archivo } from "./Archivos";
+import { CotizacionOrden } from "./CotizacionOrden";
 import { OrdenesCompraDetalle } from "./OrdenCompraDetalle";
 import { TipoMoneda } from "./TipoMoneda";
 
@@ -16,7 +18,9 @@ export interface OrdenesCompra {
     observaciones: string;
     almacen_destino: number
     almacen: Almacen;
+    ordenes_cotizacion: CotizacionOrden
     detalles?: OrdenesCompraDetalle[]  // usa el tipo correcto si tienes uno
+    archivos?: Archivo[]
     created_at: Date;
     updated_at: Date;
     estado: string

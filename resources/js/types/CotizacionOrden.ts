@@ -4,12 +4,13 @@ import { SolicitudCompra } from "./SolicitudCompra";
 import { OrdenesCompra } from "./OrdenCompra";
 import { Almacen } from "./Almacen";
 
+import { Archivo } from "./Archivos";
 // types/CotizacionOrdenes.ts
 export interface CotizacionOrden {
     id: number;
     proveedor_id: number;
     proveedor : Proveedor// Relación opcional con el modelo
-    moneda_id: string;
+    moneda_id: number;
     tipo_moneda: TipoMoneda;
     cotizar_antes_de: Date;
     entregar_a: string;
@@ -27,6 +28,7 @@ export interface CotizacionOrden {
     solicitudes?: SolicitudCompra[]
     //////ORDEN DE COMPRA RELACIONADA
     ordenes_compra?: OrdenesCompra[]
+    archivos?: Archivo[]
 }
 
 export interface DetalleCotizacion {

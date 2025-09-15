@@ -233,12 +233,14 @@ export default function ComprasOrdenesListado({ onSelectionChange }: CotizacionO
                 <TableCell>{orden.proveedor?.razon_social}</TableCell>
                 <TableCell>{orden.almacen_destino?.nombre}</TableCell>
                 <TableCell className={
-                        orden.estado === 'Aceptada'
+                        orden.estado === 'Confirmada'
                             ? 'text-green-600'
                             : orden.estado === 'Pendiente'
                             ? 'text-yellow-600'
-                            : orden.estado === 'Rechazada'
+                            : orden.estado === 'Cancelada'
                             ? 'text-red-600'
+                            : orden.estado === 'Finalizada'
+                            ? 'text-blue-600'
                             : ''
                         }>{orden.estado}
 
