@@ -19,6 +19,7 @@ export type StockItem = {
     estado_ajuste:string;
     cantidad_contada: number;
     stock_minimo: number;
+    ajuste_id:number
 };
 
 export type AlmacenStock = {
@@ -56,4 +57,22 @@ export interface StockRequest {
   prioridad: "Alta" | "Media" | "Baja" | "Urgente"
   motivo: string
 detalles: SolicitudDetalle[];
+}
+
+export interface AjusteData {
+    producto: string
+    almacen: string
+    cantidadSistema: number
+    cantidadContada: number
+    diferencia: number
+    fecha: string
+    usuario: string
+    motivo: string
+}
+
+export interface Permissions {
+  canUpdate: boolean;
+  canCreate: boolean;
+  canConfirm: boolean;
+  isAdmin: boolean;
 }

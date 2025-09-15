@@ -4,8 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Inventario\Productos\Producto;
-use App\Models\Inventario\Productos\Caracteristica;
-use App\Models\Inventario\Productos\Producto_caracteristica;
+use App\Models\Inventario\Productos\ProductoCaracteristica;
 
 class RelacionProductoCaracteristicaSeeder extends Seeder
 {
@@ -13,7 +12,7 @@ class RelacionProductoCaracteristicaSeeder extends Seeder
     {
         // Obtener todos los productos y características existentes
         $productos = Producto::all();
-        $caracteristicas = Producto_caracteristica::all();
+        $caracteristicas = ProductoCaracteristica::all();
 
         // Para cada producto, asignar entre 1 y 3 características aleatorias (si existen)
         foreach ($productos as $producto) {
