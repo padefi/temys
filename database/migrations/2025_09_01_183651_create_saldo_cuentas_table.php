@@ -11,23 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('saldo_subcuentas', function (Blueprint $table)
+        Schema::create('co_saldo_cuentas', function (Blueprint $table)
         {
             $table->id();
-            $table->unsignedBigInteger('subcuenta_id');
-            $table->unsignedBigInteger('ejercicio_id');
+            $table->unsignedBigInteger('co_cuenta_id');
+            $table->unsignedBigInteger('co_ejercicio_id');
             $table->decimal('debe', 20, 2);
             $table->decimal('haber', 20, 2);
             $table->decimal('saldo', 20, 2);
 
-            $table->foreign('subcuenta_id')
+            $table->foreign('co_cuenta_id')
                 ->references('id')
-                ->on('subcuentas')
+                ->on('co_cuentas')
                 ->onDelete('cascade');
 
-            $table->foreign('ejercicio_id')
+            $table->foreign('co_ejercicio_id')
                 ->references('id')
-                ->on('ejercicios')
+                ->on('co_ejercicios')
                 ->onDelete('cascade');
         });
     }
@@ -37,10 +37,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('saldo_subcuentas', function (Blueprint $table)
+        Schema::table('co_saldo_cuentas', function (Blueprint $table)
         {
-            $table->dropForeign(['subcuenta_id']);
-            $table->dropForeign(['ejercicio_id']);
+            $table->dropForeign(['co_cuenta_id']);
+            $table->dropForeign(['co_ejercicio_id']);
         });
     }
 };

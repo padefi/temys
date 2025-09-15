@@ -2,18 +2,18 @@
 
 namespace App\Models\Contabilidad\PlanCuentas;
 
+use App\Models\ControlAcceso\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Auth\User;
 
 class Rubro extends Model
 {
-    protected $table = 'rubros';
+    protected $table = 'co_rubros';
     
     protected $fillable = [
         'codigo',
         'descripcion',
-        'rubro_padre_id',
-        'ejercicio_id',
+        'co_subcapitulo_id',
+        'co_ejercicio_id',
         'model_id_created',
         'created_at',
         'model_id_updated',
@@ -22,22 +22,17 @@ class Rubro extends Model
 
     public function ejercicio()
     {
-        return $this->belongsTo(Ejercicio::class, 'ejercicio_id');
+        return $this->belongsTo(Ejercicio::class, 'co_ejercicio_id');
     }
 
-    public function cuentas()
+    public function subcapitulo()
     {
-        return $this->hasMany(Cuenta::class, 'rubro_id');
+        return $this->belongsTo(Subcapitulo::class, 'co_subcapitulo_id');
     }
 
-    public function padre()
+    public function subrubros()
     {
-        return $this->belongsTo(Rubro::class, 'rubro_padre_id');
-    }
-
-    public function hijos()
-    {
-        return $this->hasMany(Rubro::class, 'rubro_padre_id');
+        return $this->hasMany(Subrubro::class, 'co_rubro_id');
     }
 
     public function userCreated()
