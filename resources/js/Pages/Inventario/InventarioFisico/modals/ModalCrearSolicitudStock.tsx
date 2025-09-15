@@ -6,13 +6,15 @@ import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Textarea } from "@/Components/ui/textarea";
 import axios from "axios";
-import { StockItem ,AlmacenStock} from "./Types";
+import { StockItem,AlmacenStock } from "../Types"; 
 
-interface SolicitarStockProps {
+
+ interface SolicitarStockProps {
+    
     open: boolean;
     onClose: React.Dispatch<React.SetStateAction<boolean>>;
     productos: StockItem[];
-}
+} 
 
 type SelectedProduct = {
     producto: StockItem;

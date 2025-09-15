@@ -31,13 +31,11 @@ return new class extends Migration
 
             $table->foreign('model_id_created')
                 ->references('id')
-                ->on('users')
-                ->onDelete('cascade');
+                ->on('users');
 
             $table->foreign('model_id_updated')
                 ->references('id')
-                ->on('users')
-                ->onDelete('cascade');
+                ->on('users');
         });
 
         Schema::create('model_has_branches', function (Blueprint $table)
