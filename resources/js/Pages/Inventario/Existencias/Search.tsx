@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X, Search } from "lucide-react";
 
 export type Chip = {
@@ -7,11 +7,22 @@ export type Chip = {
 
 interface ChipSearchProps {
   onChange: (chips: Chip[]) => void; // 👈 callback para pasar los chips al padre
+   initialChips?: Chip[];
 }
 
-export default function ChipSearch({ onChange }: ChipSearchProps) {
+export default function ChipSearch({ onChange, initialChips = [] }: ChipSearchProps) {
   const [chips, setChips] = useState<Chip[]>([]);
   const [inputValue, setInputValue] = useState("");
+
+  console.log(chips)
+
+useEffect(() => {
+  // solo actualizo si initialChips tiene contenido nuevo distinto
+  if (initialChips && initialChips.length > 0) {
+    setChips(initialChips);
+  }
+}, [initialChips]);
+
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && inputValue.trim() !== "") {

@@ -37,12 +37,12 @@ class InventarioMovimientoStock extends Model
 
     public function almacenOrigen()
     {
-        return $this->belongsTo(Almacen::class, 'almacen_origen_id');
+        return $this->belongsTo(Almacen::class, 'origen_id');
     }
 
     public function almacenDestino()
     {
-        return $this->belongsTo(Almacen::class, 'almacen_destino_id');
+        return $this->belongsTo(Almacen::class, 'destino_id');
     }
 
        public function ajusteInventarioDetalle()

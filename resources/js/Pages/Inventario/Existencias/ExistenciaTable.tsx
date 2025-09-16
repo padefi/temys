@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { History, Pencil } from "lucide-react";
 import { useState } from "react";
 import { ExistenciaModal } from "./modals/ModalAjusteExistencia";
+import { Link, router } from "@inertiajs/react";
 
 interface ExistenciasItem {
   id: number
@@ -44,6 +45,10 @@ export default function ExistenciasTable({ data }: ExistenciaTableProps) {
     }
   };
 
+  const handleOpenWithFilter = (idProducto: number) => {
+    router.visit(`/inventario/historialMoviminto/movimiento/${idProducto}`); //renderiza pagina con id
+  };
+
   const isAllChecked = selected.length === data.length;
   const isIndeterminate = selected.length > 0 && !isAllChecked;
   return (
@@ -67,7 +72,7 @@ export default function ExistenciasTable({ data }: ExistenciaTableProps) {
         </TableHeader>
         <TableBody className="text-center">
           {data.map((item: any) => {
-            console.log(item.id)
+
 
             const entrada = item.entrada || 0;
             const salida = item.salida || 0;
@@ -113,7 +118,7 @@ export default function ExistenciasTable({ data }: ExistenciaTableProps) {
                 <TableCell>{salida}</TableCell>
                 <TableCell>{stockEstimado}</TableCell>
                 <TableCell>
-                  <Button variant="ghost" size="sm" className="hover:bg-accent/10">
+                  <Button variant="ghost" size="sm" className="hover:bg-accent/10" onClick={() => { handleOpenWithFilter(item.producto_id) }}>
                     <History className="h-4 w-4" /> Historial
                   </Button>
                 </TableCell>
