@@ -36,10 +36,7 @@ class MovimientoHistorialController extends Controller
             ->leftJoin('almacenes as ad', 'inventario_movimiento_stocks.destino_id', '=', 'ad.id')
             ->where('inventario_movimiento_stocks.origen_id', $almacenId)
             ->where('p.es_inventario', 1)
-            // Filtro condicional por producto
-            ->when($idProducto, function ($query, $idProducto) {
-                return $query->where('inventario_movimiento_stocks.producto_id', $idProducto);
-            })
+       
             ->get();
 
 

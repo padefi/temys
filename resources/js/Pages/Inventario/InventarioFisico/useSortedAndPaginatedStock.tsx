@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { StockItem } from "./Types";
+import { StockItem } from "../../../types/Inventario";
 
 export function useSortedAndPaginatedStock(
   stockFiltrado: StockItem[],

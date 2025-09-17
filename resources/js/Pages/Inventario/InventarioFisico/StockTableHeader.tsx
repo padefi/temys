@@ -2,7 +2,7 @@ import { Button } from "@/Components/ui/button";
 import { TableHead, TableHeader, TableRow } from "@/Components/ui/table";
 import { usePermissions } from "@/composables/permissions";
 import { ArrowDownWideNarrow, ArrowUpDown, ArrowUpNarrowWide } from "lucide-react";
-import { StockItem } from "./Types";
+import { StockItem } from "../../../types/Inventario";
 
 interface Props {
   sortColumn: keyof StockItem | null;

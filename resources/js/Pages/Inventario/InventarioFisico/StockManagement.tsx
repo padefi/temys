@@ -9,7 +9,7 @@ import { Head } from "@inertiajs/react";
 import { PageProps as InertiaPageProps } from "@inertiajs/core";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { SolicitarStock } from "./modals/ModalCrearSolicitudStock";
-import { StockItem } from "./Types";
+import { StockItem } from "../../../types/Inventario";
 import { StockFilters } from "./StockFilters";
 import { CardTable } from "./CardTable";
 

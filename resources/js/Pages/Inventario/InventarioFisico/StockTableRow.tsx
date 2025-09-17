@@ -1,5 +1,5 @@
 import { TableCell, TableRow } from "@/Components/ui/table";
-import { StockItem } from "./Types";
+import { StockItem } from "../../../types/Inventario";
 import { usePermissions } from "@/composables/permissions";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRef, useState } from "react";

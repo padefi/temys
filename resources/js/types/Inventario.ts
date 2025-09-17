@@ -16,10 +16,10 @@ export type StockItem = {
     producto: Producto;
     almacen: Almacen;
     cantidad_actual: number;
-    estado_ajuste:string;
+    estado_ajuste: string;
     cantidad_contada: number;
     stock_minimo: number;
-    ajuste_id:number
+    ajuste_id: number
 };
 
 export type AlmacenStock = {
@@ -49,14 +49,14 @@ export interface Solicitudes {
 }
 
 export interface StockRequest {
-  id: string
-  id_producto:string
-  nombre_producto: string
-  nombre_almacen_solicitante: string
-  cantidad: number
-  prioridad: "Alta" | "Media" | "Baja" | "Urgente"
-  motivo: string
-detalles: SolicitudDetalle[];
+    id: string
+    id_producto: string
+    nombre_producto: string
+    nombre_almacen_solicitante: string
+    cantidad: number
+    prioridad: "Alta" | "Media" | "Baja" | "Urgente"
+    motivo: string
+    detalles: SolicitudDetalle[];
 }
 
 export interface AjusteData {
@@ -71,8 +71,34 @@ export interface AjusteData {
 }
 
 export interface Permissions {
-  canUpdate: boolean;
-  canCreate: boolean;
-  canConfirm: boolean;
-  isAdmin: boolean;
+    canUpdate: boolean;
+    canCreate: boolean;
+    canConfirm: boolean;
+    isAdmin: boolean;
+}
+
+export interface MovimientosItem {
+    id: number;
+    fecha: string;
+    tipo_movimiento: string;
+    nombreProducto: string;
+    origen: string;
+    destino: string;
+    usuarioCreacion: string
+    cantidad: number;
+}
+
+export interface ExistenciasItem {
+  id: number
+  producto_id: number
+  nombre: string
+  categoria: string
+  stockActual: number
+  stockDispoble: number
+  entrada: number
+  salida: number
+  stockEstimado: number
+  estadoEntregas: string
+  estado_ajuste: string
+  cantidad_contada: number
 }

@@ -3,42 +3,22 @@ import { Badge } from "@/Components/ui/badge";
 import { Card, CardContent } from "@/Components/ui/card";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, usePage } from "@inertiajs/react";
-
 import { PageProps as InertiaPageProps } from "@inertiajs/core";
 import ChipSearch, { Chip } from "../Existencias/Search";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
-import Checkbox from "@/Components/Checkbox";
-import { Button } from "@/Components/ui/button";
-import { History, Pencil } from "lucide-react";
-
-interface ExistenciasItem {
-    id: number;
-    fecha: string; 
-    tipo_movimiento: string;
-    nombreProducto: string;
-    origen: string;
-    destino: string;
-    usuarioCreacion: string
-    cantidad: number;
-}
+import HistorialMovimientosTable from "./HistorialMovimientosTable";
+import { MovimientosItem } from "../../../types/Inventario";
 
 
-type PageProps = InertiaPageProps & {
-    movimientoStocks: {data: ExistenciasItem[]} ;
-    initialChips?: number;
+type MovimientoProps = InertiaPageProps & {
+    movimientoStocks: { data: MovimientosItem[] };
 };
 
-export default function historialManagement({ movimientoStocks }: PageProps) {
-    const { props } = usePage<PageProps>();
+export default function HistorialManagement() {
+    const { props } = usePage<MovimientoProps>();
+    const { movimientoStocks } = usePage<MovimientoProps>().props
+    const [data, setData] = useState<MovimientosItem[]>(movimientoStocks.data)
     const [chips, setChips] = useState<Chip[]>([])
     const nombreProducto = props.nombreProducto;
-
-    console.log(movimientoStocks)
-
-
-
-
-
 
     const SetNombreProd = () => {
         if (nombreProducto) {
@@ -53,74 +33,33 @@ export default function historialManagement({ movimientoStocks }: PageProps) {
         SetNombreProd();
     }, []);
 
+    const filteredData = data.filter((item) => {
+        if (chips.length === 0) return true;
+        return chips.some((chip) =>
+            item.nombreProducto?.toLowerCase().includes(chip.value.toLowerCase())
+        );
+    });
+
+
     return (
-        <div>
-            <ChipSearch initialChips={chips} onChange={setChips} />
-            <p> productos encontrados</p>
+        <AuthenticatedLayout
+            header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Existencias</h2>}
+        >
+            <Head title="Historial movimientos" />
+            <Card>
+                <CardContent>
+                    <div className="flex items-center gap-4 mb-6">
+                        <ChipSearch initialChips={chips} onChange={setChips} />
+                        <Badge variant="secondary" className="px-3 py-1">
+                            {filteredData.length} productos
+                        </Badge>
+                    </div>
+                    <HistorialMovimientosTable movimientoStocks={filteredData}></HistorialMovimientosTable>
+                </CardContent>
+            </Card>
+        </AuthenticatedLayout>
 
 
-               <Table>
-        <TableHeader className="sticky-header">
-          <TableRow>
-        {/*     <TableHead className="text-center">  <Checkbox
-              checked={isAllChecked ? true : isIndeterminate ? "indeterminate" : false}
-              onCheckedChange={toggleAll}
-            /></TableHead> */}
-            <TableHead className="text-center">Producto</TableHead>
-            <TableHead className="text-center">Fecha</TableHead>
-            <TableHead className="text-center">Tipo movimiento</TableHead>
-            <TableHead className="text-center">Nombre de producto</TableHead>
-            <TableHead className="text-center">Origen</TableHead>
-            <TableHead className="text-center">Destino</TableHead>
-            <TableHead className="text-center">Usuario creacion</TableHead>
-            <TableHead className="text-center">Cantidad</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody className="text-center">
-          {movimientoStocks.data.map((item: any) => {
-
-
-            const entrada = item.entrada || 0;
-            const salida = item.salida || 0;
-
-            // Calcular stock disponible según estado de entrega
-            const stockDisponible =
-              item.stockActual - (item.estadoEntregas === "pendiente" ? salida : 0);
-
-            // Calcular stock estimado
-            const stockEstimado = stockDisponible - salida + entrada;
-
-
-            return (
-              <TableRow key={item.id}>
-                <TableCell>
-                  <Checkbox
-                   /*  checked={selected.includes(item.id)}
-                    onCheckedChange={() => toggleRow(item.id)} */
-                  />
-                </TableCell>
-                <TableCell>{item.fecha}</TableCell>
-                <TableCell>{item.tipo_movimiento}</TableCell>
-                <TableCell>
-                  {item.nombreProducto}
-           
-                </TableCell>
-
-                <TableCell>{item.origen}</TableCell>
-                <TableCell>{item.destino}</TableCell>
-                <TableCell>{item.usuarioCreacion}</TableCell>
-                <TableCell>{item.cantidad}</TableCell>
-              
-
-              </TableRow>)
-          })}
-
-
-
-        </TableBody>
-      </Table>
-            {/* <Tabla data={filteredData} /> */}
-        </div>
     );
 }
 

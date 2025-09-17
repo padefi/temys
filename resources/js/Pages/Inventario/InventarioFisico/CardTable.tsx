@@ -3,10 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Com
 import { usePermissions } from "@/composables/permissions";
 import { Plus } from "lucide-react";
 import { StockTable } from "./StockTable";
-import { StockItem } from "./Types";
+import { StockItem } from "../../../types/Inventario";
 import { useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
+
 
 interface Props {
     stockFiltrado: StockItem[];
@@ -25,7 +26,7 @@ export function CardTable({
 
 }: Props) {
     const { hasSubmenuPermission } = usePermissions();
-    const itemsPerPage = 10;
+    const itemsPerPage = 2;
     const [editedRows, setEditedRows] = useState<Record<number, number>>({})
     const totalPages = Math.ceil(stockFiltrado.length / itemsPerPage);
 
@@ -61,25 +62,15 @@ export function CardTable({
                     {hasSubmenuPermission('inventarioFisico', 'update') &&
                         <Button size="sm" variant="outline" onClick={handleAplicarTodo} className="text-xs" disabled={Object.keys(editedRows).length === 0} >
                             <Plus className="h-3 w-3 mr-1" /> Aplicar todo
-                        </Button> 
-                        }
+                        </Button>
+                    }
                 </div>
             </CardHeader>
             <CardContent>
                 <StockTable stockFiltrado={stockFiltrado} stocks={stocks} editedRows={editedRows} setEditedRows={setEditedRows} ></StockTable>
 
-                {/* Controles de paginación */}
-                <div className="flex justify-between items-center mt-4 px-4">
-                    <div className="text-sm text-muted-foreground">Página {currentPage} de {totalPages}</div>
-                    <div className="space-x-2">
-                        <Button size="sm" variant="outline" onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1} >
-                            Anterior
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages} >
-                            Siguiente
-                        </Button>
-                    </div>
-                </div>
+             
+
             </CardContent>
         </Card>
 

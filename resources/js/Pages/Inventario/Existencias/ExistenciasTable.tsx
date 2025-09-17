@@ -4,60 +4,53 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { History, Pencil } from "lucide-react";
 import { useState } from "react";
 import { ExistenciaModal } from "./modals/ModalAjusteExistencia";
-import { Link, router } from "@inertiajs/react";
-
-interface ExistenciasItem {
-  id: number
-  producto_id: number
-  nombre: string
-  categoria: string
-  stockActual: number
-  stockDispoble: number
-  entrada: number
-  salida: number
-  stockEstimado: number
-  estadoEntregas: string
-  estado_ajuste: string
-  cantidad_contada: number
-}
+import {router } from "@inertiajs/react";
+import { ExistenciasItem } from "../../../types/Inventario";
 
 interface ExistenciaTableProps {
   data: ExistenciasItem[]
-  /*   onViewHistory: (productId: number) => void */
 }
 
 export default function ExistenciasTable({ data }: ExistenciaTableProps) {
   const [selected, setSelected] = useState<number[]>([]);
   const [idProducto, setIdProducto] = useState<number>();
   const [ajusteDialogOpen, setAjusteDialogOpen] = useState(false);
+  const [isAllChecked, setIsAllChecked] = useState(false);
 
   const toggleRow = (id: number) => {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
-  };
+
+    if (selected.length === data.length - 1) {
+      setIsAllChecked(true);
+      return;
+    }
+
+    setIsAllChecked(false);
+  }
 
   const toggleAll = () => {
-    if (selected.length === data.length) {
+    if (isAllChecked) {
       setSelected([]); // desmarcar todos
     } else {
       setSelected(data.map((item: any) => item.id)); // marcar todos
     }
+    setIsAllChecked(!isAllChecked);
   };
 
   const handleOpenWithFilter = (idProducto: number) => {
     router.visit(`/inventario/historialMoviminto/movimiento/${idProducto}`); //renderiza pagina con id
   };
 
-  const isAllChecked = selected.length === data.length;
-  const isIndeterminate = selected.length > 0 && !isAllChecked;
+
   return (
     <>
       <Table>
         <TableHeader className="sticky-header">
           <TableRow>
             <TableHead className="text-center">  <Checkbox
-              checked={isAllChecked ? true : isIndeterminate ? "indeterminate" : false}
+              checked={isAllChecked}
               onCheckedChange={toggleAll}
             /></TableHead>
             <TableHead className="text-center">Producto</TableHead>
@@ -72,18 +65,13 @@ export default function ExistenciasTable({ data }: ExistenciaTableProps) {
         </TableHeader>
         <TableBody className="text-center">
           {data.map((item: any) => {
-
-
             const entrada = item.entrada || 0;
             const salida = item.salida || 0;
-
             // Calcular stock disponible según estado de entrega
             const stockDisponible =
               item.stockActual - (item.estadoEntregas === "pendiente" ? salida : 0);
-
             // Calcular stock estimado
             const stockEstimado = stockDisponible - salida + entrada;
-
 
             return (
               <TableRow key={item.id}>
@@ -112,7 +100,6 @@ export default function ExistenciasTable({ data }: ExistenciaTableProps) {
                     </Button>
                   )}
                 </TableCell>
-
                 <TableCell>{stockDisponible}</TableCell>
                 <TableCell>{entrada}</TableCell>
                 <TableCell>{salida}</TableCell>
@@ -122,12 +109,8 @@ export default function ExistenciasTable({ data }: ExistenciaTableProps) {
                     <History className="h-4 w-4" /> Historial
                   </Button>
                 </TableCell>
-
               </TableRow>)
           })}
-
-
-
         </TableBody>
       </Table>
       {ajusteDialogOpen && idProducto && (<ExistenciaModal isOpen={ajusteDialogOpen}

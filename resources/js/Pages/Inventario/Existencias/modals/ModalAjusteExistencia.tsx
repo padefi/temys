@@ -7,7 +7,7 @@ import { Separator } from "@/Components/ui/separator"
 import { Calendar, Package, User, TrendingUp, History } from "lucide-react"
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { StockItem } from "../../InventarioFisico/Types"
+import { StockItem } from "../../../../types/Inventario"
 import { toast } from "sonner"
 
 

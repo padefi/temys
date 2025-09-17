@@ -13,7 +13,7 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Textarea } from "@/Components/ui/textarea";
 import axios from "axios";
-import { StockItem, StockRequest } from "../Types"; 
+import { StockItem, StockRequest } from "../../../../types/Inventario"; 
 
 interface StockApprovalModalProps {
   isOpen: boolean;

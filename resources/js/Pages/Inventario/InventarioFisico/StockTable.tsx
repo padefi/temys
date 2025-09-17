@@ -3,7 +3,7 @@ import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
 import React, { useEffect, useState } from "react";
 import { StockTableHeader } from "./StockTableHeader";
 import { StockTableRow } from "./StockTableRow";
-import { StockItem } from "./Types";
+import { StockItem } from "../../../types/Inventario";
 import { useSortedAndPaginatedStock } from "./useSortedAndPaginatedStock";
 interface Props {
   stockFiltrado: StockItem[];

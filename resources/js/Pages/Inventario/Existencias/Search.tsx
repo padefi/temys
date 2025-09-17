@@ -41,7 +41,7 @@ useEffect(() => {
   };
 
   return (
-    <div className="relative flex-1 max-w-sm flex items-center border rounded-md px-2 py-1">
+    <div className="relative flex-1 max-w-sm flex items-center border rounded-md px-2 py-1 bg-zinc-50">
       <Search className="text-muted-foreground h-4 w-4 mr-2" />
 
       <div className="flex gap-2 flex-wrap items-center flex-1">
@@ -66,7 +66,7 @@ useEffect(() => {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Buscar..."
-          className="flex-1 outline-none focus:ring-0 focus:border-transparent text-sm min-w-[120px] bg-transparent border-none"
+          className="flex-1 outline-none focus:ring-0 focus:border-transparent text-sm min-w-[120px] bg-zinc-50 border-none"
         />
       </div>
     </div>
