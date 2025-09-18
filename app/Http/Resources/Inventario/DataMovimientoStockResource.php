@@ -21,7 +21,7 @@ class DataMovimientoStockResource extends JsonResource
             'nombreProducto' => $this->nombreProducto,
             'origen' => $this->origenNombre,
             'destino' =>$this->destinoNombre,
-            'usuarioCreacion'=>$this->usuario_creacion,
+            'usuarioCreacion'=>$this->usuarioCreacion,
             'cantidad'=>$this->cantidad,            
         ];
     }

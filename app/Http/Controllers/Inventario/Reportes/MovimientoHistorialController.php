@@ -23,25 +23,22 @@ class MovimientoHistorialController extends Controller
             ->where('id', $branchId)
             ->value('id');
 
-
         $stock = InventarioMovimientoStock::query()
             ->select(
                 'inventario_movimiento_stocks.*',
                 'p.nombre as nombreProducto',
                 'ao.nombre as origenNombre',
-                'ad.nombre as destinoNombre'
+                'ad.nombre as destinoNombre',
+                DB::raw('CONCAT(u.name," ",u.last_name) as usuarioCreacion')
             )
             ->join('productos as p', 'inventario_movimiento_stocks.producto_id', '=', 'p.id')
+            ->join('users as u', 'inventario_movimiento_stocks.usuario_creacion', '=', 'u.id')
             ->leftJoin('almacenes as ao', 'inventario_movimiento_stocks.origen_id', '=', 'ao.id')
             ->leftJoin('almacenes as ad', 'inventario_movimiento_stocks.destino_id', '=', 'ad.id')
             ->where('inventario_movimiento_stocks.origen_id', $almacenId)
             ->where('p.es_inventario', 1)
-       
-            ->get();
-
-
-
-
+            ->paginate($request->input('per_page', 10))
+            ->withQueryString();
 
         $nombreProducto = DB::table('productos')
             ->where('id', $idProducto)
@@ -50,7 +47,9 @@ class MovimientoHistorialController extends Controller
         return Inertia::render('Inventario/HistorialMovimiento/HistorialManagement', [
             'movimientoStocks' => DataMovimientoStockResource::collection($stock),
             'initialChips' => $idProducto,
-            'nombreProducto' => $nombreProducto
+            'nombreProducto' => $nombreProducto,
+            
+
         ]);
     }
 }

@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Inventario\Reportes;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Inventario\DataExistenciasResource;
 use App\Models\Inventario\InventarioStock;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
@@ -10,7 +11,7 @@ use Inertia\Inertia;
 class ExistenciasController extends Controller
 {
 
-    public function index() //verificar si trae el dato de la cantidad contada para asi poder ocultar el boton de ajuste  
+    public function index(Request $request) //verificar si trae el dato de la cantidad contada para asi poder ocultar el boton de ajuste  
     {
         //  Tomo el branch_id activo desde la sesión      
         $branchId = Session::get('active_branch_id') ?? null;
@@ -83,7 +84,9 @@ class ExistenciasController extends Controller
             })
             ->where('inventario_stocks.almacen_id', $almacenId)
             ->with(['producto', 'almacen'])
-            ->get();
+             ->paginate($request->input('per_page', 10))
+            ->withQueryString();
+
 
         return Inertia::render('Inventario/Existencias/ExistenciaManagement', [
             'stocks' => DataExistenciasResource::collection($stock),

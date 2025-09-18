@@ -1,13 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card"
 import { ExistenciasItem} from "@/types/Inventario"
-import { Package, TrendingUp, TrendingDown, BarChart3, ChartArea } from "lucide-react"
+import { Package, TrendingUp, TrendingDown, ChartArea } from "lucide-react"
 
 
 interface EstadosMovimientoProps {
    data:  ExistenciasItem[] ;
 }
 
-export function HistorialMovimientoEstadistica({ data }: EstadosMovimientoProps) {
+export function ExistenciasEstadistica({ data }: EstadosMovimientoProps) {
   const totalExistenciaActual = data.reduce((sum, item) => sum + item.stockActual, 0)
   const totalEntrantes = data.reduce((sum, item) => sum + item.entrada, 0)
   const totalSalientes = data.reduce((sum, item) => sum + item.salida, 0)

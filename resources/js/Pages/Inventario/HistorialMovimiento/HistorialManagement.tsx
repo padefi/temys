@@ -7,10 +7,12 @@ import { PageProps as InertiaPageProps } from "@inertiajs/core";
 import ChipSearch, { Chip } from "../Existencias/Search";
 import HistorialMovimientosTable from "./HistorialMovimientosTable";
 import { MovimientosItem } from "../../../types/Inventario";
+import { links } from "@/types/links";
+import { meta } from "@/types/meta";
 
 
 type MovimientoProps = InertiaPageProps & {
-    movimientoStocks: { data: MovimientosItem[] };
+    movimientoStocks: { data: MovimientosItem[], links: links, meta: meta },
 };
 
 export default function HistorialManagement() {
@@ -18,6 +20,7 @@ export default function HistorialManagement() {
     const { movimientoStocks } = usePage<MovimientoProps>().props
     const [data, setData] = useState<MovimientosItem[]>(movimientoStocks.data)
     const [chips, setChips] = useState<Chip[]>([])
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const nombreProducto = props.nombreProducto;
 
     const SetNombreProd = () => {
@@ -28,7 +31,6 @@ export default function HistorialManagement() {
             setChips([data]);
         }
     }
-
     useEffect(() => {
         SetNombreProd();
     }, []);
@@ -40,26 +42,52 @@ export default function HistorialManagement() {
         );
     });
 
-
     return (
         <AuthenticatedLayout
             header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Existencias</h2>}
         >
             <Head title="Historial movimientos" />
-            <Card>
-                <CardContent>
-                    <div className="flex items-center gap-4 mb-6">
-                        <ChipSearch initialChips={chips} onChange={setChips} />
-                        <Badge variant="secondary" className="px-3 py-1">
-                            {filteredData.length} productos
-                        </Badge>
+
+            <div className="mx-auto w-full p-6 space-y-12">
+                <div className="flex justify-between">
+                    <div>
+                        {chips.length > 0 ? (
+                            <>
+                                <span className="text-xl text-teal-500 font-medium">Existencias</span>
+                                <br />
+                                <span className="text-s">Historial de movimientos</span>
+                            </>
+                        ) : (
+                            <span className="text-xl font-light">Historial de movimientos</span>
+                        )}
                     </div>
-                    <HistorialMovimientosTable movimientoStocks={filteredData}></HistorialMovimientosTable>
-                </CardContent>
-            </Card>
+
+                    <ChipSearch onChange={setChips} />
+                    <span></span>
+                </div>
+                {/*  <Card>
+                    <CardContent>
+
+                    </CardContent>
+                </Card> */}
+
+                <Card>
+                    <CardContent>
+                        <HistorialMovimientosTable
+                            movimientoStocks={filteredData}
+                            links={movimientoStocks.links}
+                            meta={movimientoStocks.meta}
+                            editingIndex={editingIndex}
+                            setEditingIndex={setEditingIndex}>
+                        </HistorialMovimientosTable>
+                    </CardContent>
+                </Card>
+            </div>
+
+
+
+
         </AuthenticatedLayout>
-
-
     );
 }
 

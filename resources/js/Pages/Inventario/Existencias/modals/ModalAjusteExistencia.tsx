@@ -9,12 +9,13 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 import { StockItem } from "../../../../types/Inventario"
 import { toast } from "sonner"
+import { router } from "@inertiajs/react"
 
 
 interface ProductModalProps {
   isOpen: boolean
   onClose: () => void
-  idProducto?: number
+  idProducto: number
 }
 
 export function ExistenciaModal({ isOpen, onClose, idProducto }: ProductModalProps) {
@@ -38,6 +39,9 @@ export function ExistenciaModal({ isOpen, onClose, idProducto }: ProductModalPro
       .catch((err) => console.error("Error al cargar el ajuste", err));
   }, [idProducto]);
 
+const handleOpenWithFilter = (idProducto: number) => {
+    router.visit(`/inventario/historialMoviminto/movimiento/${idProducto}`); //renderiza pagina con id
+  };
 
 
   const handleAplicarFila = async (id: number, cantidad: number, motivo?: string) => {
@@ -154,7 +158,7 @@ export function ExistenciaModal({ isOpen, onClose, idProducto }: ProductModalPro
 
           {/* Acciones */}
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button variant="outline" className="flex-1 flex items-center gap-2 bg-transparent">
+            <Button variant="outline" className="flex-1 flex items-center gap-2 bg-transparent" onClick={() => { handleOpenWithFilter(idProducto) }}> 
               <History className="h-4 w-4" />
               Ver Historial
             </Button>

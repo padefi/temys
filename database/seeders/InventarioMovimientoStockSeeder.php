@@ -9,7 +9,7 @@ class InventarioMovimientoStockSeeder extends Seeder
 {
     public function run(): void
     {
-        InventarioMovimientoStock::factory()->count(120)->create();
+        InventarioMovimientoStock::factory()->count(500)->create();
     }
 }
 
