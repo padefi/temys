@@ -86,6 +86,7 @@ export interface MovimientosItem {
     destino: string;
     usuarioCreacion: string
     cantidad: number;
+    estado:string
 }
 
 export interface ExistenciasItem {

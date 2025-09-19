@@ -14,7 +14,7 @@ export default function ChipSearch({ onChange, initialChips = [] }: ChipSearchPr
   const [chips, setChips] = useState<Chip[]>([]);
   const [inputValue, setInputValue] = useState("");
 
-  console.log(chips)
+/*   console.log(chips) */
 
 useEffect(() => {
   // solo actualizo si initialChips tiene contenido nuevo distinto
@@ -41,7 +41,7 @@ useEffect(() => {
   };
 
   return (
-    <div className="relative flex-1 max-w-sm flex items-center border rounded-md px-2 py-1 bg-zinc-50">
+    <div className="relative flex-1 max-w-2xl flex items-center border rounded-md px-2 py-1 bg-zinc-50">
       <Search className="text-muted-foreground h-4 w-4 mr-2" />
 
       <div className="flex gap-2 flex-wrap items-center flex-1">

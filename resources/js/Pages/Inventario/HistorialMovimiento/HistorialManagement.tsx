@@ -9,6 +9,12 @@ import HistorialMovimientosTable from "./HistorialMovimientosTable";
 import { MovimientosItem } from "../../../types/Inventario";
 import { links } from "@/types/links";
 import { meta } from "@/types/meta";
+import { Button } from "@/Components/ui/button";
+import { Download, FileText, Settings2, Sheet } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
+import { DropdownMenuItemIndicator } from "@radix-ui/react-dropdown-menu";
+
 
 
 type MovimientoProps = InertiaPageProps & {
@@ -21,6 +27,8 @@ export default function HistorialManagement() {
     const [data, setData] = useState<MovimientosItem[]>(movimientoStocks.data)
     const [chips, setChips] = useState<Chip[]>([])
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [isMultiSelected, setIsMultiSelected] = useState(false);
+    const [selected, setSelected] = useState<number[]>([]);
     const nombreProducto = props.nombreProducto;
 
     const SetNombreProd = () => {
@@ -49,7 +57,7 @@ export default function HistorialManagement() {
             <Head title="Historial movimientos" />
 
             <div className="mx-auto w-full p-6 space-y-12">
-                <div className="flex justify-between">
+                <div className="grid grid-cols-2 gap-2">
                     <div>
                         {chips.length > 0 ? (
                             <>
@@ -61,15 +69,23 @@ export default function HistorialManagement() {
                             <span className="text-xl font-light">Historial de movimientos</span>
                         )}
                     </div>
+                    <div className="flex gap-2">
+                        <ChipSearch onChange={setChips} />
+                        {isMultiSelected && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger className="size-8 cursor-pointer"><Settings2 className="text-slate-900" />  </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuLabel>Exportar en</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem><FileText /> PDF</DropdownMenuItem>
+                                    <DropdownMenuItem><Sheet /> EXCEL</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
 
-                    <ChipSearch onChange={setChips} />
-                    <span></span>
+                    </div>
                 </div>
-                {/*  <Card>
-                    <CardContent>
 
-                    </CardContent>
-                </Card> */}
 
                 <Card>
                     <CardContent>
@@ -78,7 +94,8 @@ export default function HistorialManagement() {
                             links={movimientoStocks.links}
                             meta={movimientoStocks.meta}
                             editingIndex={editingIndex}
-                            setEditingIndex={setEditingIndex}>
+                            setEditingIndex={setEditingIndex}
+                            onMultiSelectChange={setIsMultiSelected}>
                         </HistorialMovimientosTable>
                     </CardContent>
                 </Card>

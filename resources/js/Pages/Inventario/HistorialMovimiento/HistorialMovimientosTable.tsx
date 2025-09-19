@@ -1,14 +1,12 @@
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table"
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { MovimientosItem } from "@/types/Inventario";
-import { Button } from "@/Components/ui/button";
 import { Footer } from "@/Pages/UserModulePanel/footer";
 import { links } from "@/types/links";
 import { meta } from "@/types/meta";
 import { useDataTableParams } from "@/hooks/useDataTableParams";
 import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
-import { safeDateFormat } from "@/utils/formatterFunctions";
 
 
 interface MovimientosProps {
@@ -17,22 +15,38 @@ interface MovimientosProps {
     meta: meta;
     editingIndex: number | null;
     setEditingIndex: (val: number | null) => void;
+    onMultiSelectChange?: (isMulti: boolean) => void;
 }
 
-export default function HistorialMovimientosTable({ movimientoStocks, links, meta }: MovimientosProps) {
-    const { params, updateParams, isLoading } = useDataTableParams();
+export default function HistorialMovimientosTable({ movimientoStocks, links, meta, onMultiSelectChange }: MovimientosProps) {
+    const { updateParams, isLoading } = useDataTableParams();
     const [selected, setSelected] = useState<number[]>([]);
     const [isAllChecked, setIsAllChecked] = useState(false);
 
-    console.log(movimientoStocks)
     // Actualizar datos cuando cambien las props del backend
     const [tableData, setTableData] = useState<MovimientosItem[]>(movimientoStocks);
+
     useEffect(() => {
         setTableData(movimientoStocks);
         // Resetear selección al cambiar la página
         setSelected([]);
         setIsAllChecked(false);
     }, [movimientoStocks]);
+
+    /* console.log(movimientoStocks) */
+
+    /* const toggleRow = (id: number) => {
+        setSelected((prev) => {
+            const newSelected = prev.includes(id)
+                ? prev.filter((item) => item !== id)
+                : [...prev, id];
+
+            onMultiSelectChange?.(newSelected.length >= 1);
+
+            setIsAllChecked(newSelected.length === movimientoStocks.length);
+            return newSelected;
+        });
+    }; */
 
     const toggleRow = (id: number) => {
         setSelected((prev) =>
@@ -43,6 +57,7 @@ export default function HistorialMovimientosTable({ movimientoStocks, links, met
             setIsAllChecked(true);
             return;
         }
+
         setIsAllChecked(false);
     }
 
@@ -54,7 +69,7 @@ export default function HistorialMovimientosTable({ movimientoStocks, links, met
         }
         setIsAllChecked(!isAllChecked);
     };
-
+    
     return (
         <>
             <Table>

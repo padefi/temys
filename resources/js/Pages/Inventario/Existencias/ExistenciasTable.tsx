@@ -18,38 +18,38 @@ interface ExistenciaTableProps {
   meta: meta,
   editingIndex: number | null;
   setEditingIndex: (val: number | null) => void;
+  onMultiSelectChange?: (isMulti: boolean) => void;
 
 }
 
-export default function ExistenciasTable({ data, links, meta }: ExistenciaTableProps) {
-  const { params, updateParams, isLoading } = useDataTableParams();
+export default function ExistenciasTable({ data, links, meta ,onMultiSelectChange}: ExistenciaTableProps) {
+  const {updateParams, isLoading } = useDataTableParams();
   const [selected, setSelected] = useState<number[]>([]);
   const [idProducto, setIdProducto] = useState<number>();
   const [ajusteDialogOpen, setAjusteDialogOpen] = useState(false);
   const [isAllChecked, setIsAllChecked] = useState(false);
 
-  const toggleRow = (id: number) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+const toggleRow = (id: number) => {
+  setSelected((prev) => {
+    const newSelected = prev.includes(id)
+      ? prev.filter((item) => item !== id)
+      : [...prev, id];
 
-    if (selected.length === data.length - 1) {
-      setIsAllChecked(true);
-      return;
-    }
+    onMultiSelectChange?.(newSelected.length >= 1);
 
-    setIsAllChecked(false);
-  }
+    setIsAllChecked(newSelected.length === data.length);
+    return newSelected;
+  });
+};
 
-  const toggleAll = () => {
-    if (isAllChecked) {
-      setSelected([]); // desmarcar todos
-    } else {
-      setSelected(data.map((item: any) => item.id)); // marcar todos
-    }
-    setIsAllChecked(!isAllChecked);
-  };
+const toggleAll = () => {
+  const newSelected = isAllChecked ? [] : data.map((item: any) => item.id);
+  setIsAllChecked(!isAllChecked);
+  setSelected(newSelected);
 
+
+  onMultiSelectChange?.(newSelected.length >= 1);
+};
   const handleOpenWithFilter = (idProducto: number) => {
     router.visit(`/inventario/historialMoviminto/movimiento/${idProducto}`); //renderiza pagina con id
   };
