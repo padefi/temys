@@ -20,7 +20,7 @@ class DataExistenciasResource extends JsonResource
             'nombre' => $this->nombre,         
             'categoria' => $this->categoria,
             'subCategoria' => $this->subCategoria,
-            'stockActual' =>$this->cantidad_actual,
+            'cantidad_actual' =>$this->cantidad_actual,
             'entrada'=>$this->total_recibido,
             'salida'=>$this->total_entregado,
             'estadoEntregas'=>$this->estadoEntregas,

@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { Badge } from "@/Components/ui/badge";
+import { useEffect, useState} from "react";
 import { Card, CardContent } from "@/Components/ui/card";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, usePage } from "@inertiajs/react";
@@ -9,11 +8,9 @@ import HistorialMovimientosTable from "./HistorialMovimientosTable";
 import { MovimientosItem } from "../../../types/Inventario";
 import { links } from "@/types/links";
 import { meta } from "@/types/meta";
-import { Button } from "@/Components/ui/button";
-import { Download, FileText, Settings2, Sheet } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
+import { FileDown, FileText, Sheet } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-import { DropdownMenuItemIndicator } from "@radix-ui/react-dropdown-menu";
+
 
 
 
@@ -27,9 +24,10 @@ export default function HistorialManagement() {
     const [data, setData] = useState<MovimientosItem[]>(movimientoStocks.data)
     const [chips, setChips] = useState<Chip[]>([])
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
-    const [isMultiSelected, setIsMultiSelected] = useState(false);
     const [selected, setSelected] = useState<number[]>([]);
     const nombreProducto = props.nombreProducto;
+
+
 
     const SetNombreProd = () => {
         if (nombreProducto) {
@@ -39,9 +37,11 @@ export default function HistorialManagement() {
             setChips([data]);
         }
     }
+
     useEffect(() => {
         SetNombreProd();
     }, []);
+    
 
     const filteredData = data.filter((item) => {
         if (chips.length === 0) return true;
@@ -49,6 +49,10 @@ export default function HistorialManagement() {
             item.nombreProducto?.toLowerCase().includes(chip.value.toLowerCase())
         );
     });
+
+    useEffect(() => {
+        setData(movimientoStocks.data)
+    }, [movimientoStocks]);
 
     return (
         <AuthenticatedLayout
@@ -70,10 +74,13 @@ export default function HistorialManagement() {
                         )}
                     </div>
                     <div className="flex gap-2">
-                        <ChipSearch onChange={setChips} />
-                        {isMultiSelected && (
+                        <ChipSearch onChange={setChips} initialChips={chips}/>
+                        {selected.length >= 1 && (
                             <DropdownMenu>
-                                <DropdownMenuTrigger className="size-8 cursor-pointer"><Settings2 className="text-slate-900" />  </DropdownMenuTrigger>
+                                <DropdownMenuTrigger className="size-8 cursor-pointer">
+                                  
+                                    <FileDown className="text-slate-900"/> 
+                                    </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                     <DropdownMenuLabel>Exportar en</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
@@ -95,7 +102,10 @@ export default function HistorialManagement() {
                             meta={movimientoStocks.meta}
                             editingIndex={editingIndex}
                             setEditingIndex={setEditingIndex}
-                            onMultiSelectChange={setIsMultiSelected}>
+                            selected={selected}
+                            setSelected={setSelected}
+                            >
+                        
                         </HistorialMovimientosTable>
                     </CardContent>
                 </Card>

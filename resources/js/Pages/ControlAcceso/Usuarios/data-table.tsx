@@ -51,6 +51,7 @@ export function DataTable<TData extends User, TValue>({
     const validationErrors = useRef(false);
     const footerRef = useRef<{ goToPage: (pageLink: string | null) => void }>(null);
 
+        
     useEffect(() => {
         setTableData(initialData);
         setEditingUserIndex(null);

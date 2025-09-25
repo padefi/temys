@@ -286,11 +286,11 @@ export function StockTableRow({
           idAjuste={ajusteSeleccionado.ajusteId} // id del ajuste
           productoId={ajusteSeleccionado.productoId} // id del producto
           onApprove={() => {
-            console.log("Ajuste aprobado");
+        
             setIsModalOpenInventario(false);
           }}
           onReject={() => {
-            console.log("Ajuste rechazado");
+           
             setIsModalOpenInventario(false);
           }}
         />

@@ -1,3 +1,12 @@
+
+export interface ExtendedExistenciasItem extends ExistenciasItem {
+  stockDisponible: number;
+  stockEstimado: number;
+  entrada: number;
+  salida: number;
+}
+
+
 export type Producto = {
     id: number;
     nombre: string;
@@ -86,7 +95,6 @@ export interface MovimientosItem {
     destino: string;
     usuarioCreacion: string
     cantidad: number;
-    estado:string
 }
 
 export interface ExistenciasItem {
@@ -94,7 +102,7 @@ export interface ExistenciasItem {
   producto_id: number
   nombre: string
   categoria: string
-  stockActual: number
+  cantidad_actual: number
   stockDispoble: number
   entrada: number
   salida: number

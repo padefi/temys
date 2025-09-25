@@ -14,7 +14,7 @@ export default function ChipSearch({ onChange, initialChips = [] }: ChipSearchPr
   const [chips, setChips] = useState<Chip[]>([]);
   const [inputValue, setInputValue] = useState("");
 
-/*   console.log(chips) */
+ 
 
 useEffect(() => {
   // solo actualizo si initialChips tiene contenido nuevo distinto

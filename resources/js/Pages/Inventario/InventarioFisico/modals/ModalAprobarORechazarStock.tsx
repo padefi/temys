@@ -62,7 +62,7 @@ export default function AceptarStock({
   }, [request]);
 
   if (!request) return null;
-console.log("Request", request);
+
 
   const handleSubmit = async () => {
     const estado = action === "aprobado" ? "Aceptada" : "Cancelada";

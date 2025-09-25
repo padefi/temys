@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Http\Controllers\Inventario\Reportes;
+
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Inventario\DataExistenciasResource;
 use App\Models\Inventario\InventarioStock;
@@ -7,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class ExistenciasController extends Controller
 {
@@ -56,40 +60,56 @@ class ExistenciasController extends Controller
             )
             ->where('io.estado', '!=', 'Cancelado');
 
-        $stock = InventarioStock::query()
-            ->select(
-                'inventario_stocks.*',
-                'prod.*',
-                'rec.total_recibido',
-                'ent.total_entregado',
-                'ent.estado as estadoEntregas',
-                'aj.cantidad_contada',
-                'aj.estado_ajuste'
-            )
-            ->joinSub($productoSub, 'prod', function ($join) {
-                $join->on('prod.id', '=', 'inventario_stocks.producto_id');
-            })
-            ->leftJoinSub($ajustesSub, 'aj', function ($join) {
-                $join->on('aj.producto_id', '=', 'inventario_stocks.producto_id')
-                    ->on('aj.almacen_destino_id', '=', 'inventario_stocks.almacen_id')
-                    ->where('estado_ajuste', 'nuevo');
-            })
-            ->leftJoinSub($recepcionesSub, 'rec', function ($join) {
-                $join->on('rec.producto_id', '=', 'inventario_stocks.producto_id')
-                    ->on('rec.destino_id', '=', 'inventario_stocks.almacen_id');
-            })
-            ->leftJoinSub($entregasSub, 'ent', function ($join) {
-                $join->on('ent.producto_id', '=', 'inventario_stocks.producto_id')
-                    ->on('ent.destino_id', '=', 'inventario_stocks.almacen_id');
-            })
-            ->where('inventario_stocks.almacen_id', $almacenId)
-            ->with(['producto', 'almacen'])
-             ->paginate($request->input('per_page', 10))
+
+        $stock = QueryBuilder::for(
+            InventarioStock::query()
+
+                ->select(
+                    'inventario_stocks.*',
+                    
+                    'prod.*',
+                    'rec.total_recibido',
+                    'ent.total_entregado',
+                    'ent.estado as estadoEntregas',
+                    'aj.cantidad_contada',
+                    'aj.estado_ajuste'
+                )
+                ->joinSub($productoSub, 'prod', function ($join) {
+                    $join->on('prod.id', '=', 'inventario_stocks.producto_id');
+                })
+                ->leftJoinSub($ajustesSub, 'aj', function ($join) {
+                    $join->on('aj.producto_id', '=', 'inventario_stocks.producto_id')
+                        ->on('aj.almacen_destino_id', '=', 'inventario_stocks.almacen_id')
+                        ->where('estado_ajuste', 'nuevo');
+                })
+                ->leftJoinSub($recepcionesSub, 'rec', function ($join) {
+                    $join->on('rec.producto_id', '=', 'inventario_stocks.producto_id')
+                        ->on('rec.destino_id', '=', 'inventario_stocks.almacen_id');
+                })
+                ->leftJoinSub($entregasSub, 'ent', function ($join) {
+                    $join->on('ent.producto_id', '=', 'inventario_stocks.producto_id')
+                        ->on('ent.destino_id', '=', 'inventario_stocks.almacen_id');
+                })
+                ->where('inventario_stocks.almacen_id', $almacenId)
+                ->with(['producto', 'almacen'])
+        )
+            ->allowedFilters([
+                AllowedFilter::partial('cantidad_actual'),
+
+            ])
+            ->allowedSorts([
+                'cantidad_actual',
+
+            ])
+            ->paginate($request->input('per_page', 10))
             ->withQueryString();
 
 
+            $activeFilters = $request->input('filter', []);
+
         return Inertia::render('Inventario/Existencias/ExistenciaManagement', [
-            'stocks' => DataExistenciasResource::collection($stock),
+            'existenciaStocks' => DataExistenciasResource::collection($stock),
+            'filters' => $activeFilters,
         ]);
     }
 

@@ -8,10 +8,10 @@ interface EstadosMovimientoProps {
 }
 
 export function ExistenciasEstadistica({ data }: EstadosMovimientoProps) {
-  const totalExistenciaActual = data.reduce((sum, item) => sum + item.stockActual, 0)
+  const totalExistenciaActual = data.reduce((sum, item) => sum + item.cantidad_actual, 0)
   const totalEntrantes = data.reduce((sum, item) => sum + item.entrada, 0)
   const totalSalientes = data.reduce((sum, item) => sum + item.salida, 0)
-  const totalEstimada = data.reduce((sum, item) => sum +  (item.stockActual - item.salida + item.entrada), 0)
+  const totalEstimada = data.reduce((sum, item) => sum +  (item.cantidad_actual - item.salida + item.entrada), 0)
 
   const estadistica = [
     {

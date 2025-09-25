@@ -1,6 +1,6 @@
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table"
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { MovimientosItem } from "@/types/Inventario";
 import { Footer } from "@/Pages/UserModulePanel/footer";
 import { links } from "@/types/links";
@@ -15,12 +15,12 @@ interface MovimientosProps {
     meta: meta;
     editingIndex: number | null;
     setEditingIndex: (val: number | null) => void;
-    onMultiSelectChange?: (isMulti: boolean) => void;
+    selected: number[];
+    setSelected: Dispatch<SetStateAction<number[]>>;
 }
 
-export default function HistorialMovimientosTable({ movimientoStocks, links, meta, onMultiSelectChange }: MovimientosProps) {
+export default function HistorialMovimientosTable({ movimientoStocks, links, meta,selected,setSelected }: MovimientosProps) {
     const { updateParams, isLoading } = useDataTableParams();
-    const [selected, setSelected] = useState<number[]>([]);
     const [isAllChecked, setIsAllChecked] = useState(false);
 
     // Actualizar datos cuando cambien las props del backend
@@ -28,25 +28,9 @@ export default function HistorialMovimientosTable({ movimientoStocks, links, met
 
     useEffect(() => {
         setTableData(movimientoStocks);
-        // Resetear selección al cambiar la página
-        setSelected([]);
-        setIsAllChecked(false);
     }, [movimientoStocks]);
 
-    /* console.log(movimientoStocks) */
 
-    /* const toggleRow = (id: number) => {
-        setSelected((prev) => {
-            const newSelected = prev.includes(id)
-                ? prev.filter((item) => item !== id)
-                : [...prev, id];
-
-            onMultiSelectChange?.(newSelected.length >= 1);
-
-            setIsAllChecked(newSelected.length === movimientoStocks.length);
-            return newSelected;
-        });
-    }; */
 
     const toggleRow = (id: number) => {
         setSelected((prev) =>

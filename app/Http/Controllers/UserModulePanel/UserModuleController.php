@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers\UserModulePanel;
-
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ControlAcceso\ModuleResource;
 use App\Http\Resources\UserModulePanel\RoleModuleResource;

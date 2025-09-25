@@ -1,145 +1,124 @@
-import { Button } from "@/Components/ui/button";
-import { Checkbox } from "@/Components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
-import { History, Pencil } from "lucide-react";
-import { useState } from "react";
-import { ExistenciaModal } from "./modals/ModalAjusteExistencia";
-import { router } from "@inertiajs/react";
-import { ExistenciasItem } from "../../../types/Inventario";
+import { useDataTableParams } from "@/hooks/useDataTableParams";
+import { useReactTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, flexRender } from "@tanstack/react-table";
+import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
 import { Footer } from "@/Pages/UserModulePanel/footer";
+import { ExistenciaModal } from "./modals/ModalAjusteExistencia";
+import { useState, useMemo } from "react";
 import { links } from "@/types/links";
 import { meta } from "@/types/meta";
-import { useDataTableParams } from "@/hooks/useDataTableParams";
-import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
+import { router } from "@inertiajs/react";
+import { getColumns } from "./columns";
+import { ExtendedExistenciasItem } from "@/types/Inventario";
+import { ExistenciasItem } from "@/types/Inventario";
 
 interface ExistenciaTableProps {
-  data: ExistenciasItem[],
-  links: links,
-  meta: meta,
-  editingIndex: number | null;
-  setEditingIndex: (val: number | null) => void;
-  onMultiSelectChange?: (isMulti: boolean) => void;
-
+  data: ExistenciasItem[];
+  links: links;
+  meta: meta;
+  selected: number[];
+  setSelected: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
-export default function ExistenciasTable({ data, links, meta ,onMultiSelectChange}: ExistenciaTableProps) {
-  const {updateParams, isLoading } = useDataTableParams();
-  const [selected, setSelected] = useState<number[]>([]);
+export default function ExistenciasTable({
+  data,
+  links,
+  meta,
+  selected,
+  setSelected,
+}: ExistenciaTableProps) {
+  const { params, updateParams, isLoading } = useDataTableParams();
   const [idProducto, setIdProducto] = useState<number>();
   const [ajusteDialogOpen, setAjusteDialogOpen] = useState(false);
-  const [isAllChecked, setIsAllChecked] = useState(false);
 
-const toggleRow = (id: number) => {
-  setSelected((prev) => {
-    const newSelected = prev.includes(id)
-      ? prev.filter((item) => item !== id)
-      : [...prev, id];
-
-    onMultiSelectChange?.(newSelected.length >= 1);
-
-    setIsAllChecked(newSelected.length === data.length);
-    return newSelected;
-  });
-};
-
-const toggleAll = () => {
-  const newSelected = isAllChecked ? [] : data.map((item: any) => item.id);
-  setIsAllChecked(!isAllChecked);
-  setSelected(newSelected);
-
-
-  onMultiSelectChange?.(newSelected.length >= 1);
-};
   const handleOpenWithFilter = (idProducto: number) => {
-    router.visit(`/inventario/historialMoviminto/movimiento/${idProducto}`); //renderiza pagina con id
+    router.visit(`/inventario/historialMoviminto/movimiento/${idProducto}`);
   };
 
+  // Procesar datos
+  const processedData = useMemo<ExtendedExistenciasItem[]>(() => {
+    return data.map((item) => {
+      const entrada = item.entrada || 0;
+      const salida = item.salida || 0;
+      const stockDisponible = item.cantidad_actual - (item.estadoEntregas === "pendiente" ? salida : 0);
+      const stockEstimado = stockDisponible - salida + entrada;
+      return { ...item, entrada, salida, stockDisponible, stockEstimado };
+    });
+  }, [data]);
+
+  const columns = useMemo(
+    () => getColumns({ setIdProducto, setAjusteDialogOpen, handleOpenWithFilter }),
+    []
+  );
+
+  const table = useReactTable({
+    data: processedData,
+    columns,
+    state: {
+      rowSelection: selected.reduce((acc, id) => {
+        const rowIndex = processedData.findIndex((item) => item.id === id);
+        if (rowIndex !== -1) acc[rowIndex] = true;
+        return acc;
+      }, {} as Record<string, boolean>),
+      columnFilters: Object.entries(params.filters).map(([id, value]) => ({ id, value })),
+      sorting: params.sort ? [{ id: params.sort.replace("-", ""), desc: params.sort.startsWith("-") }] : [],
+    },
+    enableRowSelection: true,
+    onRowSelectionChange: (updater) => {
+      const newSelection = typeof updater === "function" ? updater(table.getState().rowSelection) : updater;
+      const newSelectedIds = Object.keys(newSelection)
+        .filter((key) => newSelection[key])
+        .map((key) => processedData[parseInt(key)].id);
+      setSelected(newSelectedIds);
+    },
+    getCoreRowModel: getCoreRowModel(),
+    manualFiltering: true,
+    manualSorting: true,
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+  });
 
   return (
     <>
       <Table>
         <TableHeader className="sticky-header">
-          <TableRow>
-            <TableHead className="text-center">  <Checkbox
-              checked={isAllChecked}
-              onCheckedChange={toggleAll}
-            /></TableHead>
-            <TableHead className="text-center">Producto</TableHead>
-            <TableHead className="text-center">Categoria del producto</TableHead>
-            <TableHead className="text-center">Existencia actual</TableHead>
-            <TableHead className="text-center">Existencia utilizable</TableHead>
-            <TableHead className="text-center">Entrante</TableHead>
-            <TableHead className="text-center">Saliente</TableHead>
-            <TableHead className="text-center">Existencia estimada</TableHead>
-            <TableHead className="text-center">Acciones</TableHead>
-          </TableRow>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id} className="text-center">
+                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
         </TableHeader>
         <TableBody className="text-center">
           {isLoading ? (
-            <DataTableSkeleton columnCount={9} rowCount={5} showHeaders={false}></DataTableSkeleton>
+            <DataTableSkeleton columnCount={9} rowCount={5} showHeaders={false} />
+          ) : table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                ))}
+              </TableRow>
+            ))
           ) : (
-            data.map((item: any) => {
-              const entrada = item.entrada || 0;
-              const salida = item.salida || 0;
-              // Calcular stock disponible según estado de entrega
-              const stockDisponible =
-                item.stockActual - (item.estadoEntregas === "pendiente" ? salida : 0);
-              // Calcular stock estimado
-              const stockEstimado = stockDisponible - salida + entrada;
-
-              return (
-                <TableRow key={item.id}>
-                  <TableCell>
-                    <Checkbox
-                      checked={selected.includes(item.id)}
-                      onCheckedChange={() => toggleRow(item.id)}
-                    />
-                  </TableCell>
-                  <TableCell>{item.nombre}</TableCell>
-                  <TableCell>{item.categoria}</TableCell>
-                  <TableCell>
-                    {item.stockActual}
-                    {item.cantidad_contada == 0 || item.cantidad_contada == null && (
-                      <Button
-                        variant="ghost"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (item.producto_id) {
-                            setIdProducto(item.producto_id);
-                            setAjusteDialogOpen(true);
-                          }
-                        }}
-                      >
-                        <Pencil className="w-4 h-4 text-amber-500" />
-                      </Button>
-                    )}
-                  </TableCell>
-                  <TableCell>{stockDisponible}</TableCell>
-                  <TableCell>{entrada}</TableCell>
-                  <TableCell>{salida}</TableCell>
-                  <TableCell>{stockEstimado}</TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="sm" className="hover:bg-accent/10" onClick={() => { handleOpenWithFilter(item.producto_id) }}>
-                      <History className="h-4 w-4" /> Historial
-                    </Button>
-                  </TableCell>
-                </TableRow>)
-            }
-            ))}
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                No hay resultados.
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
-      <Footer
-        links={links}
-        meta={meta}
-        updateParams={updateParams}
-        isLoading={isLoading} />
 
-      {ajusteDialogOpen && idProducto && (<ExistenciaModal isOpen={ajusteDialogOpen}
-        onClose={() => setAjusteDialogOpen(false)}
-        idProducto={idProducto}
-      ></ExistenciaModal>)}
+      <Footer links={links} meta={meta} updateParams={updateParams} isLoading={isLoading} />
 
+      {ajusteDialogOpen && idProducto && (
+        <ExistenciaModal isOpen={ajusteDialogOpen} onClose={() => setAjusteDialogOpen(false)} idProducto={idProducto} />
+      )}
     </>
-
-  )
+  );
 }
