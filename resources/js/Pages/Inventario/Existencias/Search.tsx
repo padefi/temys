@@ -7,21 +7,21 @@ export type Chip = {
 
 interface ChipSearchProps {
   onChange: (chips: Chip[]) => void; // 👈 callback para pasar los chips al padre
-   initialChips?: Chip[];
+  initialChips?: Chip[];
 }
 
 export default function ChipSearch({ onChange, initialChips = [] }: ChipSearchProps) {
   const [chips, setChips] = useState<Chip[]>([]);
   const [inputValue, setInputValue] = useState("");
 
- 
 
-useEffect(() => {
-  // solo actualizo si initialChips tiene contenido nuevo distinto
-  if (initialChips && initialChips.length > 0) {
-    setChips(initialChips);
-  }
-}, [initialChips]);
+
+  useEffect(() => {
+    // solo actualizo si initialChips tiene contenido nuevo distinto
+    if (initialChips && initialChips.length > 0) {
+      setChips(initialChips);
+    }
+  }, [initialChips]);
 
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -65,7 +65,7 @@ useEffect(() => {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Buscar..."
+          placeholder="Buscar producto..."
           className="flex-1 outline-none focus:ring-0 focus:border-transparent text-sm min-w-[120px] bg-zinc-50 border-none"
         />
       </div>

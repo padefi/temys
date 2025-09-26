@@ -66,8 +66,8 @@ class ExistenciasController extends Controller
 
                 ->select(
                     'inventario_stocks.*',
-                    
-                    'prod.*',
+                    'prod.nombre',
+                    'prod.categoria',
                     'rec.total_recibido',
                     'ent.total_entregado',
                     'ent.estado as estadoEntregas',
@@ -94,18 +94,25 @@ class ExistenciasController extends Controller
                 ->with(['producto', 'almacen'])
         )
             ->allowedFilters([
+                AllowedFilter::callback('categoria', function ($query, $value) {
+                    $query->where('prod.categoria', 'LIKE', "%{$value}%");
+                }),
+                AllowedFilter::callback('nombre', function ($query, $value) {
+                    $query->where('prod.nombre', 'LIKE', "%{$value}%");
+                }),
                 AllowedFilter::partial('cantidad_actual'),
-
             ])
+
             ->allowedSorts([
                 'cantidad_actual',
+
 
             ])
             ->paginate($request->input('per_page', 10))
             ->withQueryString();
 
 
-            $activeFilters = $request->input('filter', []);
+        $activeFilters = $request->input('filter', []);
 
         return Inertia::render('Inventario/Existencias/ExistenciaManagement', [
             'existenciaStocks' => DataExistenciasResource::collection($stock),

@@ -41,12 +41,34 @@ export const getColumns = ({
   },
   {
     accessorKey: "nombre",
-    header: "Producto",
+      header: ({column,table})=>{
+      const disabled =(table.options.meta as {disabled:boolean})?.disabled || false;
+      return(
+        <DataTableColumnHeader
+        column={column}
+          title="Producto"
+          disabled={disabled}
+          className="justify-center font-bold min-w-[90px]"
+          isVisible={true}
+        />
+      )
+    },
     cell: ({ row }) => <div className="text-center">{row.getValue("nombre")}</div>,
   },
   {
     accessorKey: "categoria",
-    header: "Categoría del producto",
+    header: ({column,table})=>{
+      const disabled =(table.options.meta as {disabled:boolean})?.disabled || false;
+      return(
+        <DataTableColumnHeader
+        column={column}
+          title="Categoria del producto"
+          disabled={disabled}
+          className="justify-center font-bold min-w-[90px]"
+          isVisible={true}
+        />
+      )
+    },
     cell: ({ row }) => <div className="text-center">{row.getValue("categoria")}</div>,
   },
   {
@@ -59,6 +81,7 @@ export const getColumns = ({
           title="Existencia actual"
           disabled={disabled}
           className="justify-center font-bold min-w-[90px]"
+          isVisible={false}
         />
       );
     },

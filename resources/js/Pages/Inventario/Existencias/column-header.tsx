@@ -12,9 +12,10 @@ interface DataTableColumnHeaderProps<TData, TValue> extends React.HTMLAttributes
     title: string;
     selectOptions?: { label: string; value: string }[];
     disabled?: boolean;
+    isVisible:boolean;
 }
 
-export function DataTableColumnHeader<TData, TValue>({ column, title, className,disabled }: DataTableColumnHeaderProps<TData, TValue>) {
+export function DataTableColumnHeader<TData, TValue>({ column, title, className,disabled,isVisible }: DataTableColumnHeaderProps<TData, TValue>) {
     const { params, updateParams, isLoading } = useDataTableParams();
     const columnId = column.id;
 
@@ -100,7 +101,7 @@ export function DataTableColumnHeader<TData, TValue>({ column, title, className,
             
             <Button variant="ghost"  onClick={handleSort} disabled={isLoading || disabled} >
                 {!isInputVisible ? title : null}
-                {currentSortColumn === columnId && !isLoading && (
+                {currentSortColumn === columnId && !isLoading &&  (
                     currentSortDirection === 'asc'
                         ? <ArrowUpNarrowWide className='ml-2 h-4 w-4' />
                         : <ArrowDownNarrowWide className='ml-2 h-4 w-4' />
@@ -115,6 +116,7 @@ export function DataTableColumnHeader<TData, TValue>({ column, title, className,
                 size="sm"
                 onClick={toggleFilter}
                 disabled={isLoading || disabled}
+                className={isVisible ? "block" : "hidden"}
             >               
                 {isInputVisible ? <PencilOff className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
             </Button>

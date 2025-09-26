@@ -9,27 +9,38 @@ import { links } from "@/types/links";
 import { meta } from "@/types/meta";
 import { Download, FileText, Sheet } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-import { ExistenciasItem } from "@/types/Inventario";
-import ExistenciasTable from "./ExistenciasTable";
 
+import ExistenciasTable from "./ExistenciasTable";
+import ChipSearch, { Chip } from "./Search";
+import { ExistenciasItem } from "@/types/Inventario";
 type PageProps = InertiaPageProps & {
-    existenciaStocks:ExistenciaPagination,
+    existenciaStocks: ExistenciaPagination,
 };
 
 interface ExistenciaPagination {
-  data: ExistenciasItem[];
-  links: links;
-  meta: meta;
+    data: ExistenciasItem[];
+    links: links;
+    meta: meta;
 }
 
 export default function ExistenciaManagement() {
-    const { existenciaStocks:{data:existencias , links , meta} } = usePage<PageProps>().props;
+    const { existenciaStocks: { data: existencias, links, meta } } = usePage<PageProps>().props;
     const [existenciaData, setExistenciaData] = useState<ExistenciasItem[]>(existencias);
     const [selected, setSelected] = useState<number[]>([]);
+    const [chips, setChips] = useState<Chip[]>([]);
 
     useEffect(() => {
-        if(existenciaData != existencias) setExistenciaData(existencias)
+        if (existenciaData != existencias) setExistenciaData(existencias)
     }, [existencias]);
+
+    console.log(existenciaData)
+
+    const filteredData = existenciaData.filter((item) => {
+        if (chips.length === 0) return true;
+        return chips.some((chip) =>
+            item.nombre?.toLowerCase().includes(chip.value.toLowerCase())
+        );
+    });
 
     return (
         <AuthenticatedLayout
@@ -41,6 +52,7 @@ export default function ExistenciaManagement() {
                 <div className="grid grid-cols-2 gap-2">
                     <span className="text-xl font-light">Existencias</span>
                     <div className="flex gap-2">
+                        <ChipSearch onChange={setChips} />
                         {selected!.length >= 1 && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger>
@@ -69,16 +81,17 @@ export default function ExistenciaManagement() {
                                 {existenciaData.length} productos
                             </Badge>
                         </div>
-                        <ExistenciasTable                        
-                            data={existenciaData}
+                        <ExistenciasTable
+                            data={filteredData}
                             links={links}
                             meta={meta}
                             selected={selected}
                             setSelected={setSelected}
-                            ></ExistenciasTable>
+                        ></ExistenciasTable>
                     </CardContent>
                 </Card>
             </div>
+
         </AuthenticatedLayout>
     );
 }
