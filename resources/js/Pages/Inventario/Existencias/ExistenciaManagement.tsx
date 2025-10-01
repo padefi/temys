@@ -28,6 +28,7 @@ export default function ExistenciaManagement() {
     const [existenciaData, setExistenciaData] = useState<ExistenciasItem[]>(existencias);
     const [selected, setSelected] = useState<number[]>([]);
     const [chips, setChips] = useState<Chip[]>([]);
+    const [chipExterno, setChipExterno] = useState(false);
 
     useEffect(() => {
         if (existenciaData != existencias) setExistenciaData(existencias)
@@ -52,7 +53,7 @@ export default function ExistenciaManagement() {
                 <div className="grid grid-cols-2 gap-2">
                     <span className="text-xl font-light">Existencias</span>
                     <div className="flex gap-2">
-                        <ChipSearch onChange={setChips} />
+                        <ChipSearch onChange={setChips} setExterno={setChipExterno}/>
                         {selected!.length >= 1 && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger>

@@ -31,6 +31,17 @@ export type StockItem = {
     ajuste_id: number
 };
 
+export type InventarioItem = {
+    id: number;
+    producto: string;
+    almacen: string;
+    cantidad_actual: number;
+    estado_ajuste: string;
+    cantidad_contada: number;
+    stock_minimo: number;
+    ajuste_id: number
+};
+
 export type AlmacenStock = {
     id: number;
     producto_id: number;

@@ -1,117 +1,115 @@
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table"
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { MovimientosItem } from "@/types/Inventario";
 import { Footer } from "@/Pages/UserModulePanel/footer";
 import { links } from "@/types/links";
 import { meta } from "@/types/meta";
 import { useDataTableParams } from "@/hooks/useDataTableParams";
 import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
+import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 
-
-interface MovimientosProps {
-    movimientoStocks: MovimientosItem[],
-    links: links,
-    meta: meta;
-    editingIndex: number | null;
-    setEditingIndex: (val: number | null) => void;
-    selected: number[];
-    setSelected: Dispatch<SetStateAction<number[]>>;
+interface MovimientosTableProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  links: links;
+  meta: meta;
+  editingIndex: number | null;
+  setEditingIndex: (val: number | null) => void;
+  selected: number[];
+  setSelected: Dispatch<SetStateAction<number[]>>;
 }
 
-export default function HistorialMovimientosTable({ movimientoStocks, links, meta,selected,setSelected }: MovimientosProps) {
-    const { updateParams, isLoading } = useDataTableParams();
-    const [isAllChecked, setIsAllChecked] = useState(false);
-
-    // Actualizar datos cuando cambien las props del backend
-    const [tableData, setTableData] = useState<MovimientosItem[]>(movimientoStocks);
-
-    useEffect(() => {
-        setTableData(movimientoStocks);
-    }, [movimientoStocks]);
 
 
+export default function HistorialMovimientosTable<TData extends MovimientosItem, TValue>({
+  columns: initialColumns,
+  data: initialData,
+  links,
+  meta, selected, setSelected }: MovimientosTableProps<TData, TValue>) {
+  const { params, updateParams, isLoading } = useDataTableParams();
+  const [isAllChecked, setIsAllChecked] = useState(false);
+  const [tableData, setTableData] = useState<TData[]>(initialData);
 
-    const toggleRow = (id: number) => {
-        setSelected((prev) =>
-            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-        );
+  useEffect(() => {
+    setTableData(initialData);
+  }, [initialData]);
 
-        if (selected.length === movimientoStocks.length - 1) {
-            setIsAllChecked(true);
-            return;
-        }
 
-        setIsAllChecked(false);
-    }
+  const columns = useMemo(() => {
+    return initialColumns.map(col => {
+      return {
+        ...col,
+      }
+    });
+  }, [initialColumns]);
 
-    const toggleAll = () => {
-        if (isAllChecked) {
-            setSelected([]); // desmarcar todos
-        } else {
-            setSelected(movimientoStocks.map((item: any) => item.id)); // marcar todos
-        }
-        setIsAllChecked(!isAllChecked);
-    };
-    
-    return (
-        <>
-            <Table>
-                <TableHeader className="sticky-header">
-                    <TableRow>
-                        <TableHead className="text-center">  <Checkbox checked={isAllChecked} onCheckedChange={toggleAll} /> </TableHead>
-                        <TableHead className="text-center">Fecha</TableHead>
-                        <TableHead className="text-center">Producto</TableHead>
-                        <TableHead className="text-center">Tipo movimiento</TableHead>
-                        <TableHead className="text-center">Origen</TableHead>
-                        <TableHead className="text-center">Destino</TableHead>
-                        <TableHead className="text-center">Hecho por</TableHead>
-                        <TableHead className="text-center">Cantidad</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody className="text-center">
-                    {isLoading ? (
-                        <DataTableSkeleton columnCount={8} rowCount={5} showHeaders={false}></DataTableSkeleton>
-                    ) : (
-                        tableData.map((item: any) => {
-                            return (
-                                <TableRow key={item.id}>
-                                    <TableCell> <Checkbox checked={selected.includes(item.id)} onCheckedChange={() => toggleRow(item.id)} /> </TableCell>
-                                    <TableCell>
-                                        <div className="text-sm">
-                                            {new Date(item.fecha).toLocaleDateString("es-ES", {
-                                                day: "2-digit",
-                                                month: "2-digit",
-                                                year: "numeric",
-                                            })}
-                                        </div>
-                                        <div className="text-xs text-muted-foreground">
-                                            {new Date(item.fecha).toLocaleTimeString("es-ES", {
-                                                hour: "2-digit",
-                                                minute: "2-digit",
-                                                timeZone: "UTC"
-                                            })}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell> {item.nombreProducto}</TableCell>
-                                    <TableCell>{item.tipo_movimiento}</TableCell>
-                                    <TableCell>{item.origen}</TableCell>
-                                    <TableCell>{item.destino}</TableCell>
-                                    <TableCell>{item.usuarioCreacion}</TableCell>
-                                    <TableCell>{item.cantidad}</TableCell>
-                                </TableRow>
-                            )
-                        }))
-                    }
-                </TableBody>
-            </Table>
+  const table = useReactTable({
+    data: tableData,
+    columns,
+    state: {
+      rowSelection: selected.reduce((acc, id) => {
+        const rowIndex = tableData.findIndex((item) => item.id === id);
+        if (rowIndex !== -1) acc[rowIndex] = true;
+        return acc;
+      }, {} as Record<string, boolean>),
+      columnFilters: Object.entries(params.filters).map(([id, value]) => ({ id, value })),
+      sorting: params.sort ? [{ id: params.sort.replace("-", ""), desc: params.sort.startsWith("-") }] : [],
+    },
+    enableRowSelection: true,
+    onRowSelectionChange: (updater) => {
+      const newSelection = typeof updater === "function" ? updater(table.getState().rowSelection) : updater;
+      const newSelectedIds = Object.keys(newSelection)
+        .filter((key) => newSelection[key])
+        .map((key) => tableData[parseInt(key)].id);
+      setSelected(newSelectedIds);
+    },
+    getCoreRowModel: getCoreRowModel(),
+    manualPagination: true,
+    manualFiltering: true,
+    manualSorting: true,
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+  });
 
-            <Footer
-                links={links}
-                meta={meta}
-                updateParams={updateParams}
-                isLoading={isLoading} />
+  return (
+    <>
+      <Table>
+        <TableHeader className="sticky-header">
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id} className="text-center">
+                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody className="text-center">
+          {isLoading ? (
+            <DataTableSkeleton columnCount={9} rowCount={5} showHeaders={false} />
+          ) : table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                No hay resultados.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
 
-        </>
-    )
+      <Footer links={links} meta={meta} updateParams={updateParams} isLoading={isLoading} />
+
+    </>
+  );
 }

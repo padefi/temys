@@ -22,6 +22,9 @@ class StockResource extends JsonResource
             'stock_minimo' => $this->stock_minimo,
             'producto' => new ProductoResource($this->whenLoaded('producto')),
             'almacen' => new AlmacenResource($this->whenLoaded('almacen')),
+
+           /*  'producto' => $this->whenLoaded('producto') ?  $this->producto->nombre : null,
+            'almacen' => $this->whenLoaded('almacen') ?  $this->almacen->nombre : null, */
             'ajuste_id' => $this->ajuste_id,
         ];
     }

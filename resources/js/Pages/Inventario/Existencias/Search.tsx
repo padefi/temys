@@ -8,9 +8,11 @@ export type Chip = {
 interface ChipSearchProps {
   onChange: (chips: Chip[]) => void; // 👈 callback para pasar los chips al padre
   initialChips?: Chip[];
+  setExterno: (val: boolean ) => void;
+  
 }
 
-export default function ChipSearch({ onChange, initialChips = [] }: ChipSearchProps) {
+export default function ChipSearch({ onChange, initialChips = [] ,setExterno }: ChipSearchProps) {
   const [chips, setChips] = useState<Chip[]>([]);
   const [inputValue, setInputValue] = useState("");
 
@@ -38,6 +40,7 @@ export default function ChipSearch({ onChange, initialChips = [] }: ChipSearchPr
     const newChips = chips.filter((_, i) => i !== index);
     setChips(newChips);
     onChange(newChips); // notificamos al padre
+    setExterno(false)
   };
 
   return (

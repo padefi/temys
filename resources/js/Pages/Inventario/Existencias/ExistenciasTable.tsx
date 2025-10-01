@@ -72,6 +72,7 @@ export default function ExistenciasTable({
       setSelected(newSelectedIds);
     },
     getCoreRowModel: getCoreRowModel(),
+    manualPagination: true,
     manualFiltering: true,
     manualSorting: true,
     getFilteredRowModel: getFilteredRowModel(),

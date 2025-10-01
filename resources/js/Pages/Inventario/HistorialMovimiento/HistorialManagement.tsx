@@ -1,4 +1,4 @@
-import { useEffect, useState} from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/Components/ui/card";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, usePage } from "@inertiajs/react";
@@ -10,7 +10,7 @@ import { links } from "@/types/links";
 import { meta } from "@/types/meta";
 import { FileDown, FileText, Sheet } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-
+import { columns } from "./Columns";
 
 
 
@@ -23,25 +23,26 @@ export default function HistorialManagement() {
     const { movimientoStocks } = usePage<MovimientoProps>().props
     const [data, setData] = useState<MovimientosItem[]>(movimientoStocks.data)
     const [chips, setChips] = useState<Chip[]>([])
+    const [chipExterno, setChipExterno] = useState(false);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [selected, setSelected] = useState<number[]>([]);
     const nombreProducto = props.nombreProducto;
 
-
-
+    const memoizedColumns = useMemo(() => columns, []);
     const SetNombreProd = () => {
         if (nombreProducto) {
             const data: Chip = {
                 value: nombreProducto as string,
             }
             setChips([data]);
+            setChipExterno(true);
         }
     }
 
     useEffect(() => {
         SetNombreProd();
     }, []);
-    
+
 
     const filteredData = data.filter((item) => {
         if (chips.length === 0) return true;
@@ -60,10 +61,10 @@ export default function HistorialManagement() {
         >
             <Head title="Historial movimientos" />
 
-            <div className="mx-auto w-full p-6 space-y-12">
+            <div className="mx-auto w-full p-6 space-y-12 ">
                 <div className="grid grid-cols-2 gap-2">
                     <div>
-                        {chips.length > 0 ? (
+                        {chipExterno ? (
                             <>
                                 <span className="text-xl text-teal-500 font-medium">Existencias</span>
                                 <br />
@@ -74,13 +75,13 @@ export default function HistorialManagement() {
                         )}
                     </div>
                     <div className="flex gap-2">
-                        <ChipSearch onChange={setChips} initialChips={chips}/>
+                        <ChipSearch onChange={setChips} initialChips={chips} setExterno={setChipExterno} />
                         {selected.length >= 1 && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger className="size-8 cursor-pointer">
-                                  
-                                    <FileDown className="text-slate-900"/> 
-                                    </DropdownMenuTrigger>
+
+                                    <FileDown className="text-slate-900" />
+                                </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                     <DropdownMenuLabel>Exportar en</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
@@ -92,27 +93,23 @@ export default function HistorialManagement() {
 
                     </div>
                 </div>
-
-
+                
                 <Card>
                     <CardContent>
                         <HistorialMovimientosTable
-                            movimientoStocks={filteredData}
+                            columns={memoizedColumns}
+                            data={filteredData}
                             links={movimientoStocks.links}
                             meta={movimientoStocks.meta}
                             editingIndex={editingIndex}
                             setEditingIndex={setEditingIndex}
                             selected={selected}
                             setSelected={setSelected}
-                            >
-                        
+                        >
                         </HistorialMovimientosTable>
                     </CardContent>
                 </Card>
             </div>
-
-
-
 
         </AuthenticatedLayout>
     );

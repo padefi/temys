@@ -10,31 +10,43 @@ import { PageProps as InertiaPageProps } from "@inertiajs/core";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { SolicitarStock } from "./modals/ModalCrearSolicitudStock";
 import { StockItem } from "../../../types/Inventario";
+import { InventarioItem } from "../../../types/Inventario";
 import { StockFilters } from "./StockFilters";
 import { CardTable } from "./CardTable";
+import { meta } from "@/types/meta";
+import { links } from "@/types/links";
+
+
+interface StockPagination {
+    data: InventarioItem[];
+    links: links;
+    meta: meta;
+}
+
 
 type PageProps = InertiaPageProps & {
-  stocks: {
-    data: StockItem[];
-  };
+  stocks:
+   StockPagination
+  
 };
 
 export default function StockManagement() {
-  const [productosDisponibles, setProductosDisponibles] = useState<StockItem[]>([]);
+  const [productosDisponibles, setProductosDisponibles] = useState<InventarioItem[]>([]);
   const [solicitudDialogOpen, setsolicitudDialogOpen] = useState(false);
-  const { stocks } = usePage<PageProps>().props;
+  const { stocks:{ data: stock, links, meta }  } = usePage<PageProps>().props;
+  const [stockData, setstockData] = useState<InventarioItem[]>(stock); 
   const { hasSubmenuPermission } = usePermissions();
-  const [stock, setStock] = useState<StockItem[]>([]);
-  const [filteredStock, setFilteredStock] = useState<StockItem[]>([]);
+  
+  const [filteredStock, setFilteredStock] = useState<InventarioItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
 
-  useEffect(() => {
-    setStock(stocks.data);
-  }, [stocks]);
+   useEffect(() => {
+        if (stockData != stock) setstockData(stock)
+    }, [stock]);
 
   const handleAbrirModal = () => {
-    const productosFiltrados = stock.filter(
+    const productosFiltrados = stockData.filter(
       (item) => item.cantidad_actual <= item.stock_minimo
     );
     setProductosDisponibles(productosFiltrados);
@@ -66,13 +78,13 @@ export default function StockManagement() {
 
         <Tabs defaultValue="stock" className="space-y-4">
           <TabsContent value="stock" className="space-y-4">
-            <StockFilters
+             <StockFilters
               stock={stock}
               currentPage={currentPage}
               setFilteredStock={setFilteredStock}
               filteredStock={filteredStock}
-            />
-            <CardTable stockFiltrado={filteredStock} stocks={stocks} currentPage={currentPage} setCurrentPage={setCurrentPage}></CardTable>
+            /> *
+          <CardTable stockFiltrado={filteredStock} stocks={stock} currentPage={currentPage} setCurrentPage={setCurrentPage}></CardTable>
           </TabsContent>
         </Tabs>
       </div>
