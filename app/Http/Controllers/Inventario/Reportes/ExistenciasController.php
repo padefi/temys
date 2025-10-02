@@ -105,6 +105,8 @@ class ExistenciasController extends Controller
 
             ->allowedSorts([
                 'cantidad_actual',
+                'categoria',
+                'nombre'
 
 
             ])

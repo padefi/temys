@@ -10,43 +10,59 @@ import { PageProps as InertiaPageProps } from "@inertiajs/core";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { SolicitarStock } from "./modals/ModalCrearSolicitudStock";
 import { StockItem } from "../../../types/Inventario";
-import { InventarioItem } from "../../../types/Inventario";
+import { StockInventarioItem } from "../../../types/Inventario";
 import { StockFilters } from "./StockFilters";
 import { CardTable } from "./CardTable";
-import { meta } from "@/types/meta";
-import { links } from "@/types/links";
-
-
-interface StockPagination {
-    data: InventarioItem[];
-    links: links;
-    meta: meta;
-}
-
+import { StockTable } from "./modeloDataTable";
+import { toast } from "sonner";
+import axios from "axios";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 
 type PageProps = InertiaPageProps & {
-  stocks:
-   StockPagination
-  
+  stocks: {
+    data: StockInventarioItem[];
+  };
 };
 
 export default function StockManagement() {
-  const [productosDisponibles, setProductosDisponibles] = useState<InventarioItem[]>([]);
+  const [productosDisponibles, setProductosDisponibles] = useState<StockInventarioItem[]>([]);
   const [solicitudDialogOpen, setsolicitudDialogOpen] = useState(false);
-  const { stocks:{ data: stock, links, meta }  } = usePage<PageProps>().props;
-  const [stockData, setstockData] = useState<InventarioItem[]>(stock); 
+  const { stocks } = usePage<PageProps>().props;
   const { hasSubmenuPermission } = usePermissions();
-  
-  const [filteredStock, setFilteredStock] = useState<InventarioItem[]>([]);
+  const [stock, setStock] = useState<StockInventarioItem[]>([]);
+  const [filteredStock, setFilteredStock] = useState<StockItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [editedRows, setEditedRows] = useState<Record<number, number>>({})
 
 
-   useEffect(() => {
-        if (stockData != stock) setstockData(stock)
-    }, [stock]);
+  const handleAplicarTodo = async () => {
+    const dataRows = Object.entries(editedRows).map(([id, cantidad]) => ({
+      id: Number(id),
+      cantidad_contada: cantidad,
+    }));
+
+    try {
+      const response = await axios.post("/actualizar-cantidad-contadas-masivo", {
+        data: dataRows,
+      });
+      const data = await response.data;
+      toast.success(data.message);
+      setEditedRows({});
+
+    } catch (error: any) {
+      toast.error(error.response.data.message)
+      console.error("Error al aplicar todo:", error);
+    }
+  };
+
+
+
+  useEffect(() => {
+    setStock(stocks.data);
+  }, [stocks]);
 
   const handleAbrirModal = () => {
-    const productosFiltrados = stockData.filter(
+    const productosFiltrados = stock.filter(
       (item) => item.cantidad_actual <= item.stock_minimo
     );
     setProductosDisponibles(productosFiltrados);
@@ -75,18 +91,34 @@ export default function StockManagement() {
             </Tooltip>}
           <span>inventario Fisico</span>
         </div>
+        
+        <StockFilters
+          stock={stock}
 
-        <Tabs defaultValue="stock" className="space-y-4">
-          <TabsContent value="stock" className="space-y-4">
-             <StockFilters
+        />
+        <Card>
+          <CardHeader className="flex justify-between">
+            <div>
+              <CardTitle>Inventario de Productos</CardTitle>
+              <CardDescription>Lista completa de productos con información de stock y ubicación</CardDescription>
+            </div>
+            <div>
+              {hasSubmenuPermission('inventarioFisico', 'update') &&
+                <Button size="sm" variant="outline" onClick={handleAplicarTodo} className="text-xs" disabled={Object.keys(editedRows).length === 0} >
+                  <Plus className="h-3 w-3 mr-1" /> Aplicar todo
+                </Button>
+              }
+            </div>
+          </CardHeader>
+          <CardContent>
+            <StockTable
               stock={stock}
-              currentPage={currentPage}
-              setFilteredStock={setFilteredStock}
-              filteredStock={filteredStock}
-            /> *
-          <CardTable stockFiltrado={filteredStock} stocks={stock} currentPage={currentPage} setCurrentPage={setCurrentPage}></CardTable>
-          </TabsContent>
-        </Tabs>
+              setStock={setStock}
+              editedRows={editedRows}
+              setEditedRows={setEditedRows}
+            />
+          </CardContent>
+        </Card>
       </div>
 
       {/* Dialog para solicitar stock */}

@@ -6,6 +6,7 @@ import { Separator } from "@/Components/ui/separator"
 import { Package, MapPin, Calendar, User, FileText, TrendingUp, TrendingDown } from "lucide-react"
 import { AjusteData } from "../../../../types/Inventario"
 import axios from "axios"
+import { log } from "console"
 
 
 interface AjusteInventarioModalProps {
@@ -26,7 +27,7 @@ export function AjusteInventarioModal({
     onReject,
 }: AjusteInventarioModalProps) {
     const [ajusteData, setAjusteData] = useState<AjusteData | null>(null);
-
+   
     useEffect(() => {
         if (!idAjuste || !productoId) return;
 
