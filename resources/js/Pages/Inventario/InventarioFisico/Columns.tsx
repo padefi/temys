@@ -5,39 +5,39 @@ import { AjusteSeleccionado, StockInventarioItem } from "@/types/Inventario";
 import { createColumnHelper } from "@tanstack/react-table";
 import { AnimatePresence, motion } from "framer-motion";
 import { BrushCleaning, Clock10, Pencil, Save } from "lucide-react";
+import { DataTableColumnHeader } from "../Existencias/column-header";
+import { useEffect, useState } from "react";
 
 interface StockColumnProps {
-  editingCell: { rowId: number; field: string } | null;
+  editingCell: { id: number; field: string }[];
   handleCellClick: (id: number, field: string) => void;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>, id: number, field: keyof StockInventarioItem) => void;
-  handleInputBlur: () => void;
-  inputRef: React.RefObject<HTMLInputElement | null>;
+  handleInputChange: (
+    value: number,
+    id: number,
+    field: keyof StockInventarioItem
+  ) => void;
+  isEditing: boolean,
   setAjusteSeleccionado: React.Dispatch<React.SetStateAction<AjusteSeleccionado | null>>;
   setIsModalOpenInventario: React.Dispatch<React.SetStateAction<boolean>>;
   hasSubmenuPermission: (menu: string, action: string) => boolean;
   hasRole: (role: string) => boolean;
   calculaDiferencia: (aMano: number, contada: number) => number | undefined;
   getStockStatus: (actual: number, minimo: number) => { status: string; color: string };
-  editedRows: Record<number, number>;
   handleAplicarFila: (id: number) => void;
   handleLimpiarFila: (id: number) => void;
 }
-
-
 
 export const getStockColumns = ({
   editingCell,
   handleCellClick,
   handleInputChange,
-  handleInputBlur,
-  inputRef,
+  isEditing,
   setAjusteSeleccionado,
   setIsModalOpenInventario,
   hasSubmenuPermission,
   hasRole,
   calculaDiferencia,
   getStockStatus,
-  editedRows,
   handleAplicarFila,
   handleLimpiarFila
 }: StockColumnProps) => {
@@ -46,16 +46,52 @@ export const getStockColumns = ({
   return [
     columnHelper.accessor(row => row.producto, {
       id: 'producto',
-      header: 'Producto',
+      header: ({ column, table }) => {
+        const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
+        return (
+          <DataTableColumnHeader
+            column={column}
+            title="Producto"
+            disabled={disabled}
+            className="justify-center font-bold min-w-[90px]"
+            isVisible={true}
+          />
+        )
+      },
+
       cell: info => info.getValue()
     }),
     columnHelper.accessor(row => row.almacen, {
       id: 'almacen',
-      header: 'Almacén',
+      header: ({ column, table }) => {
+        const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
+        return (
+          <DataTableColumnHeader
+            column={column}
+            title="Almacén"
+            disabled={disabled}
+            className="justify-center font-bold min-w-[90px]"
+            isVisible={true}
+          />
+        )
+      },
+
       cell: info => info.getValue()
     }),
     columnHelper.accessor('cantidad_actual', {
-      header: 'Cantidad actual',
+      header: ({ column, table }) => {
+        const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
+        return (
+          <DataTableColumnHeader
+            column={column}
+            title="Cantidad actual"
+            disabled={disabled}
+            className="justify-center font-bold min-w-[90px]"
+            isVisible={false}
+          />
+        )
+      },
+
       cell: info => (
         <div className="flex items-center justify-center gap-2 font-mono">
           {info.getValue()}
@@ -64,30 +100,44 @@ export const getStockColumns = ({
     }),
     columnHelper.display({
       id: 'cantidad_contada',
-      header: 'Cantidad contada',
+      header: ({ column, table }) => {
+        const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
+        return (
+          <DataTableColumnHeader
+            column={column}
+            title="Cantidad contada"
+            disabled={disabled}
+            className="justify-center font-bold min-w-[90px]"
+            isVisible={false}
+          />
+        )
+      },
+
       cell: info => {
         const item = info.row.original;
-        const isEditing = editingCell?.rowId === item.id && editingCell?.field === 'cantidad_contada';
+        const [tempValue, setTempValue] = useState(item.cantidad_contada);
 
+        const isEditing = editingCell?.some(
+          cell => cell.id === item.id && cell.field === "cantidad_contada"
+        );
+
+        useEffect(() => {
+          if (!isEditing) setTempValue(item.cantidad_contada);
+        }, [item.cantidad_contada, isEditing]);
         return (
           <div className="py-3 px-4 relative flex justify-center">
-            {isEditing ? (
+            {hasSubmenuPermission('inventarioFisico', 'update') && hasSubmenuPermission('inventarioFisico', 'create') &&
+              isEditing ? (
               <AnimatePresence initial={false} mode="popLayout">
                 <input
-                  ref={inputRef}
-                  type="text"
-                  onChange={(e) => handleInputChange(e, item.id, "cantidad_contada")}
-                  onBlur={handleInputBlur}
-                  disabled={
-                    item.estado_ajuste === "nuevo" ||
-                    !hasSubmenuPermission("inventarioFisico", "update")
-                  }
-                  className={`w-24 p-1 border border-neutral-200 rounded-md ${item.estado_ajuste === "nuevo" ||
-                      !hasSubmenuPermission("inventarioFisico", "update")
-                      ? "bg-neutral-100 text-gray-500 cursor-not-allowed focus:ring-0 focus:outline-none"
-                      : "focus:ring-2 focus:ring-neutral-300"
-                    }`}
-                />
+                  type="number"
+                  value={tempValue}
+                  onChange={e => setTempValue(Number(e.target.value))}
+                  onBlur={() => {
+                    handleInputChange(tempValue, item.id, "cantidad_contada");             
+                  }}
+                  className="w-24 p-1 border border-neutral-200 rounded-md"
+                />          
               </AnimatePresence>
             ) : (
               <div className="flex items-center justify-center gap-1 rounded-md w-24 h-9">
@@ -134,8 +184,10 @@ export const getStockColumns = ({
                     </span>
                   )}
               </div>
-            )}
+            )
+            }
           </div>
+
         );
       }
     }),
@@ -157,7 +209,7 @@ export const getStockColumns = ({
       id: 'estado',
       header: 'Estado',
       cell: (info) => {
-        const row = info.row.original; // tu objeto StockInventarioItem
+        const row = info.row.original; 
         const stockStatus = getStockStatus(row.cantidad_actual, row.stock_minimo);
 
         return (
@@ -172,7 +224,10 @@ export const getStockColumns = ({
       header: 'Acciones',
       cell: info => {
         const item = info.row.original;
-        return editedRows[item.id] !== undefined ? (
+        const visible = editingCell?.some(
+          cell => cell.id === item.id && cell.field === 'cantidad_contada'
+        );
+        return (isEditing && visible) && (
           hasSubmenuPermission('inventarioFisico', 'update') && (
             <div className="flex gap-2">
               <Button
@@ -193,9 +248,10 @@ export const getStockColumns = ({
               </Button>
             </div>
           )
-        ) : (
-          <span className="text-muted-foreground text-xs"></span>
-        );
+        ) || (
+            <span className="text-muted-foreground text-xs"></span>
+          );
+
       }
     })
   ];

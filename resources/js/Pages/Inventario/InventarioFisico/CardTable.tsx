@@ -2,7 +2,7 @@ import { Button } from "@/Components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { usePermissions } from "@/composables/permissions";
 import { Plus } from "lucide-react";
-import { StockTable } from "./StockTable";
+import { StockTable } from "./modeloDataTable";
 import { StockItem } from "../../../types/Inventario";
 import { useState } from "react";
 import axios from "axios";
@@ -12,7 +12,7 @@ import { toast } from "sonner";
 interface Props {
     stockFiltrado: StockItem[];
     stocks: {
-        data: StockItem[];
+        data: StockInventarioItem[];
     };
     currentPage: number,
     setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
@@ -67,7 +67,7 @@ export function CardTable({
                 </div>
             </CardHeader>
             <CardContent>
-                <StockTable stockFiltrado={stockFiltrado} stocks={stocks} editedRows={editedRows} setEditedRows={setEditedRows} ></StockTable>
+                <StockTable  stock={stocks} editedRows={editedRows} setEditedRows={setEditedRows} ></StockTable>
 
              
 

@@ -6,20 +6,18 @@ import { Almacen, StockInventarioItem, StockItem } from "../../../types/Inventar
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { useEffect, useState } from "react";
 import axios from "axios";
-
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/Components/ui/tooltip";
 import SolicitudesStock from "./modals/ModalSolicitudesEntrantes"; 
+
 interface Props {
   stock: StockInventarioItem[]
- 
 }
 
 
 export function StockFilters({
   stock,
-
 }: Props) {
 
   const [searchTerm, setSearchTerm] = useState("");

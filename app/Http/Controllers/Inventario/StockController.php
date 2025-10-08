@@ -12,11 +12,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class StockController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         //  Tomo el branch_id activo desde la sesión      
         $branchId = Session::get('active_branch_id') ?? null;
@@ -35,72 +37,104 @@ class StockController extends Controller
                 'ia.estado_ajuste'
             )
             ->join('inventario_ajustes as ia', 'ia.id', '=', 'iad.ajuste_inventario_id');
+        $productoSub = DB::table('productos as p')
+            ->join('producto_subcategorias as psc', 'psc.id', '=', 'p.subcategoria_id')
+            ->join('producto_categorias as pc', 'pc.id', '=', 'psc.categoria_id')
+            ->select('p.id', 'p.nombre', 'psc.descripcion AS subCategoria', 'pc.descripcion AS categoria')
+            ->where('p.es_inventario', 1);
+            
+        $inventarioStock = QueryBuilder::for(
 
-        $stock = InventarioStock::query()
-            ->select(
-                'inventario_stocks.*',
-                'aj.cantidad_contada',
-                'aj.estado_ajuste',
-                'aj.ajuste_id'
-            )
-            ->leftJoinSub($ajustesSub, 'aj', function ($join) {
-                $join->on('aj.producto_id', '=', 'inventario_stocks.producto_id')
-                    ->on('aj.almacen_destino_id', '=', 'inventario_stocks.almacen_id')
-                    ->where('estado_ajuste', 'nuevo');
-            })
-            ->where('inventario_stocks.almacen_id', $almacenId)
-            ->whereHas('producto', function ($q) {
-                $q->where('es_inventario', 1); 
-            })
-            ->with(['producto', 'almacen'])
-            ->get();
+            InventarioStock::query()
+                ->select(
+                    'inventario_stocks.*',
+                    'aj.cantidad_contada',
+                    'aj.estado_ajuste',
+                    'aj.ajuste_id'
+                )->joinSub($productoSub, 'prod', function ($join) {
+                    $join->on('prod.id', '=', 'inventario_stocks.producto_id');
+                })
 
+                ->leftJoinSub($ajustesSub, 'aj', function ($join) {
+                    $join->on('aj.producto_id', '=', 'inventario_stocks.producto_id')
+                        ->on('aj.almacen_destino_id', '=', 'inventario_stocks.almacen_id')
+                        ->where('estado_ajuste', 'nuevo');
+                })
+                ->where('inventario_stocks.almacen_id', $almacenId)
+                ->whereHas('producto', function ($q) {
+                    $q->where('es_inventario', 1);
+                })
+                ->with(['producto', 'almacen'])
+
+        )->allowedFilters([
+            AllowedFilter::callback('producto', function ($query, $value) {
+                $query->where('prod.nombre', 'LIKE', "%{$value}%");
+            }),
+            AllowedFilter::callback('almacen', function ($query, $value) {
+                $query->where('nombre', 'LIKE', "%{$value}%");
+            }),
+            AllowedFilter::partial('cantidad_actual'),
+        ])
+
+            ->allowedSorts([
+                'cantidad_actual',
+                'almacen',
+                'producto',
+                'cantidad_contada'
+            ])
+            ->paginate($request->input('per_page', 10))
+            ->withQueryString();
+
+
+        $activeFilters = $request->input('filter', []);
 
         return Inertia::render('Inventario/InventarioFisico/StockManagement', [
-            'stocks' => StockResource::collection($stock),
+            'stocks' => StockResource::collection($inventarioStock),
+            'filters' => $activeFilters,
+
         ]);
     }
 
 
-public function updateStock(Request $request, $id)
-{
-    $request->validate([
-        'cantidad_contada' => 'required|numeric|min:0',
-        'motivo' => 'nullable|string|max:255', 
-    ]);
-
-    $branchId = Session::get('active_branch_id') ?? null;
-
-    $stock = InventarioStock::with('producto')
-        ->where('id', $id)
-        ->where('almacen_id', $branchId)
-        ->first();
-
-    if (!$stock) {
-        return response()->json(['error' => 'Stock no encontrado'], 404);
-    }
-
-    try {
-        $ajuste = InventarioAjuste::create([
-            'fecha_ajuste' => now(),
-            'almacen_destino_id' => $branchId,
-            'usuario_creacion' => Auth::id(),
-            'estado_ajuste' => 'nuevo',
-            'motivo' => $request->input('motivo'),
+    public function updateStock(Request $request, $id)
+    {
+        $request->validate([
+            'cantidad_contada' => 'required|numeric|min:0',
+            'motivo' => 'nullable|string|max:255',
         ]);
 
-        InventarioAjusteDetalle::create([
-            'ajuste_inventario_id' => $ajuste->id,
-            'producto_id' => $stock->producto_id,
-            'cantidad_sistema' => $stock->cantidad_actual,
-            'cantidad_contada' => $request->input('cantidad_contada'),
-        ]);
+        $branchId = Session::get('active_branch_id') ?? null;
 
-        return response()->json(['message' => 'Ajuste registrado correctamente.', 'success' => true]);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Error al registrar el ajuste.', 'success' => false]);
+        $stock = InventarioStock::with('producto')
+            ->where('id', $id)
+            ->where('almacen_id', $branchId)
+            ->first();
+
+        if (!$stock) {
+            return response()->json(['error' => 'Stock no encontrado'], 404);
+        }
+
+        try {
+            $ajuste = InventarioAjuste::create([
+                'fecha_ajuste' => now(),
+                'almacen_destino_id' => $branchId,
+                'usuario_creacion' => Auth::id(),
+                'estado_ajuste' => 'nuevo',
+                'motivo' => $request->input('motivo'),
+            ]);
+
+            InventarioAjusteDetalle::create([
+                'ajuste_inventario_id' => $ajuste->id,
+                'producto_id' => $stock->producto_id,
+                'cantidad_sistema' => $stock->cantidad_actual,
+                'cantidad_contada' => $request->input('cantidad_contada'),
+            ]);
+
+            return response()->json(['message' => 'Ajuste registrado correctamente.', 'success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al registrar el ajuste.', 'success' => false]);
+        }
     }
-}
 
 
     public function actualizarMasivo(Request $request)
