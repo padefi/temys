@@ -4,8 +4,9 @@ import { Button } from "@/Components/ui/button"
 import { Badge } from "@/Components/ui/badge"
 import { Separator } from "@/Components/ui/separator"
 import { Package, MapPin, Calendar, User, FileText, TrendingUp, TrendingDown } from "lucide-react"
-import { AjusteData } from "../Types"
+import { AjusteData } from "../../../../types/Inventario"
 import axios from "axios"
+import { log } from "console"
 
 
 interface AjusteInventarioModalProps {
@@ -26,7 +27,7 @@ export function AjusteInventarioModal({
     onReject,
 }: AjusteInventarioModalProps) {
     const [ajusteData, setAjusteData] = useState<AjusteData | null>(null);
-
+   
     useEffect(() => {
         if (!idAjuste || !productoId) return;
 
@@ -40,7 +41,6 @@ export function AjusteInventarioModal({
             .then((res) => setAjusteData(res.data.data[0]))
             .catch((err) => console.error("Error al cargar el ajuste", err));
     }, [idAjuste, productoId]);
-
 
 
     if (!ajusteData) {
@@ -58,7 +58,7 @@ export function AjusteInventarioModal({
         );
     }
 
-    // 🔹 Ahora sí, ya tenemos datos
+  
     const isDiferenciaPositiva = ajusteData.diferencia > 0;
     const diferenciaColor = isDiferenciaPositiva ? "text-green-600" : "text-red-600";
     const diferenciaIcon = isDiferenciaPositiva ? TrendingUp : TrendingDown;

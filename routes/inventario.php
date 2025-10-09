@@ -5,6 +5,8 @@ use App\Http\Controllers\Inventario\Productos\ProductoController;
 use App\Http\Controllers\Inventario\SolicitudStockController;
 use App\Http\Controllers\Inventario\StockController;
 use App\Http\Controllers\Inventario\EntregaController;
+use App\Http\Controllers\Inventario\Reportes\ExistenciasController;
+use App\Http\Controllers\Inventario\Reportes\MovimientoHistorialController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -53,6 +55,23 @@ Route::middleware('module:inventario')->group(function () {
             Route::middleware('submenu_permission:update inventarioFisico')->group(function () {
                 Route::post('/actualizar-cantidad-contadas/{id}', [StockController::class, 'updateStock']);
                 Route::post('/actualizar-cantidad-contadas-masivo', [StockController::class, 'actualizarMasivo']);
+            });
+        });
+    });
+
+    Route::middleware(['menu:reportesInventario'])->group(function () {
+
+        Route::middleware(['submenu:historialMovimientos'])->group(function(){
+              Route::middleware('submenu_permission:read historialMovimientos')->group(function () {
+                Route::get('inventario/historialMoviminto/movimiento/{idProducto?}', [MovimientoHistorialController::class, 'index'])->name('historialMovimientos');
+            });
+        });
+
+
+        Route::middleware(['submenu:existencias'])->group(function () {
+            Route::middleware('submenu_permission:read existencias')->group(function () {
+                Route::get('inventario/reportesInventario/existencias', [ExistenciasController::class, 'index'])->name('existencias');
+                Route::get('/ajuste-stock/{id}', [ExistenciasController::class, 'ajusteProducto']);
             });
         });
     });

@@ -51,6 +51,7 @@ export function DataTable<TData extends User, TValue>({
     const validationErrors = useRef(false);
     const footerRef = useRef<{ goToPage: (pageLink: string | null) => void }>(null);
 
+        
     useEffect(() => {
         setTableData(initialData);
         setEditingUserIndex(null);
@@ -58,6 +59,7 @@ export function DataTable<TData extends User, TValue>({
         setLoadingSaving(false);
     }, [initialData]);
 
+    console.log(initialData)
     useEffect(() => {
         if (newUser && footerRef.current) {
             footerRef.current.goToPage(links.last);

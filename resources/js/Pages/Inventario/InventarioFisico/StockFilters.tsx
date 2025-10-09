@@ -2,7 +2,7 @@ import { AlertTriangle, Bell, Package, Search } from "lucide-react";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Almacen, StockItem } from "./Types"; 
+import { Almacen, StockInventarioItem, StockItem } from "../../../types/Inventario"; 
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -12,18 +12,14 @@ import { Button } from "@/Components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/Components/ui/tooltip";
 import SolicitudesStock from "./modals/ModalSolicitudesEntrantes"; 
 interface Props {
-  stock: StockItem[]
-  currentPage: number,
-  setFilteredStock: React.Dispatch<React.SetStateAction<StockItem[]>>;
-  filteredStock: StockItem[];
+  stock: StockInventarioItem[]
+ 
 }
 
 
 export function StockFilters({
   stock,
-  currentPage,
-  setFilteredStock,
-  filteredStock
+
 }: Props) {
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,11 +37,11 @@ export function StockFilters({
 
 useEffect(() => {
   const filtered = stock.filter((item) => {
-    const matchesSearch = item.producto.nombre
+    const matchesSearch = item.producto
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchesWarehouse =
-      selectedAlmacen === "all" || item.almacen.nombre === selectedAlmacen;
+      selectedAlmacen === "all" || item.almacen === selectedAlmacen;
     const matchesStockFiltro =
       stockFiltro === "all" ||
       (stockFiltro === "low" &&
@@ -56,8 +52,8 @@ useEffect(() => {
     return matchesSearch && matchesWarehouse && matchesStockFiltro;
   });
 
-  setFilteredStock(filtered); // <-- actualizamos el estado del padre
-}, [stock, searchTerm, selectedAlmacen, stockFiltro, setFilteredStock]);
+  
+}, [stock]);
 
 
   const handleSolicitudes = async () => {
@@ -95,7 +91,7 @@ useEffect(() => {
 
         <CardContent>
           {/*Filtros*/}
-          <div className="grid  grid-cols-1 md:grid-cols-3 gap-35">
+      {/*     <div className="grid  grid-cols-1 md:grid-cols-3 gap-35">
             <div className="space-y-2">
               <Label htmlFor="search">Buscar producto</Label>
               <div className="relative w-46">
@@ -133,26 +129,26 @@ useEffect(() => {
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          </div> */}
 
           {/* Resumen compacto */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-35 text-sm text-muted-foreground mt-8">
             <div className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               <span>Total Productos:</span>
-              <span className="font-bold text-gray-700">{filteredStock.length}</span>
+              <span className="font-bold text-gray-700">{stock.length}</span>
             </div>
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-red-500" />
               <span>Stock Bajo:</span>
               <span className="font-bold text-red-700">
-                {filteredStock.filter((item) => item.cantidad_actual <= item.stock_minimo).length}
+                {stock.filter((item) => item.cantidad_actual <= item.stock_minimo).length}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Package className="h-4 w-4 text-red-500" />
               <span>Sin Stock:</span>
-              <span className="font-bold text-red-700">{filteredStock.filter((item) => item.cantidad_actual === 0).length}</span>
+              <span className="font-bold text-red-700">{stock.filter((item) => item.cantidad_actual === 0).length}</span>
             </div>
           </div>
         </CardContent>
