@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Almacenes\AlmacenController;
+use App\Http\Controllers\Inventario\AjustesController;
 use App\Http\Controllers\Inventario\Productos\ProductoController;
 use App\Http\Controllers\Inventario\SolicitudStockController;
 use App\Http\Controllers\Inventario\StockController;
@@ -36,7 +37,7 @@ Route::middleware('module:inventario')->group(function () {
         Route::middleware(['submenu:inventarioFisico'])->group(function () {
             Route::middleware('submenu_permission:read inventarioFisico')->group(function () {
                 Route::get('/inventario/inventarioFisico', [StockController::class, 'index'])->name('inventarioFisico');
-                Route::get('/inventario/ajusteInventario', [StockController::class, 'obtenerAjuste']);
+                Route::get('/inventario/ajusteInventario', [AjustesController::class, 'obtenerAjuste']);
                 Route::get('/stock-producto-almacen', [AlmacenController::class, 'obtenerStockProductos']);
                 Route::get('/inventario/almacenes', [AlmacenController::class, 'index']);
                 Route::get('/solicitudes-stock', [SolicitudStockController::class, 'getSolicitudesAll'])->name('inventario.solicitudes.all');
@@ -50,11 +51,13 @@ Route::middleware('module:inventario')->group(function () {
                 Route::post('/solicitudes-stock-aceptar', [SolicitudStockController::class, 'aceptarSolicitud']);
                 Route::post('/solicitudes-stock-cancelar', [SolicitudStockController::class, 'cancelarSolicitud']);
                 Route::post('/solicitar-stock/multiple', [SolicitudStockController::class, 'solicitarStockMultiple']);
+                Route::post('/aprobar-ajuste', [AjustesController::class, 'aprobarAjuste']);
+                Route::post('/cancelar-ajuste', [AjustesController::class, 'cancelarAjuste']);
             });
 
             Route::middleware('submenu_permission:update inventarioFisico')->group(function () {
-                Route::post('/actualizar-cantidad-contadas/{id}', [StockController::class, 'updateStock']);
-                Route::post('/actualizar-cantidad-contadas-masivo', [StockController::class, 'actualizarMasivo']);
+                Route::post('/actualizar-cantidad-contadas/{id}', [AjustesController::class, 'updateStock']);
+                Route::post('/actualizar-cantidad-contadas-masivo', [AjustesController::class, 'actualizarMasivo']);
             });
         });
     });

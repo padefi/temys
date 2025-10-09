@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/Components/ui/tooltip";
 import { usePermissions } from "@/composables/permissions";
 import { Button } from "@/Components/ui/button";
-import { Plus } from "lucide-react";
+import { Bell, Plus } from "lucide-react";
 import { usePage } from "@inertiajs/react";
 import { Head } from "@inertiajs/react";
 import { PageProps as InertiaPageProps } from "@inertiajs/core";
@@ -14,6 +14,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Com
 import { links } from "@/types/links";
 import { meta } from "@/types/meta";
 import { EstadisticaInventario } from "./EstadisticasInventario";
+import axios from "axios";
+import { Badge } from "@/Components/ui/badge";
+import SolicitudesStock from "./modals/ModalSolicitudesEntrantes";
 
 type PageProps = InertiaPageProps & {
   stocks: {
@@ -29,7 +32,8 @@ export default function StockManagement() {
   const { stocks } = usePage<PageProps>().props;
   const { hasSubmenuPermission } = usePermissions();
   const [stock, setStock] = useState<StockInventarioItem[]>([]);
-
+  const [solicitudes, setSolicitudes] = useState()
+  const [solicitudesStockDialogOpen, setSolicitudesStockDialogOpen] = useState(false);
   
 /* 
   const handleAplicarTodo = async () => {
@@ -66,6 +70,17 @@ export default function StockManagement() {
 
   };
 
+    const handleSolicitudes = async () => {
+    try {
+      const res = await axios.get(`/solicitudes-stock/`)
+      setSolicitudes(res.data)
+      setSolicitudesStockDialogOpen(true)
+    } catch (err) {
+      console.error("Error al cargar detalles de la solicitud", err)
+    }
+  }
+
+
   return (
     <AuthenticatedLayout
       header={
@@ -74,6 +89,17 @@ export default function StockManagement() {
       <Head title="Inventario" />
       <div className="mx-auto w-full p-6 space-y-6">
         <div className=" flex justify-between">
+            <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="lg" onClick={() => handleSolicitudes()}>
+                <Badge variant={"success"}>1</Badge>
+                <Bell className="h-4 " />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Solicitudes de stock</p>
+            </TooltipContent>
+          </Tooltip>
           {hasSubmenuPermission('inventarioFisico', 'confirm') &&
             <Tooltip>
               <TooltipTrigger asChild>
@@ -85,7 +111,7 @@ export default function StockManagement() {
                 <p>Solicitudes de stock</p>
               </TooltipContent>
             </Tooltip>}
-          <span>inventario Fisico</span>
+         {/*  <span>inventario Fisico</span> */}
         </div>
         
         <EstadisticaInventario data={stock}></EstadisticaInventario>
@@ -117,6 +143,7 @@ export default function StockManagement() {
 
       {/* Dialog para solicitar stock */}
       {solicitudDialogOpen && <SolicitarStock open={solicitudDialogOpen} onClose={() => setsolicitudDialogOpen(false)} productos={productosDisponibles} />}
+        {solicitudesStockDialogOpen && <SolicitudesStock isOpen={solicitudesStockDialogOpen} onClose={() => setSolicitudesStockDialogOpen(false)} requests={solicitudes}></SolicitudesStock>}
     </AuthenticatedLayout>
   );
 }
