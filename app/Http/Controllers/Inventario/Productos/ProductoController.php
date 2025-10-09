@@ -46,7 +46,7 @@ class ProductoController extends Controller
             'es_patrimonio' => 'boolean',
             'referencia' => 'nullable|string|max:100',
         ]);
-                                   
+
         Producto::create($data);
 
         return redirect()->route('productos.index')->with('success', 'Producto creado correctamente.');

@@ -2,12 +2,12 @@
 
 namespace App\Models\Contabilidad\PlanCuentas;
 
+use App\Models\ControlAcceso\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Auth\User;
 
 class Ejercicio extends Model
 {
-    protected $table = 'ejercicios';
+    protected $table = 'co_ejercicios';
     
     protected $fillable = [
         'descripcion',
@@ -20,9 +20,29 @@ class Ejercicio extends Model
         'updated_at',
     ];
 
+    public function capitulos()
+    {
+        return $this->hasMany(Capitulo::class, 'co_ejercicio_id');
+    }
+
+    public function subcapitulos()
+    {
+        return $this->hasMany(Subcapitulo::class, 'co_ejercicio_id');
+    }
+
     public function rubros()
     {
-        return $this->hasMany(Rubro::class, 'ejercicio_id');
+        return $this->hasMany(Rubro::class, 'co_ejercicio_id');
+    }
+
+    public function subrubros()
+    {
+        return $this->hasMany(Subrubro::class, 'co_ejercicio_id');
+    }
+
+    public function cuentas()
+    {
+        return $this->hasMany(Cuenta::class, 'co_ejercicio_id');
     }
 
     public function userCreated()

@@ -11,17 +11,27 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('co_ejercicios', function (Blueprint $table)
+        Schema::create('co_rubros', function (Blueprint $table)
         {
             $table->id();
-            $table->string('descripcion')->charset('utf8mb4')->collation('utf8mb4_unicode_ci')->unique();
-            $table->date('fecha_inicio');
-            $table->date('fecha_fin');
-            $table->enum('estado', ['ABIERTO', 'CERRADO', 'ANULADO']);
+            $table->string('codigo', 3);
+            $table->string('descripcion')->charset('utf8mb4')->collation('utf8mb4_unicode_ci');
+            $table->unsignedBigInteger('co_subcapitulo_id')->nullable();
+            $table->unsignedBigInteger('co_ejercicio_id')->nullable();
             $table->unsignedBigInteger('model_id_created')->nullable();
             $table->timestamp('created_at');
             $table->unsignedBigInteger('model_id_updated')->nullable();
             $table->timestamp('updated_at')->nullable();
+
+            $table->foreign('co_subcapitulo_id')
+                ->references('id')
+                ->on('co_subcapitulos')
+                ->onDelete('cascade');
+
+            $table->foreign('co_ejercicio_id')
+                ->references('id')
+                ->on('co_ejercicios')
+                ->onDelete('cascade');
 
             $table->foreign('model_id_created')
                 ->references('id')
@@ -30,6 +40,8 @@ return new class extends Migration
             $table->foreign('model_id_updated')
                 ->references('id')
                 ->on('users');
+
+            $table->unique(['co_ejercicio_id', 'co_subcapitulo_id', 'codigo'], 'unique_co_rubro_codigo');
         });
     }
 
@@ -38,8 +50,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('co_ejercicios', function (Blueprint $table)
+        Schema::table('co_rubros', function (Blueprint $table)
         {
+            $table->dropForeign(['co_subcapitulo_id']);
+            $table->dropForeign(['co_ejercicio_id']);
             $table->dropForeign(['model_id_created']);
             $table->dropForeign(['model_id_updated']);
         });

@@ -5,16 +5,15 @@ namespace App\Models\Contabilidad\PlanCuentas;
 use App\Models\ControlAcceso\User;
 use Illuminate\Database\Eloquent\Model;
 
-class Cuenta extends Model
+class Subrubro extends Model
 {
-    protected $table = 'co_cuentas';
-    
+    protected $table = 'co_subrubros';
+
     protected $fillable = [
         'codigo',
         'descripcion',
-        'co_subrubro_id',
+        'co_rubro_id',
         'co_ejercicio_id',
-        'estado',
         'model_id_created',
         'created_at',
         'model_id_updated',
@@ -26,14 +25,14 @@ class Cuenta extends Model
         return $this->belongsTo(Ejercicio::class, 'co_ejercicio_id');
     }
 
-    public function subrubro()
+    public function rubro()
     {
-        return $this->belongsTo(Subrubro::class, 'co_subrubro_id');
+        return $this->belongsTo(Rubro::class, 'co_rubro_id');
     }
 
-    public function saldo()
+    public function cuentas()
     {
-        return $this->hasOne(SaldoCuenta::class, 'co_cuenta_id');
+        return $this->hasMany(Cuenta::class, 'co_subrubro_id');
     }
 
     public function userCreated()
