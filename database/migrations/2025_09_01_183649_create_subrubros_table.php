@@ -11,26 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rubros', function (Blueprint $table)
+        Schema::create('co_subrubros', function (Blueprint $table)
         {
             $table->id();
-            $table->string('codigo', 11);
+            $table->string('codigo', 5);
             $table->string('descripcion')->charset('utf8mb4')->collation('utf8mb4_unicode_ci');
-            $table->unsignedBigInteger('rubro_padre_id')->nullable();
-            $table->unsignedBigInteger('ejercicio_id');
+            $table->unsignedBigInteger('co_rubro_id')->nullable();
+            $table->unsignedBigInteger('co_ejercicio_id')->nullable();
             $table->unsignedBigInteger('model_id_created')->nullable();
             $table->timestamp('created_at');
             $table->unsignedBigInteger('model_id_updated')->nullable();
             $table->timestamp('updated_at')->nullable();
 
-            $table->foreign('rubro_padre_id')
+            $table->foreign('co_rubro_id')
                 ->references('id')
-                ->on('rubros')
+                ->on('co_rubros')
                 ->onDelete('cascade');
 
-            $table->foreign('ejercicio_id')
+            $table->foreign('co_ejercicio_id')
                 ->references('id')
-                ->on('ejercicios')
+                ->on('co_ejercicios')
                 ->onDelete('cascade');
 
             $table->foreign('model_id_created')
@@ -41,7 +41,7 @@ return new class extends Migration
                 ->references('id')
                 ->on('users');
 
-            $table->unique(['ejercicio_id', 'codigo'], 'unique_rubro_codigo');
+            $table->unique(['co_ejercicio_id', 'co_rubro_id', 'codigo'], 'unique_co_subrubro_codigo');
         });
     }
 
@@ -50,10 +50,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('rubros', function (Blueprint $table)
+        Schema::table('co_subrubros', function (Blueprint $table)
         {
-            $table->dropForeign(['rubro_padre_id']);
-            $table->dropForeign(['ejercicio_id']);
+            $table->dropForeign(['co_rubro_id']);
+            $table->dropForeign(['co_ejercicio_id']);
             $table->dropForeign(['model_id_created']);
             $table->dropForeign(['model_id_updated']);
         });

@@ -11,27 +11,27 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('subcuentas', function (Blueprint $table)
+        Schema::create('co_cuentas', function (Blueprint $table)
         {
             $table->id();
             $table->string('codigo', 11);
             $table->string('descripcion')->charset('utf8mb4')->collation('utf8mb4_unicode_ci');
-            $table->unsignedBigInteger('cuenta_id')->nullable();
-            $table->unsignedBigInteger('ejercicio_id');
+            $table->unsignedBigInteger('co_subrubro_id')->nullable();
+            $table->unsignedBigInteger('co_ejercicio_id')->nullable();
             $table->boolean('estado')->default(true);
             $table->unsignedBigInteger('model_id_created')->nullable();
             $table->timestamp('created_at');
             $table->unsignedBigInteger('model_id_updated')->nullable();
             $table->timestamp('updated_at')->nullable();
 
-            $table->foreign('cuenta_id')
+            $table->foreign('co_subrubro_id')
                 ->references('id')
-                ->on('cuentas')
+                ->on('co_subrubros')
                 ->onDelete('cascade');
 
-            $table->foreign('ejercicio_id')
+            $table->foreign('co_ejercicio_id')
                 ->references('id')
-                ->on('ejercicios')
+                ->on('co_ejercicios')
                 ->onDelete('cascade');
 
             $table->foreign('model_id_created')
@@ -42,7 +42,7 @@ return new class extends Migration
                 ->references('id')
                 ->on('users');
 
-            $table->unique(['ejercicio_id', 'cuenta_id', 'codigo'], 'unique_subcuenta_codigo');
+            $table->unique(['co_ejercicio_id', 'co_subrubro_id', 'codigo'], 'unique_co_cuenta_codigo');
         });
     }
 
@@ -51,10 +51,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('subcuentas', function (Blueprint $table)
+        Schema::table('co_cuentas', function (Blueprint $table)
         {
-            $table->dropForeign(['cuenta_id']);
-            $table->dropForeign(['ejercicio_id']);
+            $table->dropForeign(['co_subrubro_id']);
+            $table->dropForeign(['co_ejercicio_id']);
             $table->dropForeign(['model_id_created']);
             $table->dropForeign(['model_id_updated']);
         });

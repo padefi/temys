@@ -2,16 +2,17 @@
 
 namespace App\Models\Contabilidad\Asientos;
 
+use App\Models\Contabilidad\PlanCuentas\Ejercicio;
+use App\Models\ControlAcceso\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Auth\User;
 
 class Asiento extends Model
 {
-    protected $table = 'asientos';
+    protected $table = 'co_asientos';
 
     protected $fillable = [
         'numero',
-        'ejercicio_id',
+        'co_ejercicio_id',
         'fecha',
         'concepto',
         'estado',
@@ -25,9 +26,14 @@ class Asiento extends Model
         'voided_at',
     ];
 
+    public function ejercicio()
+    {
+        return $this->belongsTo(Ejercicio::class, 'co_ejercicio_id');
+    }
+
     public function partidas()
     {
-        return $this->hasMany(Partida::class, 'asiento_id');
+        return $this->hasMany(Partida::class, 'co_asiento_id');
     }
 
     public function userCreated()

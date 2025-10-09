@@ -11,23 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('partidas', function (Blueprint $table)
+        Schema::create('co_partidas', function (Blueprint $table)
         {
             $table->id();
-            $table->unsignedBigInteger('asiento_id');
-            $table->unsignedBigInteger('subcuenta_id');
+            $table->unsignedBigInteger('co_asiento_id');
+            $table->unsignedBigInteger('co_cuenta_id');
             $table->string('concepto');
             $table->decimal('debe', 20, 2);
             $table->decimal('haber', 20, 2);
 
-            $table->foreign('asiento_id')
+            $table->foreign('co_asiento_id')
                 ->references('id')
-                ->on('asientos')
+                ->on('co_asientos')
                 ->onDelete('cascade');
 
-            $table->foreign('subcuenta_id')
+            $table->foreign('co_cuenta_id')
                 ->references('id')
-                ->on('subcuentas')
+                ->on('co_cuentas')
                 ->onDelete('cascade');
         });
     }
@@ -37,10 +37,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('partidas', function (Blueprint $table)
+        Schema::table('co_partidas', function (Blueprint $table)
         {
-            $table->dropForeign(['asiento_id']);
-            $table->dropForeign(['subcuenta_id']);
+            $table->dropForeign(['co_asiento_id']);
+            $table->dropForeign(['co_cuenta_id']);
         });
     }
 };

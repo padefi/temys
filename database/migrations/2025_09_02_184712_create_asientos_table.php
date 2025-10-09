@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('asientos', function (Blueprint $table)
+        Schema::create('co_asientos', function (Blueprint $table)
         {
             $table->id();
             $table->integer('numero');
-            $table->unsignedBigInteger('ejercicio_id');
+            $table->unsignedBigInteger('co_ejercicio_id');
             $table->date('fecha');
             $table->string('concepto');
             $table->enum('estado', ['PENDIENTE', 'CONTROLADO', 'ANULADO']);
@@ -28,9 +28,9 @@ return new class extends Migration
             $table->unsignedBigInteger('model_id_voided')->nullable();
             $table->timestamp('voided_at')->nullable();
 
-            $table->foreign('ejercicio_id')
+            $table->foreign('co_ejercicio_id')
                 ->references('id')
-                ->on('ejercicios')
+                ->on('co_ejercicios')
                 ->onDelete('cascade');
 
             $table->foreign('model_id_created')
@@ -56,9 +56,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('asientos', function (Blueprint $table)
+        Schema::table('co_asientos', function (Blueprint $table)
         {
-            $table->dropForeign(['ejercicio_id']);
+            $table->dropForeign(['co_ejercicio_id']);
             $table->dropForeign(['model_id_created']);
             $table->dropForeign(['model_id_updated']);
             $table->dropForeign(['model_id_confirmed']);

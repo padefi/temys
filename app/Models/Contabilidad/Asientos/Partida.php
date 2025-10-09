@@ -2,7 +2,7 @@
 
 namespace App\Models\Contabilidad\Asientos;
 
-use App\Models\Contabilidad\PlanCuentas\Subcuenta;
+use App\Models\Contabilidad\PlanCuentas\Cuenta;
 use Illuminate\Database\Eloquent\Model;
 
 class Partida extends Model
@@ -12,8 +12,8 @@ class Partida extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'asiento_id',
-        'subcuenta_id',
+        'co_asiento_id',
+        'co_cuenta_id',
         'concepto',
         'debe',
         'haber',
@@ -21,11 +21,11 @@ class Partida extends Model
 
     public function asiento()
     {
-        return $this->belongsTo(Asiento::class, 'asiento_id');
+        return $this->belongsTo(Asiento::class, 'co_asiento_id');
     }
 
     public function subcuenta()
     {
-        return $this->belongsTo(Subcuenta::class, 'subcuenta_id');
+        return $this->belongsTo(Cuenta::class, 'co_cuenta_id');
     }
 }
