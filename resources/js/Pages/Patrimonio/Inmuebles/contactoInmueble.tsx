@@ -4,9 +4,9 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Plus, X } from "lucide-react";
-import { DomicilioInmueble } from "./domicilioInmueble";
-import { InmuebleFormData } from "./Inmueble";
+
 import { useFormContext, useFieldArray } from "react-hook-form";
+import { InmuebleFormData } from "./inmueble";
 
 export function ContactoInmueble() {
     const { control, register, setValue, watch } = useFormContext<InmuebleFormData>();
@@ -22,7 +22,7 @@ export function ContactoInmueble() {
 
     return (
         <Card className="border-4 border-secondary bg-card bg-gray-400">
-            <DomicilioInmueble />
+        
             <div className="p-6 space-y-6">
                 <div className="flex items-center gap-3 pb-4 border-b-2 border-border">
                     <div>

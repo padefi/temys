@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/Components/ui/tooltip";
 import { usePermissions } from "@/composables/permissions";
-import { Button } from "@/Components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Bell, Plus } from "lucide-react";
 import { usePage } from "@inertiajs/react";
 import { Head } from "@inertiajs/react";

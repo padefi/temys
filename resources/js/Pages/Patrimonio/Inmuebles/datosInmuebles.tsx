@@ -3,7 +3,12 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { useFormContext } from "react-hook-form";
-import { InmuebleFormData } from "../Inmuebles/Inmueble";
+import { InmuebleFormData } from "./inmueble";
+
+import { ContactoInmueble } from "./contactoInmueble"; 
+import { DomicilioInmueble } from "./domicilioInmueble";
+
+
 
 
 
@@ -11,14 +16,14 @@ export function DatosInmuebles() {
     const { register, watch, setValue, formState: { errors } } = useFormContext<InmuebleFormData>();
 
     const estado = watch("estado_id") ?? "";
-    const tipoInmueble=watch("tipo_inmueble_id")??"";
-    const tipoOcupacion=watch("tipo_ocupacion_id")??"";
+    const tipoInmueble = watch("tipo_inmueble_id") ?? "";
+    const tipoOcupacion = watch("tipo_ocupacion_id") ?? "";
 
     return (
         <Card className="border-4 border-secondary bg-card bg-gray-400">
             <div className="p-6 space-y-6">
                 <div className="flex items-center gap-3 pb-4 border-b-2 border-border">
-                   {/*  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-secondary text-secondary-foreground font-bold">
+                    {/*  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-secondary text-secondary-foreground font-bold">
                         1
                     </div> */}
                     <div>
@@ -77,7 +82,7 @@ export function DatosInmuebles() {
                         </Label>
                         <Input
                             id="nombre_completo"
-                             {...register("nombre_completo", { required: "El nombre es obligatorio" })}
+                            {...register("nombre_completo", { required: "El nombre es obligatorio" })}
 
                             className="border-2 border-secondary bg-input text-foreground h-12"
                             placeholder="Nombre completo del inmueble"
@@ -91,7 +96,7 @@ export function DatosInmuebles() {
                         </Label>
                         <Input
                             id="nombre_fantasia"
-                             {...register("nombre_fantasia", { required: "El nombre es obligatorio" })}
+                            {...register("nombre_fantasia", { required: "El nombre es obligatorio" })}
 
                             className="border-2 border-secondary bg-input text-foreground h-12"
                             placeholder="Nombre comercial o fantasía"
@@ -148,7 +153,10 @@ export function DatosInmuebles() {
                         )}
                     </div>
                 </div>
-            </div>         
+                <DomicilioInmueble/>
+                <ContactoInmueble />
+            </div>
+
         </Card>
     );
 }

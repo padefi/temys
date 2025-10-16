@@ -5,12 +5,16 @@ import { Label } from "@/Components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/Components/ui/radio-group";
 import { useFormContext } from "react-hook-form";
 import { InmuebleFormData } from "./Inmueble";
+import ContratoEscritura from "./contratoEscritura"; 
+import ContratoAlquierComodato from "./contratoAlquilerComodato"; 
+import { Button } from "@/components/ui/button";
+
 
 
 
 export function DatosExtraInmueble() {
     const { register, watch, setValue, formState: { errors } } = useFormContext<InmuebleFormData>();
-const tipoContrato = watch("tipo_contrato") || "";
+    const tipoContrato = watch("tipo_contrato") || "";
     return (
         <>
             <Card className="border-4 border-secondary bg-card bg-gray-400">
@@ -39,9 +43,9 @@ const tipoContrato = watch("tipo_contrato") || "";
                                 placeholder="0.00"
 
                             />
-                               {errors.superficie_cubierta?.message && (
-                            <p className="text-red-500">{String(errors.superficie_cubierta.message)}</p>
-                        )}
+                            {errors.superficie_cubierta?.message && (
+                                <p className="text-red-500">{String(errors.superficie_cubierta.message)}</p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -58,9 +62,9 @@ const tipoContrato = watch("tipo_contrato") || "";
                                 placeholder="0.00"
 
                             />
-                               {errors.superficie_libre?.message && (
-                            <p className="text-red-500">{String(errors.superficie_libre.message)}</p>
-                        )}
+                            {errors.superficie_libre?.message && (
+                                <p className="text-red-500">{String(errors.superficie_libre.message)}</p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -76,9 +80,9 @@ const tipoContrato = watch("tipo_contrato") || "";
                                 placeholder="0.00"
 
                             />
-                               {errors.superficie_total?.message && (
-                            <p className="text-red-500">{String(errors.superficie_total.message)}</p>
-                        )}
+                            {errors.superficie_total?.message && (
+                                <p className="text-red-500">{String(errors.superficie_total.message)}</p>
+                            )}
                         </div>
                     </div>
 
@@ -99,11 +103,11 @@ const tipoContrato = watch("tipo_contrato") || "";
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
                         <RadioGroup
-                             value={watch("tipo_contrato") || ""}
+                            value={watch("tipo_contrato") || ""}
                             onValueChange={(value) => setValue("tipo_contrato", value)}
-                            className="space-y-3"
+                            className="space-y-3 flex justify-around "
                         >
                             <div className="flex items-center gap-3">
                                 <RadioGroupItem value="escritura" id="r1" />
@@ -119,9 +123,20 @@ const tipoContrato = watch("tipo_contrato") || "";
                             </div>
                         </RadioGroup>
                     </div>
-
-
                 </div>
+             
+                {tipoContrato === "escritura" && (              
+                    <ContratoEscritura></ContratoEscritura>                 
+                )}
+       
+                {tipoContrato === "alquiler" && (             
+                    <ContratoAlquierComodato tipoContrato={tipoContrato}></ContratoAlquierComodato>                
+                )}
+               
+                {tipoContrato === "comodato" && (             
+                    <ContratoAlquierComodato tipoContrato={tipoContrato}></ContratoAlquierComodato>               
+                )}
+
             </Card>
         </>
 

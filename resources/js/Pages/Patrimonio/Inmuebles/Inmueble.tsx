@@ -1,25 +1,26 @@
 
-import { Button } from '@/components/ui/button'; 
+import { Button } from '@/components/ui/button';
 import { defineStepper } from '@stepperize/react';
-import { DatosInmuebles } from './datosInmuebles';
-import { DomicilioInmueble } from './domicilioInmueble';
-import { ContactoInmueble } from './contactoInmueble';
-import { DatosExtraInmueble } from './datosExtraInmueble';
+
 import { useForm, FormProvider } from "react-hook-form";
 import { Separator } from '@/Components/ui/separator';
 import React, { use } from 'react';
+import { DatosInmuebles } from './datosInmuebles';
+import { DatosExtraInmueble } from './datosExtraInmueble';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head } from '@inertiajs/react';
 
 
 const { useStepper, steps, utils } = defineStepper(
   {
     id: 'datosInmueble', title: 'Datos Inmueble', description: 'Datos del inmueble',
   },
- /*  {
-    id: 'domicilioInmueble', title: 'domicilioInmueble', description: 'Datos del domicilio de inmueble',
-  }, */
-  {
-    id: 'contactoInmueble', title: 'Contacto Inmueble', description: 'Datos de contacto inmuebles'
-  },
+  /*  {
+     id: 'domicilioInmueble', title: 'domicilioInmueble', description: 'Datos del domicilio de inmueble',
+   }, */
+  /*  {
+     id: 'contactoInmueble', title: 'Contacto Inmueble', description: 'Datos de contacto inmuebles'
+   }, */
   {
     id: 'extra', title: 'extra', description: 'Datos de superficie y tipo de contrato'
   },
@@ -31,10 +32,10 @@ const onSubmit = (data: any) => {
 };
 
 interface Contacto {
-   
-    tipo: string
-    valor: string
-    descripcion: string
+
+  tipo: string
+  valor: string
+  descripcion: string
 }
 export interface InmuebleFormData {
   num_partida: string
@@ -44,25 +45,40 @@ export interface InmuebleFormData {
   tipo_inmueble_id: string
   tipo_ocupacion_id: string
   superficie_cubierta: string
-  tipo_contrato:string
+  tipo_contrato: string
   superficie_libre: string
   superficie_total: string
   calle: string
   numero: string
   piso: string
-  departamento:string
+  departamento: string
   codigo_postal: string
   localidad: string
   provincia: string
-  contactos:Contacto[]
+  contactos: Contacto[]
+  fecha_inscripcion: Date
+  fecha_escritura: Date
+  fecha_contrato: Date
+  fecha_inicio: Date
+  fecha_fin: Date
+  importe: string
+  num_escritura: string
+  folio: string
+  tomo: String
+  observacion: string
 
 }
-function App() {
+function InmueblesForm() {
   const stepper = useStepper();
   const form = useForm()
 
   const currentIndex = utils.getIndex(stepper.current.id);
   return (
+      <AuthenticatedLayout
+      header={
+        <h2 className="text-xl font-semibold leading-tight text-gray-800">Inmuebles</h2>
+      }>
+      <Head title="Inmuebles" />
     <div className="space-y-6 p-6 border rounded-lg ">
       {/* header de stepper */}
       <div className="flex justify-between">
@@ -74,7 +90,7 @@ function App() {
           <div />
         </div>
       </div>
-    
+
       <nav aria-label="Checkout Steps" className="group my-4">
         <ol
           className="flex items-center justify-between gap-2"
@@ -102,15 +118,14 @@ function App() {
               </li>
               {index < array.length - 1 && (
                 <Separator
-                  className={`flex-1 ${
-                    index < currentIndex ? 'bg-primary' : 'bg-muted'
-                  }`}
+                  className={`flex-1 ${index < currentIndex ? 'bg-primary' : 'bg-muted'
+                    }`}
                 />
               )}
             </React.Fragment>
           ))}
         </ol>
-      </nav> 
+      </nav>
 
 
       <FormProvider {...form}>
@@ -119,7 +134,7 @@ function App() {
             {stepper.switch({
               datosInmueble: () => <DatosInmuebles />,
               /* domicilioInmueble: () => <DomicilioInmueble />, */
-              contactoInmueble: () => <ContactoInmueble />,
+              /*   contactoInmueble: () => <ContactoInmueble />, */
               extra: () => <DatosExtraInmueble />,
             })}
             {!stepper.isLast ? (
@@ -137,20 +152,27 @@ function App() {
               </div>
             ) : (
               <>
-                     <Button /* onClick={stepper.reset} */ type='submit'>enviar</Button>
-              <Button  onClick={stepper.reset} >reset</Button>
+                <Button
+                  variant="secondary"
+                  onClick={stepper.prev}
+                  disabled={stepper.isFirst}
+                >
+                  Back
+                </Button>
+                <Button /* onClick={stepper.reset} */ type='submit'>enviar</Button>
               </>
-       
+
             )}
           </div>
 
         </form>
       </FormProvider>
     </div>
+    </AuthenticatedLayout>
   );
 }
 
 
 
-export default App;
+export default InmueblesForm;
 
