@@ -13,4 +13,5 @@ class InmuebleController extends Controller
             'modulo' => 'patrimonio',
         ]);
     }
+    
 }

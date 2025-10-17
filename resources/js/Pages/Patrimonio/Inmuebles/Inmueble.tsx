@@ -31,43 +31,7 @@ const onSubmit = (data: any) => {
   // post(route('register'), { data });
 };
 
-interface Contacto {
 
-  tipo: string
-  valor: string
-  descripcion: string
-}
-export interface InmuebleFormData {
-  num_partida: string
-  estado_id: string
-  nombre_completo: string
-  nombre_fantasia: string
-  tipo_inmueble_id: string
-  tipo_ocupacion_id: string
-  superficie_cubierta: string
-  tipo_contrato: string
-  superficie_libre: string
-  superficie_total: string
-  calle: string
-  numero: string
-  piso: string
-  departamento: string
-  codigo_postal: string
-  localidad: string
-  provincia: string
-  contactos: Contacto[]
-  fecha_inscripcion: Date
-  fecha_escritura: Date
-  fecha_contrato: Date
-  fecha_inicio: Date
-  fecha_fin: Date
-  importe: string
-  num_escritura: string
-  folio: string
-  tomo: String
-  observacion: string
-
-}
 function InmueblesForm() {
   const stepper = useStepper();
   const form = useForm()

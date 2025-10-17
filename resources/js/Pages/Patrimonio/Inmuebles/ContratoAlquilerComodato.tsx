@@ -1,7 +1,7 @@
 import { Label } from "@radix-ui/react-label";
 import { Controller, useFormContext } from "react-hook-form";
 import { DatePicker } from "./components/DatePicker";
-import { InmuebleFormData } from "./inmueble";
+import { InmuebleFormData } from "@/types/Inmuebles"; 
 import { Input } from "@/Components/ui/input";
 import { Textarea } from "@/Components/ui/textarea";
 
@@ -102,7 +102,7 @@ export default function ContratoAlquierComodato({ tipoContrato }: ContratoAlquil
                         id="importe"
                         {...register("importe", { required: "El nombre es obligatorio" })}
 
-                        className="border-2 border-secondary bg-input text-foreground h-12"
+                        className="w-full border-2 border-secondary bg-input text-foreground h-12"
                         placeholder="importe"
                     />
                 </div>
@@ -115,7 +115,7 @@ export default function ContratoAlquierComodato({ tipoContrato }: ContratoAlquil
                     <Textarea
                         id="observacion"
                         placeholder="Agregue observaciones sobre el contrato o el inmueble..."
-                        className="border-2 border-secondary bg-input text-foreground h-24"
+                        className="w-full border-2 border-secondary bg-input text-foreground h-24"
                         {...register("observacion")}
                     />
                     {errors.observacion && (

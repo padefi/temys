@@ -3,9 +3,9 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { useFormContext } from "react-hook-form";
-import { InmuebleFormData } from "./inmueble";
+import { InmuebleFormData } from "@/types/Inmuebles"; 
 
-import { ContactoInmueble } from "./contactoInmueble"; 
+import { ContactoInmueble } from "./contactoInmueble";
 import { DomicilioInmueble } from "./domicilioInmueble";
 
 
@@ -41,7 +41,7 @@ export function DatosInmuebles() {
                             id="num_partida"
                             {...register("num_partida", { required: true })}
 
-                            className="border-2 border-secondary bg-input text-foreground h-12"
+                            className="w-full border-2 border-secondary bg-input text-foreground h-12"
                             placeholder="Ingrese el número de partida"
                             required
                         />
@@ -60,7 +60,7 @@ export function DatosInmuebles() {
                             value={estado}
                             onValueChange={(val) => setValue("estado_id", val, { shouldValidate: true })}
                         >
-                            <SelectTrigger className="border-2 border-secondary bg-input text-foreground h-12">
+                            <SelectTrigger className="w-full border-2 border-secondary bg-input text-foreground h-12">
                                 <SelectValue placeholder="Seleccione el estado" />
                             </SelectTrigger>
                             <SelectContent>
@@ -84,7 +84,7 @@ export function DatosInmuebles() {
                             id="nombre_completo"
                             {...register("nombre_completo", { required: "El nombre es obligatorio" })}
 
-                            className="border-2 border-secondary bg-input text-foreground h-12"
+                            className="w-full border-2 border-secondary bg-input text-foreground h-12"
                             placeholder="Nombre completo del inmueble"
                             required
                         />
@@ -98,7 +98,7 @@ export function DatosInmuebles() {
                             id="nombre_fantasia"
                             {...register("nombre_fantasia", { required: "El nombre es obligatorio" })}
 
-                            className="border-2 border-secondary bg-input text-foreground h-12"
+                            className="w-full border-2 border-secondary bg-input text-foreground h-12"
                             placeholder="Nombre comercial o fantasía"
                         />
                     </div>
@@ -112,7 +112,7 @@ export function DatosInmuebles() {
                             value={tipoInmueble}
                             onValueChange={(val) => setValue("tipo_inmueble_id", val, { shouldValidate: true })}
                         >
-                            <SelectTrigger className="border-2 border-secondary bg-input text-foreground h-12">
+                            <SelectTrigger className="w-full border-2 border-secondary bg-input text-foreground h-12">
                                 <SelectValue placeholder="Seleccione el estado" />
                             </SelectTrigger>
                             <SelectContent>
@@ -137,7 +137,7 @@ export function DatosInmuebles() {
                             value={tipoOcupacion}
                             onValueChange={(val) => setValue("tipo_ocupacion_id", val, { shouldValidate: true })}
                         >
-                            <SelectTrigger className="border-2 border-secondary bg-input text-foreground h-12">
+                            <SelectTrigger className="w-full border-2 border-secondary bg-input text-foreground h-12">
                                 <SelectValue placeholder="Seleccione el estado" />
                             </SelectTrigger>
                             <SelectContent>
@@ -153,10 +153,9 @@ export function DatosInmuebles() {
                         )}
                     </div>
                 </div>
-                <DomicilioInmueble/>
-                <ContactoInmueble />
             </div>
-
+            <DomicilioInmueble />
+            <ContactoInmueble />
         </Card>
     );
 }

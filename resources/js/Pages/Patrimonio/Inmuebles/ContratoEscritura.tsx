@@ -3,7 +3,7 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Controller, useFormContext } from "react-hook-form";
-import { InmuebleFormData } from "./inmueble";
+import { InmuebleFormData } from "@/types/Inmuebles"; 
 import { DatePicker } from "@/Pages/Patrimonio/Inmuebles/components/DatePicker";
 import { Textarea } from "@/Components/ui/textarea";
 
@@ -12,6 +12,9 @@ import { Textarea } from "@/Components/ui/textarea";
 
 export default function ContratoEscritura() {
     const { register, control, watch, setValue, formState: { errors } } = useFormContext<InmuebleFormData>();
+
+    /* Observar los valores */
+    const numEscritura=watch('num_escritura') || ''
 
     return (
         <div className="p-6 space-y-6">
@@ -25,13 +28,14 @@ export default function ContratoEscritura() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <Label htmlFor="num_escritura" className="text-secondary font-semibold uppercase text-xs">
-                        Número de escritura *
+                        Número de escritura 
+                        {!numEscritura && <span className="text-red-500"> *</span>}
                     </Label>
                     <Input
                         id="num_escritura"
                         {...register("num_escritura", { required: true })}
 
-                        className="border-2 border-secondary bg-input text-foreground h-12"
+                        className="w-full border-2 border-secondary bg-input text-foreground h-12"
                         placeholder="Ingrese el número de partida"
                         required
                     />
@@ -95,7 +99,7 @@ export default function ContratoEscritura() {
                         id="folio"
                         {...register("folio", { required: "El nombre es obligatorio" })}
 
-                        className="border-2 border-secondary bg-input text-foreground h-12"
+                        className="w-full border-2 border-secondary bg-input text-foreground h-12"
                         placeholder="Nombre comercial o fantasía"
                     />
                 </div>
@@ -147,7 +151,7 @@ export default function ContratoEscritura() {
                         id="tomo"
                         {...register("tomo", { required: "El nombre es obligatorio" })}
 
-                        className="border-2 border-secondary bg-input text-foreground h-12"
+                        className="w-full border-2 border-secondary bg-input text-foreground h-12"
                         placeholder="Nombre comercial o fantasía"
                     />
                 </div>
@@ -160,7 +164,7 @@ export default function ContratoEscritura() {
                         id="tomo"
                         {...register("tomo", { required: "El nombre es obligatorio" })}
 
-                        className="border-2 border-secondary bg-input text-foreground h-12"
+                        className="w-full border-2 border-secondary bg-input text-foreground h-12"
                         placeholder="Nombre comercial o fantasía"
                     />
                 </div>
@@ -173,7 +177,7 @@ export default function ContratoEscritura() {
                         id="tomo"
                         {...register("tomo", { required: "El nombre es obligatorio" })}
 
-                        className="border-2 border-secondary bg-input text-foreground h-12"
+                        className="w-full border-2 border-secondary bg-input text-foreground h-12"
                         placeholder="Nombre comercial o fantasía"
                     />
                 </div>
@@ -186,7 +190,7 @@ export default function ContratoEscritura() {
                         id="tomo"
                         {...register("tomo", { required: "El nombre es obligatorio" })}
 
-                        className="border-2 border-secondary bg-input text-foreground h-12"
+                        className="w-full border-2 border-secondary bg-input text-foreground h-12"
                         placeholder="Nombre comercial o fantasía"
                     />
                 </div>
@@ -199,7 +203,7 @@ export default function ContratoEscritura() {
                         id="tomo"
                         {...register("tomo", { required: "El nombre es obligatorio" })}
 
-                        className="border-2 border-secondary bg-input text-foreground h-12"
+                        className="w-full border-2 border-secondary bg-input text-foreground h-12"
                         placeholder="Nombre comercial o fantasía"
                     />
                 </div>
@@ -212,7 +216,7 @@ export default function ContratoEscritura() {
                         id="tomo"
                         {...register("tomo", { required: "El nombre es obligatorio" })}
 
-                        className="border-2 border-secondary bg-input text-foreground h-12"
+                        className="w-full border-2 border-secondary bg-input text-foreground h-12"
                         placeholder="Nombre comercial o fantasía"
                     />
                 </div>
@@ -225,7 +229,7 @@ export default function ContratoEscritura() {
                         id="tomo"
                         {...register("tomo", { required: "El nombre es obligatorio" })}
 
-                        className="border-2 border-secondary bg-input text-foreground h-12"
+                        className="w-full border-2 border-secondary bg-input text-foreground h-12"
                         placeholder="Nombre comercial o fantasía"
                     />
                 </div>
@@ -238,7 +242,7 @@ export default function ContratoEscritura() {
                         id="tomo"
                         {...register("tomo", { required: "El nombre es obligatorio" })}
 
-                        className="border-2 border-secondary bg-input text-foreground h-12"
+                        className="w-full border-2 border-secondary bg-input text-foreground h-12"
                         placeholder="Nombre comercial o fantasía"
                     />
                 </div>

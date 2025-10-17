@@ -3,6 +3,9 @@
 namespace App\Models\Patrimonio\Inmuebles;
 
 use App\Models\ControlAcceso\User;
+use App\Models\InmuebleContrato;
+use App\Models\InmuebleEscritura;
+use App\Models\InmuebleTipoContrato;
 use Illuminate\Database\Eloquent\Model;
 
 class Inmueble extends Model
@@ -47,7 +50,7 @@ class Inmueble extends Model
     {
         return $this->belongsTo(InmuebleTipo::class, 'tipo_inmueble_id');
     }
-
+   
     public function tipoOcupacion()
     {
         return $this->belongsTo(InmuebleTipoOcupacions::class, 'tipo_ocupacion_id');
@@ -62,5 +65,15 @@ class Inmueble extends Model
     {
         return $this->belongsTo(User::class, 'usuario_actualizacion');
     } 
+    public function contratos()
+    {
+        return $this->hasMany(InmuebleContrato::class, 'inmuebles_id');
+    }
+
+    public function escrituras()
+    {
+        return $this->hasMany(InmuebleEscritura::class, 'inmuebles_id');
+    }
+
 
 }

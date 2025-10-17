@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, X } from "lucide-react";
 
 import { useFormContext, useFieldArray } from "react-hook-form";
-import { InmuebleFormData } from "./inmueble";
+import { InmuebleFormData } from "@/types/Inmuebles"; 
 
 export function ContactoInmueble() {
     const { control, register, setValue, watch } = useFormContext<InmuebleFormData>();
@@ -20,9 +20,7 @@ export function ContactoInmueble() {
         append({ tipo: "telefono", valor: "", descripcion: "" });
     };
 
-    return (
-        <Card className="border-4 border-secondary bg-card bg-gray-400">
-        
+    return (        
             <div className="p-6 space-y-6">
                 <div className="flex items-center gap-3 pb-4 border-b-2 border-border">
                     <div>
@@ -123,6 +121,6 @@ export function ContactoInmueble() {
                     </p>
                 </div>
             </div>
-        </Card>
+      
     );
 }

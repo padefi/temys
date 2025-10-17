@@ -4,7 +4,7 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/Components/ui/radio-group";
 import { useFormContext } from "react-hook-form";
-import { InmuebleFormData } from "./Inmueble";
+import { InmuebleFormData } from "@/types/Inmuebles"; 
 import ContratoEscritura from "./contratoEscritura"; 
 import ContratoAlquierComodato from "./contratoAlquilerComodato"; 
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ export function DatosExtraInmueble() {
                                 type="number"
                                 step="0.01"
                                 {...register("superficie_cubierta", { required: true })}
-                                className="border-2 border-secondary bg-input text-foreground h-12"
+                                className="w-full border-2 border-secondary bg-input text-foreground h-12"
                                 placeholder="0.00"
 
                             />
@@ -58,7 +58,7 @@ export function DatosExtraInmueble() {
                                 type="number"
                                 step="0.01"
 
-                                className="border-2 border-secondary bg-input text-foreground h-12"
+                                className="w-full border-2 border-secondary bg-input text-foreground h-12"
                                 placeholder="0.00"
 
                             />
@@ -76,7 +76,7 @@ export function DatosExtraInmueble() {
                                 {...register("superficie_total", { required: true })}
                                 type="number"
                                 step="0.01"
-                                className="border-2 border-secondary bg-input text-foreground h-12"
+                                className="w-full border-2 border-secondary bg-input text-foreground h-12"
                                 placeholder="0.00"
 
                             />
