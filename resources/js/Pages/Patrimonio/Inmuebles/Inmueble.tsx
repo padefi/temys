@@ -5,10 +5,11 @@ import { defineStepper } from '@stepperize/react';
 import { useForm, FormProvider } from "react-hook-form";
 import { Separator } from '@/Components/ui/separator';
 import React, { use } from 'react';
-import { DatosInmuebles } from './datosInmuebles';
-import { DatosExtraInmueble } from './datosExtraInmueble';
+
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
+import { DatosInmuebles } from './DatosInmuebles';
+import { DatosExtraInmueble } from './DatosExtraInmueble';
 
 
 const { useStepper, steps, utils } = defineStepper(
@@ -27,7 +28,7 @@ const { useStepper, steps, utils } = defineStepper(
 );
 const onSubmit = (data: any) => {
   console.log("Datos finales:", data);
-  // acá podrías hacer:
+
   // post(route('register'), { data });
 };
 

@@ -4,9 +4,10 @@ import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { useFormContext } from "react-hook-form";
 import { InmuebleFormData } from "@/types/Inmuebles"; 
+import { DomicilioInmueble } from "./DomicilioInmueble";
+import { ContactoInmueble } from "./ContactoInmueble";
 
-import { ContactoInmueble } from "./contactoInmueble";
-import { DomicilioInmueble } from "./domicilioInmueble";
+
 
 
 
@@ -15,7 +16,11 @@ import { DomicilioInmueble } from "./domicilioInmueble";
 export function DatosInmuebles() {
     const { register, watch, setValue, formState: { errors } } = useFormContext<InmuebleFormData>();
 
+
+    const numeroPartida= watch('num_partida')
     const estado = watch("estado_id") ?? "";
+    const nombreCompleto=watch('nombre_completo')
+    const nombreFantasia=watch('nombre_fantasia')
     const tipoInmueble = watch("tipo_inmueble_id") ?? "";
     const tipoOcupacion = watch("tipo_ocupacion_id") ?? "";
 
@@ -35,7 +40,8 @@ export function DatosInmuebles() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                         <Label htmlFor="num_partida" className="text-secondary font-semibold uppercase text-xs">
-                            Número de Partida *
+                            Número de Partida 
+                            {!numeroPartida && <span className="text-red-500"> *</span>}
                         </Label>
                         <Input
                             id="num_partida"
@@ -53,7 +59,8 @@ export function DatosInmuebles() {
 
                     <div className="space-y-2">
                         <Label htmlFor="estado_id" className="text-secondary font-semibold uppercase text-xs">
-                            Estado *
+                            Estado 
+                            {!estado && <span className="text-red-500"> *</span>}
                         </Label>
 
                         <Select
@@ -78,7 +85,8 @@ export function DatosInmuebles() {
 
                     <div className="space-y-2">
                         <Label htmlFor="nombre_completo" className="text-secondary font-semibold uppercase text-xs">
-                            Nombre Completo *
+                            Nombre Completo 
+                            {!nombreCompleto && <span className="text-red-500"> *</span>}
                         </Label>
                         <Input
                             id="nombre_completo"
@@ -93,6 +101,7 @@ export function DatosInmuebles() {
                     <div className="space-y-2">
                         <Label htmlFor="nombre_fantasia" className="text-secondary font-semibold uppercase text-xs">
                             Nombre Fantasía
+                            {!nombreFantasia && <span className="text-red-500"> *</span>}
                         </Label>
                         <Input
                             id="nombre_fantasia"
@@ -105,7 +114,8 @@ export function DatosInmuebles() {
 
                     <div className="space-y-2">
                         <Label htmlFor="tipo_inmueble_id" className="text-secondary font-semibold uppercase text-xs">
-                            Tipo inmuebles *
+                            Tipo inmuebles 
+                            {!tipoInmueble && <span className="text-red-500"> *</span>}
                         </Label>
 
                         <Select
@@ -130,7 +140,8 @@ export function DatosInmuebles() {
 
                     <div className="space-y-2">
                         <Label htmlFor="tipo_ocupacion_id" className="text-secondary font-semibold uppercase text-xs">
-                            Tipo inmuebles *
+                            Tipo ocupacion 
+                            {!tipoOcupacion && <span className="text-red-500"> *</span>}
                         </Label>
 
                         <Select

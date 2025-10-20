@@ -50,7 +50,7 @@ class Inmueble extends Model
     {
         return $this->belongsTo(InmuebleTipo::class, 'tipo_inmueble_id');
     }
-   
+  
     public function tipoOcupacion()
     {
         return $this->belongsTo(InmuebleTipoOcupacions::class, 'tipo_ocupacion_id');
@@ -73,6 +73,11 @@ class Inmueble extends Model
     public function escrituras()
     {
         return $this->hasMany(InmuebleEscritura::class, 'inmuebles_id');
+    }
+    
+    public function contactos()
+    {
+        return $this->hasMany(InmuebleContacto::class, 'inmuebles_id');
     }
 
 

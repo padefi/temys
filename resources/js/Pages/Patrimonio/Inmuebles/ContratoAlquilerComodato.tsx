@@ -13,6 +13,12 @@ type ContratoAlquilerProps = {
 export default function ContratoAlquierComodato({ tipoContrato }: ContratoAlquilerProps) {
     const { register, control, watch, setValue, formState: { errors } } = useFormContext<InmuebleFormData>();
 
+    const fechaContrato=watch('fecha_contrato')
+    const fechaInicio=watch('fecha_inicio')
+    const fechaFin=watch('fecha_fin')
+    const importe=watch('importe')
+    const observacion=watch('observacion')
+
     return (
         <div className="p-6 space-y-6">
             <div className="flex items-center gap-3 pb-4 border-b-2 border-border">
@@ -27,7 +33,8 @@ export default function ContratoAlquierComodato({ tipoContrato }: ContratoAlquil
 
                 <div className="space-y-2">
                     <Label htmlFor="fecha_contrato" className="text-secondary font-semibold uppercase text-xs">
-                        FECHA CONTRATO *
+                        FECHA CONTRATO 
+                         {!fechaContrato && <span className="text-red-500"> *</span>}
                     </Label>
                     <div className="space-y-2">
                         <Controller
@@ -50,7 +57,8 @@ export default function ContratoAlquierComodato({ tipoContrato }: ContratoAlquil
 
                 <div className="space-y-2">
                     <Label htmlFor="fecha_inicio" className="text-secondary font-semibold uppercase text-xs">
-                        FECHA INICIO *
+                        FECHA INICIO 
+                         {!fechaInicio && <span className="text-red-500"> *</span>}
                     </Label>
                     <div className="space-y-2">
                         <Controller
@@ -73,7 +81,8 @@ export default function ContratoAlquierComodato({ tipoContrato }: ContratoAlquil
 
                 <div className="space-y-2">
                     <Label htmlFor="fecha_fin" className="text-secondary font-semibold uppercase text-xs">
-                        FECHA FINALIZACIÓN *
+                        FECHA FINALIZACIÓN 
+                         {!fechaFin && <span className="text-red-500"> *</span>}
                     </Label>
                     <div className="space-y-2">
                         <Controller
@@ -97,6 +106,7 @@ export default function ContratoAlquierComodato({ tipoContrato }: ContratoAlquil
                 <div className="space-y-2">
                     <Label htmlFor="importe" className="text-secondary font-semibold uppercase text-xs">
                         IMPORTE
+                        {!importe && <span className="text-red-500"> *</span>}
                     </Label>
                     <Input
                         id="importe"
@@ -110,7 +120,8 @@ export default function ContratoAlquierComodato({ tipoContrato }: ContratoAlquil
 
                 <div className="space-y-2">
                     <Label htmlFor="observacion" className="text-secondary font-semibold uppercase text-xs">
-                        observacion *
+                        observacion 
+                        {!observacion && <span className="text-red-500"> *</span>}
                     </Label>
                     <Textarea
                         id="observacion"

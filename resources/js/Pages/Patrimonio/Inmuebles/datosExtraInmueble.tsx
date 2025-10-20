@@ -5,9 +5,10 @@ import { Label } from "@/Components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/Components/ui/radio-group";
 import { useFormContext } from "react-hook-form";
 import { InmuebleFormData } from "@/types/Inmuebles"; 
-import ContratoEscritura from "./contratoEscritura"; 
-import ContratoAlquierComodato from "./contratoAlquilerComodato"; 
+
 import { Button } from "@/components/ui/button";
+import ContratoEscritura from "./ContratoEscritura";
+import ContratoAlquierComodato from "./ContratoAlquilerComodato";
 
 
 
@@ -15,6 +16,12 @@ import { Button } from "@/components/ui/button";
 export function DatosExtraInmueble() {
     const { register, watch, setValue, formState: { errors } } = useFormContext<InmuebleFormData>();
     const tipoContrato = watch("tipo_contrato") || "";
+
+    const superficieCubierta=watch('superficie_cubierta')
+    const superficieLibre=watch('superficie_libre')
+    const superficieTotal=watch('superficie_total')
+
+
     return (
         <>
             <Card className="border-4 border-secondary bg-card bg-gray-400">
@@ -32,7 +39,8 @@ export function DatosExtraInmueble() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="superficie_cubierta" className="text-secondary font-semibold uppercase text-xs">
-                                Superficie Cubierta (m²) *
+                                Superficie Cubierta (m²) 
+                                {!superficieCubierta && <span className="text-red-500"> *</span>}
                             </Label>
                             <Input
                                 id="superficie_cubierta"
@@ -50,7 +58,8 @@ export function DatosExtraInmueble() {
 
                         <div className="space-y-2">
                             <Label htmlFor="superficie_libre" className="text-secondary font-semibold uppercase text-xs">
-                                Superficie Libre (m²) *
+                                Superficie Libre (m²) 
+                                 {!superficieLibre && <span className="text-red-500"> *</span>}
                             </Label>
                             <Input
                                 id="superficie_libre"
@@ -69,7 +78,8 @@ export function DatosExtraInmueble() {
 
                         <div className="space-y-2">
                             <Label htmlFor="superficie_total" className="text-secondary font-semibold uppercase text-xs">
-                                Superficie Total (m²) *
+                                Superficie Total (m²) 
+                                 {!superficieTotal && <span className="text-red-500"> *</span>}
                             </Label>
                             <Input
                                 id="superficie_total"

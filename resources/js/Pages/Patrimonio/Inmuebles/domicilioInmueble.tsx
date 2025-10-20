@@ -9,18 +9,18 @@ import { InmuebleFormData } from "@/types/Inmuebles";
 
 
 interface Provincia {
-  id: number;
-  nombre: string;
+    id: number;
+    nombre: string;
 }
 
 interface Localidad {
-  id: number;
-  nombre: string;
+    id: number;
+    nombre: string;
 }
 
 interface Calle {
-  id: number;
-  nombre: string;
+    id: number;
+    nombre: string;
 }
 
 
@@ -28,21 +28,20 @@ interface Calle {
 export function DomicilioInmueble() {
     const { register, watch, setValue, formState: { errors } } = useFormContext<InmuebleFormData>();
 
-    // 🧱 Estados locales
-const [provincias, setProvincias] = useState<Provincia[]>([]);
-const [localidades, setLocalidades] = useState<Localidad[]>([]);
-const [calles, setCalles] = useState<Calle[]>([]);
+
+    const [provincias, setProvincias] = useState<Provincia[]>([]);
+    const [localidades, setLocalidades] = useState<Localidad[]>([]);
+    const [calles, setCalles] = useState<Calle[]>([]);
 
     const provincia = watch("provincia_id");
-    console.log(provincia)
     const localidad = watch("localidad_id");
 
-    // ✅ Cargar provincias al montar
+    // Cargar provincias al montar
     useEffect(() => {
         axios.get("/provincias").then((res) => setProvincias(res.data));
     }, []);
 
-    // ✅ Cargar localidades cuando cambia la provincia
+    // Cargar localidades cuando cambia la provincia
     useEffect(() => {
         if (provincia) {
             axios.get(`/localidades/${provincia}`).then((res) => setLocalidades(res.data));
@@ -52,7 +51,9 @@ const [calles, setCalles] = useState<Calle[]>([]);
         }
     }, [provincia]);
 
-    // ✅ Cargar calles cuando cambia la localidad
+
+
+    // Cargar calles cuando cambia la localidad
     useEffect(() => {
         if (localidad) {
             axios.get(`/calles/${localidad}`).then((res) => setCalles(res.data));
@@ -60,13 +61,14 @@ const [calles, setCalles] = useState<Calle[]>([]);
         }
     }, [localidad]);
 
+ 
     return (
         <div className="p-6 space-y-6">
             <h2 className="text-xl font-bold text-secondary uppercase tracking-wide border-b-2 border-border pb-4">
                 Domicilio del Inmueble
             </h2>
 
-            {/* 🏙 Provincia */}
+
             <div className="space-y-2">
                 <Label htmlFor="provincia_id" className="text-secondary font-semibold uppercase text-xs">
                     Provincia *
@@ -89,7 +91,7 @@ const [calles, setCalles] = useState<Calle[]>([]);
                 {errors.provincia_id && <p className="text-red-500 text-sm">Seleccione una provincia</p>}
             </div>
 
-            {/* 🏘 Localidad */}
+
             <div className="space-y-2">
                 <Label htmlFor="localidad_id" className="text-secondary font-semibold uppercase text-xs">
                     Localidad *
@@ -113,7 +115,7 @@ const [calles, setCalles] = useState<Calle[]>([]);
                 {errors.localidad_id && <p className="text-red-500 text-sm">Seleccione una localidad</p>}
             </div>
 
-            {/* 🚗 Calle */}
+
             <div className="space-y-2">
                 <Label htmlFor="calle_id" className="text-secondary font-semibold uppercase text-xs">
                     Calle *

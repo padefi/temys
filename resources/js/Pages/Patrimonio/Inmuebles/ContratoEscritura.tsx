@@ -15,6 +15,11 @@ export default function ContratoEscritura() {
 
     /* Observar los valores */
     const numEscritura=watch('num_escritura') || ''
+    const fechaEscritura=watch('fecha_escritura')
+    const fechaInscripcion=watch('fecha_inscripcion')
+    const folioEscritura=watch('folio')
+    const tomoEscritura=watch('tomo')
+    const observacionEscitura=watch('observacion')
 
     return (
         <div className="p-6 space-y-6">
@@ -47,7 +52,8 @@ export default function ContratoEscritura() {
 
                 <div className="space-y-2">
                     <Label htmlFor="fecha_escritura" className="text-secondary font-semibold uppercase text-xs">
-                        Fecha Escritura *
+                        Fecha Escritura 
+                        {!fechaEscritura && <span className="text-red-500"> *</span>}
                     </Label>
                     <div className="space-y-2">
                         <Controller
@@ -70,7 +76,8 @@ export default function ContratoEscritura() {
 
                 <div className="space-y-2">
                     <Label htmlFor="fecha_inscripcion" className="text-secondary font-semibold uppercase text-xs">
-                        Fecha de incripcion *
+                        Fecha de incripcion 
+                        {!fechaInscripcion && <span className="text-red-500"> *</span>}
                     </Label>
                     <div className="space-y-2">
                         <Controller
@@ -94,6 +101,7 @@ export default function ContratoEscritura() {
                 <div className="space-y-2">
                     <Label htmlFor="folio" className="text-secondary font-semibold uppercase text-xs">
                         Folio
+                         {!folioEscritura && <span className="text-red-500"> *</span>}
                     </Label>
                     <Input
                         id="folio"
@@ -107,6 +115,7 @@ export default function ContratoEscritura() {
                 <div className="space-y-2">
                     <Label htmlFor="tomo" className="text-secondary font-semibold uppercase text-xs">
                         Tomo
+                         {!tomoEscritura && <span className="text-red-500"> *</span>}
                     </Label>
                     <Input
                         id="tomo"
@@ -119,7 +128,8 @@ export default function ContratoEscritura() {
 
                 <div className="space-y-2">
                     <Label htmlFor="observacion" className="text-secondary font-semibold uppercase text-xs">
-                        observacion *
+                        observacion 
+                         {!observacionEscitura && <span className="text-red-500"> *</span>}
                     </Label>
                     <Textarea
                         id="observacion"
@@ -132,9 +142,6 @@ export default function ContratoEscritura() {
                     )}
 
                 </div>
-
-
-
 
             </div>
 
