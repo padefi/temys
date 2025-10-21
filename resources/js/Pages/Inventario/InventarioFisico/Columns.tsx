@@ -1,5 +1,5 @@
 import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
+
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/Components/ui/tooltip";
 import { AjusteSeleccionado, StockInventarioItem } from "@/types/Inventario";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { BrushCleaning, Clock10, Pencil, Save } from "lucide-react";
 import { DataTableColumnHeader } from "../Existencias/column-header";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface StockColumnProps {
   editingCell: { id: number; field: string }[];

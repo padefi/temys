@@ -37,6 +37,7 @@ class StockController extends Controller
                 'ia.estado_ajuste'
             )
             ->join('inventario_ajustes as ia', 'ia.id', '=', 'iad.ajuste_inventario_id');
+
         $productoSub = DB::table('productos as p')
             ->join('producto_subcategorias as psc', 'psc.id', '=', 'p.subcategoria_id')
             ->join('producto_categorias as pc', 'pc.id', '=', 'psc.categoria_id')
@@ -61,9 +62,9 @@ class StockController extends Controller
                         ->where('estado_ajuste', 'nuevo');
                 })
                 ->where('inventario_stocks.almacen_id', $almacenId)
-                ->whereHas('producto', function ($q) {
+              /*   ->whereHas('producto', function ($q) {
                     $q->where('es_inventario', 1);
-                })
+                }) */
                 ->with(['producto', 'almacen'])
 
         )->allowedFilters([

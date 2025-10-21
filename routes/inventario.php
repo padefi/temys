@@ -6,6 +6,7 @@ use App\Http\Controllers\Inventario\Productos\ProductoController;
 use App\Http\Controllers\Inventario\SolicitudStockController;
 use App\Http\Controllers\Inventario\StockController;
 use App\Http\Controllers\Inventario\EntregaController;
+use App\Http\Controllers\Inventario\Operaciones\RecepcionesController;
 use App\Http\Controllers\Inventario\Reportes\ExistenciasController;
 use App\Http\Controllers\Inventario\Reportes\MovimientoHistorialController;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +23,11 @@ Route::middleware('module:inventario')->group(function () {
         Route::middleware('submenu_permission:read entregas')->group(function () {
             Route::get('/inventario/entregas', [EntregaController::class, 'index'])->name('entregas');
         });
+
+        Route::middleware('submenu_permission:read recepciones')->group(function () {
+            Route::get('/inventario/recepcion', [RecepcionesController::class, 'index'])->name('recepciones');
+        }); 
+
 
         Route::middleware('submenu_permission:read inventarioFisico')->group(function () {
             Route::get('inventario/inventarioFisico', [StockController::class, 'index'])->name('inventarioFisico');
@@ -43,7 +49,7 @@ Route::middleware('module:inventario')->group(function () {
                 Route::get('/solicitudes-stock', [SolicitudStockController::class, 'getSolicitudesAll'])->name('inventario.solicitudes.all');
                 Route::get('/solicitudes-stock/{id}', [SolicitudStockController::class, 'getSolicitudDetalle'])->name('inventario.solicitudes.detalle');
                 Route::get('/solicitudes-stock-disponible/{idProducto}', [SolicitudStockController::class, 'stockDisponible']);
-                Route::get('/solicitudes-stock-aceptadas', [SolicitudStockController::class, 'solicitudesAceptadas'])->name('inventario.misSolicitudes');
+               
             });
 
             Route::middleware('submenu_permission:create inventarioFisico')->group(function () {
