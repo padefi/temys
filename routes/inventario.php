@@ -8,7 +8,11 @@ use App\Http\Controllers\Inventario\EntregaController;
 use App\Http\Controllers\Inventario\Reportes\ExistenciasController;
 use App\Http\Controllers\Inventario\Reportes\MovimientoHistorialController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use App\Models\Inventario\InventarioOrdenEntrega;
+use Illuminate\Support\Facades\View;
+use Mpdf\Mpdf;
 
 Route::middleware('module:inventario')->group(function () {
     Route::get('/inventario', function () {
@@ -20,6 +24,14 @@ Route::middleware('module:inventario')->group(function () {
     Route::middleware(['menu:operaciones'])->group(callback: function () {
         Route::middleware('submenu_permission:read entregas')->group(function () {
             Route::get('/inventario/entregas', [EntregaController::class, 'index'])->name('entregas');
+            Route::post('/inventario/entregas/{entrega}/confirmar', [EntregaController::class, 'confirmarEnvio'])->name('entregas.confirmar');
+            Route::post('/inventario/entregas/{orden}/cancelar', [EntregaController::class, 'cancelarOrden'])->name('entregas.cancelar');
+        });
+        Route::middleware('submenu_permission:update entregas')->group(function () {
+            Route::post('/inventario/entregas/{orden}/confirmar-envio', [EntregaController::class, 'confirmarEnvio'])
+                ->name('entregas.confirmar-envio');
+            Route::post('/inventario/entregas/{orden}/cancelar', [EntregaController::class, 'cancelarOrden'])
+                ->name('entregas.cancelar');    
         });
 
         Route::middleware('submenu_permission:read inventarioFisico')->group(function () {
@@ -101,3 +113,20 @@ Route::middleware('module:inventario')->group(function () {
         });
     });
 });
+
+
+//Nueva ruta para mostrar remitos generados por librería Mpdf
+Route::get('/remitos/{orden}', function ($ordenId) {
+    $path = "remitos/remito_{$ordenId}.pdf";
+
+    if (!Storage::disk('public')->exists("remitos/remito_{$ordenId}.pdf")) {
+        //Regenerar si no existe
+        $orden = InventarioOrdenEntrega::with(['origen', 'destino', 'detalles.producto'])->findOrFail($ordenId);
+        $mpdf = new Mpdf(['tempDir' => storage_path('app/tmp'), 'default_font' => 'sans']);
+        $html = View::make('pdf.remito', compact('orden'))->render();
+        $mpdf->WriteHTML($html);
+        Storage::disk('public')->put("remitos/remito_{$ordenId}.pdf", $mpdf->Output('', 'S'));
+    }
+
+    return response()->file(storage_path("app/public/remitos/remito_{$ordenId}.pdf"));
+})->name('remitos.mostrar')->middleware('auth');
