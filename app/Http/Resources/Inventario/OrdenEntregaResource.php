@@ -12,12 +12,13 @@ class OrdenEntregaResource extends JsonResource
         return [
             'id' => $this->id,
             'fecha_envio' => $this->fecha_envio instanceof \Carbon\Carbon
-    ? $this->fecha_envio->format('Y-m-d')
-    : null,
+                ? $this->fecha_envio->format('Y-m-d')
+                : null,
 
-'fecha_creacion' => $this->fecha_creacion instanceof \Carbon\Carbon
-    ? $this->fecha_creacion->format('Y-m-d H:i:s')
-    : null,
+            'fecha_creacion' => $this->fecha_creacion instanceof \Carbon\Carbon
+                ? $this->fecha_creacion->format('Y-m-d H:i:s')
+                : null,
+
             'usuario_creacion' => optional($this->usuarioCreacion)->name ?? '-',
             'estado' => $this->estado,
             'origen' => optional($this->origen)->nombre ?? '-',
@@ -26,10 +27,16 @@ class OrdenEntregaResource extends JsonResource
                 return [
                     'nombre' => optional($detalle->producto)->nombre ?? '-',
                     'cantidad' => $detalle->cantidad_enviada,
-                    'fecha_creacion' => $detalle->fecha_creacion instanceof \Carbon\Carbon ? $detalle->fecha_creacion->format('Y-m-d H:i:s') : null,
-                    'usuario_creacion' => optional($detalle->usuarioCreacion)->name ?? '-',
+                    'fecha_creacion' => $this->fecha_creacion instanceof \Carbon\Carbon ? $this->fecha_creacion->format('Y-m-d H:i:s') : null,
+                    'usuario_creacion' => optional($this->usuarioCreacion)->name ?? '-',
                 ];
             })->values(),
+
+            'cancelacion' => $this->cancelacion ? [
+                'motivo' => $this->cancelacion->motivo,
+                'fecha' => optional($this->cancelacion->fecha)->format('Y-m-d H:i:s'),
+                'usuario' => optional($this->cancelacion->usuarioCreacion)->name ?? '-',
+            ] : null,
         ];
     }
 }
