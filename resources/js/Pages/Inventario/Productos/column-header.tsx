@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDataTableParams } from "@/hooks/useDataTableParams";
 import { Column } from "@tanstack/react-table";
-import { Button } from "@/Components/ui/button";
+import { Button } from "@/components/ui/button";
 import { InputFilter } from "@/Components/ui/input-filter";
 import { ArrowDownNarrowWide, ArrowUpDown, ArrowUpNarrowWide, Funnel, FunnelX } from "lucide-react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/Components/ui/select";

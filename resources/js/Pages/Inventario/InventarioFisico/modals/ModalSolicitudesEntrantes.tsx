@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/Components/ui/table";
-import { Button } from "@/Components/ui/button";
+
 import axios from "axios";
 import { Fragment, useEffect, useState } from "react";
 import AceptarStock from "./ModalAprobarORechazarStock";
@@ -10,6 +10,7 @@ import { Solicitudes } from "../../../../types/Inventario";
 import { Calendar, ChevronDown, ChevronRight, MapPin, Package } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
+import { Button } from "@/components/ui/button";
 interface SolicitudesModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -40,14 +41,12 @@ export default function SolicitudesStock({ isOpen, onClose, requests, }: Solicit
 
     const toggleRow = (solicitudId: string) => {
         if (expandedRow === solicitudId) {
-
             setExpandedRow(null)
         } else {
 
             setExpandedRow(solicitudId)
         }
     }
-
 
     const getEstadoBadge = (estado: string) => {
         const normalizado = estado.charAt(0).toUpperCase() + estado.slice(1).toLowerCase()

@@ -1,19 +1,34 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Pencil, History } from "lucide-react";
+import { History, ChevronRight, ChevronDown, PackageCheck } from "lucide-react";
 import { DataTableColumnHeader } from "../Existencias/column-header";
-import { ExtendedExistenciasItem } from "@/types/Inventario";
-import { Dispatch, SetStateAction } from "react";
 import { RecepcionesItem } from "./RecepcionesManagement";
+import { Badge } from "lucide-react";
 
 interface GetColumnsProps {
-    setIdProducto: Dispatch<SetStateAction<number | undefined>>;
-    setAjusteDialogOpen: Dispatch<SetStateAction<boolean>>;
-    handleOpenWithFilter: (idProducto: number) => void;
+    onAbrirModal: (recepcion: RecepcionesItem) => void;
 }
 
-export const getColumns = (): ColumnDef<RecepcionesItem>[] => [
+export const getColumns = ({ onAbrirModal }: GetColumnsProps): ColumnDef<RecepcionesItem>[] => [
+    {
+        id: "expander",
+        header: "",
+        cell: ({ row }) => {
+            return (
+                <button
+                    onClick={row.getToggleExpandedHandler()}
+                    className="flex justify-center items-center w-full pointer"
+                >
+                    {row.getIsExpanded() ? (
+                        <ChevronDown className="h-4 w-4" />
+                    ) : (
+                        <ChevronRight className="h-4 w-4" />
+                    )}
+                </button>
+            );
+        },
+    },
     {
         id: "select",
         header: ({ table }) => (
@@ -27,11 +42,14 @@ export const getColumns = (): ColumnDef<RecepcionesItem>[] => [
             />
         ),
         cell: ({ row }) => (
+
             <Checkbox
                 checked={row.getIsSelected()}
                 onCheckedChange={(value) => row.toggleSelected(!!value)}
                 aria-label="Seleccionar fila"
             />
+
+
         ),
         enableSorting: false,
         enableHiding: false,
@@ -72,12 +90,61 @@ export const getColumns = (): ColumnDef<RecepcionesItem>[] => [
     {
         accessorKey: "fechaRecepcion",
         header: "Fecha Recepcion",
-        cell: ({ row }) => <div className="text-center">{row.getValue("fechaRecepcion")}</div>,
+        cell: ({ row }) => <div className="text-center">{
+            <>
+                <div className="text-sm">
+                    {new Date(row.getValue("fechaRecepcion")).toLocaleDateString("es-ES", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                    })}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                    {new Date(row.getValue("fechaRecepcion")).toLocaleTimeString("es-ES", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        timeZone: "UTC"
+                    })}
+                </div>
+
+            </>
+
+        }</div>,
     },
     {
         accessorKey: "estado",
         header: "Estado",
-        cell: ({ row }) => <div className="text-center">{row.getValue("estado")}</div>,
+        cell: ({ row }) => {
+            const estado = row.getValue("estado") as string;
+
+            const estadoConfig = {
+                pendiente: {
+                    class: "bg-yellow-100 text-yellow-800 border-yellow-300",
+                    label: "Pendiente"
+                },
+                parcial: {
+                    class: "bg-blue-100 text-blue-800 border-blue-300",
+                    label: "Parcial"
+                },
+                completa: {
+                    class: "bg-green-100 text-green-800 border-green-300",
+                    label: "Completa"
+                }
+            };
+
+            const config = estadoConfig[estado.toLowerCase() as keyof typeof estadoConfig] || {
+                class: "bg-gray-100 text-gray-800 border-gray-300",
+                label: estado
+            };
+
+            return (
+                <div className="text-center">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${config.class}`}>
+                        {config.label}
+                    </span>
+                </div>
+            );
+        },
     },
     {
         accessorKey: "tipoRecepcion",
@@ -102,9 +169,10 @@ export const getColumns = (): ColumnDef<RecepcionesItem>[] => [
                             variant="ghost"
                             size="sm"
                             className="hover:bg-accent/10"
-                        /* onClick={() => handleOpenWithFilter(item.producto_id)} */
+                            onClick={() => onAbrirModal(item)}
                         >
-                            <History className="h-4 w-4" /> Historial
+                            <PackageCheck className="h-4 w-4" />
+                            Contar y Verificar
                         </Button>
                     </div>
                 ) : null
