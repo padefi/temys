@@ -13,7 +13,7 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Textarea } from "@/Components/ui/textarea";
 import axios from "axios";
-import { StockItem, StockRequest } from "./Types";
+import { StockItem, StockRequest } from "../../../../types/Inventario"; 
 
 interface StockApprovalModalProps {
   isOpen: boolean;
@@ -62,7 +62,7 @@ export default function AceptarStock({
   }, [request]);
 
   if (!request) return null;
-console.log("Request", request);
+
 
   const handleSubmit = async () => {
     const estado = action === "aprobado" ? "Aceptada" : "Cancelada";

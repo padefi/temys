@@ -12,13 +12,15 @@ use App\Http\Resources\inventario\SolicitudRecibidaStockResource;
 use App\Models\Inventario\InventarioOrdenEntrega;
 use App\Models\Inventario\InventarioOrdenEntregaDetalle;
 use App\Models\Inventario\InventarioRecepcionProducto;
+use App\Models\Inventario\InventarioRecepcionProductoDetalle;
 use App\Models\Inventario\InventarioSolicitarDetalle;
 use App\Models\Inventario\InventarioSolicitarStock;
 use App\Models\Inventario\InventarioSolicitudDetalle;
 use App\Models\Inventario\InventarioStock;
 use App\Models\Inventario\SolicitudRecibidaStock;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 
 class SolicitudStockController extends Controller
 {
@@ -51,22 +53,33 @@ class SolicitudStockController extends Controller
 
             return response()->json([
                 'message' => 'Solicitud creada con múltiples productos.',
-                'solicitud_id' => $solicitud->id
+                'solicitud_id' => $solicitud->id,
+                'success' => true
+
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Error al procesar la solicitud.',
-                'details' => $e->getMessage()
+                'details' => $e->getMessage(),
+                'success' => false
             ], 500);
         }
     }
 
     public function getSolicitudesAll()
     {
+        //  Tomo el branch_id activo desde la sesión      
+        $branchId = Session::get('active_branch_id') ?? null;
+
+        // Si necesitas el almacen correspondiente a ese branch
+        $almacenId = DB::table('almacenes')
+            ->where('id', $branchId)
+            ->value('id');
+
         $solicitudes = InventarioSolicitarStock::with([
-            'almacensolicitante' 
+            'almacensolicitante'
         ])
-            ->where('almacen_proveedor_id', Auth::id())
+            ->where('almacen_proveedor_id',  $almacenId)
             ->where('estado', 'Pendiente')
             ->get();
         return response()->json(SolicitudRecibidaStockResource::collection($solicitudes));
@@ -121,15 +134,25 @@ class SolicitudStockController extends Controller
         }
 
         // Recepción
-        InventarioRecepcionProducto::create([
+        $ordenRecepcion = InventarioRecepcionProducto::create([
             'origen_id' => $solicitud->almacen_solicitante_id,
             'destino_id' => $solicitud->almacen_proveedor_id,
             'movimiento_id' => $solicitud->id,
-            'tipo_movimiento' => 'restribuccion',
+            'tipo_recepcion' => 'restribuccion',
             'fecha_recepcion' => now(),
             'estado' => 'Pendiente',
             'usuario_creacion' => Auth::id(),
         ]);
+
+        // Crear detalle por cada producto aprobado
+        foreach ($request->productos as $producto) {
+            InventarioRecepcionProductoDetalle::insert([
+                'recepcion_id' => $ordenRecepcion->id,
+                'producto_id' => $producto['producto_id'],
+                'cantidad_esperada' => abs($producto['cantidad_aprobada']),
+            ]);
+        }
+
 
         // Orden de entrega
         $ordenEntrega = InventarioOrdenEntrega::create([
@@ -147,13 +170,14 @@ class SolicitudStockController extends Controller
             InventarioOrdenEntregaDetalle::create([
                 'orden_entrega_id' => $ordenEntrega->id,
                 'producto_id' => $producto['producto_id'],
-                'cantidad_enviada' => -abs($producto['cantidad_aprobada']),
+                'cantidad_enviada' => abs($producto['cantidad_aprobada']),
             ]);
         }
 
         return response()->json([
             'message' => 'Solicitud aceptada y detalles generados.',
             'solicitud_id' => $solicitud->id,
+            'success' => true
         ]);
     }
 
@@ -172,6 +196,7 @@ class SolicitudStockController extends Controller
         return response()->json([
             'message' => 'Solicitud cancelada correctamente.',
             'solicitud_id' => $original->id,
+            'success' => true
         ]);
     }
 
@@ -180,7 +205,7 @@ class SolicitudStockController extends Controller
     {
         $userId = Auth::id();
 
-        $solicitudes = SolicitudRecibidaStock::with(['almacensolicitante','detalles.producto'])
+        $solicitudes = SolicitudRecibidaStock::with(['almacensolicitante', 'detalles.producto'])
             ->where(function ($query) use ($userId) {
                 $query->where('estado', 'Pendiente')
                     ->where('usuario_creacion', $userId);
@@ -198,10 +223,17 @@ class SolicitudStockController extends Controller
 
     public function stockDisponible($idProducto)
     {
-        $userId = Auth::id();
+        //  Tomo el branch_id activo desde la sesión      
+        $branchId = Session::get('active_branch_id') ?? null;
+
+        // Si necesitas el almacen correspondiente a ese branch
+        $almacenId = DB::table('almacenes')
+            ->where('id', $branchId)
+            ->value('id');
+
         $solicitud = InventarioStock::with(['producto', 'almacen'])
             ->where('producto_id', $idProducto)
-            ->where('almacen_id', $userId)
+            ->where('almacen_id', $almacenId)
             ->get();
 
         return  response()->json($solicitud);

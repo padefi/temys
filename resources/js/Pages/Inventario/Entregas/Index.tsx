@@ -462,7 +462,8 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                                         {expandedRows.includes(entrega.id) ? "Ocultar detalle" : "Mostrar detalle"}
                                                     </Button>
                                                 </TableCell>
-                                                <TableCell>{safeDateTimeFormat(entrega.fecha_creacion)}</TableCell>
+                                                <TableCell>{safeDateTimeFormat(entrega.fecha_creacion)}                                                   
+                                                </TableCell>
                                                 <TableCell>{entrega.usuario_creacion || '-'}</TableCell>
                                                 <TableCell>
                                                     {/* Acciones - Cuando el estado de la Orden es PENDIENTE */}

@@ -6,16 +6,17 @@ import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Textarea } from "@/Components/ui/textarea";
 import axios from "axios";
-import { StockItem ,AlmacenStock} from "./Types";
+import { StockItem,AlmacenStock ,StockInventarioItem} from "../../../../types/Inventario"; 
 
-interface SolicitarStockProps {
+
+ interface SolicitarStockProps { 
     open: boolean;
     onClose: React.Dispatch<React.SetStateAction<boolean>>;
-    productos: StockItem[];
-}
+    productos: StockInventarioItem[];
+} 
 
 type SelectedProduct = {
-    producto: StockItem;
+    producto: StockInventarioItem;
     cantidad: number;
 };
 
@@ -32,8 +33,10 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
     const [selectedItems, setSelectedItems] = useState<SelectedProduct[]>([]);
     const [erroresCantidad, setErroresCantidad] = useState<Record<number, string>>({});
 
+      
     useEffect(() => {
-        const selectedProductoIds = selectedItems.map((item) => item.producto.producto.id);
+        const selectedProductoIds = selectedItems.map((item) => item.producto.productoId);
+        console.log(selectedProductoIds)
 
         if (selectedProductoIds.length === 0) {
             setAlmacenes([]);
@@ -47,7 +50,7 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
             .catch((err) => console.error("Error al cargar almacenes", err));
     }, [selectedItems]);
 
-    const toggleProducto = (item: StockItem) => {
+    const toggleProducto = (item: StockInventarioItem) => {
         setSelectedItems((prev) => {
             const exists = prev.find((p) => p.producto.id === item.id);
             if (exists) {
@@ -71,11 +74,11 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
     const handleSubmit = async () => {
         if (!almacenProveedor || selectedItems.length === 0) return;
         setLoading(true);
- 
+    
         try {
-            const payload = selectedItems.map((item) => ({
-                producto_id: item.producto.producto.id,
-                almacen_solicitante_id: item.producto.almacen.id,
+            const payload = selectedItems.map((item) => ({             
+                producto_id: item.producto.productoId,
+                almacen_solicitante_id: item.producto.almacenId,
                 almacen_proveedor_id: parseInt(almacenProveedor),
                 cantidad: item.cantidad,
                 prioridad,
@@ -112,11 +115,11 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
                         <div key={item.id} className="p-4 border rounded-md bg-gray-50 space-y-2">
                             <div className="flex justify-between items-center">
                                 <div>
-                                    <Label className="font-semibold">{item.producto.nombre}</Label>
+                                    <Label className="font-semibold">{item.producto}</Label>
                                     <p className="text-sm text-muted-foreground">
                                         Stock actual: <strong>{item.cantidad_actual}</strong> | Mínimo:
                                         <strong>{item.stock_minimo}</strong> | Almacén:
-                                        {item.almacen.nombre}
+                                        {item.almacen}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">

@@ -6,6 +6,7 @@ use App\Models\AjusteInventario;
 use App\Models\Compras\OrdenCompra;
 use App\Models\Compras\OrdenCotizacion\OrdenCotizacion;
 use App\Models\ControlAcceso\User;
+use App\Models\Inventario\InventarioAjuste;
 use App\Models\Inventario\InventarioMovimientoStock;
 use App\Models\Inventario\InventarioStock;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -93,9 +94,11 @@ class Almacen extends Model
         return $this->hasMany(InventarioMovimientoStock::class, 'almacen_destino_id');
     }
 
-    public function ajustesInventario()
+    /*public function ajustesInventario()
     {
-        return $this->hasMany(AjusteInventario::class, 'almacen_destino_id');
+
+        return $this->hasMany(InventarioAjuste::class, 'almacen_destino_id');
     }
+
 
 }
