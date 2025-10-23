@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { Inertia } from '@inertiajs/inertia'
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { router } from "@inertiajs/react";
 
 export default function Create() {
   const [form, setForm] = useState({
@@ -21,7 +21,7 @@ export default function Create() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    Inertia.post("/productos", form);
+    router.post("/productos", form);
   };
 
   return (
