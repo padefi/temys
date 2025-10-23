@@ -1,7 +1,7 @@
 "use client"
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/Components/ui/button"
+import { Button } from "@/components/ui/button" 
 import { Badge } from "@/Components/ui/badge"
 import { Separator } from "@/Components/ui/separator"
 import { Calendar, Package, User, TrendingUp, History } from "lucide-react"

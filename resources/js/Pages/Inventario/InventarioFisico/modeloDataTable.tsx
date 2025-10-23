@@ -3,67 +3,84 @@ import {
   getCoreRowModel,
   flexRender
 } from '@tanstack/react-table';
-import { getStockColumns } from './Columns'; 
+import { getStockColumns } from './Columns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import { AjusteSeleccionado, StockInventarioItem } from '@/types/Inventario';
 import { usePermissions } from '@/composables/permissions';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { AjusteInventarioModal } from './modals/ModalConfirmarAjuste';
+import { Footer } from '@/Pages/UserModulePanel/footer';
+import { links } from '@/types/links';
+import { meta } from '@/types/meta';
+import { useDataTableParams } from '@/hooks/useDataTableParams';
+import { DataTableSkeleton } from '@/Components/DataTableSkeleton';
 
 interface Props {
-  stock: StockInventarioItem[];
+  data: StockInventarioItem[];
+  links: links;
+  meta: meta;
   setStock: React.Dispatch<React.SetStateAction<StockInventarioItem[]>>;
-  editedRows: Record<number, number>;
-  setEditedRows: React.Dispatch<React.SetStateAction<Record<number, number>>>;
 }
 
 export function StockTable({
-  stock,
+  data,
+  links,
+  meta,
   setStock,
-  editedRows,
-  setEditedRows
+
 }: Props) {
+  const { params, updateParams, isLoading } = useDataTableParams();
   const { hasSubmenuPermission, hasRole } = usePermissions();
-  const [editingCell, setEditingCell] = useState<{ rowId: number; field: string } | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const [ajusteSeleccionado, setAjusteSeleccionado] = useState<AjusteSeleccionado | null>(null);
   const [isModalOpenInventario, setIsModalOpenInventario] = useState(false);
-
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingCell, setEditingCell] = useState<{ id: number, field: string }[]>([]);
   const handleCellClick = (id: number, field: string) => {
-    setEditingCell({ rowId: id, field });
+
+
+    if (!editingCell.some(cell => cell.id === id && cell.field === field)) {
+      setEditingCell([...editingCell, { id, field }]);
+    }
   };
 
 
-  console.log(stock)
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    id: number,
-    field: keyof StockInventarioItem
-  ) => {
-    const value = e.target.value;
-    if (!/^\d+$/.test(value)) {
-      toast.error("Solo se permiten números");
-      return;
-    }
-    const num = Number(value);
-    if (num === 0) {
-      toast.error("El número no puede ser 0");
-      return;
-    }
+
+  const handleInputChange = (value: number, id: number, field: keyof StockInventarioItem) => {
     setStock(prev =>
-      prev.map(item => item.id === id ? { ...item, [field]: num } : item)
+      prev.map(item => (item.id === id ? { ...item, [field]: value } : item))
     );
-    setEditedRows(prev => ({ ...prev, [id]: num }));
+    setIsEditing(true)
+
   };
 
-  const handleInputBlur = () => {
-    if (editingCell) {
-      const editedItem = stock.find(item => item.id === editingCell.rowId);
-      if (!editedItem) return;
-    }
-  };
+  /* 
+    const handleInputChange = (
+      e: React.ChangeEvent<HTMLInputElement>,
+      id: number,
+      field: keyof StockInventarioItem
+    ) => {
+      setIsEditing(true)
+  
+      const value = e.target.value;
+      if (!/^\d+$/.test(value)) {
+        toast.error("Solo se permiten números");
+        return;
+      }
+      const num = Number(value);
+      if (num === 0) {
+        toast.error("El número no puede ser 0");
+        return;
+  
+      }
+      setStock(prev =>
+        prev.map(item => item.id === id ? { ...item, [field]: num } : item)
+      );
+  
+    };
+   */
+
 
   const calculaDiferencia = (aMano: number, contada: number) => {
     if (contada > 0) {
@@ -72,7 +89,8 @@ export function StockTable({
   };
 
   const handleAplicarFila = async (id: number) => {
-    const row = stock.find(item => item.id === id);
+    const row = data.find(item => item.id === id);
+
     if (!row) return;
     try {
       const response = await axios.post(`/actualizar-cantidad-contadas/${id}`, {
@@ -80,10 +98,8 @@ export function StockTable({
         motivo: 'Ajuste manual individual',
       });
       toast.success(response.data.message);
-      const updated = { ...editedRows };
-      delete updated[id];
-      setEditedRows(updated);
-      setEditingCell(null);
+
+      setEditingCell([]);
     } catch (error: any) {
       toast.error(error.response.data.message);
       console.error("Error al aplicar fila:", error);
@@ -94,14 +110,12 @@ export function StockTable({
     setStock(prev =>
       prev.map(item => item.id === id ? { ...item, cantidad_contada: 0 } : item)
     );
-    const updated = { ...editedRows };
-    delete updated[id];
-    setEditedRows(updated);
-    setEditingCell(null);
+
+    setEditingCell(prev => prev.filter(cell => cell.id !== id));
   };
 
 
-    const getStockStatus = (actual: any, minimo: any) => {
+  const getStockStatus = (actual: any, minimo: any) => {
     if (actual === 0) return { status: "Sin stock", color: "destructive" };
     if (actual <= minimo) return { status: "Stock bajo", color: "custom" };
     if (actual <= minimo * 1.5)
@@ -110,28 +124,23 @@ export function StockTable({
   };
 
 
-
-
-
   const columns = getStockColumns({
     editingCell,
-    handleCellClick,
     handleInputChange,
-    handleInputBlur,
-    inputRef,
+    handleCellClick,
+    isEditing,
     setAjusteSeleccionado,
     setIsModalOpenInventario,
     hasSubmenuPermission,
     hasRole,
     calculaDiferencia,
     getStockStatus,
-    editedRows,
     handleAplicarFila,
     handleLimpiarFila
   });
 
   const table = useReactTable({
-    data: stock,
+    data: data,
     columns,
     getCoreRowModel: getCoreRowModel()
   });
@@ -150,21 +159,30 @@ export function StockTable({
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.map(row => (
-            <TableRow key={row.id}>
-              {row.getVisibleCells().map(cell => (
-                <TableCell key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
+        <TableBody className="text-center">
+          {isLoading ? (
+            <DataTableSkeleton columnCount={9} rowCount={5} showHeaders={false} />
+          ) : table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map(row => (
+              <TableRow key={row.id}>
+                {row.getVisibleCells().map(cell => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))) : (<TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                No hay resultados.
+              </TableCell>
+            </TableRow>)}
         </TableBody>
       </Table>
 
+      <Footer links={links} meta={meta} updateParams={updateParams} isLoading={isLoading} />
+
       {isModalOpenInventario && ajusteSeleccionado && (
-       
+
         <AjusteInventarioModal
           isOpen={isModalOpenInventario}
           onClose={() => setIsModalOpenInventario(false)}

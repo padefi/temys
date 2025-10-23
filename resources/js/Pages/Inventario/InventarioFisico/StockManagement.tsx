@@ -1,26 +1,28 @@
 import { useEffect, useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/Components/ui/tooltip";
-import { Tabs, TabsContent } from "@/Components/ui/tabs";
 import { usePermissions } from "@/composables/permissions";
-import { Button } from "@/Components/ui/button";
-import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Bell, Plus } from "lucide-react";
 import { usePage } from "@inertiajs/react";
 import { Head } from "@inertiajs/react";
 import { PageProps as InertiaPageProps } from "@inertiajs/core";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { SolicitarStock } from "./modals/ModalCrearSolicitudStock";
-import { StockItem } from "../../../types/Inventario";
 import { StockInventarioItem } from "../../../types/Inventario";
-import { StockFilters } from "./StockFilters";
-import { CardTable } from "./CardTable";
 import { StockTable } from "./modeloDataTable";
-import { toast } from "sonner";
-import axios from "axios";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
+import { links } from "@/types/links";
+import { meta } from "@/types/meta";
+import { EstadisticaInventario } from "./EstadisticasInventario";
+import axios from "axios";
+import { Badge } from "@/Components/ui/badge";
+import SolicitudesStock from "./modals/ModalSolicitudesEntrantes";
 
 type PageProps = InertiaPageProps & {
   stocks: {
     data: StockInventarioItem[];
+    links: links;
+    meta: meta;
   };
 };
 
@@ -30,11 +32,10 @@ export default function StockManagement() {
   const { stocks } = usePage<PageProps>().props;
   const { hasSubmenuPermission } = usePermissions();
   const [stock, setStock] = useState<StockInventarioItem[]>([]);
-  const [filteredStock, setFilteredStock] = useState<StockItem[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [editedRows, setEditedRows] = useState<Record<number, number>>({})
-
-
+  const [solicitudes, setSolicitudes] = useState()
+  const [solicitudesStockDialogOpen, setSolicitudesStockDialogOpen] = useState(false);
+  
+/* 
   const handleAplicarTodo = async () => {
     const dataRows = Object.entries(editedRows).map(([id, cantidad]) => ({
       id: Number(id),
@@ -53,14 +54,13 @@ export default function StockManagement() {
       toast.error(error.response.data.message)
       console.error("Error al aplicar todo:", error);
     }
-  };
-
-
+  }; */
 
   useEffect(() => {
     setStock(stocks.data);
   }, [stocks]);
 
+  console.log(stocks)
   const handleAbrirModal = () => {
     const productosFiltrados = stock.filter(
       (item) => item.cantidad_actual <= item.stock_minimo
@@ -70,6 +70,17 @@ export default function StockManagement() {
 
   };
 
+    const handleSolicitudes = async () => {
+    try {
+      const res = await axios.get(`/solicitudes-stock/`)
+      setSolicitudes(res.data)
+      setSolicitudesStockDialogOpen(true)
+    } catch (err) {
+      console.error("Error al cargar detalles de la solicitud", err)
+    }
+  }
+
+
   return (
     <AuthenticatedLayout
       header={
@@ -78,6 +89,17 @@ export default function StockManagement() {
       <Head title="Inventario" />
       <div className="mx-auto w-full p-6 space-y-6">
         <div className=" flex justify-between">
+            <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="lg" onClick={() => handleSolicitudes()}>
+                <Badge variant={"success"}>1</Badge>
+                <Bell className="h-4 " />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Solicitudes de stock</p>
+            </TooltipContent>
+          </Tooltip>
           {hasSubmenuPermission('inventarioFisico', 'confirm') &&
             <Tooltip>
               <TooltipTrigger asChild>
@@ -89,33 +111,31 @@ export default function StockManagement() {
                 <p>Solicitudes de stock</p>
               </TooltipContent>
             </Tooltip>}
-          <span>inventario Fisico</span>
+         {/*  <span>inventario Fisico</span> */}
         </div>
         
-        <StockFilters
-          stock={stock}
-
-        />
+        <EstadisticaInventario data={stock}></EstadisticaInventario>
+    
         <Card>
           <CardHeader className="flex justify-between">
             <div>
               <CardTitle>Inventario de Productos</CardTitle>
               <CardDescription>Lista completa de productos con información de stock y ubicación</CardDescription>
             </div>
-            <div>
+           {/*  <div>
               {hasSubmenuPermission('inventarioFisico', 'update') &&
                 <Button size="sm" variant="outline" onClick={handleAplicarTodo} className="text-xs" disabled={Object.keys(editedRows).length === 0} >
                   <Plus className="h-3 w-3 mr-1" /> Aplicar todo
                 </Button>
               }
-            </div>
+            </div> */}
           </CardHeader>
           <CardContent>
             <StockTable
-              stock={stock}
+              data={stock}
+              links={stocks.links}
+              meta={stocks.meta}             
               setStock={setStock}
-              editedRows={editedRows}
-              setEditedRows={setEditedRows}
             />
           </CardContent>
         </Card>
@@ -123,6 +143,7 @@ export default function StockManagement() {
 
       {/* Dialog para solicitar stock */}
       {solicitudDialogOpen && <SolicitarStock open={solicitudDialogOpen} onClose={() => setsolicitudDialogOpen(false)} productos={productosDisponibles} />}
+        {solicitudesStockDialogOpen && <SolicitudesStock isOpen={solicitudesStockDialogOpen} onClose={() => setSolicitudesStockDialogOpen(false)} requests={solicitudes}></SolicitudesStock>}
     </AuthenticatedLayout>
   );
 }

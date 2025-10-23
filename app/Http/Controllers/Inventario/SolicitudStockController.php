@@ -200,26 +200,30 @@ class SolicitudStockController extends Controller
         ]);
     }
 
+public function solicitudesAceptadas()
+{
+    $branchId = Session::get('active_branch_id');
+    $almacenId = $branchId; // si el branch representa el almacén actual
+    $userId = Auth::id();
 
-    public function solicitudesAceptadas()
-    {
-        $userId = Auth::id();
+    $solicitudes = SolicitudRecibidaStock::with(['almacensolicitante', 'detalles.producto'])
+        ->where(function ($query) use ($userId, $almacenId) {
+            // Solicitudes pendientes creadas desde mi almacén
+            $query->where('estado', 'Pendiente')
+                  ->where('almacen_solicitante_id', $almacenId)
+                  ->where('usuario_creacion', $userId);
+        })
+        ->orWhere(function ($query) use ($userId, $almacenId) {
+            // Solicitudes aceptadas o canceladas por otro
+            $query->whereIn('estado', ['Aceptada', 'Cancelada'])
+                  ->where('almacen_solicitante_id', $almacenId)
+                  ->where('usuario_actualizacion', '!=', $userId);
+        })
+        ->get();
 
-        $solicitudes = SolicitudRecibidaStock::with(['almacensolicitante', 'detalles.producto'])
-            ->where(function ($query) use ($userId) {
-                $query->where('estado', 'Pendiente')
-                    ->where('usuario_creacion', $userId);
-            })
-            ->orWhere(function ($query) use ($userId) {
-                // Aceptadas o Canceladas por otros
-                $query->whereIn('estado', ['Aceptada', 'Cancelada'])
-                    ->whereColumn('almacen_solicitante_id', '!=', 'usuario_actualizacion')
-                    ->where('usuario_actualizacion', '!=', $userId);
-            })
-            ->get();
+    return response()->json(SolicitudRecibidaDetalleResource::collection($solicitudes));
+}
 
-        return response()->json(SolicitudRecibidaDetalleResource::collection($solicitudes));
-    }
 
     public function stockDisponible($idProducto)
     {

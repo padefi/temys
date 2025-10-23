@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Inventario\Reportes;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Inventario\DataExistenciasResource;
+use App\Models\Inventario\InventarioAjuste;
 use App\Models\Inventario\InventarioStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -165,4 +166,6 @@ class ExistenciasController extends Controller
 
         return response()->json(['data' => $stock, 'success' => true]);
     }
+
+   
 }

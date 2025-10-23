@@ -51,6 +51,9 @@ class DatabaseSeeder extends Seeder
             InventarioMovimientoStockSeeder::class,
             InventarioRelacionUserAlmacenSeeder::class,
             PlanCuentasSeeder::class,
+            ProvinciaSeeder::class,
+            LocalidadSeeder::class,
+            CalleSeeder::class,
         ]);
     }
 }
