@@ -24,9 +24,6 @@ class RecepcionesController extends Controller
             ->value('id');
 
             
-
-
-
         $recepciones=QueryBuilder::for(
             InventarioRecepcionProducto::query()
             ->SELECT(
