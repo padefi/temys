@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/Com
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/Components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Input } from "@/Components/ui/input";
-import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import { Search, Truck, CheckCircle2, XCircle, Clock10 } from "lucide-react";
 import { useForm } from '@inertiajs/react';
@@ -13,6 +12,19 @@ import { router } from '@inertiajs/react';
 import { safeDateFormat, safeDateTimeFormat  } from '@/utils/formatterFunctions';
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from "axios";
+import { toast } from "sonner";
+import Swal from 'sweetalert2';
+import { Textarea } from "@/Components/ui/textarea";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+/* PDF */
+//@ts-ignore
+import pdfMake from "pdfmake/build/pdfmake";
+//@ts-ignore
+import pdfFonts from "pdfmake/build/vfs_fonts";
+import type { TDocumentDefinitions } from "pdfmake/interfaces";
+pdfMake.vfs = pdfFonts.vfs;
 
 interface DetalleProducto {
     nombre: string;
@@ -20,15 +32,21 @@ interface DetalleProducto {
     fecha_creacion: string;
     usuario_creacion: string;
 }
+interface Cancelacion {
+    motivo: string;
+    fecha: string;
+    usuario: string;
+}
 interface Entrega {
     id: number;
-    fecha_envio: string;
-    fecha_creacion: string;
+    fecha_envio: string | null;
+    fecha_creacion: string | null;
     usuario_creacion: string;
     estado: string;
     origen: string;
     destino: string;
     productos: DetalleProducto[];
+    cancelacion?: Cancelacion;
 }
 interface Almacen {
     id: number;
@@ -74,6 +92,15 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
         return true;
     });
     const [expandedRows, setExpandedRows] = useState<number[]>([]);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [motivo, setMotivo] = useState("");
+    const [modalGenerarRemito, setModalGenerarRemito] = useState(false);
+    const [modalRemitoAbierto, setModalRemitoAbierto] = useState(false);
+    const [remitoActual, setRemitoActual] = useState<Entrega | null>(null);
+    const [entregaSeleccionada, setEntregaSeleccionada] = useState<Entrega | null>(null);
+    const [mostrarMotivo, setMostrarMotivo] = useState<{ [key: number]: boolean }>({});
+    const [modalBloqueado, setModalBloqueado] = useState(false);
+
     const { data, setData, get, processing } = useForm({
         producto: filters.producto || '',
         estado: filters.estado || 'all', 
@@ -93,15 +120,11 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
         setIsLoading(true);
       
         router.get(route('entregas'), filtros, {
-          preserveState: true,
-          preserveScroll: true,
-          onFinish: () => setIsLoading(false), 
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => setIsLoading(false), 
         });
     };
-
-    /* useEffect(() => {
-        submit();
-    }, []); */
 
     useEffect(() => {
         localStorage.setItem('showFilters', String(showFilters));
@@ -109,12 +132,12 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
 
     const resetFilters = () => {
         setData({
-          producto: '',
-          estado: 'all',
-          origen_id: 'all',
-          destino_id: 'all',
-          fecha_desde: '',
-          fecha_hasta: '',
+            producto: '',
+            estado: 'all',
+            origen_id: 'all',
+            destino_id: 'all',
+            fecha_desde: '',
+            fecha_hasta: '',
         });
         router.get(route('entregas'), {}, { preserveState: false });
     };
@@ -123,6 +146,100 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
         setExpandedRows(prev =>
           prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]
         );
+    };
+
+    const openCancelarModal = (entrega: any) => {
+        setEntregaSeleccionada(entrega);
+        setMotivo('');
+        setModalOpen(true);
+    };
+
+    const abrirPrevisualizacionRemito = (entrega: Entrega) => {
+        setEntregaSeleccionada(entrega);
+        setModalGenerarRemito(true);
+    };
+
+    const confirmarEnvio = async (entrega: Entrega) => {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: 'Una vez confirmado, la orden será marcada como enviada y se generará el remito correspondiente.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, confirmar',
+            cancelButtonText: 'Cancelar',
+            buttonsStyling: false,
+            customClass: {
+                confirmButton: 'bg-green-900 hover:bg-green-700 text-white font-bold px-5 py-2 mx-3 rounded cursor-pointer focus:outline-none focus:shadow-outline',
+                cancelButton: 'bg-red-600 hover:bg-red-500 text-white font-bold px-5 py-2 rounded cursor-pointer focus:outline-none focus:shadow-outline',
+            },
+        }).then((result) => {
+            if (result.isConfirmed) {
+                axios.post(route('entregas.confirmar-envio', entrega.id))
+                .then(() => {
+                    generarRemitoPdf(entrega); //Se pasa el objeto directamente
+                    router.reload({ only: ['entregas'] });
+                })
+                .catch(() => {
+                    Swal.fire('Error', 'No se pudo confirmar la orden.', 'error');
+                });
+            }
+        });
+    };
+
+    const generarRemitoPdf = (entrega: Entrega) => {
+        //Abre el PDF ya generado por mPDF en el backend
+        window.open(route('remitos.mostrar', entrega.id), '_blank');
+    };
+
+    const confirmarCancelacion = (id: number) => {
+        setModalBloqueado(true); //Desactiva el trapping de Radix(dialog) mientras SweetAlert está abierto
+    
+        Swal.fire({
+            title: '¿Confirmar cancelación?',
+            text: "Esta acción no se puede deshacer",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, cancelar',
+            cancelButtonText: 'No',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            backdrop: true, //Fuerza a SweetAlert a cubrir completamente el fondo
+            focusConfirm: false, //Evita que Radix(dialog) vuelva a tomar el foco
+            buttonsStyling: false, //Necesario para habilitar estilos personalizados
+            customClass: {
+                confirmButton: 'bg-red-600 text-white hover:bg-red-500 font-bold px-5 py-2 mx-3 rounded cursor-pointer focus:outline-none focus:shadow-outline',
+                cancelButton: 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 font-bold px-5 py-2 rounded cursor-pointer focus:outline-none focus:shadow-outline',
+                popup: 'z-[9999]', //Fuerza el SweetAlert al frente
+            }
+        }).then((result) => {
+            setModalBloqueado(false); //Reactivamos el trapping normal del Dialog
+    
+            if (result.isConfirmed) {
+                axios.post(route('entregas.cancelar', id), { motivo })
+                    .then(() => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Cancelado',
+                            text: 'La orden fue cancelada.',
+                            customClass: { popup: 'z-[9999]', }
+                        });
+                        setModalOpen(false);
+                        router.reload({ only: ['entregas'] });
+                    })
+                    .catch(() => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'No se pudo cancelar la orden.',
+                            customClass: { popup: 'z-[9999]' }
+                        });
+                    });
+            }
+        });
+    };
+    
+    const toggleMostrarMotivo = (id: number) => {
+        setMostrarMotivo(prev => ({ ...prev, [id]: !prev[id] }));
     };
 
     return (
@@ -144,8 +261,8 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                             onClick={() => setShowFilters(prev => !prev)}
                             className={`min-w-[150px] text-sm px-3 py-1 border rounded-md shadow-sm transition-colors duration-200 cursor-pointer
                             ${showFilters 
-                                ? 'bg-red-100 text-red-700 hover:bg-red-200 border-red-200' 
-                                : 'bg-green-100 text-green-700 hover:bg-green-200 border-green-200'
+                                ? 'bg-red-50 text-red-700 hover:bg-red-100 border-red-100' 
+                                : 'bg-green-50 text-green-700 hover:bg-green-100 border-green-100'
                             }`}
                         >
                             <motion.div
@@ -288,6 +405,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                         <TableHead>Productos</TableHead>
                                         <TableHead>Fecha Creación</TableHead>
                                         <TableHead>Usuario</TableHead>
+                                        <TableHead>Acciones</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -298,42 +416,40 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                                 <TableCell>{entrega.destino}</TableCell>
                                                 <TableCell>{safeDateFormat(entrega.fecha_envio)}</TableCell>
                                                 <TableCell>
-                                                {entrega.estado === "Entregado" && (
-                                                    <span className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">
-                                                        <CheckCircle2 className="inline h-4 w-4 mr-1" />
-                                                        Entregado
-                                                    </span>
-                                                    /* <Badge variant="success"><CheckCircle2 className="inline h-4 w-4 mr-1" />Entregado</Badge> */
-                                                )}
-                                                {entrega.estado === "Enviado" && (
-                                                    <span className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800">
-                                                        <Truck className="inline h-4 w-4 mr-1" />
-                                                        Enviado
-                                                    </span>
-                                                )}
-                                                {entrega.estado === "Pendiente" && (
-                                                    <span className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-orange-100 text-orange-800">
-                                                        <Clock10 className="inline h-4 w-4 mr-1" />
-                                                        Pendiente
-                                                    </span>
-                                                )}
-                                                {entrega.estado === "Cancelado" && (
-                                                    <span className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">
-                                                        <XCircle className="inline h-4 w-4 mr-1" />
-                                                        Cancelado
-                                                    </span>
-                                                    /*<Badge variant="destructive"><XCircle className="inline h-4 w-4 mr-1" />Cancelado</Badge>*/
-                                                )}
+                                                    {entrega.estado === "Entregado" && (
+                                                        <span className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">
+                                                            <CheckCircle2 className="inline h-4 w-4 mr-1" />
+                                                            Entregado
+                                                        </span>
+                                                    )}
+                                                    {entrega.estado === "Enviado" && (
+                                                        <span className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800">
+                                                            <Truck className="inline h-4 w-4 mr-1" />
+                                                            Enviado
+                                                        </span>
+                                                    )}
+                                                    {entrega.estado === "Pendiente" && (
+                                                        <span className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-orange-100 text-orange-800">
+                                                            <Clock10 className="inline h-4 w-4 mr-1" />
+                                                            Pendiente
+                                                        </span>
+                                                    )}
+                                                    {entrega.estado === "Cancelado" && (
+                                                        <span className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">
+                                                            <XCircle className="inline h-4 w-4 mr-1" />
+                                                            Cancelado
+                                                        </span>
+                                                    )}
                                                 </TableCell>
                                                 <TableCell>
                                                     <Button
                                                         size="sm"
                                                         onClick={() => toggleRow(entrega.id)}
-                                                        className={`min-w-[150px] flex items-center gap-1 justify-center border rounded-md px-3 py-1 font-medium shadow-sm transition-colors duration-200 cursor-pointer
+                                                        className={`min-w-[150px] flex items-center gap-1 justify-center border rounded-md px-3 py-4 font-medium shadow-sm transition-colors duration-200 cursor-pointer focus:outline-none focus:shadow-outline
                                                             ${
                                                             expandedRows.includes(entrega.id)
-                                                                ? 'bg-red-100 text-red-700 hover:bg-red-200 border-red-200'
-                                                                : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-emerald-200'
+                                                                ? 'bg-red-50 text-red-700 hover:bg-red-100 border-red-100'
+                                                                : 'bg-green-50 text-green-700 hover:bg-green-100 border-green-100'
                                                             }
                                                         `}
                                                     >
@@ -349,19 +465,86 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                                 <TableCell>{safeDateTimeFormat(entrega.fecha_creacion)}                                                   
                                                 </TableCell>
                                                 <TableCell>{entrega.usuario_creacion || '-'}</TableCell>
+                                                <TableCell>
+                                                    {/* Acciones - Cuando el estado de la Orden es PENDIENTE */}
+                                                    {entrega.estado === 'Pendiente' && (
+                                                        <div className="flex gap-2 text-center">
+                                                            <Button 
+                                                                variant="success" 
+                                                                className="hover:bg-green-700 cursor-pointer focus:outline-none focus:shadow-outline"
+                                                                onClick={() => abrirPrevisualizacionRemito(entrega)}
+                                                            >
+                                                                Confirmar Envío
+                                                            </Button>
+                                                            <Button 
+                                                                variant="destructive"
+                                                                className="hover:bg-red-500 cursor-pointer focus:outline-none focus:shadow-outline"
+                                                                onClick={() => openCancelarModal(entrega)}
+                                                            >
+                                                                Cancelar
+                                                            </Button>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Acciones - Cuando el estado de la Orden es ENVIADO */}
+                                                    {entrega.estado === 'Enviado' && (
+                                                        <div className="flex gap-2 text-center">
+                                                            <Button
+                                                                className="bg-sky-50 border border-sky-100 text-sky-700 hover:bg-sky-100 font-bold shadow-sm cursor-pointer px-3 py-4 focus:outline-none focus:shadow-outline"
+                                                                onClick={() => {
+                                                                setRemitoActual(entrega);
+                                                                setModalRemitoAbierto(true);
+                                                                }}
+                                                            >
+                                                                Mostrar Remito
+                                                            </Button>
+                                                            <Button 
+                                                                variant="destructive" 
+                                                                className="hover:bg-red-500 cursor-pointer focus:outline-none focus:shadow-outline" 
+                                                                onClick={() => openCancelarModal(entrega)}
+                                                            >
+                                                                Cancelar
+                                                            </Button>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Acciones - Cuando el estado de la Orden es CANCELADO */}            
+                                                    {entrega.estado === 'Cancelado' && entrega.cancelacion && (
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => toggleMostrarMotivo(entrega.id)}
+                                                            className={`min-w-[150px] flex items-center gap-1 justify-center border px-3 py-4 font-medium shadow-sm transition-colors duration-200 cursor-pointer focus:outline-none focus:shadow-outline
+                                                                ${
+                                                                    mostrarMotivo[entrega.id]
+                                                                        ? 'bg-red-50 text-red-700 hover:bg-red-100 border-red-100'
+                                                                        : 'bg-green-50 text-green-700 hover:bg-green-100 border-green-100'
+                                                                }
+                                                            `}
+                                                        >
+                                                            <motion.div
+                                                                animate={{ rotate: mostrarMotivo[entrega.id] ? 180 : 0 }}
+                                                                transition={{ duration: 0.3 }}
+                                                            >
+                                                                <ChevronDown className="w-4 h-4" />
+                                                            </motion.div>
+                                                            {mostrarMotivo[entrega.id] ? "Ocultar motivo" : "Mostrar motivo"}
+                                                        </Button>
+                                                    )}
+                                                </TableCell>
                                             </TableRow>
 
                                             {/* Animación con framer-motion */}
+                                            {/* Detalle de los Productos asociados a la Orden */}
                                             <AnimatePresence>
                                                 {expandedRows.includes(entrega.id) && (
                                                     <TableRow>
-                                                        <TableCell colSpan={7} className="p-0 pb-2">
+                                                        <TableCell colSpan={8} className="p-0 pb-2">
                                                             <motion.div
-                                                            initial={{ height: 0, opacity: 0 }}
-                                                            animate={{ height: "auto", opacity: 1 }}
-                                                            exit={{ height: 0, opacity: 0 }}
-                                                            transition={{ duration: 0.3, ease: "easeInOut" }}
-                                                            style={{ overflow: "hidden"}}
+                                                                initial={{ height: 0, opacity: 0 }}
+                                                                animate={{ height: "auto", opacity: 1 }}
+                                                                exit={{ height: 0, opacity: 0 }}
+                                                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                                                style={{ overflow: "hidden"}}
                                                             >
                                                                 <div className="bg-white shadow-inner border border-gray-200 rounded-b-md">
                                                                     <div className="p-1.5">
@@ -394,6 +577,52 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                                     </TableRow>
                                                 )}
                                                 </AnimatePresence>
+
+                                                {/* Motivo Cancelación de la Orden */}
+                                                <AnimatePresence>
+                                                    {entrega.estado === 'Cancelado' && mostrarMotivo[entrega.id] && entrega.cancelacion && (
+                                                        <TableRow>
+                                                            <TableCell colSpan={8} className="p-0 pb-2">
+                                                                <motion.div
+                                                                    initial={{ height: 0, opacity: 0 }}
+                                                                    animate={{ height: "auto", opacity: 1 }}
+                                                                    exit={{ height: 0, opacity: 0 }}
+                                                                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                                                                    style={{ overflow: "hidden" }}
+                                                                >
+                                                                    <div className="bg-white shadow-inner border border-gray-200 rounded-b-md">
+                                                                        <div className="p-1.5">
+                                                                            <div className="overflow-x-auto">
+                                                                                <table className="min-w-full divide-y divide-gray-300">
+                                                                                    <thead className="bg-red-50 border-b border-red-600">
+                                                                                        <tr>
+                                                                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Motivo de la cancelación</th>
+                                                                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
+                                                                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Usuario</th>
+                                                                                        </tr>
+                                                                                    </thead>
+                                                                                    <tbody className="bg-white divide-y divide-gray-200">
+                                                                                
+                                                                                        <tr className="hover:bg-gray-50">
+                                                                                            <td className="px-4 py-2 text-sm text-gray-700">{entrega.cancelacion.motivo}</td>
+                                                                                            {entrega.cancelacion.fecha && (
+                                                                                            <td className="px-4 py-2 text-sm text-gray-700">{safeDateTimeFormat(entrega.cancelacion.fecha)}</td>
+                                                                                            )}
+                                                                                            {entrega.cancelacion.usuario && (
+                                                                                            <td className="px-4 py-2 text-sm text-gray-700">{entrega.cancelacion.usuario || '-'}</td>
+                                                                                            )}
+                                                                                        </tr>
+                                                                                        
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </motion.div>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    )}
+                                                </AnimatePresence>
                                         </Fragment>
                                     ))}
                                     
@@ -403,7 +632,126 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                         </TableRow>
                                     )}
                                 </TableBody>
+
+                                {/* Modal Previsualización datos del REMITO a generar */}        
+                                <Dialog open={modalGenerarRemito} onOpenChange={setModalGenerarRemito}>
+                                    <DialogContent className="max-w-4xl">
+                                        <DialogHeader>
+                                            <DialogTitle>Previsualización datos del remito a generar</DialogTitle>
+                                        </DialogHeader>
+
+                                        {entregaSeleccionada && (
+                                            <div className="space-y-4 text-sm">
+                                                <div><strong>Fecha:</strong> {new Date().toLocaleDateString()}</div>
+                                                <div><strong>Origen:</strong> {entregaSeleccionada.origen}</div>
+                                                <div><strong>Destino:</strong> {entregaSeleccionada.destino}</div>
+                                                
+                                                <div>
+                                                <strong>Productos:</strong>
+                                                <ul className="ml-4 list-disc">
+                                                    {entregaSeleccionada.productos.map((producto: DetalleProducto, index: number) => (
+                                                    <li key={index}>
+                                                        {producto.nombre} - Cantidad: {producto.cantidad}
+                                                    </li>
+                                                    ))}
+                                                </ul>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="flex justify-end gap-2 pt-4">
+                                            <Button
+                                                variant="success"
+                                                className="hover:bg-green-700 cursor-pointer focus:outline-none focus:shadow-outline"
+                                                onClick={() => {
+                                                setModalGenerarRemito(false);
+                                                setTimeout(() => entregaSeleccionada?.id && confirmarEnvio(entregaSeleccionada), 300); //Espera a que se cierre
+                                                }}
+                                            >
+                                                Confirmar y generar remito
+                                            </Button>
+                                            <Button 
+                                                onClick={() => setModalGenerarRemito(false)}
+                                                variant="destructive"
+                                                className="hover:bg-red-500 cursor-pointer focus:outline-none focus:shadow-outline"
+                                            >
+                                                Cancelar
+                                            </Button>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>        
+
+                                {/* Modal Motivo de cancelación de la Orden */}                   
+                                <Dialog open={modalOpen} onOpenChange={setModalOpen} modal={!modalBloqueado}>
+                                    <DialogContent onInteractOutside={(e) => e.preventDefault()}>
+                                        <DialogHeader>
+                                            <DialogTitle>Cancelar orden #{entregaSeleccionada?.id}</DialogTitle>
+                                        </DialogHeader>
+
+                                        <div className="space-y-4">
+                                            <p>¿Estás seguro de que querés cancelar esta orden?</p>
+                                            <Textarea
+                                                placeholder="Motivo de la cancelación"
+                                                value={motivo}
+                                                onChange={(e) => setMotivo(e.target.value)}
+                                                disabled={modalBloqueado}
+                                            />
+                                        </div>
+
+                                        <DialogFooter>
+                                            <Button
+                                                variant="destructive"
+                                                className="hover:bg-red-500 cursor-pointer focus:outline-none focus:shadow-outline"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    entregaSeleccionada?.id && confirmarCancelacion(entregaSeleccionada.id);
+                                                }}
+                                                disabled={!motivo.trim() || modalBloqueado}
+                                            >
+                                                Confirmar Cancelación
+                                            </Button>
+                                            <Button
+                                                onClick={() => setModalOpen(false)}
+                                                disabled={modalBloqueado}
+                                                className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 font-bold px-3 py-4 cursor-pointer focus:outline-none focus:shadow-outline"
+                                            >
+                                                Cerrar
+                                            </Button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
+
+                                {/* Modal para ver el REMITO ya generado de una Orden */}                   
+                                {modalRemitoAbierto && remitoActual && (
+                                <Dialog open={modalRemitoAbierto} onOpenChange={setModalRemitoAbierto}>
+                                    <DialogContent className="max-w-5xl h-[90vh]">
+                                        <DialogHeader>
+                                            <DialogTitle>Remito #{String(remitoActual.id).padStart(8, "0")}</DialogTitle>
+                                        </DialogHeader>
+
+                                        <div className="mt-4 h-[75vh]">
+                                            <iframe
+                                                src={remitoActual ? route('remitos.mostrar', remitoActual.id) : ""}
+                                                title="Remito PDF"
+                                                width="100%"
+                                                height="100%"
+                                                style={{ border: "none" }}
+                                            />
+                                        </div>
+
+                                        <DialogFooter className="mt-0">
+                                            <Button
+                                                onClick={() => setModalRemitoAbierto(false)}
+                                                className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 font-bold px-3 py-4 cursor-pointer focus:outline-none focus:shadow-outline"
+                                            >
+                                                Cerrar
+                                            </Button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
+                                )}
                             </Table>
+
                             {/* Información de paginación */}
                             <div className="mt-4 flex justify-between items-center text-sm text-gray-600">
                                 <div>
@@ -413,24 +761,24 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                     {entregas.links.map((link: PaginationLink, index: number) => {
                                     let label = link.label;
 
-                                    // Reemplazar claves de traducción por texto
+                                    //Reemplaza claves de traducción por texto
                                     if (label === 'pagination.previous') label = 'Anterior';
                                     if (label === 'pagination.next') label = 'Siguiente';
 
                                     return (
                                         <button
-                                        key={index}
-                                        onClick={() => link.url && router.get(link.url)}
-                                        disabled={!link.url}
-                                        className={`px-4 py-1 rounded-md border text-sm transition-colors duration-200 cursor-pointer
-                                            ${link.active
-                                            ? 'bg-emerald-600 text-white border-emerald-600'
-                                            : !link.url
-                                            ? 'text-gray-400 border-gray-200 bg-gray-100 cursor-not-allowed'
-                                            : 'hover:bg-gray-100 text-gray-700 border-gray-300'}
-                                        `}
+                                            key={index}
+                                            onClick={() => link.url && router.get(link.url)}
+                                            disabled={!link.url}
+                                            className={`px-4 py-1 rounded-md border text-sm transition-colors duration-200 cursor-pointer
+                                                ${link.active
+                                                ? 'bg-emerald-600 text-white border-emerald-600'
+                                                : !link.url
+                                                ? 'text-gray-400 border-gray-200 bg-gray-100 cursor-not-allowed'
+                                                : 'hover:bg-gray-100 text-gray-700 border-gray-300'}
+                                            `}
                                         >
-                                        {label}
+                                            {label}
                                         </button>
                                     );
                                     })}

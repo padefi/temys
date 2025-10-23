@@ -6,6 +6,7 @@ use App\Models\Almacenes\Almacen;
 use App\Models\ControlAcceso\User;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Inventario\InventarioOrdenEntregaDetalle;
+use App\Models\Inventario\InventarioOrdenEntregaCancelada;
 
 class InventarioOrdenEntrega extends Model
 {
@@ -41,11 +42,6 @@ class InventarioOrdenEntrega extends Model
         return $this->belongsTo(Almacen::class, 'destino_id');
     }
 
-   /*  public function usuario()
-    {
-        return $this->belongsTo(User::class, 'usuario_id');
-    } */
-
     public function usuarioCreacion()
     {
         return $this->belongsTo(User::class, 'usuario_creacion');
@@ -53,18 +49,16 @@ class InventarioOrdenEntrega extends Model
 
     public function detalles()
     {
-        return $this->hasMany(inventarioOrdenEntregaDetalle::class, 'orden_entrega_id');
+        return $this->hasMany(InventarioOrdenEntregaDetalle::class, 'orden_entrega_id');
     }
 
-
-    // InventarioOrdenEntrega.php
-/*     public function solicitud()
-    {
-        return $this->belongsTo(InventarioSolicitarStock::class, 'solicitud_id');
-    } */
-
-      public function movimientos()
+    public function movimientos()
     {
         return $this->belongsToMany(InventarioMovimientoStock::class, 'relacion_movimiento_entrega', 'entrega_id', 'movimiento_id');
+    }
+
+    public function cancelacion()
+    {
+        return $this->hasOne(InventarioOrdenEntregaCancelada::class, 'orden_entrega_id');
     }
 }
