@@ -3,8 +3,8 @@
 namespace App\Models\Patrimonio\Inmuebles;
 
 use App\Models\ControlAcceso\User;
-use App\Models\InmuebleContrato;
-use App\Models\InmuebleEscritura;
+
+
 use App\Models\InmuebleTipoContrato;
 use Illuminate\Database\Eloquent\Model;
 

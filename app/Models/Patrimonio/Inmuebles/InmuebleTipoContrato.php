@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Patrimonio\Inmuebles;
 
 use App\Models\Patrimonio\Inmuebles\Inmueble;
 use Illuminate\Database\Eloquent\Model;
