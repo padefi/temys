@@ -206,20 +206,20 @@ public function solicitudesAceptadas()
     $almacenId = $branchId; // si el branch representa el almacén actual
     $userId = Auth::id();
 
-    $solicitudes = SolicitudRecibidaStock::with(['almacensolicitante', 'detalles.producto'])
-        ->where(function ($query) use ($userId, $almacenId) {
-            // Solicitudes pendientes creadas desde mi almacén
-            $query->where('estado', 'Pendiente')
-                  ->where('almacen_solicitante_id', $almacenId)
-                  ->where('usuario_creacion', $userId);
+  $solicitudes = SolicitudRecibidaStock::with(['almacensolicitante', 'detalles.producto'])
+    ->where(function ($query) use ($userId, $almacenId) {
+        $query->where(function ($q) use ($userId, $almacenId) {
+            $q->where('estado', 'Pendiente')
+              ->where('almacen_solicitante_id', $almacenId)
+              ->where('usuario_creacion', $userId);
         })
-        ->orWhere(function ($query) use ($userId, $almacenId) {
-            // Solicitudes aceptadas o canceladas por otro
-            $query->whereIn('estado', ['Aceptada', 'Cancelada'])
-                  ->where('almacen_solicitante_id', $almacenId)
-                  ->where('usuario_actualizacion', '!=', $userId);
-        })
-        ->get();
+        ->orWhere(function ($q) use ($userId, $almacenId) {
+            $q->whereIn('estado', ['Aceptada', 'Cancelada'])
+              ->where('almacen_solicitante_id', $almacenId);
+              // quitamos el filtro del usuario_actualizacion
+        });
+    })
+    ->get();
 
     return response()->json(SolicitudRecibidaDetalleResource::collection($solicitudes));
 }

@@ -45,6 +45,10 @@ export default function RecepcionesManagement() {
     const [data, setData] = useState<RecepcionesItem[]>([]);
 
     const [recepcionSeleccionada, setRecepcionSeleccionada] = useState<RecepcionesItem | null>(null);
+    
+    useEffect(() => {
+        setData(recepcionProductos.data);
+    }, [recepcionProductos]);
 
     // ✅ 4. Crear la función que abre el modal
     const abrirModal = (recepcion: RecepcionesItem) => {
@@ -52,8 +56,6 @@ export default function RecepcionesManagement() {
         setIsModalOpen(true);
         console.log('Abrir modal para recepción:', recepcion);
     };
-
-
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     
@@ -68,15 +70,7 @@ export default function RecepcionesManagement() {
     };
     
 
-
-
-    useEffect(() => {
-        setData(recepcionProductos.data);
-    }, [recepcionProductos]);
-
-
-
-      const columns = useMemo(
+    const columns = useMemo(
         () => getColumns({ onAbrirModal: abrirModal }),
         []
     );

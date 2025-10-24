@@ -10,14 +10,16 @@ use App\Models\Almacenes\Almacen;
 use App\Http\Requests\Inventario\Entregas\FiltroEntregaRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Mpdf\Mpdf;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Storage;
+use Spatie\QueryBuilder\AllowedFilter;
 
 class EntregaController extends Controller
 {
-    public function index(FiltroEntregaRequest $request)
+  /*    public function index(FiltroEntregaRequest $request)
     {
         $query = InventarioOrdenEntrega::with([
             'origen:id,nombre',
@@ -96,7 +98,33 @@ class EntregaController extends Controller
             'filters' => $request->all(),
             'almacenes' => Almacen::select('id', 'nombre')->get(),
         ]);
-    }
+    }  */
+    
+ public function index()
+    {
+        $query = InventarioOrdenEntrega::query()
+          ->SELECT(
+                'inventario_orden_entregas.*',
+                'ao.nombre as origen',
+                'ad.nombre as destino',
+                'iec.motivo as cancelacion_motivo',
+                DB::raw('CONCAT(u.name," ",u.last_name) as usuarioCreacion')
+            )
+                ->join('users as u', 'inventario_orden_entregas.usuario_creacion', '=', 'u.id')
+                ->leftJoin('almacenes as ao', 'inventario_orden_entregas.origen_id', '=', 'ao.id')
+                ->leftJoin('almacenes as ad', 'inventario_orden_entregas.destino_id', '=', 'ad.id')
+                ->leftJoin('inventario_orden_entrega_canceladas as iec', 'inventario_orden_entregas.id', '=', 'iec.orden_entrega_id')
+        ->get();      
+      
+
+
+        return Inertia::render('Inventario/Entregas/EntregasManagement', [
+            'ordenEntregas' => OrdenEntregaResource::collection($query),
+        ]);
+    
+     
+    } 
+
 
     //Confirma el envio de la orden y genera remito
     public function confirmarEnvio(InventarioOrdenEntrega $orden)
@@ -170,4 +198,5 @@ class EntregaController extends Controller
             'path' => Storage::url($filePath)
         ]);
     }
+
 }

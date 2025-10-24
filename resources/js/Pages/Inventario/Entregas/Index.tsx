@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/Com
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/Components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Input } from "@/Components/ui/input";
-import { Button } from "@/Components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Search, Truck, CheckCircle2, XCircle, Clock10 } from "lucide-react";
 import { useForm } from '@inertiajs/react';
 import { useEffect, useState, Fragment } from 'react';
