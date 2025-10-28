@@ -107,7 +107,6 @@ class EntregaController extends Controller
                 'inventario_orden_entregas.*',
                 'ao.nombre as origen',
                 'ad.nombre as destino',
-                'iec.motivo as cancelacion_motivo',
                 DB::raw('CONCAT(u.name," ",u.last_name) as usuarioCreacion')
             )
                 ->join('users as u', 'inventario_orden_entregas.usuario_creacion', '=', 'u.id')

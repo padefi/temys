@@ -1,24 +1,29 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { links } from "@/types/links";
-import { meta } from "@/types/meta";
-import { PageProps as InertiaPageProps } from "@inertiajs/core";
 import { Head, usePage } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
 import { getColumns } from "./Columns";
 import EntregasTable from "./EntregasTable";
 import { Card, CardContent } from "@/Components/ui/card";
+import { PageProps as InertiaPageProps } from "@inertiajs/core";
+import { links } from "@/types/links";
+import { meta } from "@/types/meta";
+import CancelarEntrega from "./modals/ModalCancelar";
+import AceptarEntrega from "./modals/ModalAceptar";
 
-interface DetalleProducto {
+export interface DetalleProducto {
+    id: string;
     nombre: string;
     cantidad: number;
     fecha_creacion: string;
-    usuario_creacion: string;
+    usuarioCreacion: string;
 }
-interface Cancelacion {
+
+export interface DetalleCancelacion {
     motivo: string;
     fecha: string;
     usuario: string;
 }
+
 export interface EntregaItem {
     id: number;
     fecha_envio: string | null;
@@ -28,10 +33,8 @@ export interface EntregaItem {
     origen: string;
     destino: string;
     productos: DetalleProducto[];
-    cancelacion?: Cancelacion;
+    cancelacion: DetalleCancelacion;
 }
-
-
 
 type PageProps = InertiaPageProps & {
     ordenEntregas: EntregasPagination;
@@ -43,71 +46,100 @@ interface EntregasPagination {
     meta: meta;
 }
 
-
 export default function EntregasManagement() {
-    const { ordenEntregas } = usePage<PageProps>().props
+    const { ordenEntregas } = usePage<PageProps>().props;
     const [data, setData] = useState<EntregaItem[]>([]);
-/* ---------------------------------------------------- */
-  const [entregaSeleccionada, setEntregaSeleccionada] = useState<EntregaItem | null>(null);
-       const [remitoActual, setRemitoActual] = useState<EntregaItem | null>(null);
-       const [modalGenerarRemito, setModalGenerarRemito] = useState(false);
-       const [motivo, setMotivo] = useState("");
-       const [modalOpen, setModalOpen] = useState(false);
-        const [modalRemitoAbierto, setModalRemitoAbierto] = useState(false);
-const [mostrarMotivo, setMostrarMotivo] = useState<{ [key: number]: boolean }>({});
 
+    // Estados para las expansiones
+    const [expandedProductos, setExpandedProductos] = useState<{ [key: number]: boolean }>({});
+    const [expandedMotivos, setExpandedMotivos] = useState<{ [key: number]: boolean }>({});
+
+    // Estados para los modales
+    const [entregaSeleccionada, setEntregaSeleccionada] = useState<EntregaItem | null>(null);
+    const [remitoActual, setRemitoActual] = useState<EntregaItem | null>(null);
+    const [modalGenerarRemito, setModalGenerarRemito] = useState(false);
+    const [motivo, setMotivo] = useState("");
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalRemitoAbierto, setModalRemitoAbierto] = useState(false);
 
     useEffect(() => {
-        setData(ordenEntregas.data)
-    }, [ordenEntregas])
+        setData(ordenEntregas.data);
+    }, [ordenEntregas]);
 
-    console.log(ordenEntregas)
-    
+    console.log(ordenEntregas);
+
+    // Funciones para manejar las expansiones
+    const toggleExpandProductos = (id: number) => {
+        setExpandedProductos(prev => ({ ...prev, [id]: !prev[id] }));
+    };
+
+    const toggleExpandMotivo = (id: number) => {
+        setExpandedMotivos(prev => ({ ...prev, [id]: !prev[id] }));
+    };
+
+    // Funciones para los modales
     const abrirPrevisualizacionRemito = (entrega: EntregaItem) => {
         setEntregaSeleccionada(entrega);
         setModalGenerarRemito(true);
     };
 
-        const openCancelarModal = (entrega: EntregaItem) => {
+    const openCancelarModal = (entrega: EntregaItem) => {
+        console.log('hola')
         setEntregaSeleccionada(entrega);
         setMotivo('');
         setModalOpen(true);
     };
 
-  const toggleMostrarMotivo = (id: number) => {
-        setMostrarMotivo(prev => ({ ...prev, [id]: !prev[id] }));
-    };
-
     const columns = useMemo(
         () => getColumns({
-            abrirRemito:abrirPrevisualizacionRemito,
-            toggleMostrarMotivo:toggleMostrarMotivo,
-            cancelarModal:openCancelarModal,
-            mostrarMotivo:mostrarMotivo,
-            setRemitoActual:setRemitoActual
+            abrirRemito: abrirPrevisualizacionRemito,
+            toggleExpandProductos: toggleExpandProductos,
+            toggleExpandMotivo: toggleExpandMotivo,
+            cancelarModal: openCancelarModal,
+            expandedProductos: expandedProductos,
+            expandedMotivos: expandedMotivos,
+            setRemitoActual: setRemitoActual,
         }),
-        []
-    )
-
+        [expandedProductos, expandedMotivos]
+    );
 
     return (
         <AuthenticatedLayout
-            header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Ordenes de entregas</h2>}
+            header={
+                <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                    Ordenes de entregas
+                </h2>
+            }
         >
             <Head title="Ordenes de entrega" />
-
 
             <div className="mx-auto w-full p-6 space-y-12">
                 <Card>
                     <CardContent>
-                        <EntregasTable data={data} columns={columns}  getRowCanExpand={() => true}></EntregasTable>
-
+                        <EntregasTable
+                            data={data}
+                            columns={columns}
+                            expandedProductos={expandedProductos}
+                            expandedMotivos={expandedMotivos}
+                        />
                     </CardContent>
                 </Card>
             </div>
+            <CancelarEntrega
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                request={entregaSeleccionada}
+                setMotivo={setMotivo}
+                motivo={motivo}
+            />
 
+            <AceptarEntrega
+             isOpen={modalGenerarRemito}
+                onClose={() => setModalOpen(false)}
+                request={entregaSeleccionada}
+                
+            ></AceptarEntrega>
 
         </AuthenticatedLayout>
-    )
-
+    );
 }
