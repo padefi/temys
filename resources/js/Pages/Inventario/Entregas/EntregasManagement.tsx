@@ -9,6 +9,7 @@ import { links } from "@/types/links";
 import { meta } from "@/types/meta";
 import CancelarEntrega from "./modals/ModalCancelar";
 import AceptarEntrega from "./modals/ModalAceptar";
+import MostrarRemito from "./modals/ModalAbrirRemito";
 
 export interface DetalleProducto {
     id: string;
@@ -83,8 +84,13 @@ export default function EntregasManagement() {
         setModalGenerarRemito(true);
     };
 
+    const abrirModalRemito = (entrega: EntregaItem) => {
+        setRemitoActual(entrega);
+        setModalRemitoAbierto(true);
+    };
+
     const openCancelarModal = (entrega: EntregaItem) => {
-        console.log('hola')
+        console.log('hola');
         setEntregaSeleccionada(entrega);
         setMotivo('');
         setModalOpen(true);
@@ -93,12 +99,12 @@ export default function EntregasManagement() {
     const columns = useMemo(
         () => getColumns({
             abrirRemito: abrirPrevisualizacionRemito,
+            mostrarRemito: abrirModalRemito,
             toggleExpandProductos: toggleExpandProductos,
             toggleExpandMotivo: toggleExpandMotivo,
             cancelarModal: openCancelarModal,
             expandedProductos: expandedProductos,
             expandedMotivos: expandedMotivos,
-            setRemitoActual: setRemitoActual,
         }),
         [expandedProductos, expandedMotivos]
     );
@@ -125,6 +131,8 @@ export default function EntregasManagement() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Modal para cancelar entrega */}
             <CancelarEntrega
                 isOpen={modalOpen}
                 onClose={() => setModalOpen(false)}
@@ -133,13 +141,20 @@ export default function EntregasManagement() {
                 motivo={motivo}
             />
 
+            {/* Modal para confirmar envío y generar remito */}
             <AceptarEntrega
-             isOpen={modalGenerarRemito}
-                onClose={() => setModalOpen(false)}
+                isOpen={modalGenerarRemito}
+                onClose={() => setModalGenerarRemito(false)}
                 request={entregaSeleccionada}
-                
-            ></AceptarEntrega>
+                setRemitoActual={setRemitoActual}
+            />
 
+            {/* Modal para mostrar remito existente */}
+            <MostrarRemito   
+                isOpen={modalRemitoAbierto}
+                onClose={() => setModalRemitoAbierto(false)}
+                remitoActual={remitoActual}
+            />
         </AuthenticatedLayout>
     );
 }

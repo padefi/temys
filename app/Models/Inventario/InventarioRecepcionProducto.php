@@ -14,10 +14,8 @@ class InventarioRecepcionProducto extends Model
     protected $fillable = [
         'origen_id',
         'destino_id',
-        'tipo_movimiento',
-        'movimiento_id',
+        'orden_entrega_id',
         'tipo_recepcion',
-        'movimiento_id',
         'fecha_recepcion',
         'estado',
         'usuario_creacion',
@@ -51,6 +49,10 @@ class InventarioRecepcionProducto extends Model
         return $this->hasMany(InventarioRecepcionProductoDetalle::class, 'recepcion_id');
     }
 
+public function ordenEntrega()
+{
+    return $this->belongsTo(InventarioOrdenEntrega::class, 'orden_entrega_id');
+}
 
 
     // InventarioRecepcionProducto.php

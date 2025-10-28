@@ -1,25 +1,44 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DetalleProducto, EntregaItem } from "../EntregasManagement";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
+import { router } from "@inertiajs/react";
 
 interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
     request: EntregaItem | null;
-   
+    setRemitoActual: React.Dispatch<React.SetStateAction<EntregaItem | null>>;
+
 }
 
 export default function AceptarEntrega({
     isOpen,
     onClose,
     request,
-   
+    setRemitoActual
+
 
 }: ModalProps) {
-       const handleClose = () => {
-
+    const handleClose = () => {
         onClose();
     };
+
+    const generarRemitoPdf = (entrega: any) => {
+        //Abre el PDF ya generado por mPDF en el backend
+        window.open(route('remitos.mostrar', entrega.id), '_blank');
+    };
+
+
+    function Confirmar(entrega: any) {
+        axios.post(route('entregas.confirmar-envio', entrega.id))
+            .then(() => {
+                setRemitoActual(entrega);
+                generarRemitoPdf(entrega);
+                handleClose(); 
+                router.reload({ only: ['ordenEntregas'] });
+            })
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -51,15 +70,13 @@ export default function AceptarEntrega({
                     <Button
                         variant="success"
                         className="hover:bg-green-700 cursor-pointer focus:outline-none focus:shadow-outline"
-                        onClick={() => {
-                           /*  setModalGenerarRemito(false); */
-                          /*   setTimeout(() => request?.id && confirmarEnvio(entregaSeleccionada), 300); */ //Espera a que se cierre
-                        }}
+                        onClick={() => Confirmar(request)}
                     >
                         Confirmar y generar remito
                     </Button>
+
                     <Button
-                       /*  onClick={() => setModalGenerarRemito(false)} */
+
                         variant="destructive"
                         className="hover:bg-red-500 cursor-pointer focus:outline-none focus:shadow-outline"
                     >

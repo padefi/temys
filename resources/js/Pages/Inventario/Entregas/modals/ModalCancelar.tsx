@@ -2,16 +2,16 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/Components/ui/textarea";
 import { EntregaItem } from "../EntregasManagement";
+import axios from "axios";
+import { router } from "@inertiajs/react";
 
 interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
     request: EntregaItem | null;
     setMotivo: React.Dispatch<React.SetStateAction<string>>;
- 
-    motivo:string
+    motivo: string
 }
-
 
 export default function CancelarEntrega({
     isOpen,
@@ -22,12 +22,17 @@ export default function CancelarEntrega({
 
 }: ModalProps) {
     const handleClose = () => {
-
         onClose();
     };
-
+    function Cancelar(id: any) {
+        axios.post(route('entregas.cancelar', id), { motivo })
+            .then(() => {
+                handleClose();
+                router.reload({ only: ['ordenEntregas'] });
+            })
+    }
     return (
-        <Dialog open={isOpen} onOpenChange={handleClose} /* modal={!modalBloqueado} */>
+        <Dialog open={isOpen} onOpenChange={handleClose} >
             <DialogContent onInteractOutside={(e) => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle>Cancelar orden #{request?.id}</DialogTitle>
@@ -39,7 +44,6 @@ export default function CancelarEntrega({
                         placeholder="Motivo de la cancelación"
                         value={motivo}
                         onChange={(e) => setMotivo(e.target.value)}
-                       /*  disabled={modalBloqueado} */
                     />
                 </div>
 
@@ -47,17 +51,14 @@ export default function CancelarEntrega({
                     <Button
                         variant="destructive"
                         className="hover:bg-red-500 cursor-pointer focus:outline-none focus:shadow-outline"
-                        onClick={(e) => {
-                            e.preventDefault();
-                          /*   request?.id && confirmarCancelacion(request.id); */
+                        onClick={() => {
+                            Cancelar(request?.id)
                         }}
-                       /*  disabled={!motivo.trim() || modalBloqueado} */
-                    >
+                        disabled={!motivo.trim()} >
                         Confirmar Cancelación
                     </Button>
                     <Button
                         onClick={() => onClose()}
-                      /*   disabled={modalBloqueado} */
                         className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 font-bold px-3 py-4 cursor-pointer focus:outline-none focus:shadow-outline"
                     >
                         Cerrar

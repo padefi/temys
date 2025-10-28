@@ -142,6 +142,39 @@ class EntregaController extends Controller
 
     //Cancela la orden de entrega
     public function cancelarOrden(Request $request, InventarioOrdenEntrega $orden)
+{
+    $request->validate([
+        'motivo' => 'required|string|max:500',
+    ]);
+
+ 
+    $orden->update([
+        'estado' => 'Cancelado',
+        'fecha_actualizacion' => now(),
+        'usuario_actualizacion' => Auth::id(),
+    ]);
+
+ 
+    InventarioOrdenEntregaCancelada::create([
+        'orden_entrega_id' => $orden->id,
+        'motivo' => $request->motivo,
+        'fecha' => now(),
+        'usuario' => Auth::id(),
+    ]);
+
+
+    if ($orden->recepcion) {
+        $orden->recepcion->update([
+            'estado' => 'Cancelado',
+            'fecha_actualizacion' => now(),
+            'usuario_actualizacion' => Auth::id(),
+        ]);
+    }
+
+    return response()->json(['success' => true, 'message' => 'Orden cancelada exitosamente']);
+}
+
+/*     public function cancelarOrden(Request $request, InventarioOrdenEntrega $orden)
     {
         $request->validate([
             'motivo' => 'required|string|max:500',
@@ -161,7 +194,7 @@ class EntregaController extends Controller
         ]);
 
         return response()->json(['success' => true, 'message' => 'Orden cancelada exitosamente']);
-    }
+    } */
 
     //Obtiene el motivo de cancelación de la orden
     public function obtenerMotivoCancelacion($id)
