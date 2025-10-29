@@ -45,12 +45,11 @@ export default function RecepcionesManagement() {
     const [data, setData] = useState<RecepcionesItem[]>([]);
 
     const [recepcionSeleccionada, setRecepcionSeleccionada] = useState<RecepcionesItem | null>(null);
-    
+    console.log(recepcionSeleccionada)
     useEffect(() => {
         setData(recepcionProductos.data);
     }, [recepcionProductos]);
 
-    // ✅ 4. Crear la función que abre el modal
     const abrirModal = (recepcion: RecepcionesItem) => {
         setRecepcionSeleccionada(recepcion);
         setIsModalOpen(true);

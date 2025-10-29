@@ -14,6 +14,7 @@ import { Textarea } from "@/Components/ui/textarea";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { RecepcionesItem } from "../RecepcionesManagement";
+import { router } from "@inertiajs/react";
 
 interface StockApprovalModalProps {
     isOpen: boolean;
@@ -22,7 +23,6 @@ interface StockApprovalModalProps {
     onAprobado: (
         requestId: string,
         cantidadAprobada: number,
-        motivo: string
     ) => void;
     onRechazado: (requestId: string, motivo: string) => void;
 }
@@ -45,38 +45,29 @@ export default function RecepcionProductos({
     if (!request) return null;
 
     const handleSubmit = async () => {
-        const estado = action === "aprobado" ? "Aceptada" : "Cancelada";
+        const payload = {
+            recepcion_id: request.id,
+            productos: request.detalles?.map((detalle) => ({
+                producto_id: detalle.producto_id,
+                cantidad_contada: parseInt(cantidadesAprobadas[detalle.producto_id]) || 0,
+            })),
+        
+        };
 
         try {
-            const payload = {
-                solicitud_id: request.id,
-                estado,
-                motivo,
-                productos:
-                    action === "aprobado"
-                        ? request.detalles?.map((detalle) => ({
-                            producto_id: detalle.producto_id,
-                            cantidad_aprobada:
-                                parseInt(cantidadesAprobadas[detalle.producto_id]) || 0,
-                        }))
-                        : [],
-            };
-
-            const url =
-                action === "aprobado"
-                    ? "/solicitudes-stock-aceptar"
-                    : "/solicitudes-stock-cancelar";
-
-            await axios.post(url, payload);
-            action === "aprobado"
-                ? onAprobado(request.id, 0, motivo)
-                : onRechazado(request.id, motivo);
-
+            await axios.post("/inventario/recepcion/control-recepcion", payload);
+            onAprobado(request.id, 0);
             onClose();
-        } catch (err: any) {
+            router.reload({ only: ['recepcionProductos'] });
+        } catch (err) {
             console.error(err);
         }
     };
+
+    const handleSubmitRechazado=async()=>{
+
+    }
+
 
     const handleClose = () => {
         setMotivo("");
@@ -154,16 +145,17 @@ export default function RecepcionProductos({
                             </div>
                         );
                     })}
-
-                    <div className="space-y-2">
-                        <Label>Justificación</Label>
-                        <Textarea
-                            value={motivo}
-                            onChange={(e) => setMotivo(e.target.value)}
-                            className="min-h-[80px] resize-none"
-                            required
-                        />
-                    </div>
+                    {action === "rechazado" && (
+                        <div className="space-y-2">
+                            <Label>Justificación</Label>
+                            <Textarea
+                                value={motivo}
+                                onChange={(e) => setMotivo(e.target.value)}
+                                className="min-h-[80px] resize-none"
+                                required
+                            />
+                        </div>
+                    )}
                 </div>
                 <DialogFooter className="gap-2">
                     <Button variant="outline" onClick={handleClose}>
@@ -192,12 +184,11 @@ export default function RecepcionProductos({
 
                     {action === "aprobado" && (
                         <Button
-                            /*  onClick={handleSubmit} */
+                            onClick={handleSubmit}
                             disabled={
                                 Object.values(cantidadesAprobadas).some(
                                     (val) => parseInt(val) <= 0
-                                ) ||
-                                !motivo.trim() ||
+                                )  ||
                                 Object.values(erroresPorProducto).some((e) => !!e)
                             }
                             className="gap-2"
@@ -210,7 +201,7 @@ export default function RecepcionProductos({
                     {action === "rechazado" && (
                         <Button
                             variant="destructive"
-                            /*    onClick={handleSubmit} */
+                            onClick={handleSubmitRechazado} 
                             disabled={!motivo.trim()}
                             className="gap-2"
                         >

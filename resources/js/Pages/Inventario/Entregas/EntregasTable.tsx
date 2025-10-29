@@ -8,21 +8,28 @@ import { DetalleProductos } from "./DetallesProductos";
 import { motion, AnimatePresence } from 'framer-motion';
 import { DetalleCancelado } from "./DetallesMotivoCancelacion";
 
+import { links } from "@/types/links";
+import { meta } from "@/types/meta";
+import { Footer } from '@/Pages/UserModulePanel/footer';
+
 type TableProps = {
     data: EntregaItem[];
+      links: links;
+      meta: meta;
     columns: ColumnDef<EntregaItem>[];
     expandedProductos: { [key: number]: boolean };
     expandedMotivos: { [key: number]: boolean };
 }
 
 export default function EntregasTable({ 
-    data, 
+    data,
+    links,
+    meta, 
     columns, 
     expandedProductos,
     expandedMotivos 
 }: TableProps) {
-    const { isLoading } = useDataTableParams();
-
+    const { params, updateParams, isLoading } = useDataTableParams();
     const table = useReactTable({
         data: data,
         columns,
@@ -37,7 +44,8 @@ export default function EntregasTable({
     });
 
     return (
-        <Table>
+        <>
+         <Table>
             <TableHeader className="sticky-header">
                 {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow key={headerGroup.id}>
@@ -122,5 +130,12 @@ export default function EntregasTable({
                 )}
             </TableBody>
         </Table>
+
+      {/*   <Footer links={links} meta={meta} updateParams={updateParams} isLoading={isLoading} /> */}
+        
+        </>
+       
+
+        
     );
 }

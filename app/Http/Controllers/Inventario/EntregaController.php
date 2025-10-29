@@ -8,6 +8,8 @@ use App\Models\Inventario\InventarioOrdenEntrega;
 use App\Models\Inventario\InventarioOrdenEntregaCancelada;
 use App\Models\Almacenes\Almacen;
 use App\Http\Requests\Inventario\Entregas\FiltroEntregaRequest;
+use App\Models\Inventario\InventarioMovimientoStock;
+use App\Models\Inventario\InventarioStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +21,7 @@ use Spatie\QueryBuilder\AllowedFilter;
 
 class EntregaController extends Controller
 {
-  /*    public function index(FiltroEntregaRequest $request)
+    /*    public function index(FiltroEntregaRequest $request)
     {
         $query = InventarioOrdenEntrega::with([
             'origen:id,nombre',
@@ -99,41 +101,66 @@ class EntregaController extends Controller
             'almacenes' => Almacen::select('id', 'nombre')->get(),
         ]);
     }  */
-    
- public function index()
+
+    public function index()
     {
         $query = InventarioOrdenEntrega::query()
-          ->SELECT(
+            ->SELECT(
                 'inventario_orden_entregas.*',
                 'ao.nombre as origen',
                 'ad.nombre as destino',
                 DB::raw('CONCAT(u.name," ",u.last_name) as usuarioCreacion')
             )
-                ->join('users as u', 'inventario_orden_entregas.usuario_creacion', '=', 'u.id')
-                ->leftJoin('almacenes as ao', 'inventario_orden_entregas.origen_id', '=', 'ao.id')
-                ->leftJoin('almacenes as ad', 'inventario_orden_entregas.destino_id', '=', 'ad.id')
-                ->leftJoin('inventario_orden_entrega_canceladas as iec', 'inventario_orden_entregas.id', '=', 'iec.orden_entrega_id')
-        ->get();      
-      
+            ->join('users as u', 'inventario_orden_entregas.usuario_creacion', '=', 'u.id')
+            ->leftJoin('almacenes as ao', 'inventario_orden_entregas.origen_id', '=', 'ao.id')
+            ->leftJoin('almacenes as ad', 'inventario_orden_entregas.destino_id', '=', 'ad.id')
+            ->leftJoin('inventario_orden_entrega_canceladas as iec', 'inventario_orden_entregas.id', '=', 'iec.orden_entrega_id')
+            ->get();
+
 
 
         return Inertia::render('Inventario/Entregas/EntregasManagement', [
             'ordenEntregas' => OrdenEntregaResource::collection($query),
         ]);
-    
-     
-    } 
+    }
 
 
     //Confirma el envio de la orden y genera remito
     public function confirmarEnvio(InventarioOrdenEntrega $orden)
     {
+
         $orden->update([
             'fecha_envio' => now(),
             'estado' => 'Enviado',
             'fecha_actualizacion' => now(),
             'usuario_actualizacion' => Auth::id(),
         ]);
+
+        $orden->load(['origen', 'destino', 'detalles.producto']);
+
+        foreach ($orden->detalles as $detalle) {
+        /*     // Crear movimiento de stock
+            InventarioMovimientoStock::create([
+                'producto_id' => $detalle->producto_id,
+                'origen_id' => $orden->origen->id,
+                'destino_id' => $orden->destino->id,
+                'cantidad' => $detalle->cantidad_enviada,
+                'tipo_movimiento' => 'ajuste',
+                'fecha_creacion' => now(),
+                'usuario_creacion' => Auth::id(),
+            ]); */
+            
+            // Actualizar stock
+            
+            InventarioStock::where('producto_id', $detalle->producto_id)
+                ->where('almacen_id', $orden->destino_id)
+                ->update([
+                    'cantidad_actual' => DB::raw('cantidad_actual - ' . $detalle->cantidad_enviada),
+                    'usuario_actualizacion' => Auth::id(),
+                    'fecha_actualizacion' => now(),
+                ]);
+        }
+
 
         $this->generarRemitoPdf($orden);
 
@@ -142,49 +169,18 @@ class EntregaController extends Controller
 
     //Cancela la orden de entrega
     public function cancelarOrden(Request $request, InventarioOrdenEntrega $orden)
-{
-    $request->validate([
-        'motivo' => 'required|string|max:500',
-    ]);
-
- 
-    $orden->update([
-        'estado' => 'Cancelado',
-        'fecha_actualizacion' => now(),
-        'usuario_actualizacion' => Auth::id(),
-    ]);
-
- 
-    InventarioOrdenEntregaCancelada::create([
-        'orden_entrega_id' => $orden->id,
-        'motivo' => $request->motivo,
-        'fecha' => now(),
-        'usuario' => Auth::id(),
-    ]);
-
-
-    if ($orden->recepcion) {
-        $orden->recepcion->update([
-            'estado' => 'Cancelado',
-            'fecha_actualizacion' => now(),
-            'usuario_actualizacion' => Auth::id(),
-        ]);
-    }
-
-    return response()->json(['success' => true, 'message' => 'Orden cancelada exitosamente']);
-}
-
-/*     public function cancelarOrden(Request $request, InventarioOrdenEntrega $orden)
     {
         $request->validate([
             'motivo' => 'required|string|max:500',
         ]);
+
 
         $orden->update([
             'estado' => 'Cancelado',
             'fecha_actualizacion' => now(),
             'usuario_actualizacion' => Auth::id(),
         ]);
+
 
         InventarioOrdenEntregaCancelada::create([
             'orden_entrega_id' => $orden->id,
@@ -193,8 +189,19 @@ class EntregaController extends Controller
             'usuario' => Auth::id(),
         ]);
 
+
+        if ($orden->recepcion) {
+            $orden->recepcion->update([
+                'estado' => 'Cancelado',
+                'fecha_actualizacion' => now(),
+                'usuario_actualizacion' => Auth::id(),
+            ]);
+        }
+
         return response()->json(['success' => true, 'message' => 'Orden cancelada exitosamente']);
-    } */
+    }
+
+
 
     //Obtiene el motivo de cancelación de la orden
     public function obtenerMotivoCancelacion($id)
@@ -230,5 +237,4 @@ class EntregaController extends Controller
             'path' => Storage::url($filePath)
         ]);
     }
-
 }

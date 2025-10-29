@@ -39,6 +39,9 @@ Route::middleware('module:inventario')->group(function () {
         Route::middleware('submenu_permission:read recepciones')->group(function () {
             Route::get('/inventario/recepcion', [RecepcionesController::class, 'index'])->name('recepciones');
         }); 
+         Route::middleware('submenu_permission:update recepciones')->group(function () {
+               Route::post('/inventario/recepcion/control-recepcion', [RecepcionesController::class, 'ControlRecepcion']);
+            });
 
 
         Route::middleware('submenu_permission:read inventarioFisico')->group(function () {

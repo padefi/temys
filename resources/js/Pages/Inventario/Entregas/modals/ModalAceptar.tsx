@@ -17,8 +17,6 @@ export default function AceptarEntrega({
     onClose,
     request,
     setRemitoActual
-
-
 }: ModalProps) {
     const handleClose = () => {
         onClose();

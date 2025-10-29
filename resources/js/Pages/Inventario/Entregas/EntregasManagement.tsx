@@ -124,6 +124,9 @@ export default function EntregasManagement() {
                     <CardContent>
                         <EntregasTable
                             data={data}
+                            links={ordenEntregas.links}
+                            meta={ordenEntregas.meta}
+
                             columns={columns}
                             expandedProductos={expandedProductos}
                             expandedMotivos={expandedMotivos}

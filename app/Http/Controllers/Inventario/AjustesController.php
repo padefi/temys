@@ -150,9 +150,6 @@ class AjustesController extends Controller
     public function aprobarAjuste(Request $request)
     {
         try {
-
-
-
             $ajuste = InventarioMovimientoStock::create([
                 'producto_id' => $request->input('producto_id'),
                 'origen_id' => $request->input('almacen_id'),
