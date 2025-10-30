@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('inventario_recepcion_canceladas', function (Blueprint $table) {
            $table->id();
-            $table->unsignedBigInteger('orden_recepcion_id');
+            $table->unsignedBigInteger('recepcion_id');
             $table->text('motivo');
             $table->timestamp('fecha');
             $table->unsignedBigInteger('usuario');
       
             //Relaciones
 
-            $table->foreign('orden_recepcion_id')->references('id')->on('inventario_recepcion_productos');
+            $table->foreign('recepcion_id')->references('id')->on('inventario_recepcion_productos');
             $table->foreign('usuario')->references('id')->on('users');
         });
     }

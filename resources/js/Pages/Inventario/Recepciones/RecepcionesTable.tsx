@@ -8,22 +8,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
 import { DetallesSubtabla } from "./DetalleSubtabla";
 import React from "react";
+import { Footer } from "@/Pages/UserModulePanel/footer";
 
-
-interface RecepcionTableProps {
-    data: RecepcionesItem[];
-    links: links;
-    meta: meta;
-}
 
 type TableProps<TData> = {
-  data: TData[]
-  columns: ColumnDef<TData>[]
+    data: RecepcionesItem[];
+       links: links;
+       meta: meta;
+     columns: ColumnDef<RecepcionesItem>[];
   getRowCanExpand: (row: Row<TData>) => boolean
 }
 
 export default function RecepcionesTable({
   data,
+  links,
+  meta,
   columns,
   getRowCanExpand,
 }: TableProps<RecepcionesItem>) {
@@ -50,8 +49,7 @@ export default function RecepcionesTable({
     });
 
     return (
-        
-        
+        <>
         <Table>
             <TableHeader className="sticky-header">
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -96,6 +94,10 @@ export default function RecepcionesTable({
                 )}
             </TableBody>
         </Table>
+         <Footer links={links} meta={meta} updateParams={updateParams} isLoading={isLoading} /> 
+        </>
+        
+        
                 
     );
 }

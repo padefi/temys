@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class InventarioRecepcionCancelada extends Model
 {
-     protected $table='inventario_orden_entrega_canceladas';
+     protected $table = 'inventario_recepcion_canceladas'; 
     
     public $timestamps = false;
    

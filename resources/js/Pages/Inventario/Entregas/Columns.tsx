@@ -58,7 +58,18 @@ export const getColumns = ({
     },
     {
         accessorKey: "fecha_envio",
-        header: "Fecha Envio",
+                header: ({ column, table }) => {
+            const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
+            return (
+                <DataTableColumnHeader
+                    column={column}
+                    title="Fecha envio"
+                    disabled={disabled}
+                    className="justify-center font-bold min-w-[90px]"
+                    isVisible={true}
+                />
+            )
+        },
         cell: ({ row }) => <div className="text-center">{row.getValue("fecha_envio")}</div>,
     },
     {
@@ -174,7 +185,7 @@ export const getColumns = ({
         ),
     },
     {
-        accessorKey: "usuario_creacion",
+        accessorKey: "usuarioCreacion",
         header: ({ column, table }) => {
             const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
             return (
@@ -187,7 +198,7 @@ export const getColumns = ({
                 />
             )
         },
-        cell: ({ row }) => <div className="text-center">{row.getValue("usuario_creacion")}</div>,
+        cell: ({ row }) => <div className="text-center">{row.getValue("usuarioCreacion")}</div>,
     },
     {
         id: "actions",

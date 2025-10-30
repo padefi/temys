@@ -53,7 +53,7 @@ public function toArray(Request $request): array
             ? $this->fecha_creacion->format('Y-m-d H:i:s')
             : null,
 
-        'usuario_creacion' => $this->usuarioCreacion,
+        'usuarioCreacion' => $this->usuarioCreacion,
         'estado' => $this->estado,
         'origen' => $this->origen,
         'destino' => $this->destino,

@@ -14,8 +14,8 @@ import { Footer } from '@/Pages/UserModulePanel/footer';
 
 type TableProps = {
     data: EntregaItem[];
-      links: links;
-      meta: meta;
+    links: links;
+    meta: meta;
     columns: ColumnDef<EntregaItem>[];
     expandedProductos: { [key: number]: boolean };
     expandedMotivos: { [key: number]: boolean };
@@ -131,7 +131,7 @@ export default function EntregasTable({
             </TableBody>
         </Table>
 
-      {/*   <Footer links={links} meta={meta} updateParams={updateParams} isLoading={isLoading} /> */}
+         <Footer links={links} meta={meta} updateParams={updateParams} isLoading={isLoading} /> 
         
         </>
        

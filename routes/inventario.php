@@ -41,6 +41,7 @@ Route::middleware('module:inventario')->group(function () {
         }); 
          Route::middleware('submenu_permission:update recepciones')->group(function () {
                Route::post('/inventario/recepcion/control-recepcion', [RecepcionesController::class, 'ControlRecepcion']);
+               Route::post('/inventario/recepcion/rechazar', [RecepcionesController::class, 'cancelar']);
             });
 
 
