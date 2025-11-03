@@ -61,4 +61,10 @@ class InventarioOrdenEntrega extends Model
     {
         return $this->hasOne(InventarioOrdenEntregaCancelada::class, 'orden_entrega_id');
     }
+
+    public function recepcion()
+{
+    return $this->hasOne(InventarioRecepcionProducto::class, 'orden_entrega_id');
+}
+
 }

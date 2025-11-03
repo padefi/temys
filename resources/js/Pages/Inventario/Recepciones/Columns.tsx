@@ -88,19 +88,30 @@ export const getColumns = ({ onAbrirModal }: GetColumnsProps): ColumnDef<Recepci
     },
 
     {
-        accessorKey: "fechaRecepcion",
-        header: "Fecha Recepcion",
+        accessorKey: "fecha_recepcion",
+         header: ({ column, table }) => {
+            const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
+            return (
+                <DataTableColumnHeader
+                    column={column}
+                    title="Fecha Recepcion"
+                    disabled={disabled}
+                    className="justify-center font-bold min-w-[90px]"
+                    isVisible={true}
+                />
+            )
+        },
         cell: ({ row }) => <div className="text-center">{
             <>
                 <div className="text-sm">
-                    {new Date(row.getValue("fechaRecepcion")).toLocaleDateString("es-ES", {
+                    {new Date(row.getValue("fecha_recepcion")).toLocaleDateString("es-ES", {
                         day: "2-digit",
                         month: "2-digit",
                         year: "numeric",
                     })}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                    {new Date(row.getValue("fechaRecepcion")).toLocaleTimeString("es-ES", {
+                    {new Date(row.getValue("fecha_recepcion")).toLocaleTimeString("es-ES", {
                         hour: "2-digit",
                         minute: "2-digit",
                         timeZone: "UTC"
@@ -147,9 +158,20 @@ export const getColumns = ({ onAbrirModal }: GetColumnsProps): ColumnDef<Recepci
         },
     },
     {
-        accessorKey: "tipoRecepcion",
-        header: "Tipo recepcion",
-        cell: ({ row }) => <div className="text-center">{row.getValue("tipoRecepcion")}</div>,
+        accessorKey: "tipo_recepcion",
+             header: ({ column, table }) => {
+            const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
+            return (
+                <DataTableColumnHeader
+                    column={column}
+                    title="Tipo Recepcion"
+                    disabled={disabled}
+                    className="justify-center font-bold min-w-[90px]"
+                    isVisible={true}
+                />
+            )
+        },
+        cell: ({ row }) => <div className="text-center">{row.getValue("tipo_recepcion")}</div>,
     },
     {
         accessorKey: "usuarioCreacion",

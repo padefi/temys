@@ -1,29 +1,19 @@
 import { useState } from "react";
 import { Check, X } from "lucide-react";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
+import {Dialog,DialogContent,DialogDescription,DialogFooter,DialogHeader,DialogTitle,} from "@/components/ui/dialog";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Textarea } from "@/Components/ui/textarea";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { RecepcionesItem } from "../RecepcionesManagement";
+import { router } from "@inertiajs/react";
 
 interface StockApprovalModalProps {
     isOpen: boolean;
     onClose: () => void;
     request: RecepcionesItem | null;
-    onAprobado: (
-        requestId: string,
-        cantidadAprobada: number,
-        motivo: string
-    ) => void;
+    onAprobado: (requestId: string, cantidadAprobada: number) => void;
     onRechazado: (requestId: string, motivo: string) => void;
 }
 
@@ -34,46 +24,46 @@ export default function RecepcionProductos({
     onAprobado,
     onRechazado,
 }: StockApprovalModalProps) {
-
     const [motivo, setMotivo] = useState("");
     const [action, setAction] = useState<"aprobado" | "rechazado" | null>(null);
     const [cantidadesAprobadas, setCantidadesAprobadas] = useState<Record<number, string>>({});
     const [erroresPorProducto, setErroresPorProducto] = useState<Record<number, string>>({});
-
-    console.log(request)
+    const [estadoRecepcion, setEstadoRecepcion] = useState("completo");
 
     if (!request) return null;
 
     const handleSubmit = async () => {
-        const estado = action === "aprobado" ? "Aceptada" : "Cancelada";
+        const payload = {
+            recepcion_id: request.id,
+            productos: request.detalles?.map((detalle) => ({
+                producto_id: detalle.producto_id,
+                cantidad_contada: parseInt(cantidadesAprobadas[detalle.producto_id]) || 0,
+                estado: estadoRecepcion,
+            })),
+        };
 
         try {
-            const payload = {
-                solicitud_id: request.id,
-                estado,
-                motivo,
-                productos:
-                    action === "aprobado"
-                        ? request.detalles?.map((detalle) => ({
-                            producto_id: detalle.producto_id,
-                            cantidad_aprobada:
-                                parseInt(cantidadesAprobadas[detalle.producto_id]) || 0,
-                        }))
-                        : [],
-            };
-
-            const url =
-                action === "aprobado"
-                    ? "/solicitudes-stock-aceptar"
-                    : "/solicitudes-stock-cancelar";
-
-            await axios.post(url, payload);
-            action === "aprobado"
-                ? onAprobado(request.id, 0, motivo)
-                : onRechazado(request.id, motivo);
-
+            await axios.post("/inventario/recepcion/control-recepcion", payload);
+            onAprobado(request.id, 0);
             onClose();
-        } catch (err: any) {
+            router.reload({ only: ["recepcionProductos"] });
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleSubmitRechazado = async () => {
+        const payload = {
+            recepcion_id: request.id,
+            motivo,
+        };
+
+        try {
+            await axios.post("/inventario/recepcion/rechazar", payload);
+            onRechazado(request.id, motivo);
+            onClose();
+            router.reload({ only: ["recepcionProductos"] });
+        } catch (err) {
             console.error(err);
         }
     };
@@ -83,10 +73,9 @@ export default function RecepcionProductos({
         setAction(null);
         setCantidadesAprobadas({});
         setErroresPorProducto({});
+        setEstadoRecepcion("completo");
         onClose();
     };
-
-
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -94,8 +83,8 @@ export default function RecepcionProductos({
                 <DialogHeader>
                     <DialogTitle>Conteo físico de productos</DialogTitle>
                     <DialogDescription>
-                        Control de recepción que permite validar si las cantidades de productos que llegaron físicamente coinciden con lo solicitado en la orden,
-                        identificando faltantes, excesos.
+                        Control de recepción que permite validar si las cantidades de productos que llegaron físicamente
+                        coinciden con lo solicitado en la orden, identificando faltantes o excesos.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -105,7 +94,11 @@ export default function RecepcionProductos({
                         return (
                             <div
                                 key={detalle.producto_id}
-                                className={`p-4 rounded-lg border bg-green-50 border-green-200 `}
+                                className={`p-4 rounded-lg border transition-colors ${
+                                    action === "rechazado"
+                                        ? "bg-red-50 border-red-200"
+                                        : "bg-green-50 border-green-200"
+                                }`}
                             >
                                 <div className="text-sm mb-4">
                                     <div className="font-medium">
@@ -114,9 +107,8 @@ export default function RecepcionProductos({
                                     <div>
                                         Cantidad esperada: <b>{detalle.cantidadEsperada}</b>
                                     </div>
-
                                 </div>
-
+                           
                                 {action === "aprobado" && (
                                     <div className="space-y-2">
                                         <Label>Cantidad Contada</Label>
@@ -125,16 +117,6 @@ export default function RecepcionProductos({
                                             placeholder="Cantidad Contada"
                                             value={cantidadAprobada}
                                             onChange={(e) => {
-                                                const errores: Record<number, string> = {};
-
-                                                setErroresPorProducto((prev) => ({
-                                                    ...prev,
-                                                    ...errores,
-                                                    ...(errores[detalle.producto_id]
-                                                        ? {}
-                                                        : { [detalle.producto_id]: "" }),
-                                                }));
-
                                                 setCantidadesAprobadas((prev) => ({
                                                     ...prev,
                                                     [detalle.producto_id]: e.target.value,
@@ -142,7 +124,6 @@ export default function RecepcionProductos({
                                             }}
                                             max={detalle.cantidadEsperada}
                                             min="0"
-
                                         />
                                         {erroresPorProducto[detalle.producto_id] && (
                                             <p className="text-sm text-red-500">
@@ -154,36 +135,46 @@ export default function RecepcionProductos({
                             </div>
                         );
                     })}
-
-                    <div className="space-y-2">
-                        <Label>Justificación</Label>
-                        <Textarea
-                            value={motivo}
-                            onChange={(e) => setMotivo(e.target.value)}
-                            className="min-h-[80px] resize-none"
-                            required
-                        />
-                    </div>
+        
+                    {action === "aprobado" && (
+                        <div className="space-y-2 p-4 rounded-lg border bg-green-50 border-green-200">
+                            <Label>Estado de la recepción</Label>
+                            <select
+                                value={estadoRecepcion}
+                                onChange={(e) => setEstadoRecepcion(e.target.value)}
+                                className="w-full border border-green-200 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-300 bg-white"
+                            >
+                                <option value="parcial">Parcial</option>
+                                <option value="faltante">Faltante</option>
+                                <option value="completo">Completo</option>
+                            </select>
+                        </div>
+                    )}
+    
+                    {action === "rechazado" && (
+                        <div className="space-y-2">
+                            <Label>Justificación</Label>
+                            <Textarea
+                                value={motivo}
+                                onChange={(e) => setMotivo(e.target.value)}
+                                className="min-h-[80px] resize-none"
+                                required
+                            />
+                        </div>
+                    )}
                 </div>
+
                 <DialogFooter className="gap-2">
                     <Button variant="outline" onClick={handleClose}>
                         Cancelar
                     </Button>
-
                     {!action && (
                         <>
-                            <Button
-                                variant="destructive"
-                                onClick={() => setAction("rechazado")}
-                                className="gap-2"
-                            >
+                            <Button variant="destructive" onClick={() => setAction("rechazado")} className="gap-2">
                                 <X className="h-4 w-4" />
-                                Rechazar
+                                No recibirlo
                             </Button>
-                            <Button
-                                onClick={() => setAction("aprobado")}
-                                className="gap-2"
-                            >
+                            <Button onClick={() => setAction("aprobado")} className="gap-2">
                                 <Check className="h-4 w-4" />
                                 Aprobar
                             </Button>
@@ -192,12 +183,11 @@ export default function RecepcionProductos({
 
                     {action === "aprobado" && (
                         <Button
-                            /*  onClick={handleSubmit} */
+                            onClick={handleSubmit}
                             disabled={
                                 Object.values(cantidadesAprobadas).some(
                                     (val) => parseInt(val) <= 0
                                 ) ||
-                                !motivo.trim() ||
                                 Object.values(erroresPorProducto).some((e) => !!e)
                             }
                             className="gap-2"
@@ -210,7 +200,7 @@ export default function RecepcionProductos({
                     {action === "rechazado" && (
                         <Button
                             variant="destructive"
-                            /*    onClick={handleSubmit} */
+                            onClick={handleSubmitRechazado}
                             disabled={!motivo.trim()}
                             className="gap-2"
                         >

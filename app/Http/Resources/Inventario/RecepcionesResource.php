@@ -18,8 +18,8 @@ public function toArray(Request $request): array
         'id' => $this->id,
         'origen' => $this->origen,
         'destino' => $this->destino,
-        'tipoRecepcion' => $this->tipo_recepcion,
-        'fechaRecepcion' => $this->fecha_recepcion,
+        'tipo_recepcion' => $this->tipo_recepcion,
+        'fecha_recepcion' => $this->fecha_recepcion,
         'estado' => $this->estado,
         'usuarioCreacion' => $this->usuarioCreacion,
         'detalles' => $this->detalles->map(function ($detalle) {

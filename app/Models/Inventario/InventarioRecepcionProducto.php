@@ -14,10 +14,8 @@ class InventarioRecepcionProducto extends Model
     protected $fillable = [
         'origen_id',
         'destino_id',
-        'tipo_movimiento',
-        'movimiento_id',
+        'orden_entrega_id',
         'tipo_recepcion',
-        'movimiento_id',
         'fecha_recepcion',
         'estado',
         'usuario_creacion',
@@ -31,15 +29,17 @@ class InventarioRecepcionProducto extends Model
         'fecha_actualizacion' => 'datetime',
     ];
 
-    public function remitente()
+    
+    public function origen()
     {
-        return $this->belongsTo(Almacen::class, 'remitente_id');
+        return $this->belongsTo(Almacen::class, 'origen_id');
     }
 
     public function destino()
     {
         return $this->belongsTo(Almacen::class, 'destino_id');
     }
+
 
     public function usuario()
     {
@@ -51,6 +51,10 @@ class InventarioRecepcionProducto extends Model
         return $this->hasMany(InventarioRecepcionProductoDetalle::class, 'recepcion_id');
     }
 
+public function ordenEntrega()
+{
+    return $this->belongsTo(InventarioOrdenEntrega::class, 'orden_entrega_id');
+}
 
 
     // InventarioRecepcionProducto.php
@@ -62,5 +66,11 @@ class InventarioRecepcionProducto extends Model
      public function movimientos()
     {
         return $this->belongsToMany(InventarioMovimientoStock::class, 'relacion_movimiento_recepcion', 'recepcion_id', 'movimiento_id');
+    }
+
+    
+    public function cancelacion()
+    {
+        return $this->hasOne(InventarioRecepcionCancelada::class, 'recepcion_id');
     }
 }

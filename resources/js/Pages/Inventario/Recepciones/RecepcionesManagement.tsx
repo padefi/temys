@@ -43,40 +43,28 @@ interface ExistenciaPagination {
 export default function RecepcionesManagement() {
     const { recepcionProductos } = usePage<PageProps>().props;
     const [data, setData] = useState<RecepcionesItem[]>([]);
-
-    const [recepcionSeleccionada, setRecepcionSeleccionada] = useState<RecepcionesItem | null>(null);
-
-    // ✅ 4. Crear la función que abre el modal
-    const abrirModal = (recepcion: RecepcionesItem) => {
-        setRecepcionSeleccionada(recepcion);
-        setIsModalOpen(true);
-        console.log('Abrir modal para recepción:', recepcion);
-    };
-
-
-
     const [isModalOpen, setIsModalOpen] = useState(false);
-    
-        const handleAprobado = (id: any) => {
-       
-        setIsModalOpen(false);
-    };
-
-    const handleRechazado = (id: any) => {
-        
-        setIsModalOpen(false);
-    };
-    
-
-
-
+   
+    const [recepcionSeleccionada, setRecepcionSeleccionada] = useState<RecepcionesItem | null>(null);
+   
     useEffect(() => {
         setData(recepcionProductos.data);
     }, [recepcionProductos]);
 
+    const abrirModal = (recepcion: RecepcionesItem) => {
+        setRecepcionSeleccionada(recepcion);
+        setIsModalOpen(true);
+    };
 
+    const handleAprobado = (id: any) => {    
+        setIsModalOpen(false);
+    };
 
-      const columns = useMemo(
+    const handleRechazado = (id: any) => {  
+        setIsModalOpen(false);
+    };
+    
+    const columns = useMemo(
         () => getColumns({ onAbrirModal: abrirModal }),
         []
     );
@@ -86,12 +74,13 @@ export default function RecepcionesManagement() {
             header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Recepciones</h2>}
         >
             <Head title="Gestión de Recepciones" />
-
             <div className="mx-auto w-full p-6 space-y-12">
                 <Card>
                     <CardContent>
                         <RecepcionesTable
                             data={data} 
+                            links={recepcionProductos.links}
+                            meta={recepcionProductos.meta}
                             columns={columns}
                             getRowCanExpand={() => true} // Todas las filas pueden expandirse
                         />

@@ -16,7 +16,7 @@ use Spatie\QueryBuilder\QueryBuilder;
 class ExistenciasController extends Controller
 {
 
-    public function index(Request $request) //verificar si trae el dato de la cantidad contada para asi poder ocultar el boton de ajuste  
+    public function index(Request $request) 
     {
         //  Tomo el branch_id activo desde la sesión      
         $branchId = Session::get('active_branch_id') ?? null;
