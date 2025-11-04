@@ -16,7 +16,7 @@ use Spatie\QueryBuilder\QueryBuilder;
 class ExistenciasController extends Controller
 {
 
-    public function index(Request $request) 
+    public function index(Request $request)
     {
         //  Tomo el branch_id activo desde la sesión      
         $branchId = Session::get('active_branch_id') ?? null;
@@ -41,26 +41,30 @@ class ExistenciasController extends Controller
             ->join('producto_categorias as pc', 'pc.id', '=', 'psc.categoria_id')
             ->select('p.id', 'p.nombre', 'psc.descripcion AS subCategoria', 'pc.descripcion AS categoria')
             ->where('p.es_inventario', 1);
-
+  
+        
         $recepcionesSub = DB::table('inventario_recepcion_productos as ir')
             ->join('inventario_recepcion_detalles as ird', 'ird.recepcion_id', '=', 'ir.id')
             ->select(
                 'ird.producto_id',
-                'ir.destino_id',
-                'ird.cantidad_recibida as total_recibido'
+                'ir.origen_id',
+                DB::raw('SUM(ird.cantidad_recibida) as total_recibido')
             )
-            ->where('ir.estado', '!=', 'Pendiente');
+            ->where('ir.estado', '!=', 'Cancelado') // O 'Cancelada' según tu DB
+            ->where('ir.estado', '!=', 'Completa') // O 'Cancelada' según tu DB
+            ->groupBy('ird.producto_id', 'ir.origen_id');
 
+       
         $entregasSub = DB::table('inventario_orden_entregas as io')
             ->join('inventario_orden_entrega_detalles as ioe', 'ioe.orden_entrega_id', '=', 'io.id')
             ->select(
                 'ioe.producto_id',
                 'io.destino_id',
-                'ioe.cantidad_enviada as total_entregado',
-                'io.estado'
-            )
-            ->where('io.estado', '!=', 'Cancelado');
+                DB::raw('SUM(ioe.cantidad_enviada) as total_entregado'),
 
+            )
+            ->where('io.estado', '!=', 'Cancelado') // O 'Cancelada' según tu DB
+            ->groupBy('ioe.producto_id', 'io.destino_id');
 
         $stock = QueryBuilder::for(
             InventarioStock::query()
@@ -71,7 +75,6 @@ class ExistenciasController extends Controller
                     'prod.categoria',
                     'rec.total_recibido',
                     'ent.total_entregado',
-                    'ent.estado as estadoEntregas',
                     'aj.cantidad_contada',
                     'aj.estado_ajuste'
                 )
@@ -85,7 +88,7 @@ class ExistenciasController extends Controller
                 })
                 ->leftJoinSub($recepcionesSub, 'rec', function ($join) {
                     $join->on('rec.producto_id', '=', 'inventario_stocks.producto_id')
-                        ->on('rec.destino_id', '=', 'inventario_stocks.almacen_id');
+                        ->on('rec.origen_id', '=', 'inventario_stocks.almacen_id');
                 })
                 ->leftJoinSub($entregasSub, 'ent', function ($join) {
                     $join->on('ent.producto_id', '=', 'inventario_stocks.producto_id')
@@ -113,7 +116,6 @@ class ExistenciasController extends Controller
             ])
             ->paginate($request->input('per_page', 10))
             ->withQueryString();
-
 
         $activeFilters = $request->input('filter', []);
 
@@ -166,6 +168,4 @@ class ExistenciasController extends Controller
 
         return response()->json(['data' => $stock, 'success' => true]);
     }
-
-   
 }

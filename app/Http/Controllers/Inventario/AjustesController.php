@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Session;
 
 class AjustesController extends Controller
 {
-
     public function updateStock(Request $request, $id)
     {
         $request->validate([

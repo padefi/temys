@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers\Inventario\Operaciones;
-
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Inventario\RecepcionesResource;
 use App\Models\Inventario\InventarioMovimientoStock;
@@ -21,8 +19,14 @@ class RecepcionesController extends Controller
 {
     public function index(Request $request)
     {
-        //  Tomo el branch_id activo desde la sesión      
+           //  Tomo el branch_id activo desde la sesión      
         $branchId = Session::get('active_branch_id') ?? null;
+
+            // Si necesitas el almacen correspondiente a ese branch
+        $almacenId = DB::table('almacenes')
+            ->where('id', $branchId)
+            ->value('id');
+         
 
         $recepciones = QueryBuilder::for(
             InventarioRecepcionProducto::query()
@@ -35,12 +39,11 @@ class RecepcionesController extends Controller
                 ->join('users as u', 'inventario_recepcion_productos.usuario_creacion', '=', 'u.id')
                 ->leftJoin('almacenes as ao', 'inventario_recepcion_productos.origen_id', '=', 'ao.id')
                 ->leftJoin('almacenes as ad', 'inventario_recepcion_productos.destino_id', '=', 'ad.id')
-
+                 ->where('inventario_recepcion_productos.origen_id', $almacenId)
         )->allowedFilters([
             AllowedFilter::callback('estado', function ($query, $value) {
                 $query->where('estado', 'LIKE', "%{$value}%");
             }),
-
             AllowedFilter::callback('fecha_recepcion', function ($query, $value) {
                 $query->where('inventario_recepcion_productos.fecha_recepcion', 'LIKE', "%{$value}%");
             }),
@@ -56,10 +59,8 @@ class RecepcionesController extends Controller
             AllowedFilter::callback('usuarioCreacion', function ($query, $value) {
                 $query->whereRaw("CONCAT(u.name, ' ', u.last_name) LIKE ?", ["%{$value}%"]);
             }),
-
             AllowedFilter::partial('cantidad_actual'),
         ])
-
             ->allowedSorts([
                 'fecha_recepcion',
                 'tipo_recepcion',
@@ -70,7 +71,6 @@ class RecepcionesController extends Controller
             ])
             ->paginate($request->input('per_page', 10))
             ->withQueryString();
-
 
         return Inertia::render('Inventario/Recepciones/RecepcionesManagement', [
             'recepcionProductos' => RecepcionesResource::collection($recepciones),
@@ -152,7 +152,6 @@ class RecepcionesController extends Controller
                 'usuario' => Auth::id(),
             ]);
 
-
             $ordenRecepcion = InventarioRecepcionProducto::create([
                 'origen_id' => $recepcion->destino_id,
                 'destino_id' => $recepcion->origen_id,
@@ -164,7 +163,6 @@ class RecepcionesController extends Controller
             ]);
 
             foreach ($recepcion->detalles as $producto) {
-
                 InventarioRecepcionProductoDetalle::insert([
                     'recepcion_id' => $ordenRecepcion->id,
                     'producto_id' => $producto->producto_id,

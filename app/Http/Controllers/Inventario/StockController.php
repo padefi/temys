@@ -4,11 +4,8 @@ namespace App\Http\Controllers\Inventario;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\inventario\StockResource;
-use App\Models\Inventario\InventarioAjuste;
-use App\Models\Inventario\InventarioAjusteDetalle;
 use App\Models\Inventario\InventarioStock;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;

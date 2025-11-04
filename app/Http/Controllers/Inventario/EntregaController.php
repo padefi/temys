@@ -6,13 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Inventario\OrdenEntregaResource;
 use App\Models\Inventario\InventarioOrdenEntrega;
 use App\Models\Inventario\InventarioOrdenEntregaCancelada;
-use App\Models\Almacenes\Almacen;
-use App\Http\Requests\Inventario\Entregas\FiltroEntregaRequest;
-use App\Models\Inventario\InventarioMovimientoStock;
 use App\Models\Inventario\InventarioStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 use Mpdf\Mpdf;
 use Illuminate\Support\Facades\View;
@@ -25,6 +23,14 @@ class EntregaController extends Controller
    
     public function index(Request $request)
     {
+             //  Tomo el branch_id activo desde la sesión      
+        $branchId = Session::get('active_branch_id') ?? null;
+
+            // Si necesitas el almacen correspondiente a ese branch
+        $almacenId = DB::table('almacenes')
+            ->where('id', $branchId)
+            ->value('id');
+       
         $query = QueryBuilder::for(InventarioOrdenEntrega::query()
          ->SELECT(
                 'inventario_orden_entregas.*',
@@ -36,6 +42,7 @@ class EntregaController extends Controller
             ->leftJoin('almacenes as ao', 'inventario_orden_entregas.origen_id', '=', 'ao.id')
             ->leftJoin('almacenes as ad', 'inventario_orden_entregas.destino_id', '=', 'ad.id')
             ->leftJoin('inventario_orden_entrega_canceladas as iec', 'inventario_orden_entregas.id', '=', 'iec.orden_entrega_id')
+            ->where('inventario_orden_entregas.destino_id', $almacenId) 
          
          )->allowedFilters([
             AllowedFilter::callback('estado', function ($query, $value) {
