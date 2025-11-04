@@ -37,4 +37,9 @@ class InventarioRecepcionProductoDetalle extends Model
     {
         return $this->belongsTo(Producto::class, 'producto_id');
     }
+
+    public function movimientos()
+    {
+        return $this->morphMany(InventarioMovimientoStock::class, 'movible');
+    }
 }

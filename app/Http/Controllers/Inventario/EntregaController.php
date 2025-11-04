@@ -82,10 +82,10 @@ class EntregaController extends Controller
     }
 
 
-    //Confirma el envio de la orden y genera remito
     public function confirmarEnvio(InventarioOrdenEntrega $orden)
-    {
-
+{
+    DB::transaction(function () use ($orden) {
+        // Actualizar estado general
         $orden->update([
             'fecha_envio' => now(),
             'estado' => 'Enviado',
@@ -93,24 +93,24 @@ class EntregaController extends Controller
             'usuario_actualizacion' => Auth::id(),
         ]);
 
+        // Cargar relaciones necesarias
         $orden->load(['origen', 'destino', 'detalles.producto']);
 
         foreach ($orden->detalles as $detalle) {
-        /*     // Crear movimiento de stock
-            InventarioMovimientoStock::create([
+            // Crear movimiento polimórfico
+            $detalle->movimientos()->create([
                 'producto_id' => $detalle->producto_id,
-                'origen_id' => $orden->origen->id,
-                'destino_id' => $orden->destino->id,
+                'origen_id' => $orden->origen_id,
+                'destino_id' => $orden->destino_id,
                 'cantidad' => $detalle->cantidad_enviada,
-                'tipo_movimiento' => 'ajuste',
+                'tipo_movimiento' => 'orden_entrega',
                 'fecha_creacion' => now(),
                 'usuario_creacion' => Auth::id(),
-            ]); */
-            
-            // Actualizar stock
-            
+            ]);
+
+            // Actualizar stock (disminuye en el origen)
             InventarioStock::where('producto_id', $detalle->producto_id)
-                ->where('almacen_id', $orden->destino_id)
+                ->where('almacen_id', $orden->origen_id)
                 ->update([
                     'cantidad_actual' => DB::raw('cantidad_actual - ' . $detalle->cantidad_enviada),
                     'usuario_actualizacion' => Auth::id(),
@@ -118,11 +118,13 @@ class EntregaController extends Controller
                 ]);
         }
 
-
+        // Generar remito PDF
         $this->generarRemitoPdf($orden);
+    });
 
-        return response()->json(['success' => true, 'message' => 'Orden marcada como Enviada']);
-    }
+    return response()->json(['success' => true, 'message' => 'Orden marcada como Enviada']);
+}
+
 
     //Cancela la orden de entrega
     public function cancelarOrden(Request $request, InventarioOrdenEntrega $orden)
