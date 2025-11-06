@@ -36,6 +36,8 @@ export function DataTable<TData extends User, TValue>({
         setTableData(initialData);
     }, [initialData]);
 
+   
+
     const columns = useMemo(() => {
         return initialColumns.map(col => {
             return {

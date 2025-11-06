@@ -16,6 +16,6 @@ class InmuebleTipo extends Model
 
      public function inmuebles()
     {
-        return $this->hasMany(Inmueble::class, 'tipo_inmueble_id');
+        return $this->hasMany(Inmueble::class, 'tipo_contrato_id');
     }
 }

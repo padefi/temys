@@ -27,7 +27,7 @@ return new class extends Migration
 
             //Relaciones
             $table->foreign('estado_id')->references('id')->on('inmueble_tipo_estados');
-            $table->foreign('tipo_inmueble_id')->references('id')->on('inmueble_tipos');
+            $table->foreign('tipo_inmueble_id')->references('id')->on('inmueble_tipos');        
             $table->foreign('tipo_ocupacion_id')->references('id')->on('Inmueble_tipo_ocupacions');
             $table->foreign('usuario_creacion')->references('id')->on('users');
             $table->foreign('usuario_actualizacion')->references('id')->on('users');

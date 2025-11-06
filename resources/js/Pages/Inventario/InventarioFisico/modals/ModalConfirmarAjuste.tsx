@@ -4,8 +4,9 @@ import { Button } from "@/Components/ui/button"
 import { Badge } from "@/Components/ui/badge"
 import { Separator } from "@/Components/ui/separator"
 import { Package, MapPin, Calendar, User, FileText, TrendingUp, TrendingDown } from "lucide-react"
-import { AjusteData } from "../Types"
+import { AjusteData } from "../../../../types/Inventario"
 import axios from "axios"
+import { log } from "console"
 
 
 interface AjusteInventarioModalProps {
@@ -26,7 +27,7 @@ export function AjusteInventarioModal({
     onReject,
 }: AjusteInventarioModalProps) {
     const [ajusteData, setAjusteData] = useState<AjusteData | null>(null);
-
+   
     useEffect(() => {
         if (!idAjuste || !productoId) return;
 
@@ -40,8 +41,8 @@ export function AjusteInventarioModal({
             .then((res) => setAjusteData(res.data.data[0]))
             .catch((err) => console.error("Error al cargar el ajuste", err));
     }, [idAjuste, productoId]);
-
-
+console.log(ajusteData)
+  
 
     if (!ajusteData) {
         return (
@@ -58,7 +59,68 @@ export function AjusteInventarioModal({
         );
     }
 
-    // 🔹 Ahora sí, ya tenemos datos
+   async function aprobarAjuste() {
+    if (!ajusteData) return;
+    
+
+    try {
+    
+        const response = await axios.post(`/aprobar-ajuste`, {
+            ajuste_id:idAjuste,
+            almacen_id: ajusteData.almacenId,
+            producto_id: productoId,
+            cantidad_contada: ajusteData.cantidadContada,
+            cantidad_sistema: ajusteData.cantidadSistema,
+        });
+
+       
+        if (response.status === 200) {
+            console.log("Ajuste aprobado:", response.data);
+            
+            onApprove();
+
+      
+            onClose();
+        }
+    } catch (error: any) {
+        console.error("Error al aprobar el ajuste:", error);
+
+        
+        
+    }
+}
+
+   async function cancelarAjuste() {
+    if (!ajusteData) return;
+    
+
+    try {
+    
+        const response = await axios.post(`/cancelar-ajuste`, {
+            ajuste_id:idAjuste,         
+        });
+
+       
+        if (response.status === 200) {
+            console.log("Ajuste cancelado:");
+            
+            onApprove();
+
+      
+            onClose();
+        }
+    } catch (error: any) {
+        console.error("Error al aprobar el ajuste:", error);
+
+        
+        
+    }
+}
+
+
+
+
+  
     const isDiferenciaPositiva = ajusteData.diferencia > 0;
     const diferenciaColor = isDiferenciaPositiva ? "text-green-600" : "text-red-600";
     const diferenciaIcon = isDiferenciaPositiva ? TrendingUp : TrendingDown;
@@ -153,10 +215,10 @@ export function AjusteInventarioModal({
 
                     {/* Botones de acción */}
                     <div className="flex gap-3 pt-4">
-                        <Button variant="outline" className="flex-1 bg-transparent" onClick={onReject}>
+                        <Button variant="outline" className="flex-1 bg-transparent" onClick={cancelarAjuste}>
                             Rechazar
                         </Button>
-                        <Button className="flex-1" onClick={onApprove}>
+                        <Button className="flex-1" onClick={aprobarAjuste}>
                             Aprobar
                         </Button>
                     </div>

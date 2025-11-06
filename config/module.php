@@ -329,12 +329,12 @@ return [
             'name' => 'Patrimonio',
             'menus' => [
                 [
-                    'key' => 'inmubles',
-                    'name' => 'Inmubles',
+                    'key' => 'inmuebles',
+                    'name' => 'Inmuebles',
                     'submenus' => [
-                        ['key' => 'inmubles', 'name' => 'Inmubles'],
+                        ['key' => 'inmuebles', 'name' => 'Inmuebles'],
                         ['key' => 'impuestosTasas', 'name' => 'Impuestos y tasas'],
-                        ['key' => 'serviciosInmubles', 'name' => 'Servicios'],
+                        ['key' => 'serviciosInmuebles', 'name' => 'Servicios'],
                         ['key' => 'contratos', 'name' => 'Contratos'],
                     ]
                 ],

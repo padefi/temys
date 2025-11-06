@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle, Check, CheckCircle, X } from "lucide-react";
-import { Button } from "@/Components/ui/button";
+
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,8 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Textarea } from "@/Components/ui/textarea";
 import axios from "axios";
-import { StockItem, StockRequest } from "../Types"; 
+import { StockItem, StockRequest } from "../../../../types/Inventario"; 
+import { Button } from "@/components/ui/button";
 
 interface StockApprovalModalProps {
   isOpen: boolean;
@@ -62,7 +63,7 @@ export default function AceptarStock({
   }, [request]);
 
   if (!request) return null;
-console.log("Request", request);
+
 
   const handleSubmit = async () => {
     const estado = action === "aprobado" ? "Aceptada" : "Cancelada";

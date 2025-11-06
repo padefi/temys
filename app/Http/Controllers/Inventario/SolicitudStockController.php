@@ -1,18 +1,16 @@
 <?php
 
 namespace App\Http\Controllers\Inventario;
-
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Inventario\AcceptStockRequest;
 use App\Http\Requests\Inventario\CancelStockRequest;
-use App\Http\Requests\Inventario\OrderStockRequest;
 use App\Http\Requests\Inventario\SolicitarStockRequest;
 use App\Http\Resources\Inventario\SolicitudRecibidaDetalleResource;
 use App\Http\Resources\inventario\SolicitudRecibidaStockResource;
 use App\Models\Inventario\InventarioOrdenEntrega;
 use App\Models\Inventario\InventarioOrdenEntregaDetalle;
 use App\Models\Inventario\InventarioRecepcionProducto;
-use App\Models\Inventario\InventarioSolicitarDetalle;
+use App\Models\Inventario\InventarioRecepcionProductoDetalle;
 use App\Models\Inventario\InventarioSolicitarStock;
 use App\Models\Inventario\InventarioSolicitudDetalle;
 use App\Models\Inventario\InventarioStock;
@@ -53,14 +51,14 @@ class SolicitudStockController extends Controller
             return response()->json([
                 'message' => 'Solicitud creada con múltiples productos.',
                 'solicitud_id' => $solicitud->id,
-                'success' =>true
+                'success' => true
 
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Error al procesar la solicitud.',
                 'details' => $e->getMessage(),
-                'success' =>false
+                'success' => false
             ], 500);
         }
     }
@@ -132,18 +130,7 @@ class SolicitudStockController extends Controller
             }
         }
 
-        // Recepción
-        InventarioRecepcionProducto::create([
-            'origen_id' => $solicitud->almacen_solicitante_id,
-            'destino_id' => $solicitud->almacen_proveedor_id,
-            'movimiento_id' => $solicitud->id,
-            'tipo_recepcion' => 'restribuccion',
-            'fecha_recepcion' => now(),
-            'estado' => 'Pendiente',
-            'usuario_creacion' => Auth::id(),
-        ]);
-
-        // Orden de entrega
+        // Orden de entrega primero
         $ordenEntrega = InventarioOrdenEntrega::create([
             'origen_id' => $solicitud->almacen_solicitante_id,
             'destino_id' => $solicitud->almacen_proveedor_id,
@@ -159,14 +146,35 @@ class SolicitudStockController extends Controller
             InventarioOrdenEntregaDetalle::create([
                 'orden_entrega_id' => $ordenEntrega->id,
                 'producto_id' => $producto['producto_id'],
-                'cantidad_enviada' => -abs($producto['cantidad_aprobada']),
+                'cantidad_enviada' => abs($producto['cantidad_aprobada']),
             ]);
         }
+
+        // Ahora creación de la recepción, vinculando la orden de entrega
+        $ordenRecepcion = InventarioRecepcionProducto::create([
+            'origen_id' => $solicitud->almacen_solicitante_id,
+            'destino_id' => $solicitud->almacen_proveedor_id,
+            'orden_entrega_id' => $ordenEntrega->id,
+            'tipo_recepcion' => 'restribuccion',
+            'fecha_recepcion' => now(),
+            'estado' => 'Pendiente',
+            'usuario_creacion' => Auth::id(),
+        ]);
+
+        // Crear detalle por cada producto aprobado
+        foreach ($request->productos as $producto) {
+            InventarioRecepcionProductoDetalle::insert([
+                'recepcion_id' => $ordenRecepcion->id,
+                'producto_id' => $producto['producto_id'],
+                'cantidad_esperada' => abs($producto['cantidad_aprobada']),
+            ]);
+        }
+
 
         return response()->json([
             'message' => 'Solicitud aceptada y detalles generados.',
             'solicitud_id' => $solicitud->id,
-            'success' =>true
+            'success' => true
         ]);
     }
 
@@ -185,30 +193,34 @@ class SolicitudStockController extends Controller
         return response()->json([
             'message' => 'Solicitud cancelada correctamente.',
             'solicitud_id' => $original->id,
-            'success' =>true
+            'success' => true
         ]);
     }
 
-
     public function solicitudesAceptadas()
     {
+        $branchId = Session::get('active_branch_id');
+        $almacenId = $branchId; // si el branch representa el almacén actual
         $userId = Auth::id();
 
         $solicitudes = SolicitudRecibidaStock::with(['almacensolicitante', 'detalles.producto'])
-            ->where(function ($query) use ($userId) {
-                $query->where('estado', 'Pendiente')
-                    ->where('usuario_creacion', $userId);
-            })
-            ->orWhere(function ($query) use ($userId) {
-                // Aceptadas o Canceladas por otros
-                $query->whereIn('estado', ['Aceptada', 'Cancelada'])
-                    ->whereColumn('almacen_solicitante_id', '!=', 'usuario_actualizacion')
-                    ->where('usuario_actualizacion', '!=', $userId);
+            ->where(function ($query) use ($userId, $almacenId) {
+                $query->where(function ($q) use ($userId, $almacenId) {
+                    $q->where('estado', 'Pendiente')
+                        ->where('almacen_solicitante_id', $almacenId)
+                        ->where('usuario_creacion', $userId);
+                })
+                    ->orWhere(function ($q) use ($userId, $almacenId) {
+                        $q->whereIn('estado', ['Aceptada', 'Cancelada'])
+                            ->where('almacen_solicitante_id', $almacenId);
+                        // quitamos el filtro del usuario_actualizacion
+                    });
             })
             ->get();
 
         return response()->json(SolicitudRecibidaDetalleResource::collection($solicitudes));
     }
+
 
     public function stockDisponible($idProducto)
     {

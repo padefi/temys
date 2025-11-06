@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { Inertia } from '@inertiajs/inertia'
-import { usePage } from "@inertiajs/react";
+import { usePage, router } from "@inertiajs/react";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
@@ -40,7 +39,7 @@ export default function Edit() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    Inertia.put(`/productos/${producto.id}`, form);
+    router.put(`/productos/${producto.id}`, form);
   };
 
   return (

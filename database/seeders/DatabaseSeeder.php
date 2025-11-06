@@ -66,7 +66,9 @@ class DatabaseSeeder extends Seeder
             RelacionComprobanteOrdenPagoProveedorSeeder::class,
             OrdenPagoSeeder::class,
             MovimientoTesoreriaSeeder::class,
-            MovimientoBancoSeeder::class,
+            ProvinciaSeeder::class,
+            LocalidadSeeder::class,
+            CalleSeeder::class,
         ]);
     }
 }

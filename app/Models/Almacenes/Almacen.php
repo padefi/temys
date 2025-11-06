@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 class Almacen extends Model
 {
     use HasFactory;
-    protected $table='almacenes';
+    protected $table = 'almacenes';
     public $timestamps = false;
 
 
@@ -81,10 +81,7 @@ class Almacen extends Model
         return $this->belongsTo(OrdenCotizacion::class, 'id');
     }
 
-
-
-
- public function movimientosOrigen()
+    public function movimientosOrigen()
     {
         return $this->hasMany(InventarioMovimientoStock::class, 'almacen_origen_id');
     }
@@ -93,6 +90,7 @@ class Almacen extends Model
     {
         return $this->hasMany(InventarioMovimientoStock::class, 'almacen_destino_id');
     }
+
 
     /*public function ajustesInventario()
     {
