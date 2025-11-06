@@ -19,12 +19,12 @@ class Impuesto extends Model
         'habilitado',
     ];
 
-
+    ////ORDENES DE COTIZACION DETALLE RELACIONADO
     public function cotizacionesOrdenesDetalle()
     {
         return $this->belongsTo(OrdenCotizacionDetalle::class, 'id');
     }
-
+    ////ORDENES DE COMPRA DETALLE RELACIONADO
     public function detalles()
     {
         return $this->belongsToMany(

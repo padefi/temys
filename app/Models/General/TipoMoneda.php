@@ -18,14 +18,15 @@ class TipoMoneda extends Model
         'descripcion',
         'simbolo',
         'pais_origen',
+        'habilitado',
     ];
 
-
+    ////ORDENES DE COTIZACION RELACIONADA
     public function OrdenCotizacionMoneda()
     {
         return $this->belongsTo(OrdenCotizacion::class, 'id');
     }
-
+    ////ORDENES DE COMPRA RELACIONADA
     public function OrdenCompraMoneda()
     {
         return $this->belongsTo(OrdenCompra::class, 'id');

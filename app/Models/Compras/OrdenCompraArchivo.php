@@ -7,7 +7,7 @@ class OrdenCompraArchivo extends Model
 {
     protected $table = 'orden_compras_archivos';
     protected $fillable = ['orden_compra_id', 'nombre', 'path', 'mime', 'size'];
-
+    ////ORDEN COMPRA RELACIONADA
     public function ordenCompra()
     {
         return $this->belongsTo(OrdenCompra::class);

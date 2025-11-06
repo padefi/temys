@@ -19,20 +19,20 @@ class OrdenCompraDetalleImpuesto extends Model
     ];
 
     protected $casts = [
-
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
 
-
-
+    ////IMPUESTO RELACIONADO
     public function impuesto()
-{
-    return $this->belongsTo(Impuesto::class, 'impuesto_id');
-}
-
-public function ordenCompraDetalle()
-{
-    return $this->belongsTo(OrdenCompraDetalle::class, 'orden_compras_detalles_id');
-}
+    {
+        return $this->belongsTo(Impuesto::class, 'impuesto_id');
+    }
+    ////ORDEN COMPRA DETALLE RELACIONADO
+    public function ordenCompraDetalle()
+    {
+        return $this->belongsTo(OrdenCompraDetalle::class, 'orden_compras_detalles_id');
+    }
 
 }

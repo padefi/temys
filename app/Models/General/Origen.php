@@ -17,7 +17,7 @@ class Origen extends Model
         'descripcion',
     ];
 
-
+    ////SOLICITUDES DE COMPRA RELACIONADAS
     public function solicitudCompra()
         {
             return $this->belongsTo(SolicitudCompra::class, 'id');

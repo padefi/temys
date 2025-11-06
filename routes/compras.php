@@ -4,9 +4,13 @@ use App\Http\Controllers\Compras\ComprasController;
 use App\Http\Controllers\Compras\Proveedores\ProveedoresController;
 use App\Http\Controllers\Compras\OrdenCotizaciones\OrdenCotizacionesController;
 use App\Http\Controllers\Compras\OrdenCompras\OrdenComprasController;
+use App\Http\Controllers\Compras\OrdenPagoController;
+use App\Http\Controllers\Compras\ComprobantesProveedores\ComprobantesProveedoresController;
 use App\Http\Controllers\UserModulePanel\UserModuleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+Route::middleware('module:compras')->group(function () {
 
 Route::get('/compras', function () {
     return Inertia::render('Compras/Index', [
@@ -31,7 +35,7 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
             });
         });
 
-    Route::middleware(['submenu:cotizacionesOrdenesCompras'])->prefix('cotizaciones-ordenes')->group(function () {
+    Route::middleware(['submenu:cotizacionesOrdenesCompras'])->prefix('compras/cotizaciones-ordenes')->group(function () {
 
         Route::get('/archivo/{archivo}', [OrdenCotizacionesController::class, 'visualizarArchivo'])
         ->name('cotizacionesOrdenes.visualizarArchivo')
@@ -80,14 +84,10 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
         Route::post('/archivo/{archivo}/eliminar', [OrdenCotizacionesController::class, 'eliminarArchivo'])
         ->name('cotizacionesOrdenes.eliminar');
 
-
-
-
-
     });
 
 
-    Route::middleware(['submenu:ordenesCompras'])->prefix('ordenes-compras')->group(function () {
+    Route::middleware(['submenu:ordenesCompras'])->prefix('compras/ordenes-compras')->group(function () {
         // Listado
         Route::get('/', [OrdenComprasController::class, 'index'])
             ->name('ordenesCompras');
@@ -124,5 +124,40 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
         ->middleware('auth'); // protege el archivo
 
 
+
+    //Rutas para ordenes de pago
+        // Listado
+       /* Route::get('/', [OrdenPagoController::class, 'index'])
+            ->name('ordenesPagosCompras');*/
+
+        // Formulario para crear
+       /* Route::get('/nueva', [OrdenPagoController::class, 'nuevaOrdenPago'])
+            ->name('ordenesPagosCompras.nueva');*/
+
+        // Guardar orden de pago
+        Route::post('/ordenes-pagos', [OrdenPagoController::class, 'store'])
+            ->name('ordenesPagosCompras.store');
+        // Guardar comprobantes de proveedores
+        Route::post('/comprobantes-proveedores', [ComprobantesProveedoresController::class, 'store']);
+        // Comprobantes por orden
+        Route::get('/{ordenId}/comprobantes', [ComprobantesProveedoresController::class, 'comprobantesPorOrden']);
+
+
+        // Mostrar detalle
+       /* Route::get('/{orden_pago_id}', [OrdenPagoController::class, 'show'])
+            ->name('ordenesPagosCompras.show');*/
     });
+
+
+
+        Route::middleware(['submenu:facturasProveedores'])
+        ->group(function () {
+            // Vista principal
+            Route::get('compras/comprobantes-proveedores', [ComprobantesProveedoresController::class, 'index'])
+                ->name('facturasProveedores');
+
+
+
+        });
+});
 });

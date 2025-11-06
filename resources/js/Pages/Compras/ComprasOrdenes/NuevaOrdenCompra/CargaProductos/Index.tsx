@@ -15,15 +15,13 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from '@/Components/ui/dropdown-menu'
-import { CirclePlus } from 'lucide-react'
-import * as Dialog from '@radix-ui/react-dialog'
-import ProductosIndex from '../../../../General/Productos/Index'
 import { ProductosDisponibles } from '@/types/Producto'
 
 type PageProps = {
   auth: { user: { id: number; name: string; email: string } }
   productos: ProductosDisponibles[]
   impuestos: { id: number; descripcion: string; porcentaje: number }[]
+  co_cuentas: { id: number; codigo: string; descripcion: string }[]
 }
 
 type ProductoEditable = {
@@ -51,28 +49,30 @@ type ProductoEditable = {
 type Props = {
   setProductosValidos: (valid: boolean) => void
   setProductos: (productos: ProductoEditable[]) => void
+  estadoOrden: string;  // 👈 estado de la orden de compra
   detalles?: any[]
 }
 
-export default function CargaProductos({ setProductosValidos, setProductos, detalles }: Props) {
-  const { impuestos, auth, productos: productosDisponibles = [] } = usePage<PageProps>().props
-  const [productos, setLocalProductos] = useState<ProductoEditable[]>([])
-  const [modalAbierto, setModalAbierto] = useState(false)
-  const [columnasVisibles, setColumnasVisibles] = useState({
-    entrega_esperada: true,
-    descripcion: true,
-    modelo: true,
-    subcategoria: false,
-    cuenta: true,
-    codigo_barras: false,
-    referencia: false,
-    cantidad: true,
-    precio_unitario: true,
-    impuestos: true,
-    porcentaje_descuento: true,
-    importe: true
-  })
+export default function CargaProductos({ setProductosValidos, setProductos, detalles,estadoOrden }: Props) {
+    const { impuestos, auth, productos: productosDisponibles = [], co_cuentas = [] } = usePage<PageProps>().props
+    const [productosLocal, setProductosLocal] = useState<ProductoEditable[]>([])
+    const [modalAbierto, setModalAbierto] = useState(false)
+    const [columnasVisibles, setColumnasVisibles] = useState({
+        entrega_esperada: false,
+        descripcion: true,
+        modelo: false,
+        subcategoria: false,
+        codigo_barras: false,
+        referencia: false,
+        cantidad: true,
+        precio_unitario: true,
+        impuestos: false,
+        porcentaje_descuento: true,
+        importe: true,
+        co_cuenta: false,
+    })
 
+    const bloqueado = useState(true);
   // Inicializa con detalles si llegan
   useEffect(() => {
     if (detalles && detalles.length > 0) {
@@ -84,10 +84,10 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
         descripcion: det.descripcion || '',
         modelo_descripcion: det.producto?.modelo?.descripcion || '',
         subcategoria_descripcion: det.producto?.sub_categoria?.descripcion || '',
-        co_cuenta_id: det.producto?.rubro?.id || undefined,
-        co_cuenta_descripcion: det.producto?.rubro?.descripcion || '',
-        codigo_barras: det.codigo_barras || '',
-        referencia: det.referencia || '',
+        co_cuenta_id: det.producto?.co_cuenta_id || undefined,
+        co_cuenta_descripcion: det.producto?.co_cuenta?.descripcion || '',
+        codigo_barras: det.producto?.codigo_barras || '',
+        referencia: det.producto?.referencia || '',
         cantidad: det.cantidad || 0,
         precio_unitario: +det.precio_unitario || 0,
         impuestos_seleccionados: det.impuestos ? det.impuestos.map((i: any) => i.id) : [],
@@ -95,20 +95,30 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
         importe: +det.importe || 0,
         usuario_id: auth.user.id,
       }))
-      setLocalProductos(iniciales)
+      setProductosLocal(iniciales)
     }
   }, [detalles])
 
+
   // Actualiza productos y validez
-  useEffect(() => {
-    const hayProductoValido = productos.some(p => p.producto_id > 0 && p.cantidad > 0)
-    setProductosValidos(hayProductoValido)
-    setProductos(productos)
-  }, [productos])
+    useEffect(() => {
+        setProductos(productosLocal)
+        const todosValidos = productosLocal.length > 0 &&
+            productosLocal.every(p =>
+            p.producto_id > 0 &&
+            p.descripcion.trim() !== '' &&
+            p.cantidad > 0 &&
+            p.precio_unitario > 0
+            )
+        setProductosValidos(todosValidos)
+
+
+    }, [productosLocal])
+
 
   const agregarLinea = () => {
-    setLocalProductos([
-      ...productos,
+    setProductosLocal([
+      ...productosLocal,
       {
         id: Date.now(),
         producto_id: 0,
@@ -117,6 +127,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
         descripcion: '',
         modelo_descripcion: '',
         subcategoria_descripcion: '',
+        co_cuenta_descripcion: '',
         codigo_barras: '',
         referencia: '',
         cantidad: 0,
@@ -129,10 +140,10 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
     ])
   }
 
-  const eliminarLinea = (id: number) => setLocalProductos(productos.filter(p => p.id !== id))
+  const eliminarLinea = (id: number) => setProductosLocal(productosLocal.filter(p => p.id !== id))
 
   const handleChangeProducto = (index: number, value: string) => {
-    const nuevos = [...productos]
+    const nuevos = [...productosLocal]
     const producto = productosDisponibles.find(p => p.nombre === value)
     if (producto) {
       nuevos[index] = {
@@ -142,13 +153,15 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
         descripcion: producto.descripcion,
         modelo_descripcion: producto.modelo?.descripcion || '',
         subcategoria_descripcion: producto.sub_categoria?.descripcion || '',
+        co_cuenta_id: producto.co_cuenta_id || undefined,
+        co_cuenta_descripcion: producto.co_cuenta?.descripcion || '',
         codigo_barras: producto.codigo_barras || '',
         referencia: producto.referencia || ''
       }
     } else {
       nuevos[index].nombre = value
     }
-    setLocalProductos(nuevos)
+    setProductosLocal(nuevos)
   }
 
   const calcularImporte = (p: ProductoEditable) => {
@@ -160,7 +173,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
   }
 
    const handleChangeCampo = (index: number, campo: keyof ProductoEditable, valor: any) => {
-    const nuevos = [...productos]
+    const nuevos = [...productosLocal]
     const p = { ...nuevos[index], [campo]: valor }
 
     const totalImpuestos = impuestos
@@ -168,11 +181,6 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
         .reduce((acc, i) => acc + i.porcentaje / 100, 0)
     const descuento = p.porcentaje_descuento / 100
 
-    if (campo === 'co_cuenta_id') {
-        const cuenta = cuentas.find(r => r.id === valor)
-        p.co_cuenta_id = cuenta?.id
-        p.co_cuenta_descripcion = cuenta?.descripcion
-    }
 
     if (campo === 'importe') {
         if (p.cantidad > 0) {
@@ -201,7 +209,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
     }
 
     nuevos[index] = p
-    setLocalProductos(nuevos)
+    setProductosLocal(nuevos)
     }
 
 
@@ -215,7 +223,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
 
       <TabsContent value="productos">
         <div className="flex justify-between items-center mb-4">
-          <Button onClick={agregarLinea}>Agregar línea</Button>
+          <Button onClick={agregarLinea} disabled={estadoOrden !== "Pendiente"}>Agregar línea</Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">Mostrar Columnas</Button>
@@ -245,7 +253,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
               {columnasVisibles.descripcion && <TableHead>Descripción</TableHead>}
               {columnasVisibles.modelo && <TableHead>Modelo</TableHead>}
               {columnasVisibles.subcategoria && <TableHead>Subcategoría</TableHead>}
-              {columnasVisibles.cuenta && <TableHead>Rubro</TableHead>}
+              {columnasVisibles.co_cuenta && <TableHead>Cuenta</TableHead>}
               {columnasVisibles.codigo_barras && <TableHead>Código de Barras</TableHead>}
               {columnasVisibles.referencia && <TableHead>Referencia</TableHead>}
               {columnasVisibles.cantidad && <TableHead>Cantidad</TableHead>}
@@ -258,8 +266,10 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
           </TableHeader>
 
           <TableBody>
-            {productos.map((producto, index) => {
-              const habilitado = producto.cantidad > 0
+            {productosLocal.map((producto, index) => {
+
+              const habilitado = producto.producto_id > 0 && estadoOrden === "Pendiente"
+
               return (
                 <TableRow key={producto.id}>
                   <TableCell>
@@ -276,9 +286,16 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                     {columnasVisibles.entrega_esperada && (
                         <TableCell>
                         <input
-                            type="text"
-                            value={producto.entrega_esperada?.toLocaleDateString()}
-                            onChange={(e) => handleChangeCampo(index, 'entrega_esperada', e.target.value)}
+                            disabled={!habilitado}
+                            type="date"
+                             value={
+                                producto.entrega_esperada
+                                ? new Date(producto.entrega_esperada).toISOString().split("T")[0]
+                                : ""
+                            }
+                            onChange={(e) =>
+                                handleChangeCampo(index, "entrega_esperada", new Date(e.target.value))
+                            }
                             className="w-full border px-2 py-1 rounded"
                         />
                         </TableCell>
@@ -287,6 +304,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                     {columnasVisibles.descripcion && (
                         <TableCell>
                         <input
+                            disabled={!habilitado}
                             type="text"
                             value={producto.descripcion}
                             onChange={(e) => handleChangeCampo(index, 'descripcion', e.target.value)}
@@ -298,6 +316,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                     {columnasVisibles.modelo && (
                         <TableCell>
                         <input
+                            disabled={!habilitado}
                             type="text"
                             value={producto.modelo_descripcion}
                             readOnly
@@ -309,6 +328,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                     {columnasVisibles.subcategoria && (
                         <TableCell>
                         <input
+                            disabled={!habilitado}
                             type="text"
                             value={producto.subcategoria_descripcion}
                             readOnly
@@ -317,24 +337,47 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                         </TableCell>
                     )}
 
-                    {columnasVisibles.cuenta && (
+                    {columnasVisibles.co_cuenta && (
                     <TableCell>
-                        <select
-                        value={producto.co_cuenta_id || ''}
-                        onChange={(e) => handleChangeCampo(index, 'co_cuenta_id', +e.target.value)}
-                        className="w-full border px-2 py-1 rounded"
-                        >
-                        <option value="">Seleccionar cuenta</option>
-                        {cuentas.map(r => (
-                            <option key={r.id} value={r.id}>{r.descripcion}</option>
-                        ))}
-                        </select>
+                        <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                            variant="outline"
+                            className="w-full justify-start"
+                            disabled={producto.producto_id === 0 || !habilitado || bloqueado}
+                            >
+                            {producto.co_cuenta_id
+                                ? `${co_cuentas.find(c => c.id === producto.co_cuenta_id)?.codigo} - ${
+                                    co_cuentas.find(c => c.id === producto.co_cuenta_id)?.descripcion
+                                }`
+                                : "Seleccionar cuenta"}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[300px] p-2">
+                            <Command>
+                            <CommandInput placeholder="Buscar cuenta..." />
+                            <CommandList>
+                                <CommandEmpty>No se encontraron cuentas.</CommandEmpty>
+                                {co_cuentas.map((c) => (
+                                <CommandItem
+                                    key={c.id}
+                                    onSelect={() => handleChangeCampo(index, "co_cuenta_id", c.id)}
+                                >
+                                    {c.codigo} - {c.descripcion}
+                                </CommandItem>
+                                ))}
+                            </CommandList>
+                            </Command>
+                        </PopoverContent>
+                        </Popover>
                     </TableCell>
                     )}
+
 
                     {columnasVisibles.codigo_barras && (
                         <TableCell>
                         <input
+                            disabled={!habilitado}
                             type="text"
                             value={producto.codigo_barras}
                             onChange={(e) => handleChangeCampo(index, 'codigo_barras', e.target.value)}
@@ -346,6 +389,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                     {columnasVisibles.referencia && (
                         <TableCell>
                         <input
+                            disabled={!habilitado}
                             type="text"
                             value={producto.referencia}
                             onChange={(e) => handleChangeCampo(index, 'referencia', e.target.value)}
@@ -357,6 +401,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                     {columnasVisibles.cantidad && (
                         <TableCell>
                         <input
+                            disabled={!habilitado}
                             type="number"
                             min={0}
                             value={producto.cantidad}
@@ -382,7 +427,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                         <TableCell>
                         <Popover>
                             <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start" disabled={!habilitado}>
+                            <Button variant="outline" className="w-full justify-start" disabled={!habilitado || bloqueado}>
                                 {producto.impuestos_seleccionados.length
                                 ? impuestos
                                     .filter(i => producto.impuestos_seleccionados.includes(i.id))
@@ -449,6 +494,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                     <Button
                       variant="ghost"
                       size="sm"
+                      disabled={!habilitado}
                       onClick={() => eliminarLinea(producto.id)}
                       className="text-red-500 hover:text-red-700"
                     >
@@ -465,7 +511,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
         {/* Subtotal */}
         <div className="text-right">
             Subtotal: $
-            {productos
+            {productosLocal
             .reduce((acc, p) => acc + p.precio_unitario * p.cantidad, 0)
             .toFixed(2)}
         </div>
@@ -473,7 +519,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
         {/* Descuento total */}
         <div className="text-right">
             Descuento total: $
-            {productos
+            {productosLocal
             .reduce(
                 (acc, p) =>
                 acc + p.precio_unitario * p.cantidad * (p.porcentaje_descuento / 100),
@@ -487,9 +533,9 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
             Impuestos:
             <div className="ml-4">
             {impuestos
-                .filter(i => productos.some(p => p.impuestos_seleccionados.includes(i.id)))
+                .filter(i => productosLocal.some(p => p.impuestos_seleccionados.includes(i.id)))
                 .map(i => {
-                const totalImpuesto = productos.reduce((acc, p) => {
+                const totalImpuesto = productosLocal.reduce((acc, p) => {
                     if (p.impuestos_seleccionados.includes(i.id)) {
                     return acc + p.precio_unitario * p.cantidad * (i.porcentaje / 100)
                     }
@@ -504,11 +550,11 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
             </div>
         </div>
 
-        {/* Total */}
+        {/* Total
         <div className='text-lg font-semibold text-right'>
             Total: $
-            {productos.reduce((acc, p) => acc + p.importe, 0).toFixed(2)}
-        </div>
+            {productosLocal.reduce((acc, p) => acc + p.importe, 0).toFixed(2)}
+        </div>*/}
         </div>
 
 

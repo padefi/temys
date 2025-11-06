@@ -18,11 +18,11 @@ use App\Models\Inventario\Productos\Producto;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
-use function Laravel\Prompts\alert;
 use Illuminate\Support\Facades\Log;
 
 class OrdenCotizacionesController extends Controller
 {
+    ////LISTAR ORDENES DE COTIZACION
     public function index(Request $request)
     {
 
@@ -44,6 +44,7 @@ class OrdenCotizacionesController extends Controller
 
     }
 
+    ////CREAR NUEVA COTIZACION
     public function nuevaCotizacion()
     {
         return Inertia::render('Compras/CotizacionesOrdenes/NuevaCotizacion/Index', [
@@ -58,7 +59,7 @@ class OrdenCotizacionesController extends Controller
         ]);
     }
 
-    ////////////Enviar Cotizacion
+    ////ENVIAR COTIZACION
     public function enviarCotizacion(Request $request)
     {
 
@@ -197,8 +198,7 @@ class OrdenCotizacionesController extends Controller
 
     }
 
-
-    ////////////Confirmar Cotizacion
+    ////CONFIRMAR COTIZACION
     public function confirmarCotizacion(Request $request)
     {
 
@@ -339,9 +339,7 @@ class OrdenCotizacionesController extends Controller
         }
     }
 
-
-
-
+    ////VISUALIZAR DETALLE DE COTIZACION
     public function show($solicitud_id, $orden_id = null)
     {
         $solicitudCompraQuery = SolicitudCompra::with(['origen']);
@@ -379,6 +377,7 @@ class OrdenCotizacionesController extends Controller
         ]);
     }
 
+    ////RECHAZAR COTIZACION
     public function rechazarSolicitud($solicitud_id, $orden_id = null)
     {
         $solicitudCompra = SolicitudCompra::findOrFail($solicitud_id);
@@ -388,6 +387,7 @@ class OrdenCotizacionesController extends Controller
         return redirect()->back()->with('success', 'Solicitud rechazada.');
     }
 
+    ////ACEPTAR COTIZACION
     public function aceptarSolicitud($solicitud_id, $orden_id = null)
     {
         $solicitudCompra = SolicitudCompra::findOrFail($solicitud_id);
@@ -398,7 +398,7 @@ class OrdenCotizacionesController extends Controller
         return redirect()->back()->with('success', 'Solicitud aceptada.');
     }
 
-
+    ////GENERAR ORDEN DE COMPRA
     public function generarOrdenCompra(Request $request)
     {
         $validated = $request->validate([
@@ -471,7 +471,7 @@ class OrdenCotizacionesController extends Controller
         }
     }
 
-
+    ////GUARDAR ORDEN DE COTIZACION
     public function guardar(Request $request)
     {
         $validated = $request->validate([
@@ -586,7 +586,7 @@ class OrdenCotizacionesController extends Controller
         }
     }
 
-     // Guarda el archivo asociado
+    ////SUBIR ARCHIVO A COTIZACION
     public function subirArchivo(Request $request, $id)
     {
         $request->validate([
@@ -608,6 +608,7 @@ class OrdenCotizacionesController extends Controller
         return redirect()->back()->with('success', 'Archivo subido correctamente');
     }
 
+    ////ELIMINAR ARCHIVO DE COTIZACION
     public function eliminarArchivo(OrdenCotizacionArchivo $archivo)
     {
         try {
@@ -625,7 +626,7 @@ class OrdenCotizacionesController extends Controller
         }
     }
 
-
+    ////VISUALIZAR ARCHIVO DE COTIZACION
     public function visualizarArchivo(OrdenCotizacionArchivo $archivo)
     {
 

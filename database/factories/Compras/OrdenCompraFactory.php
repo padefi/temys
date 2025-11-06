@@ -21,7 +21,6 @@ class OrdenCompraFactory extends Factory
             'moneda_id' => TipoMoneda::inRandomOrder()->value('id') ?? TipoMoneda::factory(),
             'almacen_destino_id' => Almacen::inRandomOrder()->value('id') ?? 1,
             'entrega_esperada' => $this->faker->dateTimeBetween('now', '+10 days'),
-            'entregar_a' => $this->faker->company,
             'observaciones' => $this->faker->sentence(8),
             'estado' => $this->faker->randomElement(['Pendiente', 'Confirmada','Finalizada', 'Cancelada']),
             'fecha_creacion' => now(),

@@ -33,18 +33,17 @@ class OrdenCotizacionDetalle extends Model
     ];
 
 
-
-
+    ////ORDEN DE COTIZACIÓN RELACIONADA
     public function ordenCotizacion()
     {
         return $this->belongsTo(OrdenCotizacion::class, 'orden_cotizaciones_id');
     }
-
-     public function detallesImpuesto()
+    ////DETALLES DE IMPUESTO RELACIONADOS
+    public function detallesImpuesto()
     {
         return $this->hasMany(OrdenCotizacionDetalleImpuesto::class);
     }
-
+    ////PRODUCTO RELACIONADO
     public function producto()
     {
         return $this->belongsTo(Producto::class, 'producto_id');

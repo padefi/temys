@@ -51,6 +51,22 @@ class DatabaseSeeder extends Seeder
             InventarioMovimientoStockSeeder::class,
             InventarioRelacionUserAlmacenSeeder::class,
             PlanCuentasSeeder::class,
+            BancoSeeder::class,
+            CuentaBancariaSeeder::class,
+            TarjetaSeeder::class,
+            ChequeSeeder::class,
+            MetodoPagoSeeder::class,
+            ProveedorCbuSeeder::class,
+            CondicionVentaSeeder::class,
+            TipoComprobanteSeeder::class,
+            UnidadMedidaSeeder::class,
+            ComprobanteProveedorSeeder::class,
+            ComprobanteProveedorDetalleSeeder::class,
+            ComprobanteProveedorDetalleImpuestoSeeder::class,
+            RelacionComprobanteOrdenPagoProveedorSeeder::class,
+            OrdenPagoSeeder::class,
+            MovimientoTesoreriaSeeder::class,
+            MovimientoBancoSeeder::class,
         ]);
     }
 }

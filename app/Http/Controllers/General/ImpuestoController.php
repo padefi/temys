@@ -9,6 +9,7 @@ use Inertia\Inertia;
 
 class ImpuestoController extends Controller
 {
+    ////LISTAR IMPUESTOS
     public function index()
     {
         return Inertia::render('Compras/Proveedores/Index', [

@@ -6,6 +6,7 @@ use App\Models\Almacenes\Almacen;
 use App\Models\Compras\OrdenCompra;
 use App\Models\Compras\OrdenCompraArchivo;
 use App\Models\Compras\OrdenCompraDetalle;
+use App\Models\Contabilidad\PlanCuentas\Cuenta;
 use App\Models\General\Impuesto;
 use App\Models\General\TipoMoneda;
 use App\Models\Inventario\Productos\Producto;
@@ -20,6 +21,8 @@ use Inertia\Inertia;
 
 class OrdenComprasController extends Controller
 {
+
+    ////LISTAR ORDENES DE COMPRA
     public function index()
     {
 
@@ -36,14 +39,13 @@ class OrdenComprasController extends Controller
                 'ordenesCotizacion.ordenesCompra'
             ])->get();
 
-
-
         return Inertia::render('Compras/ComprasOrdenes/Index', [
             'ordenesComprasListado' => $ordenesComprasListado,
         ]);
 
     }
 
+    ////CREAR NUEVA ORDEN DE COMPRA
     public function nuevaOrdenCompra()
     {
         return Inertia::render('Compras/ComprasOrdenes/NuevaOrdenCompra/Index', [
@@ -59,15 +61,17 @@ class OrdenComprasController extends Controller
         ]);
     }
 
-    ////////////Confirmar Orden de Compra
+    ////CONFIRMAR ORDEN DE COMPRA
     public function confirmarOrdenCompra(Request $request)
     {
+        Log::info('Confirmar Orden de Compra', $request->all());
         $validated = $request->validate([
             'solicitudCompra' => 'nullable|numeric',
             'ordenCotizacion' => 'nullable|numeric',
             'ordenCompra' => 'nullable|numeric',
             'proveedor' => 'required|string',
             'moneda' => 'required|numeric',
+            'cotizacion_moneda' => 'nullable|numeric',
             'entrega_esperada' => 'required|date',
             'almacen' => 'required|numeric',
             'observaciones' => 'nullable|string',
@@ -84,6 +88,7 @@ class OrdenComprasController extends Controller
             'productos.*.importe' => 'nullable|numeric',
             'productos.*.impuestos_seleccionados' => 'nullable|array',
             'productos.*.impuestos_seleccionados.*' => 'exists:impuestos,id',
+            'productos.*.co_cuenta_id' => 'nullable|numeric',
         ]);
 
         $proveedor = Proveedor::where('nombre_fantasia', $validated['proveedor'])->firstOrFail();
@@ -97,6 +102,7 @@ class OrdenComprasController extends Controller
                 $orden->update([
                     'proveedor_id' => $proveedor->id,
                     'moneda_id' => $validated['moneda'],
+                    'cotizacion_moneda' => $validated['cotizacion_moneda'] ?? null,
                     'entrega_esperada' => $validated['entrega_esperada'],
                     'almacen_destino_id' => $validated['almacen'],
                     'observaciones' => $validated['observaciones'] ?? '',
@@ -104,11 +110,11 @@ class OrdenComprasController extends Controller
                     'estado' => 'Confirmada',
                 ]);
 
-
             } else {
                 $orden = ordenCompra::create([
                     'proveedor_id' => $proveedor->id,
                     'moneda_id' => $validated['moneda'],
+                    'cotizacion_moneda' => $validated['cotizacion_moneda'] ?? null,
                     'entrega_esperada' => $validated['entrega_esperada'],
                     'almacen_destino_id' => $validated['almacen'],
                     'observaciones' => $validated['observaciones'] ?? '',
@@ -118,17 +124,33 @@ class OrdenComprasController extends Controller
                 ]);
             }
 
-
              // 🔵 2) Detalles
             $productosIds = [];
 
             foreach ($validated['productos'] as $producto) {
-                $detalle = OrdenCompraDetalle::updateOrCreate(
-                    [
+                if (!empty($producto['id'])) {
+                    // 🔄 Actualizar detalle existente
+                    $detalle = OrdenCompraDetalle::findOrFail($producto['id']);
+                    $detalle->update([
+                        'producto_id' => $producto['producto_id'],
+                        'entrega_esperada' => $producto['entrega_esperada'],
+                        'descripcion' => $producto['descripcion'] ?? '',
+                        'codigo_barras' => $producto['codigo_barras'] ?? '',
+                        'referencia' => $producto['referencia'] ?? '',
+                        'cantidad' => $producto['cantidad'] ?? 0,
+                        'precio_unitario' => $producto['precio_unitario'] ?? 0,
+                        'porcentaje_descuento' => $producto['porcentaje_descuento'] ?? 0,
+                        'importe' => $producto['importe'] ?? 0,
+                        'co_cuenta_id' => $producto['co_cuenta_id'] ?? null,
+                        'usuario_actualizacion' => $validated['usuario_id'],
+                    ]);
+
+                } else {
+
+                    // 🆕 Crear nuevo detalle
+                    $detalle = OrdenCompraDetalle::create([
                         'orden_compras_id' => $orden->id,
                         'producto_id' => $producto['producto_id'],
-                    ],
-                    [
                         'orden_cotizaciones_id' => $orden->orden_cotizaciones_id,
                         'entrega_esperada' => $producto['entrega_esperada'],
                         'descripcion' => $producto['descripcion'] ?? '',
@@ -138,25 +160,17 @@ class OrdenComprasController extends Controller
                         'precio_unitario' => $producto['precio_unitario'] ?? 0,
                         'porcentaje_descuento' => $producto['porcentaje_descuento'] ?? 0,
                         'importe' => $producto['importe'] ?? 0,
+                        'co_cuenta_id' => $producto['co_cuenta_id'] ?? null,
                         'usuario_creacion' => $validated['usuario_id'],
-                    ]
-                );
-
-                if (! $detalle->wasRecentlyCreated) {
-                    $detalle->usuario_actualizacion = $validated['usuario_id'];
-                    $detalle->save();
+                    ]);
                 }
 
-
-                // Guardar impuestos (pivot)
+                // pivot impuestos
                 $impuestos = $producto['impuestos_seleccionados'] ?? [];
-                if (!is_array($impuestos)) $impuestos = [];
-
-                // esto borra SOLO los vínculos de la pivot, nunca los impuestos
                 $detalle->impuestos()->sync($impuestos);
+
                 $productosIds[] = $detalle->id;
             }
-
 
             // 🔴 Opcional: borrar detalles que ya no están en el request
             $orden->detalles()
@@ -166,7 +180,7 @@ class OrdenComprasController extends Controller
 
             DB::commit();
 
-        return redirect()->back()->with('success', 'Orden de cotización confirmada correctamente.');
+        return redirect()->back()->with('success', 'Orden de Compra confirmada correctamente.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -175,6 +189,7 @@ class OrdenComprasController extends Controller
         }
     }
 
+    ////OBTENER ORDEN DE COMPRA POR ID
     public function show($orden_compra_id)
     {
         $ordenCompraQuery = OrdenCompra::with([
@@ -183,11 +198,17 @@ class OrdenComprasController extends Controller
             'tipoMoneda',
             'archivos',
             'ordenesCotizacion.archivos', // 👈 carga los archivos de cada OC
+            'detalles.producto.cuentaContable',
             'detalles',
             'detalles.producto',
             'detalles.producto.modelo',
             'detalles.producto.subCategoria',
             'detalles.impuestos',
+            'comprobantesProveedores',
+            'comprobantesProveedores.archivos',
+            'comprobantesProveedores.detalles',
+            'comprobantesProveedores.condicionVenta',
+            'comprobantesProveedores.tipoComprobante',
             ]);
 
         /*if ($orden_compra_id) {
@@ -216,11 +237,12 @@ class OrdenComprasController extends Controller
             ],
             'tipoMonedas' => TipoMoneda::all(),
             'almacenDestino' => Almacen::all(),
+            'co_cuentas' => Cuenta::all(),
             'productos' => Producto::with('modelo', 'subCategoria')->get(),
         ]);
     }
 
-    ////////////Guardar
+    ////GUARDAR ORDEN DE COMPRA
     public function guardar(Request $request)
     {
         $validated = $request->validate([
@@ -229,6 +251,7 @@ class OrdenComprasController extends Controller
             'ordenCompra' => 'nullable|numeric',
             'proveedor' => 'required|string',
             'moneda' => 'required|numeric',
+            'cotizacion_moneda' => 'nullable|numeric',
             'entrega_esperada' => 'required|date',
             'almacen' => 'required|numeric',
             'observaciones' => 'nullable|string',
@@ -245,6 +268,7 @@ class OrdenComprasController extends Controller
             'productos.*.importe' => 'nullable|numeric',
             'productos.*.impuestos_seleccionados' => 'nullable|array',
             'productos.*.impuestos_seleccionados.*' => 'exists:impuestos,id',
+            'productos.*.co_cuenta_id' => 'nullable|numeric',
         ]);
 
         $proveedor = Proveedor::where('nombre_fantasia', $validated['proveedor'])->firstOrFail();
@@ -253,13 +277,13 @@ class OrdenComprasController extends Controller
 
         try {
 
-
            /// 1)orden de compra
             if (!empty($validated['ordenCompra'])) {
                 $orden = ordenCompra::findOrFail($validated['ordenCompra']);
                 $orden->update([
                     'proveedor_id' => $proveedor->id,
                     'moneda_id' => $validated['moneda'],
+                    'cotizacion_moneda' => $validated['cotizacion_moneda'] ?? null,
                     'entrega_esperada' => $validated['entrega_esperada'],
                     'almacen_destino_id' => $validated['almacen'],
                     'observaciones' => $validated['observaciones'] ?? '',
@@ -271,6 +295,7 @@ class OrdenComprasController extends Controller
                 $orden = ordenCompra::create([
                     'proveedor_id' => $proveedor->id,
                     'moneda_id' => $validated['moneda'],
+                    'cotizacion_moneda' => $validated['cotizacion_moneda'] ?? null,
                     'entrega_esperada' => $validated['entrega_esperada'],
                     'almacen_destino_id' => $validated['almacen'],
                     'observaciones' => $validated['observaciones'] ?? '',
@@ -280,44 +305,54 @@ class OrdenComprasController extends Controller
                 ]);
             }
 
-
              // 🔵 2) Detalles
             $productosIds = [];
 
             foreach ($validated['productos'] as $producto) {
-                $detalle = OrdenCompraDetalle::updateOrCreate(
-                    [
-                        'orden_compras_id' => $orden->id,
-                        'producto_id' => $producto['producto_id'],
-                    ],
-                    [
-                        'orden_cotizaciones_id' => $orden->orden_cotizaciones_id,
-                        'entrega_esperada' => $producto['entrega_esperada'],
-                        'descripcion' => $producto['descripcion'] ?? '',
-                        'codigo_barras' => $producto['codigo_barras'] ?? '',
-                        'referencia' => $producto['referencia'] ?? '',
-                        'cantidad' => $producto['cantidad'] ?? 0,
-                        'precio_unitario' => $producto['precio_unitario'] ?? 0,
-                        'porcentaje_descuento' => $producto['porcentaje_descuento'] ?? 0,
-                        'importe' => $producto['importe'] ?? 0,
-                        'usuario_creacion' => $validated['usuario_id'],
-                    ]
-                );
+            if (!empty($producto['id'])) {
+                // 🔄 Actualizar detalle existente
+                $detalle = OrdenCompraDetalle::findOrFail($producto['id']);
+                $detalle->update([
+                    'producto_id' => $producto['producto_id'],
+                    'entrega_esperada' => $producto['entrega_esperada'],
+                    'descripcion' => $producto['descripcion'] ?? '',
+                    'codigo_barras' => $producto['codigo_barras'] ?? '',
+                    'referencia' => $producto['referencia'] ?? '',
+                    'cantidad' => $producto['cantidad'] ?? 0,
+                    'precio_unitario' => $producto['precio_unitario'] ?? 0,
+                    'porcentaje_descuento' => $producto['porcentaje_descuento'] ?? 0,
+                    'importe' => $producto['importe'] ?? 0,
+                    'co_cuenta_id' => $producto['co_cuenta_id'] ?? null,
+                    'usuario_actualizacion' => $validated['usuario_id'],
+                ]);
 
-                if (! $detalle->wasRecentlyCreated) {
-                    $detalle->usuario_actualizacion = $validated['usuario_id'];
-                    $detalle->save();
-                }
+            } else {
 
-
-                // Guardar impuestos (pivot)
-                $impuestos = $producto['impuestos_seleccionados'] ?? [];
-                if (!is_array($impuestos)) $impuestos = [];
-
-                // esto borra SOLO los vínculos de la pivot, nunca los impuestos
-                $detalle->impuestos()->sync($impuestos);
-                $productosIds[] = $detalle->id;
+                // 🆕 Crear nuevo detalle
+                $detalle = OrdenCompraDetalle::create([
+                    'orden_compras_id' => $orden->id,
+                    'producto_id' => $producto['producto_id'],
+                    'orden_cotizaciones_id' => $orden->orden_cotizaciones_id,
+                    'entrega_esperada' => $producto['entrega_esperada'],
+                    'descripcion' => $producto['descripcion'] ?? '',
+                    'codigo_barras' => $producto['codigo_barras'] ?? '',
+                    'referencia' => $producto['referencia'] ?? '',
+                    'cantidad' => $producto['cantidad'] ?? 0,
+                    'precio_unitario' => $producto['precio_unitario'] ?? 0,
+                    'porcentaje_descuento' => $producto['porcentaje_descuento'] ?? 0,
+                    'importe' => $producto['importe'] ?? 0,
+                    'co_cuenta_id' => $producto['co_cuenta_id'] ?? null,
+                    'usuario_creacion' => $validated['usuario_id'],
+                ]);
             }
+
+            // pivot impuestos
+            $impuestos = $producto['impuestos_seleccionados'] ?? [];
+            $detalle->impuestos()->sync($impuestos);
+
+            $productosIds[] = $detalle->id;
+        }
+
 
 
             // 🔴 Opcional: borrar detalles que ya no están en el request
@@ -336,7 +371,7 @@ class OrdenComprasController extends Controller
         }
     }
 
-    ////////CANCELAR ORDEN DE COMPRA
+    ///////CANCELAR ORDEN DE COMPRA
     public function cancelar(Request $request)
     {
         $request->validate([
@@ -355,7 +390,7 @@ class OrdenComprasController extends Controller
         return redirect()->back()->with('success', 'Orden de compra cancelada correctamente');
     }
 
-    // Guarda el archivo asociado
+    ////SUBIR ARCHIVO A ORDEN DE COMPRA
     public function subirArchivo(Request $request, $id)
     {
         $request->validate([
@@ -377,6 +412,7 @@ class OrdenComprasController extends Controller
         return redirect()->back()->with('success', 'Archivo subido correctamente');
     }
 
+    ////ELIMINAR ARCHIVO DE ORDEN DE COMPRA
     public function eliminarArchivo(OrdenCompraArchivo $archivo)
     {
         try {
@@ -394,7 +430,7 @@ class OrdenComprasController extends Controller
         }
     }
 
-
+    ////VISUALIZAR ARCHIVO DE ORDEN DE COMPRA
     public function visualizarArchivo(OrdenCompraArchivo $archivo)
     {
         // Esto asume que los archivos están en storage/app/private/ordenes-compras

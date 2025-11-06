@@ -1,8 +1,7 @@
-import { Head, usePage, router } from '@inertiajs/react';
+import { usePage, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/Components/ui/button';
-import { Checkbox } from "@/Components/ui/checkbox";
 
 import {
   ContextMenu,
@@ -41,8 +40,6 @@ type OrdenCompra = {
 }
 
 
-
-
 type PageProps = {
   ordenesComprasListado: OrdenCompra[];
 };
@@ -58,8 +55,6 @@ export default function ComprasOrdenesListado({ onSelectionChange }: CotizacionO
     const [selectedOrderIds, setSelectedOrderIds] = useState<number[]>([]);
     const [selectedProveedorId, setSelectedProveedorId] = useState<number | null>(null);
     const [selectedProveedorNombre, setSelectedProveedorNombre] = useState<string | null>(null);
-
-
 
     const toggleExpand = (id: number) => {
         setExpanded(expanded === id ? null : id);
@@ -185,7 +180,7 @@ export default function ComprasOrdenesListado({ onSelectionChange }: CotizacionO
               <TableCell>
                 <ContextMenu>
                             <ContextMenuTrigger className="w-full p-2 border rounded text-center">
-                                C{orden.id}
+                                OC{orden.id}
                             </ContextMenuTrigger>
 
                                 <ContextMenuContent>

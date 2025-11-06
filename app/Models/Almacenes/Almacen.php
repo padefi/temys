@@ -98,7 +98,7 @@ class Almacen extends Model
     {
 
         return $this->hasMany(InventarioAjuste::class, 'almacen_destino_id');
-    }
+    }*/
 
 
 }

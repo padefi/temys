@@ -16,13 +16,13 @@ class SolicitudCompraOrdenCotizacion extends Model
         'solicitud_compra_id',
         'orden_cotizaciones_id',
     ];
-
-
+    ////SOLICITUD DE COMPRA RELACIONADA
     public function solicitudCompra()
     {
         return $this->belongsTo(SolicitudCompra::class, 'solicitud_compra_id');
     }
 
+    ////ORDEN DE COTIZACION RELACIONADA
     public function ordenCotizacion()
     {
         return $this->belongsTo(OrdenCotizacion::class, 'orden_cotizaciones_id');

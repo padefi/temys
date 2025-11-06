@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('codigo', 10)->unique(); // Ej: USD, ARS
             $table->string('descripcion'); // Ej: Dólar estadounidense
             $table->string('simbolo', 5); // Ej: $, €
-            $table->string('pais_origen'); // Ej: Estados Unidos
+            $table->string('pais_origen'); // Ej: Estados Unidos, Argentina
+            $table->boolean('habilitado')->default(true);
             $table->timestamps();
         });
     }

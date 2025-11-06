@@ -36,42 +36,41 @@ class OrdenCotizacion extends Model
 
     ];
 
+    ////PROVEEDOR RELACIONADO
     public function proveedor()
     {
         return $this->belongsTo(Proveedor::class, 'proveedor_id');
     }
-
+    ////DETALLES DE LA ORDEN DE COTIZACIÓN
     public function detalles()
     {
         return $this->hasMany(OrdenCotizacionDetalle::class, 'orden_cotizaciones_id');
     }
-
+    ////TIPO DE MONEDA RELACIONADO
     public function tipoMoneda()
     {
         return $this->belongsTo(TipoMoneda::class, 'moneda_id');
     }
-
+    ////ALMACÉN DESTINO RELACIONADO
     public function almacenDestino()
     {
         return $this->belongsTo(Almacen::class, 'almacen_destino_id');
     }
-
+    ////USUARIO QUE CREÓ LA ORDEN DE COTIZACIÓN
     public function creador()
     {
         return $this->belongsTo(User::class, 'usuario_id');
     }
-
+    ////USUARIO QUE ÚLTIMAMENTE ACTUALIZÓ LA ORDEN DE COTIZACIÓN
     public function actualizador()
     {
         return $this->belongsTo(User::class, 'usuario_actualizacion');
     }
-
     // Relación con el almacen que creó la orden
     public function almacen()
     {
         return $this->belongsTo(Almacen::class, 'almacen_destino_id');
     }
-
     /////SOLICITUD DE COMPRA RELACIONADA
     public function solicitudCompra()
     {
@@ -82,7 +81,7 @@ class OrdenCotizacion extends Model
             'solicitud_compra_id'
         );
     }
-
+    ////ORDENES DE COMPRA RELACIONADAS
     public function ordenesCompra()
     {
         return $this->belongsToMany(
@@ -92,7 +91,7 @@ class OrdenCotizacion extends Model
             'orden_compras_id'
         );
     }
-
+    ////ARCHIVOS ADJUNTOS A LA ORDEN DE COTIZACIÓN
     public function archivos()
     {
         return $this->hasMany(OrdenCotizacionArchivo::class, 'orden_cotizacion_id');

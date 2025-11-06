@@ -2,7 +2,6 @@ import * as React from "react"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 
 import { cn } from "@/lib/utils"
-import { Cross2Icon } from "@radix-ui/react-icons";
 
 function Popover({
   ...props
@@ -20,7 +19,6 @@ function PopoverContent({
   className,
   align = "center",
   sideOffset = 4,
-  children,
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Content>) {
   return (
@@ -34,16 +32,7 @@ function PopoverContent({
           className
         )}
         {...props}
-      >
-      {children}
-        <PopoverPrimitive.Arrow />
-        <PopoverPrimitive.Close
-          className="absolute right-[5px] top-[5px] inline-flex size-[25px] cursor-default items-center justify-center rounded-full outline-none hover:bg-gray-100 focus:shadow-[0_0_0_2px] focus:shadow-gray-100"
-					aria-label="Close"
-        >
-          <Cross2Icon />
-        </PopoverPrimitive.Close>
-      </PopoverPrimitive.Content>
+      />
     </PopoverPrimitive.Portal>
   )
 }

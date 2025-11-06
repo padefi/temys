@@ -11,6 +11,8 @@ export interface ProductosDisponibles {
     codigo_barras: string;
     referencia: string;
     usuario_id: string;
+    co_cuenta_id?: number
+    co_cuenta?: CuentaContable;
 }
 
 export interface Modelo {
@@ -40,8 +42,16 @@ export interface Producto {
     cod_barras?: string;
     created_at?: string;
     updated_at?: string;
+    co_cuenta_id?: number
+    co_cuenta?: CuentaContable;
 };
 
 export interface FlashMessages {
     success?: string;
 };
+
+export interface CuentaContable {
+    id: number;
+    codigo: string;
+    descripcion: string;
+}

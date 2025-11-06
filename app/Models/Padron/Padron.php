@@ -20,9 +20,9 @@ class Padron extends Model
     protected $casts = [
         'tipo_documento' => 'string',
     ];
-
+    ////CLIENTE RELACIONADO
     public function cliente()
-{
-    return $this->hasOne(\App\Models\Padron\Cliente\Cliente::class, 'id_padron');
-}
+    {
+        return $this->hasOne(\App\Models\Padron\Cliente\Cliente::class, 'id_padron');
+    }
 }

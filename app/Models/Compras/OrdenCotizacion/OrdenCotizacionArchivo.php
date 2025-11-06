@@ -9,6 +9,7 @@ class OrdenCotizacionArchivo extends Model
     protected $table = 'orden_cotizaciones_archivos';
     protected $fillable = ['orden_cotizacion_id', 'nombre', 'path', 'mime', 'size'];
 
+    ////ORDENES DE COTIZACIÓN RELACIONADAS
     public function ordenesCotizacion()
     {
         return $this->belongsToMany(

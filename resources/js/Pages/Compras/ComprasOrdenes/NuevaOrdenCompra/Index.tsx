@@ -7,6 +7,8 @@ import { Input } from '@/Components/ui/input'
 import { Label } from '@/Components/ui/label'
 import { Button } from '@/Components/ui/button'
 import { Progress } from '@/Components/ui/progress'
+import { Typography } from '@/Components/ui/typography'
+
 import CargaProductos from './CargaProductos/Index'
 import { Proveedor } from '@/types/Proveedor'
 import { TipoMoneda } from '@/types/TipoMoneda'
@@ -14,6 +16,7 @@ import { Impuesto } from '@/types/Impuesto'
 import { ProductosDisponibles } from '@/types/Producto'
 import { Textarea } from "@/Components/ui/textarea"
 import GenerarOrdenPagoModal from "./GenerarOrdenPagoModal"
+import GenerarFacturaModal from "./GenerarFacturaModal"
 
 import * as Dialog from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
@@ -68,7 +71,7 @@ export default function Index() {
     }, [flash]);
 
     const ordenCompra = ordenCompraElegida;
-
+console.log(ordenCompra)
     const [busqueda, setBusqueda] = useState( ordenCompra?.proveedor?.nombre_fantasia || '')
     const [mostrarLista, setMostrarLista] = useState(false)
 
@@ -80,6 +83,7 @@ export default function Index() {
         ? `${ordenCompra.tipo_moneda.descripcion} - ${ordenCompra.tipo_moneda.simbolo}`
         : ''
     );
+    const [monedaCodigo, setMonedaCodigo] = useState<string | null>(ordenCompra?.tipo_moneda?.codigo || null);
     const [monedaInvalida, setMonedaInvalida] = useState(false)
 
     const [almacenId, setAlmacenId] = useState<number | null>(ordenCompra?.almacen?.id || null);
@@ -104,6 +108,23 @@ export default function Index() {
 
 
     const [modalPagoVisible, setModalPagoVisible] = useState(false)
+    const [modalFacturaVisible, setModalFacturaVisible] = useState(false)
+
+    const estaBloqueada = estadoOrden === "Confirmada" || estadoOrden === "Finalizada"
+
+    // 🔹 Calcular total cada vez que cambien los productos
+    const totalOrden = useMemo(() => {
+        return productos.reduce((acc, p) => acc + (p.importe || 0), 0)
+    }, [productos])
+
+    const monedaSeleccionada = tipoMonedas.find(m => m.id === monedaId) || null;
+    const [cotizacionMoneda, setCotizacionMoneda] = useState<number | null>(
+    ordenCompra?.cotizacion_moneda || null
+    );
+
+
+    const [facturasSeleccionadas, setFacturasSeleccionadas] = useState<number[]>([])
+
 
     useEffect(() => {
     if (!ordenCompra) return;
@@ -177,7 +198,10 @@ export default function Index() {
         almacenNombre.trim() !== '' &&
         !almacenInvalida &&
         entrega_esperada !== '' &&
-        productosValidos
+        productosValidos &&
+        (monedaCodigo === "ARS" || (cotizacionMoneda !== null && cotizacionMoneda > 0));
+
+
 
     const totalCampos = 4
     const completados = [
@@ -234,6 +258,7 @@ export default function Index() {
 
       proveedor: busqueda,
       moneda: monedaId,
+      cotizacion_moneda: monedaCodigo !== "ARS" ? cotizacionMoneda : null,
       entrega_esperada: entrega_esperada,
       almacen: almacenId,
       observaciones,
@@ -258,6 +283,7 @@ export default function Index() {
         ordenCompra: ordenCompra?.id,
         proveedor: busqueda,
         moneda: monedaId,
+        cotizacion_moneda: monedaCodigo !== "ARS" ? cotizacionMoneda : null,
         entrega_esperada: entrega_esperada,
         almacen: almacenId,
         observaciones,
@@ -317,11 +343,15 @@ export default function Index() {
 
 
     const handleGenerarOrdenPago = (data: any) => {
-    console.log("Datos del modal:", data)
+
     // 🚀 acá llamás a router.post() para crear la orden de pago
     }
 
-  return (
+    const handleGenerarFactura = (data: any) => {
+        router.reload({ only: ['ordenCompraElegida', 'flash'] }) // 🔁 recarga parcial
+    }
+
+return (
     <AuthenticatedLayout header={<h2 className="text-xl font-semibold">Nueva Orden de Compra</h2>}>
       <Head title="Nueva Orden de Compra"></Head>
       <div className="py-12">
@@ -336,7 +366,7 @@ export default function Index() {
          <Button
             variant="outline"
             size="lg"
-            disabled={!formularioCompleto || ordenCompra?.estado === 'Cancelada' || ordenCompra?.estado === 'Finalizada'  }
+            disabled={!formularioCompleto || ordenCompra?.estado === 'Cancelada' || ordenCompra?.estado === 'Finalizada' || estaBloqueada }
             onClick={() => guardar()}
         >
             Guardar
@@ -381,6 +411,7 @@ export default function Index() {
                   setBusqueda(e.target.value)
                   setMostrarLista(true)
                 }}
+                disabled={estaBloqueada}
                 placeholder="Buscar o ingresar proveedor"
               />
               {mostrarMensaje && (
@@ -404,12 +435,14 @@ export default function Index() {
                 <Input
                 list="monedas"
                 onBlur={validarMoneda}
+                disabled={estaBloqueada}
                 value={monedaNombre}
                 onChange={e => {
                     const valor = e.target.value
                     setMonedaNombre(valor)
                     const seleccionado = tipoMonedas.find(a => `${a.descripcion} - ${a.simbolo}` === valor)
                     setMonedaId(seleccionado?.id || null)
+                    setMonedaCodigo(seleccionado?.codigo || null)
                 }}
                 placeholder="Seleccionar almacén"
                 className={almacenInvalida ? 'border-red-500' : ''}
@@ -425,6 +458,7 @@ export default function Index() {
               <Label>Entrega Esperada</Label>
               <Input
                 type="date"
+                disabled={estaBloqueada}
                 value={entrega_esperada}
                 onChange={e => setEntregaEsperada(e.target.value)}
               />
@@ -433,6 +467,7 @@ export default function Index() {
                 <Input
                 list="almacenes"
                 onBlur={validarAlmacen}
+                disabled={estaBloqueada}
                 value={almacenNombre}
                 onChange={e => {
                     const valor = e.target.value
@@ -451,10 +486,47 @@ export default function Index() {
 
 
             </div>
+
+            {/* Cotización Moneda */}
+            {monedaCodigo !== "ARS" && (
+            <div className="mt-4">
+                <Label>Cotización</Label>
+                <Input
+                type="number"
+                placeholder="Cotización"
+                value={cotizacionMoneda ?? ""}
+                onChange={(e) => setCotizacionMoneda(Number(e.target.value))}
+                disabled={estaBloqueada}
+                className={cotizacionMoneda && cotizacionMoneda > 0 ? "" : "border-red-500"}
+                />
+                {(!cotizacionMoneda || cotizacionMoneda <= 0) && (
+                <p className="text-sm text-red-500 mt-1">
+                    La cotización es obligatoria si la moneda no es ARS.
+                </p>
+                )}
+            </div>
+            )}
+
           </div>
 
           <div className="mt-4">
-            <CargaProductos setProductosValidos={setProductosValidos} setProductos={setProductos} detalles={ordenCompra?.detalles}/>
+            <CargaProductos
+                setProductosValidos={setProductosValidos}
+                setProductos={setProductos}
+                detalles={ordenCompra?.detalles}
+                estadoOrden={ordenCompra?.estado ?? "Pendiente"}
+            />
+            <div className="flex justify-end mt-2">
+            {/* 🔹 Mostrar el total */}
+            <Typography variant="h2" sx={{ mt: 2}}>
+            Total: {monedaSeleccionada?.simbolo || "$"}{" "}
+            {totalOrden.toLocaleString("es-AR", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+                style: "decimal", // 🔹 no currency
+            })}
+            </Typography>
+            </div>
             <Textarea placeholder="Observaciones." value={observaciones} onChange={e => setObservaciones(e.target.value)} />
           </div>
 
@@ -520,6 +592,7 @@ export default function Index() {
         </div>
 
 
+
           <div className="flex gap-4 mt-6 justify-end">
                 <Button
                 onClick={confirmarOrdenCompra}
@@ -537,17 +610,82 @@ export default function Index() {
                 </Button>
 
                 <Button
+                onClick={() => setModalFacturaVisible(true)}
+                disabled={!formularioCompleto || (ordenCompra?.estado !== 'Confirmada')}
+                >
+                    Cargar Factura
+                </Button>
+
+                <Button
                 className="bg-green-800 hover:bg-green-900 text-white"
                 variant="secondary"
                 onClick={() => setModalPagoVisible(true)}
-                disabled={!formularioCompleto || (ordenCompra?.estado === 'Cancelada')}
+                disabled={
+                    !formularioCompleto ||
+                    ordenCompra?.estado === 'Cancelada' ||
+                    ordenCompra?.estado === 'Pendiente' ||
+                    facturasSeleccionadas.length === 0
+                }
                 >
                 Generar Orden de Pago
                 </Button>
 
           </div>
+            {/* 📄 Facturas asociadas con selección */}
+            {ordenCompra?.comprobantes_proveedores && ordenCompra?.comprobantes_proveedores.length > 0 && (
+            <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-2">Comprobantes asociados</h3>
+                <ul className="border rounded p-3 bg-gray-50">
+                {ordenCompra.comprobantes_proveedores.map((f) => (
+                    <li
+                    key={f.id}
+                    className="py-2 border-b last:border-0 flex items-center justify-between"
+                    >
+                    <div className="flex items-center gap-3">
+                        <input
+                        type="checkbox"
+                        checked={facturasSeleccionadas.includes(f.id)}
+                        onChange={(e) => {
+                            if (e.target.checked) {
+                            setFacturasSeleccionadas((prev) => [...prev, f.id]);
+                            } else {
+                            setFacturasSeleccionadas((prev) => prev.filter((id) => id !== f.id));
+                            }
+                        }}
+                        disabled={ordenCompra?.estado !== 'Confirmada'}
+                        />
+                        <div>
+                        <strong>{f.tipo_comprobante?.nombre || '-'}</strong> Nº {f.id || '-'}
+                        <div className="text-sm text-gray-600">
+                            Fecha: {new Date(f.fecha_factura).toLocaleDateString('es-AR')}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                            Total: {f.importe?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                        </div>
+                        </div>
+                    </div>
+
+                    {f.archivos?.length > 0 && (
+                        <Button
+                        variant="outline"
+                        onClick={() =>
+                            window.open(`/compras/facturas-proveedores/${f.id}`, '_blank')
+                        }
+                        >
+                        Ver
+                        </Button>
+                    )}
+                    </li>
+                ))}
+                </ul>
+            </div>
+            )}
+
+
         </div>
       </div>
+
+
 
     <Dialog.Root open={modalVisible} onOpenChange={setModalVisible}>
     <Dialog.Overlay className="fixed inset-0 bg-black/50" />
@@ -601,11 +739,30 @@ export default function Index() {
     </Dialog.Root>
 
     <GenerarOrdenPagoModal
-    open={modalPagoVisible}
-    onClose={() => setModalPagoVisible(false)}
-    onSubmit={handleGenerarOrdenPago}
-    totalOrden={10}
-    monedaOrden={monedaNombre}
+        open={modalPagoVisible}
+        onClose={() => setModalPagoVisible(false)}
+        onSubmit={handleGenerarOrdenPago}
+        totalOrden={totalOrden}
+        monedaOrden={monedaSeleccionada?.id}
+        tipoMonedas={tipoMonedas}
+        proveedorId={ordenCompra?.proveedor?.id || 0}
+        facturasSeleccionadas={facturasSeleccionadas}
+        comprobantes={ordenCompra?.comprobantes_proveedores || []}
+
+    />
+
+    <GenerarFacturaModal
+        open={modalFacturaVisible}
+        onClose={() => setModalFacturaVisible(false)}
+        onSubmit={handleGenerarFactura}
+        totalOrden={totalOrden}
+        monedaOrden={monedaSeleccionada?.id}
+        setProductosValidos={setProductosValidos}
+        setProductos={setProductos}
+        tipoMonedas={tipoMonedas}
+        proveedorId={ordenCompra?.proveedor?.id || 0}
+        ordenCompra={ordenCompra}
+        productos={productos}
     />
 
     </AuthenticatedLayout>
