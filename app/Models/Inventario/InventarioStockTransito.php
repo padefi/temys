@@ -8,18 +8,28 @@ use Illuminate\Database\Eloquent\Model;
 
 class InventarioStockTransito extends Model
 {
-    protected $table = 'inventario_stock_transito';
+      protected $table = 'inventario_stock_transito';
 
     protected $fillable = [
         'movimiento_id',
         'producto_id',
+        'origen_id',
+        'destino_id',
         'cantidad',
         'estado',
         'ubicacion_actual',
         'fecha_salida',
-        'usuario_id',
+        'fecha_llegada',
+        'observaciones',
     ];
 
+    protected $casts = [
+        'fecha_salida' => 'datetime',
+        'fecha_llegada' => 'datetime',
+    ];
+
+    public $timestamps = false;
+    
     public function movimiento()
     {
         return $this->belongsTo(InventarioMovimientoStock::class, 'movimiento_id');
@@ -39,4 +49,9 @@ class InventarioStockTransito extends Model
     {
         return $this->belongsTo(Almacen::class, 'destino_id');
     }
+    public function movimientoEstados()
+{
+    return $this->belongsTo(InventarioMovimientoEstado::class, 'id', 'transito_id');
+}
+
 }

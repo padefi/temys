@@ -1,16 +1,17 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { History, ChevronRight, ChevronDown, PackageCheck } from "lucide-react";
+import { History, ChevronRight, ChevronDown, PackageCheck, Eye } from "lucide-react";
 import { DataTableColumnHeader } from "../Existencias/column-header";
-import { RecepcionesItem } from "./RecepcionesManagement";
+import { RecepcionesItem, Seguimiento } from "./RecepcionesManagement";
 import { Badge } from "lucide-react";
 
 interface GetColumnsProps {
     onAbrirModal: (recepcion: RecepcionesItem) => void;
+    abrirModalSeguimiento:(idSeguimiento:number)=>void
 }
 
-export const getColumns = ({ onAbrirModal }: GetColumnsProps): ColumnDef<RecepcionesItem>[] => [
+export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsProps): ColumnDef<RecepcionesItem>[] => [
     {
         id: "expander",
         header: "",
@@ -183,11 +184,12 @@ export const getColumns = ({ onAbrirModal }: GetColumnsProps): ColumnDef<Recepci
         header: "Acciones",
         cell: ({ row }) => {
             const item = row.original;
+            console.log(item.id)
 
             return (
                 item.estado === "Pendiente" ? (
                     <div className="text-center">
-                        <Button
+            {/*              <Button
                             variant="ghost"
                             size="sm"
                             className="hover:bg-accent/10"
@@ -195,7 +197,18 @@ export const getColumns = ({ onAbrirModal }: GetColumnsProps): ColumnDef<Recepci
                         >
                             <PackageCheck className="h-4 w-4" />
                             Contar y Verificar
-                        </Button>
+                        </Button>  */}
+
+                            <Button
+                            variant="ghost"
+                            size="sm"
+                            className="hover:bg-accent/10"
+                             onClick={() => abrirModalSeguimiento(Number(item.id))} 
+                        >
+                            <Eye className="h-4 w-4" />
+                           
+                            Seguimiento
+                        </Button>  
                     </div>
                 ) : null
             );

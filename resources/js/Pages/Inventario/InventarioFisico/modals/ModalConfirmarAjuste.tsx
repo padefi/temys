@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/Components/ui/button"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/Components/ui/badge"
 import { Separator } from "@/Components/ui/separator"
 import { Package, MapPin, Calendar, User, FileText, TrendingUp, TrendingDown } from "lucide-react"
@@ -41,7 +41,7 @@ export function AjusteInventarioModal({
             .then((res) => setAjusteData(res.data.data[0]))
             .catch((err) => console.error("Error al cargar el ajuste", err));
     }, [idAjuste, productoId]);
-console.log(ajusteData)
+
   
 
     if (!ajusteData) {

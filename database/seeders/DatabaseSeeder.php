@@ -54,6 +54,8 @@ class DatabaseSeeder extends Seeder
             ProvinciaSeeder::class,
             LocalidadSeeder::class,
             CalleSeeder::class,
+            InventarioMovimientoEstadosSeeder::class,
+            InventarioStockTransitoSeeder::class,
         ]);
     }
 }

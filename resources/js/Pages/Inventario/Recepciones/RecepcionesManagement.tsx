@@ -8,6 +8,7 @@ import { meta } from "@/types/meta";
 import { useEffect, useMemo, useState } from "react";
 import { getColumns } from "./Columns";
 import RecepcionProductos from "./modals/ConteoModal";
+import { TrackingModal } from "../Modales/SeguimientoModal";
 
 export interface RecepcionDetalle {
   id: number;
@@ -40,21 +41,51 @@ interface ExistenciaPagination {
     meta: meta;
 }
 
+export interface Seguimiento{
+    movimiento_id:number,
+    producto_id: number,
+    origen_id: number,
+    destino_id: number,
+    cantidad: number,
+    estado: string,
+    ubicacion_actual: string,
+    fecha_salida: Date,
+    fecha_llegada: Date,
+    observaciones: string,
+    productoNombre: string,
+    origenNombre: string,
+    destinoNombre: string,
+
+}
+
 export default function RecepcionesManagement() {
     const { recepcionProductos } = usePage<PageProps>().props;
     const [data, setData] = useState<RecepcionesItem[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isModalSeguimientoOpen, setisModalSeguimientoOpen] = useState(false);
+
    
     const [recepcionSeleccionada, setRecepcionSeleccionada] = useState<RecepcionesItem | null>(null);
-   
+    const [recepcionSeguimiento, setRecepcionSeguimiento] = useState<number | null>(null);
+ 
+
     useEffect(() => {
         setData(recepcionProductos.data);
     }, [recepcionProductos]);
 
     const abrirModal = (recepcion: RecepcionesItem) => {
+     
         setRecepcionSeleccionada(recepcion);
         setIsModalOpen(true);
     };
+
+        const abrirModalSeguimiento = (idSeguimiento: number) => {
+               console.log('holaaaaaaaaaaa')
+        setRecepcionSeguimiento(idSeguimiento);
+        console.log(recepcionSeguimiento)
+        setisModalSeguimientoOpen(true);
+    };
+
 
     const handleAprobado = (id: any) => {    
         setIsModalOpen(false);
@@ -65,9 +96,10 @@ export default function RecepcionesManagement() {
     };
     
     const columns = useMemo(
-        () => getColumns({ onAbrirModal: abrirModal }),
+        () => getColumns({ onAbrirModal: abrirModal, abrirModalSeguimiento:abrirModalSeguimiento }),
         []
     );
+
 
     return (
         <AuthenticatedLayout
@@ -95,6 +127,19 @@ export default function RecepcionesManagement() {
                 onAprobado={handleAprobado} 
                 onRechazado={handleRechazado}
             />
+     
+
+            
+      <TrackingModal
+        open={isModalSeguimientoOpen}
+        onOpenChange={()=>setisModalSeguimientoOpen(false)}
+        idSeguimiento={recepcionSeguimiento}
+      /*  stockTransito={selectedMovimiento}
+       historialEstados={selectedMovimiento ? historialEstadosData[selectedMovimiento.movimiento_id] || [] : []}
+        productoNombre={selectedMovimiento?.productoNombre}
+        origenNombre={selectedMovimiento?.origenNombre}
+        destinoNombre={selectedMovimiento?.destinoNombre} */
+      />
         </AuthenticatedLayout>
     );
 }
