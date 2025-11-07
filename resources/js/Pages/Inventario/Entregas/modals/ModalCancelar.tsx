@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/Components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { Textarea } from "@/Components/ui/textarea";
 import { EntregaItem } from "../EntregasManagement";
 import axios from "axios";

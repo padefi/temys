@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { EntregaItem } from "./EntregasManagement";
 import { DataTableColumnHeader } from "./colum-header";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import { motion } from 'framer-motion';
 import { CheckCircle2, ChevronDown, Clock10, Truck, XCircle } from "lucide-react";
 
@@ -104,14 +104,14 @@ export const getColumns = ({
                             Enviado
                         </span>
                     )}
-                    
+
                     {estado === "Pendiente" && (
                         <span className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-orange-100 text-orange-800">
                             <Clock10 className="inline h-4 w-4 mr-1" />
                             Pendiente
                         </span>
                     )}
-                    
+
                     {estado === "Cancelado" && (
                         <span className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">
                             <XCircle className="inline h-4 w-4 mr-1" />
@@ -235,7 +235,7 @@ export const getColumns = ({
                             onClick={() => mostrarRemito(item)}
                         >
                             Mostrar Remito
-                        </Button>                        
+                        </Button>
                     </div>
                 );
             }
@@ -265,7 +265,7 @@ export const getColumns = ({
                     </div>
                 );
             }
-            
+
             return <div className="text-center text-gray-400">-</div>;
         },
         enableSorting: false,

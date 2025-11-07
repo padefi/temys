@@ -26,30 +26,26 @@ return new class extends Migration
                 ->on('tipo_monedas')
                 ->onDelete('cascade');
 
-            $table->unsignedBigInteger('banco_id');
+            $table->unsignedBigInteger('banco_id')->nullable();
             $table->foreign('banco_id')
-                ->nullable()
                 ->references('id')
                 ->on('bancos')
                 ->onDelete('cascade');
 
-            $table->unsignedBigInteger('cuenta_bancaria_id');
+            $table->unsignedBigInteger('cuenta_bancaria_id')->nullable();
             $table->foreign('cuenta_bancaria_id')
-                ->nullable()
                 ->references('id')
                 ->on('cuenta_bancarias')
                 ->onDelete('cascade');
 
-            $table->unsignedBigInteger('orden_pago_id');
+            $table->unsignedBigInteger('orden_pago_id')->nullable();
             $table->foreign('orden_pago_id')
-                ->nullable()
                 ->references('id')
                 ->on('orden_pago_proveedores')
                 ->onDelete('cascade');
 
-            $table->unsignedBigInteger('proveedor_id');
+            $table->unsignedBigInteger('proveedor_id')->nullable();
             $table->foreign('proveedor_id')
-                ->nullable()
                 ->references('id')
                 ->on('proveedores')
                 ->onDelete('cascade');
@@ -65,7 +61,7 @@ return new class extends Migration
             $table->string('descripcion')->nullable();
             $table->string('referencia_bancaria')->nullable();
             $table->boolean('conciliado')->default(false);
-            $table->date('fecha_conciliacion')->nullable();
+            $table->date('fecha_conciliado')->nullable();
 
             $table->unsignedBigInteger('usuario_conciliado_id')->nullable();
             $table->foreign('usuario_conciliado_id')

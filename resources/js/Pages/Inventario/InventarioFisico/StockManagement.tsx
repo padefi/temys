@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/Components/ui/tooltip";
 import { usePermissions } from "@/composables/permissions";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import { Bell, Plus } from "lucide-react";
 import { usePage } from "@inertiajs/react";
 import { Head } from "@inertiajs/react";
@@ -34,8 +34,8 @@ export default function StockManagement() {
   const [stock, setStock] = useState<StockInventarioItem[]>([]);
   const [solicitudes, setSolicitudes] = useState()
   const [solicitudesStockDialogOpen, setSolicitudesStockDialogOpen] = useState(false);
-  
-/* 
+
+/*
   const handleAplicarTodo = async () => {
     const dataRows = Object.entries(editedRows).map(([id, cantidad]) => ({
       id: Number(id),
@@ -113,9 +113,9 @@ export default function StockManagement() {
             </Tooltip>}
          {/*  <span>inventario Fisico</span> */}
         </div>
-        
+
         <EstadisticaInventario data={stock}></EstadisticaInventario>
-    
+
         <Card>
           <CardHeader className="flex justify-between">
             <div>
@@ -134,7 +134,7 @@ export default function StockManagement() {
             <StockTable
               data={stock}
               links={stocks.links}
-              meta={stocks.meta}             
+              meta={stocks.meta}
               setStock={setStock}
             />
           </CardContent>

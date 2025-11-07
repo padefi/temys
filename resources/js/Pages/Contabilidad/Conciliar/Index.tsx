@@ -153,11 +153,15 @@ export default function Index() {
                 </TableHead>
                 <TableHead>
                     <FilterCombobox
-                        items={proveedores.map((p: any) => ({ value: String(p.id), label: p.nombre_fantasia }))}
-                        value={String(filter.proveedor_id)}
-                        onChange={v => handleChange('proveedor_id', Number(v))}
-                        placeholder="Proveedores"
-                        emptyLabel="Sin resultados"
+                    items={proveedores.map((p: any) => ({
+                        value: String(p.id),
+                        label: p.nombre_fantasia,
+                    }))}
+                    value={String(filter.proveedor_id)}
+                    onChange={(v) => handleChange("proveedor_id", Number(v))}
+                    placeholder="Proveedores"
+                    emptyText="Sin resultados"
+                    loading={proveedores.length === 0}
                     />
                 </TableHead>
                 <TableHead>

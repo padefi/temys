@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/Com
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/Components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Input } from "@/Components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import { Search, Truck, CheckCircle2, XCircle, Clock10 } from "lucide-react";
 import { useForm } from '@inertiajs/react';
 import { useEffect, useState, Fragment } from 'react';
@@ -16,7 +16,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import Swal from 'sweetalert2';
 import { Textarea } from "@/Components/ui/textarea";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 
 /* PDF */
 //@ts-ignore
@@ -103,26 +103,26 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
 
     const { data, setData, get, processing } = useForm({
         producto: filters.producto || '',
-        estado: filters.estado || 'all', 
-        origen_id: filters.origen_id || 'all',   
-        destino_id: filters.destino_id || 'all', 
+        estado: filters.estado || 'all',
+        origen_id: filters.origen_id || 'all',
+        destino_id: filters.destino_id || 'all',
         fecha_desde: filters.fecha_desde || '',
         fecha_hasta: filters.fecha_hasta || '',
     });
 
     const submit = () => {
         const filtros = { ...data };
-      
+
         if (filtros.estado === 'all') filtros.estado = '';
         if (filtros.origen_id === 'all') filtros.origen_id = '';
         if (filtros.destino_id === 'all') filtros.destino_id = '';
-      
+
         setIsLoading(true);
-      
+
         router.get(route('entregas'), filtros, {
             preserveState: true,
             preserveScroll: true,
-            onFinish: () => setIsLoading(false), 
+            onFinish: () => setIsLoading(false),
         });
     };
 
@@ -193,7 +193,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
 
     const confirmarCancelacion = (id: number) => {
         setModalBloqueado(true); //Desactiva el trapping de Radix(dialog) mientras SweetAlert está abierto
-    
+
         Swal.fire({
             title: '¿Confirmar cancelación?',
             text: "Esta acción no se puede deshacer",
@@ -213,7 +213,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
             }
         }).then((result) => {
             setModalBloqueado(false); //Reactivamos el trapping normal del Dialog
-    
+
             if (result.isConfirmed) {
                 axios.post(route('entregas.cancelar', id), { motivo })
                     .then(() => {
@@ -237,7 +237,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
             }
         });
     };
-    
+
     const toggleMostrarMotivo = (id: number) => {
         setMostrarMotivo(prev => ({ ...prev, [id]: !prev[id] }));
     };
@@ -260,8 +260,8 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                             size="sm"
                             onClick={() => setShowFilters(prev => !prev)}
                             className={`min-w-[150px] text-sm px-3 py-1 border rounded-md shadow-sm transition-colors duration-200 cursor-pointer
-                            ${showFilters 
-                                ? 'bg-red-50 text-red-700 hover:bg-red-100 border-red-100' 
+                            ${showFilters
+                                ? 'bg-red-50 text-red-700 hover:bg-red-100 border-red-100'
                                 : 'bg-green-50 text-green-700 hover:bg-green-100 border-green-100'
                             }`}
                         >
@@ -380,11 +380,11 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                             >
                                             Limpiar filtros
                                         </Button>
-                                    </div>    
+                                    </div>
                                 </CardContent>
                             </motion.div>
                         )}
-                    </AnimatePresence>                   
+                    </AnimatePresence>
                 </Card>
 
                 {/* Tabla */}
@@ -410,7 +410,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                 </TableHeader>
                                 <TableBody>
                                     {entregas.data.map(entrega => (
-                                        <Fragment key={entrega.id}>   
+                                        <Fragment key={entrega.id}>
                                             <TableRow>
                                                 <TableCell>{entrega.origen}</TableCell>
                                                 <TableCell>{entrega.destino}</TableCell>
@@ -462,21 +462,21 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                                         {expandedRows.includes(entrega.id) ? "Ocultar detalle" : "Mostrar detalle"}
                                                     </Button>
                                                 </TableCell>
-                                                <TableCell>{safeDateTimeFormat(entrega.fecha_creacion)}                                                   
+                                                <TableCell>{safeDateTimeFormat(entrega.fecha_creacion)}
                                                 </TableCell>
                                                 <TableCell>{entrega.usuario_creacion || '-'}</TableCell>
                                                 <TableCell>
                                                     {/* Acciones - Cuando el estado de la Orden es PENDIENTE */}
                                                     {entrega.estado === 'Pendiente' && (
                                                         <div className="flex gap-2 text-center">
-                                                            <Button 
-                                                                variant="success" 
+                                                            <Button
+                                                                variant="success"
                                                                 className="hover:bg-green-700 cursor-pointer focus:outline-none focus:shadow-outline"
                                                                 onClick={() => abrirPrevisualizacionRemito(entrega)}
                                                             >
                                                                 Confirmar Envío
                                                             </Button>
-                                                            <Button 
+                                                            <Button
                                                                 variant="destructive"
                                                                 className="hover:bg-red-500 cursor-pointer focus:outline-none focus:shadow-outline"
                                                                 onClick={() => openCancelarModal(entrega)}
@@ -498,9 +498,9 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                                             >
                                                                 Mostrar Remito
                                                             </Button>
-                                                            <Button 
-                                                                variant="destructive" 
-                                                                className="hover:bg-red-500 cursor-pointer focus:outline-none focus:shadow-outline" 
+                                                            <Button
+                                                                variant="destructive"
+                                                                className="hover:bg-red-500 cursor-pointer focus:outline-none focus:shadow-outline"
                                                                 onClick={() => openCancelarModal(entrega)}
                                                             >
                                                                 Cancelar
@@ -508,7 +508,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                                         </div>
                                                     )}
 
-                                                    {/* Acciones - Cuando el estado de la Orden es CANCELADO */}            
+                                                    {/* Acciones - Cuando el estado de la Orden es CANCELADO */}
                                                     {entrega.estado === 'Cancelado' && entrega.cancelacion && (
                                                         <Button
                                                             size="sm"
@@ -602,7 +602,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                                                                         </tr>
                                                                                     </thead>
                                                                                     <tbody className="bg-white divide-y divide-gray-200">
-                                                                                
+
                                                                                         <tr className="hover:bg-gray-50">
                                                                                             <td className="px-4 py-2 text-sm text-gray-700">{entrega.cancelacion.motivo}</td>
                                                                                             {entrega.cancelacion.fecha && (
@@ -612,7 +612,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                                                                             <td className="px-4 py-2 text-sm text-gray-700">{entrega.cancelacion.usuario || '-'}</td>
                                                                                             )}
                                                                                         </tr>
-                                                                                        
+
                                                                                     </tbody>
                                                                                 </table>
                                                                             </div>
@@ -625,7 +625,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                                 </AnimatePresence>
                                         </Fragment>
                                     ))}
-                                    
+
                                     {entregas.data.length === 0 && (
                                         <TableRow>
                                             <TableCell colSpan={7} className="text-center text-gray-500">No hay resultados</TableCell>
@@ -633,7 +633,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                     )}
                                 </TableBody>
 
-                                {/* Modal Previsualización datos del REMITO a generar */}        
+                                {/* Modal Previsualización datos del REMITO a generar */}
                                 <Dialog open={modalGenerarRemito} onOpenChange={setModalGenerarRemito}>
                                     <DialogContent className="max-w-4xl">
                                         <DialogHeader>
@@ -645,7 +645,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                                 <div><strong>Fecha:</strong> {new Date().toLocaleDateString()}</div>
                                                 <div><strong>Origen:</strong> {entregaSeleccionada.origen}</div>
                                                 <div><strong>Destino:</strong> {entregaSeleccionada.destino}</div>
-                                                
+
                                                 <div>
                                                 <strong>Productos:</strong>
                                                 <ul className="ml-4 list-disc">
@@ -670,7 +670,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                             >
                                                 Confirmar y generar remito
                                             </Button>
-                                            <Button 
+                                            <Button
                                                 onClick={() => setModalGenerarRemito(false)}
                                                 variant="destructive"
                                                 className="hover:bg-red-500 cursor-pointer focus:outline-none focus:shadow-outline"
@@ -679,9 +679,9 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                             </Button>
                                         </div>
                                     </DialogContent>
-                                </Dialog>        
+                                </Dialog>
 
-                                {/* Modal Motivo de cancelación de la Orden */}                   
+                                {/* Modal Motivo de cancelación de la Orden */}
                                 <Dialog open={modalOpen} onOpenChange={setModalOpen} modal={!modalBloqueado}>
                                     <DialogContent onInteractOutside={(e) => e.preventDefault()}>
                                         <DialogHeader>
@@ -721,7 +721,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                     </DialogContent>
                                 </Dialog>
 
-                                {/* Modal para ver el REMITO ya generado de una Orden */}                   
+                                {/* Modal para ver el REMITO ya generado de una Orden */}
                                 {modalRemitoAbierto && remitoActual && (
                                 <Dialog open={modalRemitoAbierto} onOpenChange={setModalRemitoAbierto}>
                                     <DialogContent className="max-w-5xl h-[90vh]">

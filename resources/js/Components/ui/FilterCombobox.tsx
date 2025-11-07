@@ -1,37 +1,50 @@
-import * as React from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import * as React from "react"
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/Components/ui/popover"
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
-  CommandList,
-} from "@/Components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/Components/ui/popover";
-import { Button } from "@/Components/ui/button";
+} from "@/Components/ui/command"
+import { Button } from "@/Components/ui/button"
+
+interface Option {
+  value: string
+  label: string
+}
 
 interface FilterComboboxProps {
-  items: { value: string; label: string }[];
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  emptyLabel?: string;
+  options?: Option[]
+  items?: Option[]
+  value?: string
+  onChange: (value: string) => void
+  placeholder?: string
+  emptyText?: string
+  emptyLabel?: string
+  loading?: boolean
 }
 
 export function FilterCombobox({
+  options,
   items,
   value,
   onChange,
   placeholder = "Seleccionar...",
-  emptyLabel = "Sin resultados",
+  emptyText = "Sin resultados",
+  emptyLabel = "No se encontraron resultados",
+  loading = false,
 }: FilterComboboxProps) {
-  const [open, setOpen] = React.useState(false);
+  const opts = options ?? items ?? []
+  const [open, setOpen] = React.useState(false)
+
+  const selectedOption = opts.find((o) => o.value === value)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -39,42 +52,63 @@ export function FilterCombobox({
         <Button
           variant="outline"
           role="combobox"
-          className={cn("w-full justify-between", !value && "text-muted-foreground")}
+          aria-expanded={open}
+          className="w-[180px] justify-between"
+          disabled={loading}
         >
-          {value
-            ? items.find((item) => item.value === value)?.label
-            : placeholder}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" /> Cargando...
+            </span>
+          ) : selectedOption ? (
+            selectedOption.label
+          ) : (
+            placeholder
+          )}
+          {!loading && (
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[250px] p-0">
+
+     <PopoverContent
+        className="w-[180px] p-0 z-[9999]"
+        align="start"
+        side="bottom"
+        sideOffset={4}
+        avoidCollisions={false}
+        alignOffset={4}
+        >
         <Command>
           <CommandInput placeholder="Buscar..." />
-          <CommandList>
-            <CommandEmpty>{emptyLabel}</CommandEmpty>
-            <CommandGroup>
-              {items.map((item) => (
+          <CommandEmpty>{emptyText}</CommandEmpty>
+          <CommandGroup>
+            {opts.length > 0 ? (
+              opts.map((option) => (
                 <CommandItem
-                  key={item.value}
-                  value={item.value}
-                  onSelect={(currentValue) => {
-                    onChange(currentValue === value ? "" : currentValue);
-                    setOpen(false);
+                  key={option.value}
+                  onSelect={() => {
+                    onChange(option.value === value ? "" : option.value)
+                    setOpen(false)
                   }}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === item.value ? "opacity-100" : "opacity-0"
+                      value === option.value ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {item.label}
+                  {option.label}
                 </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
+              ))
+            ) : (
+              !loading && (
+                <div className="p-2 text-sm text-gray-500">{emptyText}</div>
+              )
+            )}
+          </CommandGroup>
         </Command>
       </PopoverContent>
     </Popover>
-  );
+  )
 }

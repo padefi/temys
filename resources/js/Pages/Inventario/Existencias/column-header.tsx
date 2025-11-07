@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDataTableParams } from "@/hooks/useDataTableParams";
 import { Column } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import { InputFilter } from "@/Components/ui/input-filter";
 import { ArrowDownNarrowWide, ArrowUpDown, ArrowUpNarrowWide,Pencil, PencilOff } from "lucide-react";
 
@@ -35,12 +35,12 @@ export function DataTableColumnHeader<TData, TValue>({ column, title, className,
 
     const handleSort = () => {
         let newSort: string;
- 
+
         if (currentSortColumn === columnId) {
             newSort = currentSortDirection === 'asc' ? `-${columnId}` : columnId;
         } else {
             newSort = columnId;
-        }   
+        }
         updateParams({
             sort: newSort,
             page: '1'
@@ -96,9 +96,9 @@ export function DataTableColumnHeader<TData, TValue>({ column, title, className,
                     }}
                     disabled={isLoading || disabled}
                     ref={filterInputRef}
-                />                               
+                />
             )}
-            
+
             <Button variant="ghost"  onClick={handleSort} disabled={isLoading || disabled} >
                 {!isInputVisible ? title : null}
                 {currentSortColumn === columnId && !isLoading &&  (
@@ -117,9 +117,9 @@ export function DataTableColumnHeader<TData, TValue>({ column, title, className,
                 onClick={toggleFilter}
                 disabled={isLoading || disabled}
                 className={isVisible ? "block" : "hidden"}
-            >               
+            >
                 {isInputVisible ? <PencilOff className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
             </Button>
         </div>
     );
-} 
+}

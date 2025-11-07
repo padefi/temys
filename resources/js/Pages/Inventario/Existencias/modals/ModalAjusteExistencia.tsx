@@ -1,7 +1,7 @@
 "use client"
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button" 
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog"
+import { Button } from "@/Components/ui/button"
 import { Badge } from "@/Components/ui/badge"
 import { Separator } from "@/Components/ui/separator"
 import { Calendar, Package, User, TrendingUp, History } from "lucide-react"
@@ -158,7 +158,7 @@ const handleOpenWithFilter = (idProducto: number) => {
 
           {/* Acciones */}
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button variant="outline" className="flex-1 flex items-center gap-2 bg-transparent" onClick={() => { handleOpenWithFilter(idProducto) }}> 
+            <Button variant="outline" className="flex-1 flex items-center gap-2 bg-transparent" onClick={() => { handleOpenWithFilter(idProducto) }}>
               <History className="h-4 w-4" />
               Ver Historial
             </Button>

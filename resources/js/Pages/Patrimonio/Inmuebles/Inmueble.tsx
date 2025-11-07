@@ -1,5 +1,5 @@
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/Components/ui/button';
 import { defineStepper } from '@stepperize/react';
 
 import { useForm, FormProvider } from "react-hook-form";
@@ -8,8 +8,8 @@ import React, { use } from 'react';
 
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
-import { DatosInmuebles } from './DatosInmuebles';
-import { DatosExtraInmueble } from './DatosExtraInmueble';
+import { DatosInmuebles } from './datosInmuebles';
+import { DatosExtraInmueble } from './datosExtraInmueble';
 
 
 const { useStepper, steps, utils } = defineStepper(
