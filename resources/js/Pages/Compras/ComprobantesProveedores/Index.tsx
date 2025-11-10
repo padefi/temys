@@ -1,0 +1,87 @@
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head, usePage, router } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
+import { Terminal } from 'lucide-react';
+import ComprasOrdenesListado from './ComprasOrdenesListado/Index';
+import { Button } from '@/Components/ui/button';
+import { toast } from 'sonner';
+
+export default function Index() {
+  const { props } = usePage();
+  const [mostrarAlerta, setMostrarAlerta] = useState(false);
+  const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (props.cotizacion_exitosa) {
+      setMostrarAlerta(true);
+      setTimeout(() => setMostrarAlerta(false), 5000);
+    }
+  }, [props.cotizacion_exitosa]);
+
+  const handleGenerarOrdenCompra = () => {
+
+    if (selectedOrders.length === 0) {
+      toast.error('No se han seleccionado órdenes de compra.');
+      return;
+    }
+
+    router.post('/compras/cotizaciones-ordenes/generar-orden-compra', { ordenes: selectedOrders, usuario_id: props.auth.user.id }, {
+      onSuccess: () => {
+        console.log("Generar Orden de Compra para:", selectedOrders);
+        toast.success(`Orden de Compra Generada para ${selectedOrders.length} órdenes.`);
+        setSelectedOrders([]);
+      },
+      onError: (errors) => {
+        toast.error(errors.message);
+      }
+    });
+
+  };
+
+  return (
+    <AuthenticatedLayout
+      header={
+        <h2 className="text-xl font-semibold leading-tight text-gray-800">
+           Ordenes de Compra Para Facturar
+        </h2>
+      }
+    >
+      {mostrarAlerta && (
+        <Alert variant="default" className="mb-4">
+          <Terminal className="h-4 w-4" />
+          <AlertTitle>¡Cotización enviada!</AlertTitle>
+          <AlertDescription>La cotización fue registrada correctamente.</AlertDescription>
+        </Alert>
+      )}
+      <Head title="Comprobantes de Proveedores" />
+
+      <div className="py-12">
+        <div className="mx-auto max-w sm:px-6 lg:px-8">
+          <div className="overflow-hidden bg-white shadow-xs sm:rounded-lg">
+            <div className="p-6 text-gray-900">
+              <div className="flex gap-4 mt-6 justify-end">
+
+
+                {selectedOrders.length > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={handleGenerarOrdenCompra}
+                  >
+                    Generar Orden de Compra ({selectedOrders.length})
+                  </Button>
+                )}
+              </div>
+
+              <h1 className="text-2xl my-3 font-bold">Comprobantes de Proveedores</h1>
+              <hr className="my-3" />
+
+              <ComprasOrdenesListado onSelectionChange={setSelectedOrders} />
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </AuthenticatedLayout>
+  );
+}

@@ -4,6 +4,7 @@ namespace App\Models\Compras;
 
 use App\Models\Almacenes\Almacen;
 use App\Models\Compras\OrdenCotizacion\OrdenCotizacion;
+use App\Models\Compras\OrdenCotizacion\OrdenCotizacionArchivo;
 use App\Models\General\TipoMoneda;
 use App\Models\Inventario\Productos\Producto;
 use App\Models\Padron\Proveedor\Proveedor;
@@ -20,9 +21,9 @@ class OrdenCompra extends Model
     protected $fillable = [
         'proveedor_id',
         'moneda_id',
+        'cotizacion_moneda',
         'almacen_destino_id',
         'entrega_esperada',
-        'entregar_a',
         'observaciones',
         'estado',
         'fecha_creacion',
@@ -35,17 +36,17 @@ class OrdenCompra extends Model
         'fecha_creacion' => 'datetime',
         'fecha_actualizacion' => 'datetime',
     ];
-
+    ////ALMACEN DESTINO RELACIONADO
     public function almacenDestino()
     {
         return $this->belongsTo(Almacen::class, 'almacen_destino_id');
     }
-
+    ////ORDEN COMPRA DETALLE RELACIONADO
     public function detalles()
     {
         return $this->hasMany(OrdenCompraDetalle::class, 'orden_compras_id');
     }
-
+    ////ORDEN COTIZACION RELACIONADA
     public function ordenesCotizacion()
     {
         return $this->belongsToMany(
@@ -55,12 +56,12 @@ class OrdenCompra extends Model
             'orden_cotizaciones_id'
         );
     }
-
+    ////PROVEEDOR RELACIONADO
     public function proveedor()
     {
         return $this->belongsTo(Proveedor::class, 'proveedor_id');
     }
-
+    ////PRODUCTO RELACIONADO
     public function producto()
     {
         return $this->belongsTo(Producto::class, 'producto_id');
@@ -71,10 +72,33 @@ class OrdenCompra extends Model
     {
         return $this->belongsTo(Almacen::class, 'almacen_destino_id');
     }
-
+    ////TIPO MONEDA RELACIONADA
     public function tipoMoneda()
     {
         return $this->belongsTo(TipoMoneda::class, 'moneda_id');
+    }
+    ////ORDEN COMPRA ARCHIVO RELACIONADO
+    public function archivos()
+    {
+        return $this->hasMany(OrdenCompraArchivo::class);
+    }
+    ////ORDEN COTIZACION ARCHIVO RELACIONADO
+    public function archivosOrdenCotizacion()
+    {
+        return OrdenCotizacionArchivo::whereIn(
+            'orden_cotizacion_id',
+            $this->ordenesCotizacion()->pluck('orden_cotizaciones.id')
+        );
+    }
+    ////COMPROBANTE PROVEEDOR RELACIONADO
+    public function comprobantesProveedores()
+    {
+        return $this->belongsToMany(
+            ComprobanteProveedor::class,
+            'orden_compra_comprobante',
+            'orden_compra_id',
+            'comprobante_id'
+        )->withTimestamps();
     }
 
 

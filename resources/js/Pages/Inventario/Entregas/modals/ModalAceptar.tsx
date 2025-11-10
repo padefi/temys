@@ -1,6 +1,6 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { DetalleProducto, EntregaItem } from "../EntregasManagement";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import axios from "axios";
 import { router } from "@inertiajs/react";
 
@@ -33,7 +33,7 @@ export default function AceptarEntrega({
             .then(() => {
                 setRemitoActual(entrega);
                 generarRemitoPdf(entrega);
-                handleClose(); 
+                handleClose();
                 router.reload({ only: ['ordenEntregas'] });
             })
     }

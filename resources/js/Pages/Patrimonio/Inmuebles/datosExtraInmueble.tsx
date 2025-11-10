@@ -4,9 +4,9 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/Components/ui/radio-group";
 import { useFormContext } from "react-hook-form";
-import { InmuebleFormData } from "@/types/Inmuebles"; 
+import { InmuebleFormData } from "@/types/Inmuebles";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import ContratoEscritura from "./ContratoEscritura";
 import ContratoAlquierComodato from "./ContratoAlquilerComodato";
 
@@ -39,7 +39,7 @@ export function DatosExtraInmueble() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="superficie_cubierta" className="text-secondary font-semibold uppercase text-xs">
-                                Superficie Cubierta (m²) 
+                                Superficie Cubierta (m²)
                                 {!superficieCubierta && <span className="text-red-500"> *</span>}
                             </Label>
                             <Input
@@ -58,7 +58,7 @@ export function DatosExtraInmueble() {
 
                         <div className="space-y-2">
                             <Label htmlFor="superficie_libre" className="text-secondary font-semibold uppercase text-xs">
-                                Superficie Libre (m²) 
+                                Superficie Libre (m²)
                                  {!superficieLibre && <span className="text-red-500"> *</span>}
                             </Label>
                             <Input
@@ -78,7 +78,7 @@ export function DatosExtraInmueble() {
 
                         <div className="space-y-2">
                             <Label htmlFor="superficie_total" className="text-secondary font-semibold uppercase text-xs">
-                                Superficie Total (m²) 
+                                Superficie Total (m²)
                                  {!superficieTotal && <span className="text-red-500"> *</span>}
                             </Label>
                             <Input
@@ -134,17 +134,17 @@ export function DatosExtraInmueble() {
                         </RadioGroup>
                     </div>
                 </div>
-             
-                {tipoContrato === "escritura" && (              
-                    <ContratoEscritura></ContratoEscritura>                 
+
+                {tipoContrato === "escritura" && (
+                    <ContratoEscritura></ContratoEscritura>
                 )}
-       
-                {tipoContrato === "alquiler" && (             
-                    <ContratoAlquierComodato tipoContrato={tipoContrato}></ContratoAlquierComodato>                
+
+                {tipoContrato === "alquiler" && (
+                    <ContratoAlquierComodato tipoContrato={tipoContrato}></ContratoAlquierComodato>
                 )}
-               
-                {tipoContrato === "comodato" && (             
-                    <ContratoAlquierComodato tipoContrato={tipoContrato}></ContratoAlquierComodato>               
+
+                {tipoContrato === "comodato" && (
+                    <ContratoAlquierComodato tipoContrato={tipoContrato}></ContratoAlquierComodato>
                 )}
 
             </Card>

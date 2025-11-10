@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/Components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Textarea } from "@/Components/ui/textarea";
 import axios from "axios";
-import { StockItem,AlmacenStock ,StockInventarioItem} from "../../../../types/Inventario"; 
+import { StockItem,AlmacenStock ,StockInventarioItem} from "../../../../types/Inventario";
 
 
- interface SolicitarStockProps { 
+ interface SolicitarStockProps {
     open: boolean;
     onClose: React.Dispatch<React.SetStateAction<boolean>>;
     productos: StockInventarioItem[];
-} 
+}
 
 type SelectedProduct = {
     producto: StockInventarioItem;
@@ -33,7 +33,7 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
     const [selectedItems, setSelectedItems] = useState<SelectedProduct[]>([]);
     const [erroresCantidad, setErroresCantidad] = useState<Record<number, string>>({});
 
-      
+
     useEffect(() => {
         const selectedProductoIds = selectedItems.map((item) => item.producto.productoId);
         console.log(selectedProductoIds)
@@ -74,9 +74,9 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
     const handleSubmit = async () => {
         if (!almacenProveedor || selectedItems.length === 0) return;
         setLoading(true);
-    
+
         try {
-            const payload = selectedItems.map((item) => ({             
+            const payload = selectedItems.map((item) => ({
                 producto_id: item.producto.productoId,
                 almacen_solicitante_id: item.producto.almacenId,
                 almacen_proveedor_id: parseInt(almacenProveedor),

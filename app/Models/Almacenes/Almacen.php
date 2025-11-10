@@ -92,4 +92,11 @@ class Almacen extends Model
     }
 
 
+    /*public function ajustesInventario()
+    {
+
+        return $this->hasMany(InventarioAjuste::class, 'almacen_destino_id');
+    }*/
+
+
 }

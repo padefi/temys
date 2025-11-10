@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/Components/ui/table";
 
 import axios from "axios";
@@ -10,7 +10,7 @@ import { Solicitudes } from "../../../../types/Inventario";
 import { Calendar, ChevronDown, ChevronRight, MapPin, Package } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 interface SolicitudesModalProps {
     isOpen: boolean;
     onClose: () => void;

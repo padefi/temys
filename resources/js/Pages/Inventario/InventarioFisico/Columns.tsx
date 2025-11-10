@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { BrushCleaning, Clock10, Pencil, Save } from "lucide-react";
 import { DataTableColumnHeader } from "../Existencias/column-header";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 
 interface StockColumnProps {
   editingCell: { id: number; field: string }[];
@@ -135,10 +135,10 @@ export const getStockColumns = ({
                   value={tempValue}
                   onChange={e => setTempValue(Number(e.target.value))}
                   onBlur={() => {
-                    handleInputChange(tempValue, item.id, "cantidad_contada");             
+                    handleInputChange(tempValue, item.id, "cantidad_contada");
                   }}
                   className="w-24 p-1 border border-neutral-200 rounded-md"
-                />          
+                />
               </AnimatePresence>
             ) : (
               <div className="flex items-center justify-center gap-1 rounded-md w-24 h-9">
@@ -210,7 +210,7 @@ export const getStockColumns = ({
       id: 'estado',
       header: 'Estado',
       cell: (info) => {
-        const row = info.row.original; 
+        const row = info.row.original;
         const stockStatus = getStockStatus(row.cantidad_actual, row.stock_minimo);
 
         return (

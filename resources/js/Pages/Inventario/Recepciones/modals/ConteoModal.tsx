@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Check, X } from "lucide-react";
-import {Dialog,DialogContent,DialogDescription,DialogFooter,DialogHeader,DialogTitle,} from "@/components/ui/dialog";
+import {Dialog,DialogContent,DialogDescription,DialogFooter,DialogHeader,DialogTitle,} from "@/Components/ui/dialog";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Textarea } from "@/Components/ui/textarea";
 import axios from "axios";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import { RecepcionesItem } from "../RecepcionesManagement";
 import { router } from "@inertiajs/react";
 
@@ -108,7 +108,7 @@ export default function RecepcionProductos({
                                         Cantidad esperada: <b>{detalle.cantidadEsperada}</b>
                                     </div>
                                 </div>
-                           
+
                                 {action === "aprobado" && (
                                     <div className="space-y-2">
                                         <Label>Cantidad Contada</Label>
@@ -135,7 +135,7 @@ export default function RecepcionProductos({
                             </div>
                         );
                     })}
-        
+
                     {action === "aprobado" && (
                         <div className="space-y-2 p-4 rounded-lg border bg-green-50 border-green-200">
                             <Label>Estado de la recepción</Label>
@@ -150,7 +150,7 @@ export default function RecepcionProductos({
                             </select>
                         </div>
                     )}
-    
+
                     {action === "rechazado" && (
                         <div className="space-y-2">
                             <Label>Justificación</Label>

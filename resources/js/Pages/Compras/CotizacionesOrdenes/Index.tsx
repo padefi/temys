@@ -63,7 +63,7 @@ export default function Index() {
             <div className="p-6 text-gray-900">
               <div className="flex gap-4 mt-6 justify-end">
                 <Button
-                  variant="success"
+                  variant="outline"
                   onClick={() => router.visit('/compras/cotizaciones-ordenes/nueva')}
                 >
                   Nueva Cotización

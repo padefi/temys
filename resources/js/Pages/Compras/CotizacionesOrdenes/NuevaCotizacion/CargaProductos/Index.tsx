@@ -120,8 +120,12 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
     }, [detalles])
 
     useEffect(() => {
-    const hayProductoValido = productos.some(p => p.producto_id > 0 && p.cantidad > 0)
-    setProductosValidos(hayProductoValido)
+    // ✅ Todos los productos deben tener cantidad > 0 y producto seleccionado
+    const todosValidos = productos.length > 0 && productos.every(
+        p => p.producto_id > 0 && p.cantidad > 0
+    )
+
+    setProductosValidos(todosValidos)
     setProductos(productos)
     }, [productos])
 

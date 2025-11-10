@@ -17,7 +17,6 @@ return new class extends Migration
             $table->unsignedBigInteger('moneda_id');
             $table->date('cotizar_antes_de');
             $table->date('entrega_esperada');
-            $table->string('entregar_a');
             $table->string('observaciones');
             $table->unsignedBigInteger('almacen_destino_id')->nullable();
             $table->enum('estado', ['Pendiente', 'Confirmada', 'Cancelada']);

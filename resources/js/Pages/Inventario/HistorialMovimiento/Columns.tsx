@@ -1,6 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/Components/ui/checkbox";
-import { Button } from "@/components/ui/button"; /* from "@/Components/ui/button"; */
+import { Button } from "@/Components/ui/button";
 import { Pencil, History } from "lucide-react";
 import { DataTableColumnHeader } from "../Existencias/column-header";
 import { MovimientosItem } from "@/types/Inventario";

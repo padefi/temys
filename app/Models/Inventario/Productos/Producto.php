@@ -8,6 +8,7 @@ use App\Models\Compras\OrdenCotizacion\OrdenCotizacionDetalle;
 use App\Models\Inventario\InventarioAjusteDetalle;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Contabilidad\PlanCuentas\Cuenta;
 
 class Producto extends Model
 {
@@ -35,6 +36,7 @@ class Producto extends Model
         'usuario_creacion',
         'fecha_actualizacion',
         'usuario_actualizacion',
+        'co_cuenta_id'
     ];
 
     protected $casts = [
@@ -87,6 +89,12 @@ class Producto extends Model
     public function ordenCompraDetalle()
     {
         return $this->belongsTo(OrdenCompraDetalle::class, 'id');
+    }
+
+    // Relación con la cuenta contable
+    public function cuentaContable()
+    {
+        return $this->belongsTo(Cuenta::class, 'co_cuenta_id');
     }
 
 

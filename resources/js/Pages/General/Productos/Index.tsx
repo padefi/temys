@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/Components/ui/table";
 
-import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogClose } from "@/Components/ui/dialog";
 
 import Form from "./Form"; // el formulario que mostraste
 

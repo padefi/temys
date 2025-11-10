@@ -3,7 +3,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { columns } from "./columns"
 import { DataTable } from "./data-table"
-import { Button } from '@/components/ui/button';
+import { Button } from '@/Components/ui/button';
 import { UserPlus } from 'lucide-react';
 import { links } from '@/types/links';
 import { meta } from '@/types/meta';
