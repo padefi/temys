@@ -47,17 +47,20 @@ class Producto extends Model
         'ancho' => 'float',
         'volumen' => 'float',
         'profundidad' => 'float',
+        'es_inventario' => 'boolean',
+        'es_patrimonio' => 'boolean',
     ];
 
 
+    // Relaciones
     public function modelo()
     {
-        return $this->belongsTo(ProductoModelo::class, 'modelo_id', 'id');
+        return $this->belongsTo(ProductoModelo::class, 'modelo_id');
     }
 
     public function subCategoria()
     {
-        return $this->belongsTo(ProductoSubcategoria::class, 'subcategoria_id', 'id');
+        return $this->belongsTo(ProductoSubcategoria::class, 'subcategoria_id');
     }
 
     public function caracteristicas()

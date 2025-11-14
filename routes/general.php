@@ -4,6 +4,7 @@ use App\Http\Controllers\Compras\ComprasController;
 use App\Http\Controllers\Compras\Proveedores\ProveedoresController;
 use App\Http\Controllers\Compras\OrdenCotizaciones\OrdenCotizacionesController;
 use App\Http\Controllers\Compras\OrdenCompras\OrdenComprasController;
+use App\Http\Controllers\Contabilidad\ContabilidadController;
 use App\Http\Controllers\UserModulePanel\UserModuleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -13,10 +14,7 @@ use App\Http\Controllers\General\MetodoPagoController;
 use App\Http\Controllers\General\TarjetaController;
 use App\Http\Controllers\General\TipoComprobanteController;
 use App\Http\Controllers\General\TipoMonedaController;
-
-
-
-Route::resource('productos', ProductoController::class);
+use App\Models\Contabilidad\PlanCuentas\Cuenta;
 
 Route::get('/bancos', [BancoController::class, 'index']);
 
@@ -31,3 +29,11 @@ Route::get('/condiciones-venta', [ComprasController::class, 'condicionesVenta'])
 Route::get('/tipo-monedas', [TipoMonedaController::class, 'index']);
 
 Route::get('/metodo-pagos', [MetodoPagoController::class, 'index']);
+
+Route::get('/cuentas-contables', [ContabilidadController::class, 'planCuentas']);
+
+Route::get('/modelos', [ProductoController::class, 'modelos']);
+
+Route::get('/subcategorias', [ProductoController::class, 'subCategorias']);
+
+

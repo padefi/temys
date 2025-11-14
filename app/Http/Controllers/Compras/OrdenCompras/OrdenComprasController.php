@@ -9,6 +9,8 @@ use App\Models\Compras\OrdenCompraDetalle;
 use App\Models\Contabilidad\PlanCuentas\Cuenta;
 use App\Models\General\Impuesto;
 use App\Models\General\TipoMoneda;
+use App\Models\Inventario\InventarioRecepcionProducto;
+use App\Models\Inventario\InventarioRecepcionProductoDetalle;
 use App\Models\Inventario\Productos\Producto;
 use App\Models\Padron\Proveedor\Proveedor;
 use Illuminate\Http\Request;
@@ -178,14 +180,38 @@ class OrdenComprasController extends Controller
                 ->delete();
 
 
+            //////////////////////////////////////////////////////////////
+            // ✅ Crear la recepción asociada a esta orden
+            $recepcion = InventarioRecepcionProducto::create([
+                'origen_id' => 1, //id de compras
+                'destino_id' => $validated['almacen'],
+                'orden_entrega_id' => null,
+                'tipo_recepcion' => 'Orden de compra',
+                'fecha_recepcion' => now(),
+                'estado' => 'Pendiente',
+                'usuario_creacion' => $validated['usuario_id'],
+            ]);
+
+            foreach ($validated['productos'] as $producto) {
+                InventarioRecepcionProductoDetalle::create([
+                    'recepcion_id' => $recepcion->id,
+                    'producto_id' => $producto['producto_id'],
+                    'cantidad_recibida' => 0,
+                    'cantidad_esperada' => $producto['cantidad'] ?? 0,
+                    'estado' => 'completo',
+                    'fecha_creacion' => now(),
+                    'usuario_creacion' => $validated['usuario_id'],
+                ]);
+            }
+            ////////////////////////////////////////////////////////////
+
             DB::commit();
 
         return redirect()->back()->with('success', 'Orden de Compra confirmada correctamente.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-
-            return redirect()->back()->with('danger', $e);
+            return redirect()->back()->with('danger', $e->getMessage());
         }
     }
 

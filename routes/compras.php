@@ -6,6 +6,7 @@ use App\Http\Controllers\Compras\OrdenCotizaciones\OrdenCotizacionesController;
 use App\Http\Controllers\Compras\OrdenCompras\OrdenComprasController;
 use App\Http\Controllers\Compras\OrdenPagoController;
 use App\Http\Controllers\Compras\ComprobantesProveedores\ComprobantesProveedoresController;
+use App\Http\Controllers\Inventario\Productos\ProductoController;
 use App\Http\Controllers\UserModulePanel\UserModuleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -160,4 +161,30 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
 
         });
 });
+
+//////Productos Compras vista principal
+ Route::middleware(['submenu:productosCompras'])->prefix('compras')
+
+    ->group(function () {
+
+        Route::get('productosCompras', [ProductoController::class, 'index'])
+                ->name('productosCompras');
+
+    });
+
+
+//////Productos Compras
+ Route::resource('compras/productos', ProductoController::class)
+            ->names([
+                'index' => 'productos.index',
+                'create' => 'productos.create',
+                'store' => 'productos.store',
+                'edit' => 'productos.edit',
+                'update' => 'productos.update',
+                'destroy' => 'productos.destroy',
+                'show' => 'productos.show',
+            ]);
+
+
+
 });

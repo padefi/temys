@@ -6,6 +6,7 @@ use App\Models\Compras\ComprobanteProveedor;
 use App\Models\Compras\OrdenPago;
 use App\Models\Compras\PlanPago;
 use App\Models\Contabilidad\MovimientoTesoreria;
+use App\Models\Contabilidad\PlanCuentas\Cuenta;
 use App\Models\General\Banco;
 use App\Models\General\CuentaBancaria;
 use App\Models\General\MetodoPago;
@@ -69,6 +70,11 @@ class ContabilidadController extends Controller
             'fecha' => $fecha,
             'usuario_id' => $userId
         ]);
+    }
+
+    public function planCuentas()
+    {
+        return Cuenta::all();
     }
 
 

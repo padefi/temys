@@ -3,30 +3,47 @@
 namespace App\Http\Controllers\Inventario\Productos;
 
 use App\Http\Controllers\Controller;
+use App\Models\Contabilidad\PlanCuentas\Cuenta;
 use App\Models\Inventario\Productos\Producto;
+use App\Models\Inventario\Productos\ProductoModelo;
+use App\Models\Inventario\Productos\ProductoSubcategoria;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ProductoController extends Controller
 {
-    public function index()
+    protected function getModuleFromRequest(Request $request)
     {
+        // Si la ruta es: compras/productos o contabilidad/productos
+        $prefix = explode('/', $request->path())[0] ?? 'inventario';
+        return strtolower($prefix);
+    }
+
+
+
+    public function index(Request $request)
+    {
+        $modulo = $this->getModuleFromRequest($request);
+
         $productos = Producto::with(['modelo', 'subCategoria'])
             ->orderBy('id', 'desc')
             ->paginate(10);
 
-       /* return inertia('General/Productos/Index', [
+        return inertia('General/Productos/Index', [
             'productos' => $productos,
-            'flash' => [
-                'success' => session('success')
-            ]
-        ]);*/
+            'modulo' => $modulo,
+            'flash' => ['success' => session('success')],
+        ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return inertia('General/Productos/Create');
+        $modulo = $this->getModuleFromRequest($request);
+
+        return inertia('General/Productos/Create', [
+            'modulo' => $modulo,
+        ]);
     }
 
     public function store(Request $request)
@@ -45,18 +62,41 @@ class ProductoController extends Controller
             'es_inventario' => 'boolean',
             'es_patrimonio' => 'boolean',
             'referencia' => 'nullable|string|max:100',
+            'co_cuenta_id' => 'nullable|integer',
         ]);
+
+        // Agregar valores extra
+        $data['fecha_creacion'] = now();
+        $data['usuario_creacion'] = Auth::id();
+        $data['fecha_actualizacion'] = null;
+        $data['usuario_actualizacion'] = null;
 
         Producto::create($data);
 
-        return redirect()->route('productos.index')->with('success', 'Producto creado correctamente.');
+        $modulo = $this->getModuleFromRequest($request);
+
+         $productos = Producto::with(['modelo', 'subCategoria'])
+            ->orderBy('id', 'desc')
+            ->paginate(10);
+
+        return inertia('General/Productos/Index', [
+            'modulo' => $modulo,
+            'productos' => $productos,
+            'flash' => ['success' => session('success')],
+        ]);
     }
 
-    public function edit(Producto $producto)
+
+    public function edit(Request $request, Producto $producto)
     {
-        return inertia('General/Productos/Edit', [
-            'producto' => $producto
+        $modulo = $this->getModuleFromRequest($request);
+
+         return inertia('General/Productos/Edit', [
+            'modulo' => $modulo,
+            'producto' => $producto,
+            'flash' => ['success' => session('success')],
         ]);
+
     }
 
     public function update(Request $request, Producto $producto)
@@ -75,25 +115,55 @@ class ProductoController extends Controller
             'es_inventario' => 'boolean',
             'es_patrimonio' => 'boolean',
             'referencia' => 'nullable|string|max:100',
+            'co_cuenta_id' => 'nullable|integer',
         ]);
 
 
+
         $producto->update([
-            ...$request->only([
-                'nombre', 'descripcion', 'modelo_id', 'subcategoria_id',
-                'peso', 'alto', 'ancho', 'volumen', 'profundidad',
-                'cod_barras', 'referencia', 'es_inventario', 'es_patrimonio'
-            ]),
+            ...$data,
             'fecha_actualizacion' => Carbon::now(),
             'usuario_actualizacion' => Auth::id(),
         ]);
 
-        return redirect()->route('productos.index')->with('success', 'Producto actualizado correctamente.');
+        $modulo = $this->getModuleFromRequest($request);
+
+        $productos = Producto::with(['modelo', 'subCategoria'])
+            ->orderBy('id', 'desc')
+            ->paginate(10);
+
+        return inertia('General/Productos/Index', [
+            'modulo' => $modulo,
+            'productos' => $productos,
+            'flash' => ['success' => session('success')],
+        ]);
     }
 
-    public function destroy(Producto $producto)
+    public function destroy(Request $request, Producto $producto)
     {
         $producto->delete();
-        return redirect()->route('productos.index')->with('success', 'Producto eliminado correctamente.');
+        $modulo = $this->getModuleFromRequest($request);
+
+
+
+         $productos = Producto::with(['modelo', 'subCategoria'])
+            ->orderBy('id', 'desc')
+            ->paginate(10);
+
+        return inertia('General/Productos/Index', [
+            'modulo' => $modulo,
+            'productos' => $productos,
+            'flash' => ['success' => session('success')],
+        ]);
+    }
+
+    public function modelos()
+    {
+        return ProductoModelo::all();
+    }
+
+    public function subCategorias()
+    {
+        return ProductoSubcategoria::all();
     }
 }
