@@ -23,6 +23,7 @@ return new class extends Migration
             $table->dateTime('fecha_actualizacion')->nullable();
             $table->unsignedBigInteger('usuario_actualizacion')->nullable();
             
+            
 
             
              //Relaciones

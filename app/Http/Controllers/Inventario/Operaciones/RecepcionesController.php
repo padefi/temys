@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Inventario\Operaciones;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Inventario\RecepcionesResource;
-use App\Models\Inventario\InventarioMovimientoStock;
+use App\Models\Inventario\InventarioEstadosTracking;
 use App\Models\Inventario\InventarioRecepcionCancelada;
 use App\Models\Inventario\InventarioRecepcionProducto;
 use App\Models\Inventario\InventarioRecepcionProductoDetalle;
 use App\Models\Inventario\InventarioStock;
+use App\Models\Inventario\InventarioTracking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -149,15 +150,28 @@ class RecepcionesController extends Controller
                 $cantidadContada = $detalleRequest['cantidad_contada'];
 
                 //Crear el movimiento a través de la relación polimórfica
-                $detalle->movimientos()->create([
+                $movimiento = $detalle->movimientos()->create([
                     'producto_id' => $detalleRequest['producto_id'],
-                    'origen_id' => $recepcion->origen_id,
-                    'destino_id' => $recepcion->destino_id,
+                    'origen_id' => $recepcion->destino_id,
+                    'destino_id' => $recepcion->origen_id,
                     'cantidad' => $cantidadContada,
                     'tipo_movimiento' => 'recepcion',
                     'fecha_creacion' => now(),
                     'usuario_creacion' => Auth::id(),
                 ]);
+
+             $transito_id = InventarioTracking::where('entrega_id', $recepcion->orden_entrega_id)
+                                ->value('id');
+ 
+
+                InventarioEstadosTracking::create([
+                    'seguimiento_id' => $transito_id,
+                    'estado' => 'completado',
+                    'usuario_id' => Auth::id(),
+                    'fecha' => now(),
+                    'observaciones' => 'Producto en llego al almacen ' . $recepcion->origen->nombre,
+                ]);
+
 
                 //Actualizar stock
                 InventarioStock::where('producto_id', $detalleRequest['producto_id'])
@@ -180,6 +194,7 @@ class RecepcionesController extends Controller
                 'estado' => 'completa',
                 'usuario_actualizacion' => Auth::id(),
                 'fecha_actualizacion' => now(),
+                'movimiento_stock_id' => $movimiento->id,
             ]);
         });
 

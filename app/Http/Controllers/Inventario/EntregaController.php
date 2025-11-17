@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Inventario;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Inventario\OrdenEntregaResource;
+use App\Models\Inventario\InventarioEstadosTracking;
 use App\Models\Inventario\InventarioOrdenEntrega;
 use App\Models\Inventario\InventarioOrdenEntregaCancelada;
 use App\Models\Inventario\InventarioStock;
+use App\Models\Inventario\InventarioTracking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,31 +22,32 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class EntregaController extends Controller
 {
-   
+
     public function index(Request $request)
     {
-             //  Tomo el branch_id activo desde la sesión      
+        //  Tomo el branch_id activo desde la sesión      
         $branchId = Session::get('active_branch_id') ?? null;
 
-            // Si necesitas el almacen correspondiente a ese branch
+        // Si necesitas el almacen correspondiente a ese branch
         $almacenId = DB::table('almacenes')
             ->where('id', $branchId)
             ->value('id');
-       
-        $query = QueryBuilder::for(InventarioOrdenEntrega::query()
-         ->SELECT(
-                'inventario_orden_entregas.*',
-                'ao.nombre as origen',
-                'ad.nombre as destino',
-                DB::raw('CONCAT(u.name," ",u.last_name) as usuarioCreacion')
-            )
-            ->join('users as u', 'inventario_orden_entregas.usuario_creacion', '=', 'u.id')
-            ->leftJoin('almacenes as ao', 'inventario_orden_entregas.origen_id', '=', 'ao.id')
-            ->leftJoin('almacenes as ad', 'inventario_orden_entregas.destino_id', '=', 'ad.id')
-            ->leftJoin('inventario_orden_entrega_canceladas as iec', 'inventario_orden_entregas.id', '=', 'iec.orden_entrega_id')
-            ->where('inventario_orden_entregas.destino_id', $almacenId) 
-         
-         )->allowedFilters([
+
+        $query = QueryBuilder::for(
+            InventarioOrdenEntrega::query()
+                ->SELECT(
+                    'inventario_orden_entregas.*',
+                    'ao.nombre as origen',
+                    'ad.nombre as destino',
+                    DB::raw('CONCAT(u.name," ",u.last_name) as usuarioCreacion')
+                )
+                ->join('users as u', 'inventario_orden_entregas.usuario_creacion', '=', 'u.id')
+                ->leftJoin('almacenes as ao', 'inventario_orden_entregas.origen_id', '=', 'ao.id')
+                ->leftJoin('almacenes as ad', 'inventario_orden_entregas.destino_id', '=', 'ad.id')
+                ->leftJoin('inventario_orden_entrega_canceladas as iec', 'inventario_orden_entregas.id', '=', 'iec.orden_entrega_id')
+                ->where('inventario_orden_entregas.destino_id', $almacenId)
+
+        )->allowedFilters([
             AllowedFilter::callback('estado', function ($query, $value) {
                 $query->where('estado', 'LIKE', "%{$value}%");
             }),
@@ -52,7 +55,7 @@ class EntregaController extends Controller
             AllowedFilter::callback('fecha_envio', function ($query, $value) {
                 $query->where('inventario_orden_entregas.fecha_envio', 'LIKE', "%{$value}%");
             }),
-             AllowedFilter::callback('fecha_creacion', function ($query, $value) {
+            AllowedFilter::callback('fecha_creacion', function ($query, $value) {
                 $query->where('inventario_orden_entregas.fecha_creacion', 'LIKE', "%{$value}%");
             }),
             AllowedFilter::callback('origen', function ($query, $value) {
@@ -63,18 +66,18 @@ class EntregaController extends Controller
             }),
             AllowedFilter::callback('usuarioCreacion', function ($query, $value) {
                 $query->whereRaw("CONCAT(u.name, ' ', u.last_name) LIKE ?", ["%{$value}%"]);
-            }),            
-        ]) ->allowedSorts([
-                'fecha_envio',
-                'fecha_creacion',
-                'estado',
-                'usuarioCreacion',
-                'origen',
-                'destino',
-            ])
+            }),
+        ])->allowedSorts([
+            'fecha_envio',
+            'fecha_creacion',
+            'estado',
+            'usuarioCreacion',
+            'origen',
+            'destino',
+        ])
             ->paginate($request->input('per_page', 10))
             ->withQueryString();
-           
+
 
         return Inertia::render('Inventario/Entregas/EntregasManagement', [
             'ordenEntregas' => OrdenEntregaResource::collection($query),
@@ -83,47 +86,64 @@ class EntregaController extends Controller
 
 
     public function confirmarEnvio(InventarioOrdenEntrega $orden)
-{
-    DB::transaction(function () use ($orden) {
-        // Actualizar estado general
-        $orden->update([
-            'fecha_envio' => now(),
-            'estado' => 'Enviado',
-            'fecha_actualizacion' => now(),
-            'usuario_actualizacion' => Auth::id(),
-        ]);
-
-        // Cargar relaciones necesarias
-        $orden->load(['origen', 'destino', 'detalles.producto']);
-
-        foreach ($orden->detalles as $detalle) {
-            // Crear movimiento polimórfico
-            $detalle->movimientos()->create([
-                'producto_id' => $detalle->producto_id,
-                'origen_id' => $orden->origen_id,
-                'destino_id' => $orden->destino_id,
-                'cantidad' => $detalle->cantidad_enviada,
-                'tipo_movimiento' => 'orden_entrega',
-                'fecha_creacion' => now(),
-                'usuario_creacion' => Auth::id(),
+    {
+        DB::transaction(function () use ($orden) {
+            // Actualizar estado general
+            $orden->update([
+                'fecha_envio' => now(),
+                'estado' => 'Enviado',
+                'fecha_actualizacion' => now(),
+                'usuario_actualizacion' => Auth::id(),
             ]);
 
-            // Actualizar stock (disminuye en el origen)
-            InventarioStock::where('producto_id', $detalle->producto_id)
-                ->where('almacen_id', $orden->origen_id)
-                ->update([
-                    'cantidad_actual' => DB::raw('cantidad_actual - ' . $detalle->cantidad_enviada),
-                    'usuario_actualizacion' => Auth::id(),
-                    'fecha_actualizacion' => now(),
+            // Cargar relaciones necesarias
+            $orden->load(['origen', 'destino', 'detalles.producto']);
+
+            foreach ($orden->detalles as $detalle) {
+                // Crear movimiento polimórfico
+                 $detalle->movimientos()->create([
+                    'producto_id' => $detalle->producto_id,
+                    'origen_id' => $orden->origen_id,
+                    'destino_id' => $orden->destino_id,
+                    'cantidad' => $detalle->cantidad_enviada,
+                    'tipo_movimiento' => 'orden_entrega',
+                    'fecha_creacion' => now(),
+                    'usuario_creacion' => Auth::id(),
                 ]);
-        }
 
-        // Generar remito PDF
-        $this->generarRemitoPdf($orden);
-    });
+                $transito = InventarioTracking::create([
+                    'entrega_id' => $orden->id,               
+                    'estado' => 'en_transito',
+                    'ubicacion_actual' => $orden->origen->nombre,
+                    'fecha_salida' => now(),
+                    'observaciones' => 'Producto en tránsito hacia ' . $orden->destino->nombre,
+                    
+                ]);
 
-    return response()->json(['success' => true, 'message' => 'Orden marcada como Enviada']);
-}
+                InventarioEstadosTracking::create([
+                    'seguimiento_id' => $transito->id,
+                    'estado' => 'en_transito',
+                    'usuario_id' => Auth::id(),
+                    'fecha' => now(),
+
+                ]);
+
+                // Actualizar stock (disminuye en el origen)
+                InventarioStock::where('producto_id', $detalle->producto_id)
+                    ->where('almacen_id', $orden->origen_id)
+                    ->update([
+                        'cantidad_actual' => DB::raw('cantidad_actual - ' . $detalle->cantidad_enviada),
+                        'usuario_actualizacion' => Auth::id(),
+                        'fecha_actualizacion' => now(),
+                    ]);
+            }
+
+            // Generar remito PDF
+            $this->generarRemitoPdf($orden);
+        });
+
+        return response()->json(['success' => true, 'message' => 'Orden marcada como Enviada']);
+    }
 
 
     //Cancela la orden de entrega

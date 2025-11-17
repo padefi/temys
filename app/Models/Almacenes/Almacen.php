@@ -9,6 +9,7 @@ use App\Models\ControlAcceso\User;
 use App\Models\Inventario\InventarioAjuste;
 use App\Models\Inventario\InventarioMovimientoStock;
 use App\Models\Inventario\InventarioStock;
+use App\Models\Inventario\InventarioTracking;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -91,5 +92,5 @@ class Almacen extends Model
         return $this->hasMany(InventarioMovimientoStock::class, 'almacen_destino_id');
     }
 
-
+ 
 }

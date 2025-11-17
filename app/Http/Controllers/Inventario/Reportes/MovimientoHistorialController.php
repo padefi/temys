@@ -38,7 +38,7 @@ class MovimientoHistorialController extends Controller
                 ->join('users as u', 'inventario_movimiento_stocks.usuario_creacion', '=', 'u.id')
                 ->leftJoin('almacenes as ao', 'inventario_movimiento_stocks.origen_id', '=', 'ao.id')
                 ->leftJoin('almacenes as ad', 'inventario_movimiento_stocks.destino_id', '=', 'ad.id')
-                ->where('inventario_movimiento_stocks.origen_id', $almacenId)
+                ->where('inventario_movimiento_stocks.destino_id', $almacenId)
                 ->where('p.es_inventario', 1)
         )
             ->allowedFilters([

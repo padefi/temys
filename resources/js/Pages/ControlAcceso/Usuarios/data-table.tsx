@@ -59,7 +59,6 @@ export function DataTable<TData extends User, TValue>({
         setLoadingSaving(false);
     }, [initialData]);
 
-    console.log(initialData)
     useEffect(() => {
         if (newUser && footerRef.current) {
             footerRef.current.goToPage(links.last);

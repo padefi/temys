@@ -8,7 +8,7 @@ import { Badge } from "lucide-react";
 
 interface GetColumnsProps {
     onAbrirModal: (recepcion: RecepcionesItem) => void;
-    abrirModalSeguimiento:(idSeguimiento:number)=>void
+    abrirModalSeguimiento: (idSeguimiento: number) => void
 }
 
 export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsProps): ColumnDef<RecepcionesItem>[] => [
@@ -90,7 +90,7 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
 
     {
         accessorKey: "fecha_recepcion",
-         header: ({ column, table }) => {
+        header: ({ column, table }) => {
             const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
             return (
                 <DataTableColumnHeader
@@ -160,7 +160,7 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
     },
     {
         accessorKey: "tipo_recepcion",
-             header: ({ column, table }) => {
+        header: ({ column, table }) => {
             const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
             return (
                 <DataTableColumnHeader
@@ -184,12 +184,12 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
         header: "Acciones",
         cell: ({ row }) => {
             const item = row.original;
-            console.log(item.id)
-
+            console.log(item)
             return (
-                item.estado === "Pendiente" ? (
+                <>
+                   { item.estado === "Pendiente" ? (
                     <div className="text-center">
-            {/*              <Button
+                        <Button
                             variant="ghost"
                             size="sm"
                             className="hover:bg-accent/10"
@@ -197,20 +197,23 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
                         >
                             <PackageCheck className="h-4 w-4" />
                             Contar y Verificar
-                        </Button>  */}
+                        </Button>
 
-                            <Button
-                            variant="ghost"
-                            size="sm"
-                            className="hover:bg-accent/10"
-                             onClick={() => abrirModalSeguimiento(Number(item.id))} 
-                        >
-                            <Eye className="h-4 w-4" />
-                           
-                            Seguimiento
-                        </Button>  
                     </div>
-                ) : null
+                    ) : null}
+
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="hover:bg-accent/10"
+                        onClick={() => abrirModalSeguimiento(Number(item.orden_id))}
+                    >
+                        <Eye className="h-4 w-4" />
+
+                        Seguimiento
+                    </Button>
+                </>
+
             );
 
         },

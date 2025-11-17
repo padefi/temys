@@ -1,17 +1,18 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card"
-import { Badge } from "@/Components/ui/badge"  
-import { Separator } from "@radix-ui/react-select" 
+import { Badge } from "@/Components/ui/badge"
+import { Separator } from "@radix-ui/react-select"
 import { Package, MapPin, Calendar, Clock, AlertCircle, CheckCircle2, Truck } from "lucide-react"
 import { cn } from "@/lib/utils"
+
 
 export interface MovimientoEstado {
   id: number;
   transito_id: number;
   estado: string;
   usuario_id: number;
-  fecha: string; // formato: "2025-11-07 18:23:39"
+  fecha: string;
   observacion: string;
   usuario?: {
     id: number;
@@ -29,6 +30,13 @@ export interface Producto {
   nombre: string;
 }
 
+export interface InventarioOrdenEntrega {
+  id: number;
+  origen: Almacen;
+  destino: Almacen;
+
+}
+
 export interface InventarioStockTransito {
   id: number;
   movimiento_id: number;
@@ -38,18 +46,14 @@ export interface InventarioStockTransito {
   cantidad: number;
   estado: string;
   ubicacion_actual: string;
-  fecha_salida: string; // formato ISO "2025-11-04T18:23:36.000000Z"
+  fecha_salida: string;
   fecha_llegada: string;
   observaciones: string;
-
   producto: Producto;
-  origen: Almacen;
-  destino: Almacen;
-  // Si la API devuelve un solo estado (objeto):
- // movimiento_estados: MovimientoEstado | null;
-  // Si en el futuro devuelve varios:
-   movimiento_estados: MovimientoEstado[];
+  orden_entrega: InventarioOrdenEntrega;
+  movimiento_estados: MovimientoEstado[];
 }
+
 
 
 interface ProductTrackingProps {
@@ -101,19 +105,14 @@ const estadoConfig = {
 export function ProductTracking({
   stockTransito,
   historialEstados,
-  productoNombre ,
-  origenNombre ,
-  destinoNombre ,
+  productoNombre,
+  origenNombre,
+  destinoNombre,
 }: ProductTrackingProps) {
   const estadoActual = estadoConfig[stockTransito?.estado as keyof typeof estadoConfig] || estadoConfig.pendiente
   const EstadoIcon = estadoActual.icon
 
-  console.log(stockTransito)
-  console.log(historialEstados)
-  console.log(productoNombre)
-  console.log(origenNombre)
-  console.log(destinoNombre)
-  const formatDate = (dateString: string | null) => {
+  const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "No especificada"
     const date = new Date(dateString)
     return date.toLocaleDateString("es-ES", {
@@ -187,7 +186,7 @@ export function ProductTracking({
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground">Fecha de Salida</p>
-               {/*  <p className="text-sm font-semibold">{formatDate(stockTransito?.fecha_salida)}</p> */}
+                <p className="text-sm font-semibold">{formatDate(stockTransito?.fecha_salida)}</p>
               </div>
             </div>
 
@@ -197,7 +196,7 @@ export function ProductTracking({
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground">Fecha de Llegada Estimada</p>
-               {/*  <p className="text-sm font-semibold">{formatDate(stockTransito.fecha_llegada)}</p> */}
+                <p className="text-sm font-semibold">{formatDate(stockTransito?.fecha_llegada)}</p>
               </div>
             </div>
           </div>

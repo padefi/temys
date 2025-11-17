@@ -5,12 +5,12 @@ namespace App\Models\Inventario;
 use App\Models\ControlAcceso\User;
 use Illuminate\Database\Eloquent\Model;
 
-class InventarioMovimientoEstado extends Model
+class InventarioEstadosTracking extends Model
 {
-    protected $table = 'inventario_movimiento_estados';
+    protected $table = 'inventario_estados_tracking';
 
     protected $fillable = [
-        'transito_id',
+        'seguimiento_id',
         'estado',
         'usuario_id',
         'fecha',
@@ -21,7 +21,7 @@ class InventarioMovimientoEstado extends Model
 
     public function movimientoTransito()
     {
-        return $this->hasMany(InventarioStockTransito::class, 'transito_id');
+        return $this->hasMany(InventarioTracking::class, 'seguimiento_id');
     }
 
     public function usuario()

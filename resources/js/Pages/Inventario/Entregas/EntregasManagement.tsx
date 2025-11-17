@@ -67,7 +67,6 @@ export default function EntregasManagement() {
         setData(ordenEntregas.data);
     }, [ordenEntregas]);
 
-    console.log(ordenEntregas);
 
     // Funciones para manejar las expansiones
     const toggleExpandProductos = (id: number) => {
@@ -90,7 +89,6 @@ export default function EntregasManagement() {
     };
 
     const openCancelarModal = (entrega: EntregaItem) => {
-        console.log('hola');
         setEntregaSeleccionada(entrega);
         setMotivo('');
         setModalOpen(true);

@@ -39,8 +39,8 @@ class ExistenciasController extends Controller
         $productoSub = DB::table('productos as p')
             ->join('producto_subcategorias as psc', 'psc.id', '=', 'p.subcategoria_id')
             ->join('producto_categorias as pc', 'pc.id', '=', 'psc.categoria_id')
-            ->select('p.id', 'p.nombre', 'psc.descripcion AS subCategoria', 'pc.descripcion AS categoria')
-            ->where('p.es_inventario', 1);
+            ->select('p.id', 'p.nombre', 'psc.descripcion AS subCategoria', 'pc.descripcion AS categoria');
+       //     ->where('p.es_inventario', 1);
   
         
         $recepcionesSub = DB::table('inventario_recepcion_productos as ir')
@@ -48,7 +48,7 @@ class ExistenciasController extends Controller
             ->select(
                 'ird.producto_id',
                 'ir.origen_id',
-                DB::raw('SUM(ird.cantidad_recibida) as total_recibido')
+                DB::raw('SUM(ird.cantidad_esperada) as total_recibido')
             )
             ->where('ir.estado', '!=', 'Cancelado') // O 'Cancelada' según tu DB
             ->where('ir.estado', '!=', 'Completa') // O 'Cancelada' según tu DB
@@ -66,6 +66,7 @@ class ExistenciasController extends Controller
             ->where('io.estado', '!=', 'Cancelado') // O 'Cancelada' según tu DB
             ->groupBy('ioe.producto_id', 'io.destino_id');
 
+         //   var_dump($entregasSub->get()->toArray()); exit;
         $stock = QueryBuilder::for(
             InventarioStock::query()
 
@@ -117,6 +118,7 @@ class ExistenciasController extends Controller
             ->paginate($request->input('per_page', 10))
             ->withQueryString();
 
+          
         $activeFilters = $request->input('filter', []);
 
         return Inertia::render('Inventario/Existencias/ExistenciaManagement', [

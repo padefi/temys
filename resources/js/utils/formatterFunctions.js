@@ -47,20 +47,3 @@ export const formatString = (data) => {
     return formattedString;
 }
 
-export const safeDateFormat = (data) => {
-    if (!data) return '00-00-0000';
-    try {
-      return format(data, "DD/MM/YYYY", "es");
-    } catch {
-      return '00-00-0000';
-    }
-};
-
-export const safeDateTimeFormat = (data) => {
-    if (!data) return '00-00-0000 00:00:00';
-    try {
-      return format(data, "DD/MM/YYYY HH:mm:ss", "es");
-    } catch {
-      return '00-00-0000 00:00:00';
-    }
-};

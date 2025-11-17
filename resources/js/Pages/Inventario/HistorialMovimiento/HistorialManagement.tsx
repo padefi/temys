@@ -28,7 +28,6 @@ export default function HistorialManagement() {
     const [selected, setSelected] = useState<number[]>([]);
     const nombreProducto = props.nombreProducto;
 
-    console.log(data)
     const memoizedColumns = useMemo(() => columns, []);
     const SetNombreProd = () => {
         if (nombreProducto) {

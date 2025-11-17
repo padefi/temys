@@ -48,14 +48,14 @@ class DatabaseSeeder extends Seeder
             OrdenCompraSeeder::class,
             OrdenCompraDetalleSeeder::class,
             InventarioStockSeeder::class,
-            InventarioMovimientoStockSeeder::class,
+           /*  InventarioMovimientoStockSeeder::class, */
             InventarioRelacionUserAlmacenSeeder::class,
             PlanCuentasSeeder::class,
             ProvinciaSeeder::class,
             LocalidadSeeder::class,
             CalleSeeder::class,
-            InventarioMovimientoEstadosSeeder::class,
-            InventarioStockTransitoSeeder::class,
+/*             InventarioMovimientoEstadosSeeder::class,
+            InventarioStockTransitoSeeder::class, */
         ]);
     }
 }

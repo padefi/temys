@@ -1,6 +1,6 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { ProductTracking } from "./SeguimientoProductos" 
-import { ScrollArea } from "@/Components/ui/scroll-area" 
+import { Dialog, DialogContent, DialogHeader, DialogTitle,DialogDescription } from "@/components/ui/dialog"
+import { ProductTracking } from "./SeguimientoProductos"
+import { ScrollArea } from "@/Components/ui/scroll-area"
 import { useEffect, useState } from "react"
 import axios from "axios"
 
@@ -9,7 +9,7 @@ export interface MovimientoEstado {
   transito_id: number;
   estado: string;
   usuario_id: number;
-  fecha: string; // formato: "2025-11-07 18:23:39"
+  fecha: string; 
   observacion: string;
   usuario?: {
     id: number;
@@ -27,6 +27,13 @@ export interface Producto {
   nombre: string;
 }
 
+export interface InventarioOrdenEntrega {
+  id: number;
+  origen: Almacen;
+  destino: Almacen;
+  
+}
+
 export interface InventarioStockTransito {
   id: number;
   movimiento_id: number;
@@ -36,75 +43,65 @@ export interface InventarioStockTransito {
   cantidad: number;
   estado: string;
   ubicacion_actual: string;
-  fecha_salida: string; // formato ISO "2025-11-04T18:23:36.000000Z"
+  fecha_salida: string; 
   fecha_llegada: string;
   observaciones: string;
-
   producto: Producto;
-  origen: Almacen;
-  destino: Almacen;
-  // Si la API devuelve un solo estado (objeto):
-  //movimiento_estados: MovimientoEstado | null;
-  // Si en el futuro devuelve varios:
-   movimiento_estados: MovimientoEstado[];
+   orden_entrega: InventarioOrdenEntrega;
+  movimiento_estados: MovimientoEstado[];
 }
 
 
 interface TrackingModalProps {
   open: boolean
   onOpenChange: () => void
-  idSeguimiento:number |null
-/*  stockTransito: StockTransito | null
-   historialEstados: MovimientoEstado[]
-  productoNombre?: string
-  origenNombre?: string
-  destinoNombre?: string */
+  idEntregas: number | null
 }
 
 export function TrackingModal({
   open,
   onOpenChange,
-  idSeguimiento
- /* stockTransito,
-   historialEstados,
-  productoNombre,
-  origenNombre,
-  destinoNombre, */
+  idEntregas
+
 }: TrackingModalProps) {
 
-       const [stockTransito, setstockTransito] = useState<InventarioStockTransito>()
-console.log('modal',open)
- 
+  const [stockTransito, setstockTransito] = useState<InventarioStockTransito>()
 
+console.log(idEntregas)
   useEffect(() => {
-
-    if (!idSeguimiento) return
+    if (!idEntregas) return;
 
     axios
-      .post("/inventario/seguimiento", { movimiento_id: idSeguimiento }) 
+      .post("/inventario/seguimiento", { orden_id: idEntregas })
       .then((res) => {
-        setstockTransito(res.data)
+        setstockTransito(res.data[0]); 
+         
       })
       .catch((err) => {
-        console.error("Error al cargar el seguimiento", err)
-      })
-  }, [idSeguimiento]) 
+        console.error("Error al cargar el seguimiento", err);
+      });
+  }, [idEntregas]);
+ 
 
-  console.log(stockTransito)
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+      <DialogContent className="max-w-4xl p-0">
         <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle className="text-2xl">Seguimiento de Producto</DialogTitle>
+            <DialogDescription>
+            Aca podra ver el seguimiento
+          </DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[calc(90vh-80px)] px-6 pb-6">
-           <ProductTracking
+          <ProductTracking
             stockTransito={stockTransito}
             historialEstados={stockTransito?.movimiento_estados}
             productoNombre={stockTransito?.producto?.nombre}
-            origenNombre={stockTransito?.origen?.nombre}
-            destinoNombre={stockTransito?.destino?.nombre}
-          />  
+
+origenNombre={stockTransito?.orden_entrega?.origen?.nombre}
+destinoNombre={stockTransito?.orden_entrega?.destino?.nombre}
+
+          />
         </ScrollArea>
       </DialogContent>
     </Dialog>

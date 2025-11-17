@@ -6,6 +6,7 @@ use App\Models\Compras\OrdenCompraDetalle;
 use App\Models\Inventario\InventarioMovimientoStock;
 use App\Models\Compras\OrdenCotizacion\OrdenCotizacionDetalle;
 use App\Models\Inventario\InventarioAjusteDetalle;
+use App\Models\Inventario\InventarioTracking;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -69,7 +70,7 @@ class Producto extends Model
     }
 
 
-      public function movimientosStock()
+    public function movimientosStock()
     {
         return $this->hasMany(InventarioMovimientoStock::class, 'producto_id');
     }
@@ -89,6 +90,5 @@ class Producto extends Model
         return $this->belongsTo(OrdenCompraDetalle::class, 'id');
     }
 
-
-
+   
 }

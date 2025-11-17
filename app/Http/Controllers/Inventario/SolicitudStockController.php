@@ -142,12 +142,17 @@ class SolicitudStockController extends Controller
         ]);
 
         // Crear detalle por cada producto aprobado
+
         foreach ($request->productos as $producto) {
-            InventarioOrdenEntregaDetalle::create([
+            $cantidadEnviada = abs($producto['cantidad_aprobada']);
+            if( $cantidadEnviada > 0 ){
+                InventarioOrdenEntregaDetalle::create([
                 'orden_entrega_id' => $ordenEntrega->id,
                 'producto_id' => $producto['producto_id'],
-                'cantidad_enviada' => abs($producto['cantidad_aprobada']),
+                'cantidad_enviada' => $cantidadEnviada,
             ]);
+            }
+        
         }
 
         // Ahora creación de la recepción, vinculando la orden de entrega
@@ -163,11 +168,14 @@ class SolicitudStockController extends Controller
 
         // Crear detalle por cada producto aprobado
         foreach ($request->productos as $producto) {
-            InventarioRecepcionProductoDetalle::insert([
+            $cantidadEnviada = abs($producto['cantidad_aprobada']);
+            if( $cantidadEnviada > 0 ){
+                InventarioRecepcionProductoDetalle::create([
                 'recepcion_id' => $ordenRecepcion->id,
                 'producto_id' => $producto['producto_id'],
-                'cantidad_esperada' => abs($producto['cantidad_aprobada']),
+                'cantidad_esperada' => $cantidadEnviada,
             ]);
+            }
         }
 
 
