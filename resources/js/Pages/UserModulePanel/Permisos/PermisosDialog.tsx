@@ -1,5 +1,5 @@
 import { PropsWithChildren, useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/Components/ui/resizable"
 import { Button } from "@/Components/ui/button";
 import { Separator } from "@/Components/ui/separator";

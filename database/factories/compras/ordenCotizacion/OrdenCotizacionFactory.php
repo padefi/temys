@@ -17,7 +17,6 @@ class OrdenCotizacionFactory extends Factory
             'moneda_id' => TipoMoneda::inRandomOrder()->value('id') ?? TipoMoneda::factory(),
             'cotizar_antes_de' => $this->faker->dateTimeBetween('now', '+10 days'),
             'entrega_esperada' => $this->faker->dateTimeBetween('+10 days', '+30 days'),
-            'entregar_a' => $this->faker->company,
             'observaciones' => $this->faker->sentence(8),
             'estado' => $this->faker->randomElement(['Pendiente', 'Confirmada', 'Cancelada']),
             'usuario_id' => $user->id,

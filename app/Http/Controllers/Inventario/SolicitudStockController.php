@@ -132,8 +132,8 @@ class SolicitudStockController extends Controller
 
         // Orden de entrega primero
         $ordenEntrega = InventarioOrdenEntrega::create([
-            'origen_id' => $solicitud->almacen_solicitante_id,
-            'destino_id' => $solicitud->almacen_proveedor_id,
+            'origen_id' => $solicitud->almacen_proveedor_id,
+            'destino_id' => $solicitud->almacen_solicitante_id,
             'movimiento_id' => $solicitud->id,
             'tipo_movimiento' => 'solicitud_stock',
             'fecha_envio' => now(),

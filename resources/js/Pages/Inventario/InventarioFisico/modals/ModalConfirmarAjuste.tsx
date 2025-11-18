@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/Components/ui/badge"
 import { Separator } from "@/Components/ui/separator"
@@ -27,7 +27,7 @@ export function AjusteInventarioModal({
     onReject,
 }: AjusteInventarioModalProps) {
     const [ajusteData, setAjusteData] = useState<AjusteData | null>(null);
-   
+
     useEffect(() => {
         if (!idAjuste || !productoId) return;
 
@@ -41,8 +41,6 @@ export function AjusteInventarioModal({
             .then((res) => setAjusteData(res.data.data[0]))
             .catch((err) => console.error("Error al cargar el ajuste", err));
     }, [idAjuste, productoId]);
-
-  
 
     if (!ajusteData) {
         return (
@@ -61,10 +59,10 @@ export function AjusteInventarioModal({
 
    async function aprobarAjuste() {
     if (!ajusteData) return;
-    
+
 
     try {
-    
+
         const response = await axios.post(`/aprobar-ajuste`, {
             ajuste_id:idAjuste,
             almacen_id: ajusteData.almacenId,
@@ -73,54 +71,54 @@ export function AjusteInventarioModal({
             cantidad_sistema: ajusteData.cantidadSistema,
         });
 
-       
+
         if (response.status === 200) {
             console.log("Ajuste aprobado:", response.data);
-            
+
             onApprove();
 
-      
+
             onClose();
         }
     } catch (error: any) {
         console.error("Error al aprobar el ajuste:", error);
 
-        
-        
+
+
     }
 }
 
    async function cancelarAjuste() {
     if (!ajusteData) return;
-    
+
 
     try {
-    
+
         const response = await axios.post(`/cancelar-ajuste`, {
-            ajuste_id:idAjuste,         
+            ajuste_id:idAjuste,
         });
 
-       
+
         if (response.status === 200) {
             console.log("Ajuste cancelado:");
-            
+
             onApprove();
 
-      
+
             onClose();
         }
     } catch (error: any) {
         console.error("Error al aprobar el ajuste:", error);
 
-        
-        
+
+
     }
 }
 
 
 
 
-  
+
     const isDiferenciaPositiva = ajusteData.diferencia > 0;
     const diferenciaColor = isDiferenciaPositiva ? "text-green-600" : "text-red-600";
     const diferenciaIcon = isDiferenciaPositiva ? TrendingUp : TrendingDown;

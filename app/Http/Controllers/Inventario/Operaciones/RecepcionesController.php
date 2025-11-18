@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Inventario\Operaciones;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Inventario\RecepcionesResource;
 use App\Models\Inventario\InventarioEstadosTracking;
+use App\Models\Inventario\InventarioOrdenEntrega;
 use App\Models\Inventario\InventarioRecepcionCancelada;
 use App\Models\Inventario\InventarioRecepcionProducto;
 use App\Models\Inventario\InventarioRecepcionProductoDetalle;
@@ -80,74 +81,24 @@ class RecepcionesController extends Controller
         ]);
     }
 
-    // RecepcionController.php
-    /*  public function ControlRecepcion(Request $request)
-    {
-        DB::transaction(function () use ($request) {
-            $recepcion = InventarioRecepcionProducto::with(['detalles', 'origen', 'destino'])
-                ->findOrFail($request->recepcion_id);
-
-            foreach ($request->productos as $detalle) {
-                $cantidadContada = $detalle['cantidad_contada'];
-
-                // Crear movimiento
-                $movimientoStock->movimientos()->create([
-                    'producto_id' => $detalle['producto_id'],
-                    'origen_id' => $recepcion->origen_id,
-                    'destino_id' => $recepcion->destino_id,
-                    'cantidad' => $cantidadContada,
-                    'tipo_movimiento' => 'reposicion',
-                    'fecha_creacion' => now(),
-                    'usuario_creacion' => Auth::id(),
-                ]);
-
-                // Actualizar stock
-                InventarioStock::where('producto_id', $detalle['producto_id'])
-                    ->where('almacen_id', $recepcion->origen_id)
-                    ->update([
-                        'cantidad_actual' => DB::raw('cantidad_actual + ' . (int) $cantidadContada),
-                        'usuario_actualizacion' => Auth::id(),
-                        'fecha_actualizacion' => now(),
-                    ]);
-            }
-
-            // Actualizar cantidades recibidas en los detalles
-            foreach ($recepcion->detalles as $detalle) {
-                $productoRequest = collect($request->productos)
-                    ->firstWhere('producto_id', $detalle->producto_id);
-
-                if ($productoRequest) {
-                    $detalle->cantidad_recibida = $productoRequest['cantidad_contada'];
-                    $detalle->estado = $productoRequest['estado'];
-
-                    $detalle->save();
-                }
-            }
-
-            // Cambiar estado general de la recepción
-            $recepcion->update([
-                'estado' => 'completa',
-                'usuario_actualizacion' => Auth::id(),
-                'fecha_actualizacion' => now(),
-            ]);
-        });
-
-        return response()->json(['message' => 'Recepción aceptada correctamente.']);
-    } */
 
     public function ControlRecepcion(Request $request)
     {
         DB::transaction(function () use ($request) {
-            $recepcion = InventarioRecepcionProducto::with(['detalles', 'origen', 'destino'])
+            $recepcion = InventarioRecepcionProducto::with(['detalles.producto', 'origen', 'destino'])
                 ->findOrFail($request->recepcion_id);
 
+            $estadoGeneral = 'completa';
+
             foreach ($request->productos as $detalleRequest) {
+
                 $detalle = $recepcion->detalles
                     ->firstWhere('producto_id', $detalleRequest['producto_id']);
 
                 if (!$detalle) continue;
 
                 $cantidadContada = $detalleRequest['cantidad_contada'];
+
 
                 //Crear el movimiento a través de la relación polimórfica
                 $movimiento = $detalle->movimientos()->create([
@@ -160,9 +111,18 @@ class RecepcionesController extends Controller
                     'usuario_creacion' => Auth::id(),
                 ]);
 
-             $transito_id = InventarioTracking::where('entrega_id', $recepcion->orden_entrega_id)
-                                ->value('id');
- 
+
+                //Actualizar stock
+                InventarioStock::where('producto_id', $detalleRequest['producto_id'])
+                    ->where('almacen_id', $recepcion->destino_id)
+                    ->update([
+                        'cantidad_actual' => DB::raw('cantidad_actual + ' . (int) $detalleRequest['cantidad_contada']),
+                        'usuario_actualizacion' => Auth::id(),
+                        'fecha_actualizacion' => now(),
+                    ]);
+
+                $transito_id = InventarioTracking::where('entrega_id', $recepcion->orden_entrega_id)
+                    ->value('id');
 
                 InventarioEstadosTracking::create([
                     'seguimiento_id' => $transito_id,
@@ -172,30 +132,31 @@ class RecepcionesController extends Controller
                     'observaciones' => 'Producto en llego al almacen ' . $recepcion->origen->nombre,
                 ]);
 
-
-                //Actualizar stock
-                InventarioStock::where('producto_id', $detalleRequest['producto_id'])
-                    ->where('almacen_id', $recepcion->destino_id)
-                    ->update([
-                        'cantidad_actual' => DB::raw('cantidad_actual + ' . (int) $cantidadContada),
-                        'usuario_actualizacion' => Auth::id(),
-                        'fecha_actualizacion' => now(),
-                    ]);
-
                 //Actualizar detalle de recepción
                 $detalle->update([
                     'cantidad_recibida' => $cantidadContada,
                     'estado' => $detalleRequest['estado'] ?? 'completo',
                 ]);
+
+                // Detectar si el estado del detalle afecta al estado general
+                if (($detalleRequest['estado'] ?? 'completo') !== 'completo') {
+                    $estadoGeneral = 'parcial';
+                }
             }
 
             //Cambiar estado general de la recepción
             $recepcion->update([
-                'estado' => 'completa',
+                'estado' => $estadoGeneral,
                 'usuario_actualizacion' => Auth::id(),
                 'fecha_actualizacion' => now(),
                 'movimiento_stock_id' => $movimiento->id,
             ]);
+            InventarioOrdenEntrega::where('id', $recepcion->orden_entrega_id)
+                ->update([
+                    'estado' => 'Entregado',
+                    'usuario_actualizacion' => Auth::id(),
+                    'fecha_actualizacion' => now(),
+                ]);
         });
 
         return response()->json(['message' => 'Recepción aceptada correctamente.']);

@@ -15,15 +15,14 @@ class OrdenCompraFactory extends Factory
 
     public function definition()
     {
-         $user= User::inRandomOrder()->first() ?? User::factory()->create();
+        $user= User::inRandomOrder()->first() ?? User::factory()->create();
         return [
             'proveedor_id' => Proveedor::inRandomOrder()->value('id') ?? Proveedor::factory(),
             'moneda_id' => TipoMoneda::inRandomOrder()->value('id') ?? TipoMoneda::factory(),
             'almacen_destino_id' => Almacen::inRandomOrder()->value('id') ?? 1,
             'entrega_esperada' => $this->faker->dateTimeBetween('now', '+10 days'),
-            'entregar_a' => $this->faker->company,
             'observaciones' => $this->faker->sentence(8),
-            'estado' => $this->faker->randomElement(['Enviada', 'Cerrada', 'Cancelada']),
+            'estado' => $this->faker->randomElement(['Pendiente', 'Confirmada','Finalizada', 'Cancelada']),
             'fecha_creacion' => now(),
             'usuario_creacion' => $user->id,
             'fecha_actualizacion' => now(),

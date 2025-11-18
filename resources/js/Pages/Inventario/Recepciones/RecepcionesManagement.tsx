@@ -63,8 +63,8 @@ export default function RecepcionesManagement() {
     const [data, setData] = useState<RecepcionesItem[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalSeguimientoOpen, setisModalSeguimientoOpen] = useState(false);
-    const [recepcionSeleccionada, setRecepcionSeleccionada] = useState<RecepcionesItem | null>(null);
     const [recepcionSeguimiento, setRecepcionSeguimiento] = useState<number | null>(null);
+    const [recepcionSeleccionada, setRecepcionSeleccionada] = useState<RecepcionesItem | null>(null);
 
     useEffect(() => {
         setData(recepcionProductos.data);

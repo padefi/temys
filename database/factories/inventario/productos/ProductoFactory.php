@@ -7,6 +7,7 @@ use App\Models\ControlAcceso\User;
 
 use App\Models\Inventario\Productos\ProductoModelo;
 use App\Models\Inventario\Productos\ProductoSubcategoria;
+use App\Models\Contabilidad\PlanCuentas\Cuenta;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ProductoFactory extends Factory
@@ -35,6 +36,7 @@ class ProductoFactory extends Factory
             'usuario_creacion' => $user->id,
             'fecha_actualizacion' => $this->faker->date,
             'usuario_actualizacion' => $user->id,
+            'co_cuenta_id' => Cuenta::inRandomOrder()->first()?->id,
         ];
     }
 

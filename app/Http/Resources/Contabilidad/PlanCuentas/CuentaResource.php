@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Http\Resources\Contabilidad\PlanCuentas;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class CuentaResource extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'codigo' => $this->codigo,
+            'descripcion' => $this->descripcion,
+            'estado' => $this->estado,
+            'subrubro' => SubrubroResource::collection($this->whenLoaded('subrubro')),
+        ];
+    }
+}

@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('precio_unitario', 10, 2);
             $table->decimal('porcentaje_descuento', 10, 2);
             $table->decimal('importe', 10, 2);
+            $table->unsignedBigInteger('co_cuenta_id')->nullable();
             $table->unsignedBigInteger('usuario_creacion');
             $table->unsignedBigInteger('usuario_actualizacion')->nullable();
             $table->timestamps();
@@ -35,6 +36,7 @@ return new class extends Migration
             $table->foreign('producto_id')->references('id')->on('productos');
             $table->foreign('usuario_creacion')->references('id')->on('users');
             $table->foreign('usuario_actualizacion')->references('id')->on('users');
+            $table->foreign('co_cuenta_id')->references('id')->on('co_cuentas')->onDelete('set null');
         });
     }
 

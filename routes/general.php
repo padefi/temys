@@ -8,6 +8,26 @@ use App\Http\Controllers\UserModulePanel\UserModuleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Inventario\Productos\ProductoController;
+use App\Http\Controllers\General\BancoController;
+use App\Http\Controllers\General\MetodoPagoController;
+use App\Http\Controllers\General\TarjetaController;
+use App\Http\Controllers\General\TipoComprobanteController;
+use App\Http\Controllers\General\TipoMonedaController;
+
 
 
 Route::resource('productos', ProductoController::class);
+
+Route::get('/bancos', [BancoController::class, 'index']);
+
+Route::get('/tarjetas', [TarjetaController::class, 'index']);
+
+Route::get('/proveedores/{proveedor}/cbus', [ProveedoresController::class, 'cbus']);
+
+Route::get('/tipos-comprobantes', [TipoComprobanteController::class, 'index']);
+
+Route::get('/condiciones-venta', [ComprasController::class, 'condicionesVenta']);
+
+Route::get('/tipo-monedas', [TipoMonedaController::class, 'index']);
+
+Route::get('/metodo-pagos', [MetodoPagoController::class, 'index']);

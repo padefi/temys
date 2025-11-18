@@ -8,13 +8,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/Components/ui/dialog";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Textarea } from "@/Components/ui/textarea";
 import axios from "axios";
-import { StockItem, StockRequest } from "../../../../types/Inventario"; 
-import { Button } from "@/components/ui/button";
+import { StockItem, StockRequest } from "../../../../types/Inventario";
+import { Button } from "@/Components/ui/button";
 
 interface StockApprovalModalProps {
   isOpen: boolean;

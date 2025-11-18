@@ -62,7 +62,8 @@ export default function Index() {
             <div className="p-6 text-gray-900">
               <div className="flex gap-4 mt-6 justify-end">
                 <Button
-                  variant="success"
+                  className="bg-green-800 hover:bg-green-900 text-white"
+                  variant="outline"
                   onClick={() => router.visit('/compras/ordenes-compras/nueva')}
                 >
                   Nueva Orden de Compra

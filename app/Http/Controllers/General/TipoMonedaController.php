@@ -9,11 +9,10 @@ use Inertia\Inertia;
 
 class TipoMonedaController extends Controller
 {
+    ////LISTAR TIPOS DE MONEDA
     public function index()
     {
-        return Inertia::render('Compras/Proveedores/Index', [
-            'tipoMoneda' => TipoMoneda::all()
-        ]);
+        return TipoMoneda::all();
     }
 
 

@@ -59,12 +59,13 @@ class ExistenciasController extends Controller
             ->join('inventario_orden_entrega_detalles as ioe', 'ioe.orden_entrega_id', '=', 'io.id')
             ->select(
                 'ioe.producto_id',
-                'io.destino_id',
+                'io.origen_id',
                 DB::raw('SUM(ioe.cantidad_enviada) as total_entregado'),
 
             )
             ->where('io.estado', '!=', 'Cancelado') // O 'Cancelada' según tu DB
-            ->groupBy('ioe.producto_id', 'io.destino_id');
+            ->where('io.estado', '!=', 'Enviado') // O 'Cancelada' según tu DB
+            ->groupBy('ioe.producto_id', 'io.origen_id');
 
          //   var_dump($entregasSub->get()->toArray()); exit;
         $stock = QueryBuilder::for(
@@ -93,7 +94,7 @@ class ExistenciasController extends Controller
                 })
                 ->leftJoinSub($entregasSub, 'ent', function ($join) {
                     $join->on('ent.producto_id', '=', 'inventario_stocks.producto_id')
-                        ->on('ent.destino_id', '=', 'inventario_stocks.almacen_id');
+                        ->on('ent.origen_id', '=', 'inventario_stocks.almacen_id');
                 })
                 ->where('inventario_stocks.almacen_id', $almacenId)
                 ->with(['producto', 'almacen'])

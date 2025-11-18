@@ -5,12 +5,14 @@ use App\Http\Requests\Compras\ProveedorUpdateRequest;
 use App\Http\Controllers\Controller;
 //use App\Http\Resources\ControlAcceso\ModuleResource;
 use App\Models\Padron\Proveedor\Proveedor;
+use App\Models\Padron\Proveedor\ProveedorCbu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ProveedoresController extends Controller
 {
+    ////LISTAR PROVEEDORES
     public function index()
     {
         return Inertia::render('Compras/Proveedores/Index', [
@@ -21,6 +23,7 @@ class ProveedoresController extends Controller
         ]);
     }
 
+    ////ACTUALIZAR PROVEEDOR
     public function update(ProveedorUpdateRequest $request, Proveedor $proveedor)
     {
 
@@ -48,4 +51,13 @@ class ProveedoresController extends Controller
                 ->withInput();
         }
     }
+
+    ////LISTAR CBU DE PROVEEDOR
+    public function cbus($proveedorId)
+    {
+        $proveedor = \App\Models\Padron\Proveedor\Proveedor::findOrFail($proveedorId);
+        $cbus = $proveedor->cbu()->select('id', 'cbu', 'alias')->get();
+        return response()->json($cbus);
+    }
+
 }

@@ -45,7 +45,7 @@ class EntregaController extends Controller
                 ->leftJoin('almacenes as ao', 'inventario_orden_entregas.origen_id', '=', 'ao.id')
                 ->leftJoin('almacenes as ad', 'inventario_orden_entregas.destino_id', '=', 'ad.id')
                 ->leftJoin('inventario_orden_entrega_canceladas as iec', 'inventario_orden_entregas.id', '=', 'iec.orden_entrega_id')
-                ->where('inventario_orden_entregas.destino_id', $almacenId)
+                ->where('inventario_orden_entregas.origen_id', $almacenId)
 
         )->allowedFilters([
             AllowedFilter::callback('estado', function ($query, $value) {
@@ -101,31 +101,14 @@ class EntregaController extends Controller
 
             foreach ($orden->detalles as $detalle) {
                 // Crear movimiento polimórfico
-                 $detalle->movimientos()->create([
+                $detalle->movimientos()->create([
                     'producto_id' => $detalle->producto_id,
                     'origen_id' => $orden->origen_id,
-                    'destino_id' => $orden->destino_id,
+                    'destino_id' => $orden->origen_id,
                     'cantidad' => $detalle->cantidad_enviada,
                     'tipo_movimiento' => 'orden_entrega',
                     'fecha_creacion' => now(),
                     'usuario_creacion' => Auth::id(),
-                ]);
-
-                $transito = InventarioTracking::create([
-                    'entrega_id' => $orden->id,               
-                    'estado' => 'en_transito',
-                    'ubicacion_actual' => $orden->origen->nombre,
-                    'fecha_salida' => now(),
-                    'observaciones' => 'Producto en tránsito hacia ' . $orden->destino->nombre,
-                    
-                ]);
-
-                InventarioEstadosTracking::create([
-                    'seguimiento_id' => $transito->id,
-                    'estado' => 'en_transito',
-                    'usuario_id' => Auth::id(),
-                    'fecha' => now(),
-
                 ]);
 
                 // Actualizar stock (disminuye en el origen)
@@ -136,7 +119,26 @@ class EntregaController extends Controller
                         'usuario_actualizacion' => Auth::id(),
                         'fecha_actualizacion' => now(),
                     ]);
+
+                $transito = InventarioTracking::create([
+                    'entrega_id' => $orden->id,
+                    'estado' => 'en_transito',
+                    'ubicacion_actual' => $orden->origen->nombre,
+                    'fecha_salida' => now(),
+                    'observaciones' => 'Producto en tránsito hacia ' . $orden->destino->nombre,
+
+                ]);
+
+                InventarioEstadosTracking::create([
+                    'seguimiento_id' => $transito->id,
+                    'estado' => 'en_transito',
+                    'usuario_id' => Auth::id(),
+                    'fecha' => now(),
+
+                ]);
             }
+
+
 
             // Generar remito PDF
             $this->generarRemitoPdf($orden);
