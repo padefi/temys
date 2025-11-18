@@ -8,26 +8,28 @@ import { meta } from "@/types/meta";
 import { useEffect, useMemo, useState } from "react";
 import { getColumns } from "./Columns";
 import RecepcionProductos from "./modals/ConteoModal";
+import { TrackingModal } from "../Modales/SeguimientoModal";
 
 export interface RecepcionDetalle {
-  id: number;
-  producto_id: number;
-  nombreProducto: string;
-  cantidadRecibida: number;
-  cantidadEsperada: number;
-  estado: string;
+    id: number;
+    producto_id: number;
+    nombreProducto: string;
+    cantidadRecibida: number;
+    cantidadEsperada: number;
+    estado: string;
 }
 
-export interface RecepcionesItem {
-  id: string;
-  origen_id: number;
-  destino_id: number;
-  tipo_recepcion: string;
-  movimiento_id: number;
-  fecha_recepcion: Date;
-  estado: string;
-  usuario_creacion: string;
-  detalles?: RecepcionDetalle[];
+export interface  RecepcionesItem {
+    id: string;
+    orden_id:number;
+    origen_id: number;
+    destino_id: number;
+    tipo_recepcion: string;
+    movimiento_id: number;
+    fecha_recepcion: Date;
+    estado: string;
+    usuario_creacion: string;
+    detalles?: RecepcionDetalle[];
 }
 
 type PageProps = InertiaPageProps & {
@@ -40,32 +42,56 @@ interface ExistenciaPagination {
     meta: meta;
 }
 
+export interface Seguimiento {
+    movimiento_id: number,
+    producto_id: number,
+    origen_id: number,
+    destino_id: number,
+    cantidad: number,
+    estado: string,
+    ubicacion_actual: string,
+    fecha_salida: Date,
+    fecha_llegada: Date,
+    observaciones: string,
+    productoNombre: string,
+    origenNombre: string,
+    destinoNombre: string,
+}
+
 export default function RecepcionesManagement() {
     const { recepcionProductos } = usePage<PageProps>().props;
     const [data, setData] = useState<RecepcionesItem[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-   
+    const [isModalSeguimientoOpen, setisModalSeguimientoOpen] = useState(false);
+    const [recepcionSeguimiento, setRecepcionSeguimiento] = useState<number | null>(null);
     const [recepcionSeleccionada, setRecepcionSeleccionada] = useState<RecepcionesItem | null>(null);
-   
+
     useEffect(() => {
         setData(recepcionProductos.data);
     }, [recepcionProductos]);
+    console.log(recepcionProductos)
 
     const abrirModal = (recepcion: RecepcionesItem) => {
+
         setRecepcionSeleccionada(recepcion);
         setIsModalOpen(true);
     };
 
-    const handleAprobado = (id: any) => {    
+    const abrirModalSeguimiento = (idSeguimiento: number) => {
+        setRecepcionSeguimiento(idSeguimiento);
+        setisModalSeguimientoOpen(true);
+    };
+
+    const handleAprobado = (id: any) => {
         setIsModalOpen(false);
     };
 
-    const handleRechazado = (id: any) => {  
+    const handleRechazado = (id: any) => {
         setIsModalOpen(false);
     };
-    
+
     const columns = useMemo(
-        () => getColumns({ onAbrirModal: abrirModal }),
+        () => getColumns({ onAbrirModal: abrirModal, abrirModalSeguimiento: abrirModalSeguimiento }),
         []
     );
 
@@ -78,7 +104,7 @@ export default function RecepcionesManagement() {
                 <Card>
                     <CardContent>
                         <RecepcionesTable
-                            data={data} 
+                            data={data}
                             links={recepcionProductos.links}
                             meta={recepcionProductos.meta}
                             columns={columns}
@@ -88,12 +114,18 @@ export default function RecepcionesManagement() {
                 </Card>
             </div>
 
-             <RecepcionProductos
+            <RecepcionProductos
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                request={recepcionSeleccionada}  
-                onAprobado={handleAprobado} 
+                request={recepcionSeleccionada}
+                onAprobado={handleAprobado}
                 onRechazado={handleRechazado}
+            />
+
+            <TrackingModal
+                open={isModalSeguimientoOpen}
+                onOpenChange={() => setisModalSeguimientoOpen(false)}
+                idEntregas={recepcionSeguimiento}
             />
         </AuthenticatedLayout>
     );

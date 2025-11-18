@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/Components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
@@ -36,7 +36,6 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
 
     useEffect(() => {
         const selectedProductoIds = selectedItems.map((item) => item.producto.productoId);
-        console.log(selectedProductoIds)
 
         if (selectedProductoIds.length === 0) {
             setAlmacenes([]);

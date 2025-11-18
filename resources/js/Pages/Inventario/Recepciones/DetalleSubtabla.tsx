@@ -25,7 +25,7 @@ export function DetallesSubtabla({ detalles }: DetallesSubtablaProps) {
             <TableHead className="text-center">Cant. Recibida</TableHead>
             <TableHead className="text-center">Estado</TableHead>
           </TableRow>
-              <Separator  />
+             
         </TableHeader>
 
         <TableBody>

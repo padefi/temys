@@ -26,4 +26,6 @@ class InventarioAjusteDetalle extends Model
     {
         return $this->belongsTo(Producto::class, 'producto_id');
     }
+
+    
 }

@@ -63,8 +63,13 @@ class InventarioOrdenEntrega extends Model
     }
 
     public function recepcion()
-{
-    return $this->hasOne(InventarioRecepcionProducto::class, 'orden_entrega_id');
-}
+    {
+        return $this->hasOne(InventarioRecepcionProducto::class, 'orden_entrega_id');
+    }
 
+
+    public function seguimientoProductos()
+    {
+        return $this->hasMany(InventarioTracking::class, 'entrega_id');
+    }
 }

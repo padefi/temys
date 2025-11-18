@@ -116,7 +116,7 @@ export const getStockColumns = ({
 
       cell: info => {
         const item = info.row.original;
-        const [tempValue, setTempValue] = useState(item.cantidad_contada);
+        const [tempValue, setTempValue] = useState(item.cantidad_contada ?? 0);
 
         const isEditing = editingCell?.some(
           cell => cell.id === item.id && cell.field === "cantidad_contada"
@@ -228,7 +228,7 @@ export const getStockColumns = ({
         const visible = editingCell?.some(
           cell => cell.id === item.id && cell.field === 'cantidad_contada'
         );
-        return (isEditing && visible) && (
+        return (visible) && (
           hasSubmenuPermission('inventarioFisico', 'update') && (
             <div className="flex gap-2">
               <Button

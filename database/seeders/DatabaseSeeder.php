@@ -48,7 +48,7 @@ class DatabaseSeeder extends Seeder
             OrdenCompraSeeder::class,
             OrdenCompraDetalleSeeder::class,
             InventarioStockSeeder::class,
-            InventarioMovimientoStockSeeder::class,
+           /*  InventarioMovimientoStockSeeder::class, */
             InventarioRelacionUserAlmacenSeeder::class,
             PlanCuentasSeeder::class,
             BancoSeeder::class,
@@ -69,6 +69,8 @@ class DatabaseSeeder extends Seeder
             ProvinciaSeeder::class,
             LocalidadSeeder::class,
             CalleSeeder::class,
+/*             InventarioMovimientoEstadosSeeder::class,
+            InventarioStockTransitoSeeder::class, */
         ]);
     }
 }

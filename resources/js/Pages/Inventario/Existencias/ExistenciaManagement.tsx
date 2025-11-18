@@ -34,8 +34,7 @@ export default function ExistenciaManagement() {
         if (existenciaData != existencias) setExistenciaData(existencias)
     }, [existencias]);
 
-    console.log(existenciaData)
-
+    console.log(existencias)
     const filteredData = existenciaData.filter((item) => {
         if (chips.length === 0) return true;
         return chips.some((chip) =>

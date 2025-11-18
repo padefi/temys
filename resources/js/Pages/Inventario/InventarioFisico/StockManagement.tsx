@@ -60,7 +60,7 @@ export default function StockManagement() {
     setStock(stocks.data);
   }, [stocks]);
 
-  console.log(stocks)
+
   const handleAbrirModal = () => {
     const productosFiltrados = stock.filter(
       (item) => item.cantidad_actual <= item.stock_minimo

@@ -16,6 +16,7 @@ public function toArray(Request $request): array
 {
     return [
         'id' => $this->id,
+        'orden_id'=>$this->orden_entrega_id,
         'origen' => $this->origen,
         'destino' => $this->destino,
         'tipo_recepcion' => $this->tipo_recepcion,

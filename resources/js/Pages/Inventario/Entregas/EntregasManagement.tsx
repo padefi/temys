@@ -10,6 +10,7 @@ import { meta } from "@/types/meta";
 import CancelarEntrega from "./modals/ModalCancelar";
 import AceptarEntrega from "./modals/ModalAceptar";
 import MostrarRemito from "./modals/ModalAbrirRemito";
+import { TrackingModal } from "../Modales/SeguimientoModal";
 
 export interface DetalleProducto {
     id: string;
@@ -48,6 +49,8 @@ interface EntregasPagination {
 }
 
 export default function EntregasManagement() {
+    const [isModalSeguimientoOpen, setisModalSeguimientoOpen] = useState(false);
+    const [recepcionSeguimiento, setRecepcionSeguimiento] = useState<number | null>(null);
     const { ordenEntregas } = usePage<PageProps>().props;
     const [data, setData] = useState<EntregaItem[]>([]);
 
@@ -67,7 +70,6 @@ export default function EntregasManagement() {
         setData(ordenEntregas.data);
     }, [ordenEntregas]);
 
-    console.log(ordenEntregas);
 
     // Funciones para manejar las expansiones
     const toggleExpandProductos = (id: number) => {
@@ -90,10 +92,14 @@ export default function EntregasManagement() {
     };
 
     const openCancelarModal = (entrega: EntregaItem) => {
-        console.log('hola');
         setEntregaSeleccionada(entrega);
         setMotivo('');
         setModalOpen(true);
+    };
+
+    const abrirModalSeguimiento = (idSeguimiento: number) => {
+        setRecepcionSeguimiento(idSeguimiento);
+        setisModalSeguimientoOpen(true);
     };
 
     const columns = useMemo(
@@ -105,6 +111,7 @@ export default function EntregasManagement() {
             cancelarModal: openCancelarModal,
             expandedProductos: expandedProductos,
             expandedMotivos: expandedMotivos,
+            abrirModalSeguimiento: abrirModalSeguimiento
         }),
         [expandedProductos, expandedMotivos]
     );
@@ -153,10 +160,16 @@ export default function EntregasManagement() {
             />
 
             {/* Modal para mostrar remito existente */}
-            <MostrarRemito   
+            <MostrarRemito
                 isOpen={modalRemitoAbierto}
                 onClose={() => setModalRemitoAbierto(false)}
                 remitoActual={remitoActual}
+            />
+
+            <TrackingModal
+                open={isModalSeguimientoOpen}
+                onOpenChange={() => setisModalSeguimientoOpen(false)}
+                idEntregas={recepcionSeguimiento}
             />
         </AuthenticatedLayout>
     );
