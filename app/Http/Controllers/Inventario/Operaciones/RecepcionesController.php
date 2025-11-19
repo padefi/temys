@@ -38,9 +38,11 @@ class RecepcionesController extends Controller
                     'inventario_recepcion_productos.*',
                     'ao.nombre as origen',
                     'ad.nombre as destino',
+                    'ioe.estado as estado_orden_entrega',
                     DB::raw('CONCAT(u.name," ",u.last_name) as usuarioCreacion')
                 )
                 ->join('users as u', 'inventario_recepcion_productos.usuario_creacion', '=', 'u.id')
+                ->join("inventario_orden_entregas as ioe", "inventario_recepcion_productos.orden_entrega_id", "=", "ioe.id")
                 ->leftJoin('almacenes as ao', 'inventario_recepcion_productos.origen_id', '=', 'ao.id')
                 ->leftJoin('almacenes as ad', 'inventario_recepcion_productos.destino_id', '=', 'ad.id')
                 ->where('inventario_recepcion_productos.origen_id', $almacenId)
@@ -128,6 +130,7 @@ class RecepcionesController extends Controller
                     'seguimiento_id' => $transito_id,
                     'estado' => 'completado',
                     'usuario_id' => Auth::id(),
+                    'ubicacion_actual'=>$recepcion->origen->nombre,
                     'fecha' => now(),
                     'observaciones' => 'Producto en llego al almacen ' . $recepcion->origen->nombre,
                 ]);

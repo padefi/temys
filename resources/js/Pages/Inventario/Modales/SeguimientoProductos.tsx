@@ -1,5 +1,3 @@
-"use client"
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card"
 import { Badge } from "@/Components/ui/badge"
 import { Separator } from "@radix-ui/react-select"
@@ -53,8 +51,6 @@ export interface InventarioStockTransito {
   orden_entrega: InventarioOrdenEntrega;
   movimiento_estados: MovimientoEstado[];
 }
-
-
 
 interface ProductTrackingProps {
   stockTransito?: InventarioStockTransito

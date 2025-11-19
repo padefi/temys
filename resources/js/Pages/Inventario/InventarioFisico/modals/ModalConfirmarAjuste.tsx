@@ -4,9 +4,9 @@ import { Button } from "@/Components/ui/button"
 import { Badge } from "@/Components/ui/badge"
 import { Separator } from "@/Components/ui/separator"
 import { Package, MapPin, Calendar, User, FileText, TrendingUp, TrendingDown } from "lucide-react"
-import { AjusteData } from "../../../../types/Inventario"
+import { AjusteData, StockInventarioItem } from "../../../../types/Inventario"
 import axios from "axios"
-import { log } from "console"
+
 
 
 interface AjusteInventarioModalProps {
@@ -72,12 +72,8 @@ export function AjusteInventarioModal({
         });
 
 
-        if (response.status === 200) {
-            console.log("Ajuste aprobado:", response.data);
-
+        if (response.status === 200) {       
             onApprove();
-
-
             onClose();
         }
     } catch (error: any) {
@@ -99,13 +95,9 @@ export function AjusteInventarioModal({
         });
 
 
-        if (response.status === 200) {
-            console.log("Ajuste cancelado:");
-
+        if (response.status === 200) {   
             onApprove();
-
-
-            onClose();
+            onClose();     
         }
     } catch (error: any) {
         console.error("Error al aprobar el ajuste:", error);

@@ -1,10 +1,10 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/Components/ui/button";
-import { History, ChevronRight, ChevronDown, PackageCheck, Eye } from "lucide-react";
+import { ChevronRight, ChevronDown, PackageCheck, Eye } from "lucide-react";
 import { DataTableColumnHeader } from "../Existencias/column-header";
-import { RecepcionesItem, Seguimiento } from "./RecepcionesManagement";
-import { Badge } from "lucide-react";
+import { RecepcionesItem} from "./RecepcionesManagement";
+
 
 interface GetColumnsProps {
     onAbrirModal: (recepcion: RecepcionesItem) => void;
@@ -188,10 +188,11 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
         header: "Acciones",
         cell: ({ row }) => {
             const item = row.original;
-            console.log(item)
+        
+
             return (
                 <>
-                   { item.estado === "Pendiente" ? (
+                   { item.estado_orden_entrega=== "Enviado" ? (
                     <div className="text-center">
                         <Button
                             variant="outline"

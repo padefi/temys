@@ -67,7 +67,6 @@ export function TrackingModal({
 
   const [stockTransito, setstockTransito] = useState<InventarioStockTransito>()
 
-console.log(idEntregas)
   useEffect(() => {
     if (!idEntregas) return;
 

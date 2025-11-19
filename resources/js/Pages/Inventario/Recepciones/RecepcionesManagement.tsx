@@ -24,6 +24,7 @@ export interface  RecepcionesItem {
     orden_id:number;
     origen_id: number;
     destino_id: number;
+    estado_orden_entrega:string,
     tipo_recepcion: string;
     movimiento_id: number;
     fecha_recepcion: Date;
@@ -69,7 +70,9 @@ export default function RecepcionesManagement() {
     useEffect(() => {
         setData(recepcionProductos.data);
     }, [recepcionProductos]);
+
     console.log(recepcionProductos)
+
 
     const abrirModal = (recepcion: RecepcionesItem) => {
 
