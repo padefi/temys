@@ -4,7 +4,7 @@ import { type VariantProps, cva } from "class-variance-authority";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 
 const StepperContext = React.createContext<Stepper.ConfigProps | null>(null);
 

@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { EntregaItem } from "./EntregasManagement";
 import { DataTableColumnHeader } from "./colum-header";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import { motion } from 'framer-motion';
 import { CheckCircle2, ChevronDown, Clock10, Eye, Truck, XCircle } from "lucide-react";
 

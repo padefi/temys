@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle,DialogDescription } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle,DialogDescription } from "@/Components/ui/dialog"
 import { ProductTracking } from "./SeguimientoProductos"
 import { ScrollArea } from "@/Components/ui/scroll-area"
 import { useEffect, useState } from "react"

@@ -5,7 +5,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 import { DataTable } from './data-table';
 import { columns } from './columns';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/Components/ui/button';
 import { ArrowLeftIcon } from 'lucide-react';
 
 type PageProps = InertiaPageProps & {
