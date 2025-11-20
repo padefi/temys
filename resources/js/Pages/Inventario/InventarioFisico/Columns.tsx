@@ -209,7 +209,19 @@ export const getStockColumns = ({
     }),
     columnHelper.display({
       id: 'estado',
-      header: 'Estado',
+      header: ({ column, table }) => {
+        const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
+        return (
+          <DataTableColumnHeader
+            column={column}
+            title="Estado"
+            disabled={disabled}
+            className="justify-center font-bold min-w-[90px]"
+            isVisible={false}
+          />
+        )
+      },
+     
       cell: (info) => {
         const row = info.row.original;
         const stockStatus = getStockStatus(row.cantidad_actual, row.stock_minimo);

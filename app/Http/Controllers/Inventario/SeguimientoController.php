@@ -17,20 +17,29 @@ class SeguimientoController extends Controller
                 'error' => 'Debe proporcionar el ID del movimiento.'
             ], 400);
         }
+
         $transito = InventarioTracking::with([
             'ordenEntrega.origen:id,nombre',
             'ordenEntrega.destino:id,nombre',
-            'movimientoEstados'
+            'movimientoEstados',
+            'ordenEntrega.detalles.producto'
         ])
-            ->where('entrega_id', $movimientoId)
-            ->get();
-
+        ->where('entrega_id', $movimientoId)
+        ->get();
 
         if ($transito->isEmpty()) {
             return response()->json([
                 'mensaje' => 'No se encontraron registros para este movimiento.'
             ], 404);
         }
+
+
+        $transito->each(function ($item) {
+           
+            $item->cantidad_total = $item->ordenEntrega->detalles->sum('cantidad_enviada');
+            
+        });
+
         return response()->json($transito);
     }
 }

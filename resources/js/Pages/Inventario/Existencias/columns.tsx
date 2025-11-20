@@ -136,10 +136,10 @@ export const getColumns = ({
       const item = row.original;
       return (
         <div className="text-center">
-          <Button
-            variant="ghost"
+          <Button    
+          variant={'ghost'}       
             size="sm"
-            className="hover:bg-accent/10"
+            className="hover:bg-green-600 hover:text-stone-50 cursor-pointer text-green-600"
             onClick={() => handleOpenWithFilter(item.producto_id)}
           >
             <History className="h-4 w-4" /> Historial
