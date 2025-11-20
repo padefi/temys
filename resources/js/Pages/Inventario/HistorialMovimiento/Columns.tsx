@@ -1,16 +1,9 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/Components/ui/checkbox";
-import { Button } from "@/Components/ui/button";
-import { Pencil, History } from "lucide-react";
 import { DataTableColumnHeader } from "../Existencias/column-header";
-import { MovimientosItem } from "@/types/Inventario";
+import { MovimientosItem } from "@/types/Inventario/Reportes/HistorialMovimiento";
 import { Dispatch, SetStateAction } from "react";
 
-interface GetColumnsProps {
-    setIdProducto: Dispatch<SetStateAction<number | undefined>>;
-    setAjusteDialogOpen: Dispatch<SetStateAction<boolean>>;
-    handleOpenWithFilter: (idProducto: number) => void;
-}
 
 export const columns: ColumnDef<MovimientosItem>[] = [
     {
@@ -89,7 +82,6 @@ export const columns: ColumnDef<MovimientosItem>[] = [
     },
     {
         accessorKey: "origen",
-        /* header: "Existencia Origen", */
         header: ({ column, table }) => {
             const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
             return (
@@ -123,7 +115,6 @@ export const columns: ColumnDef<MovimientosItem>[] = [
     },
     {
         accessorKey: "usuarioCreacion",
-        /*  header: "Hecho por", */
         header: ({ column, table }) => {
             const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
             return (
@@ -140,7 +131,6 @@ export const columns: ColumnDef<MovimientosItem>[] = [
     },
     {
         accessorKey: "cantidad",
-        /*  header: "Cantidad", */
         header: ({ column, table }) => {
 
             const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;

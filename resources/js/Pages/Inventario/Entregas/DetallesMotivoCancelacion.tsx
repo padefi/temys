@@ -1,7 +1,5 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
-
-import { Separator } from "@radix-ui/react-select";
-import { DetalleCancelacion } from "./EntregasManagement";
+import { DetalleCancelacion } from "@/types/Inventario/Operaciones/Entregas/Entregas"; 
 
 interface DetallesProductosTablaProps{
     cancelacion?:DetalleCancelacion

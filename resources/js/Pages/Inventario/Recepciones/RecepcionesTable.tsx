@@ -1,6 +1,6 @@
 import { links } from "@/types/links";
 import { meta } from "@/types/meta";
-import { RecepcionesItem } from "./RecepcionesManagement";
+import { RecepcionesItem } from "@/types/Inventario/Operaciones/Recepciones/Recepciones"; 
 import { useDataTableParams } from "@/hooks/useDataTableParams";
 import { useState } from "react";
 import { ColumnDef, ExpandedState, flexRender, getCoreRowModel, getExpandedRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, Row, useReactTable } from "@tanstack/react-table";

@@ -6,7 +6,7 @@ import { Label } from "@/Components/ui/label";
 import { Textarea } from "@/Components/ui/textarea";
 import axios from "axios";
 import { Button } from "@/Components/ui/button";
-import { RecepcionesItem } from "../RecepcionesManagement";
+import { RecepcionesItem } from "@/types/Inventario/Operaciones/Recepciones/Recepciones"; 
 import { router } from "@inertiajs/react";
 
 interface StockApprovalModalProps {

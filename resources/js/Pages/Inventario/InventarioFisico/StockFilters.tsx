@@ -1,8 +1,5 @@
 import { AlertTriangle, Bell, Package, Search } from "lucide-react";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Almacen, StockInventarioItem, StockItem } from "../../../types/Inventario"; 
+import { Almacen, StockInventarioItem, StockItem } from "@/types/Inventario/Operaciones/InventarioFisico/Stock"
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { useEffect, useState } from "react";
 import axios from "axios";

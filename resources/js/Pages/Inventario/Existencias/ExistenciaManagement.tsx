@@ -12,7 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 
 import ExistenciasTable from "./ExistenciasTable";
 import ChipSearch, { Chip } from "./Search";
-import { ExistenciasItem } from "@/types/Inventario";
+import { ExistenciasItem } from "@/types/Inventario/Reportes/Existencias"; 
 type PageProps = InertiaPageProps & {
     existenciaStocks: ExistenciaPagination,
 };

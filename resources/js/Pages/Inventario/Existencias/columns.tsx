@@ -3,7 +3,7 @@ import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/Components/ui/button";
 import { Pencil, History } from "lucide-react";
 import { DataTableColumnHeader } from "./column-header";
-import { ExtendedExistenciasItem } from "@/types/Inventario";
+import { ExtendedExistenciasItem } from "@/types/Inventario/Reportes/Existencias"; 
 import { Dispatch, SetStateAction } from "react";
 
 interface GetColumnsProps {

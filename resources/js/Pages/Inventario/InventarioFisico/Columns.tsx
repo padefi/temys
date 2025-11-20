@@ -1,7 +1,8 @@
 import { Badge } from "@/Components/ui/badge";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/Components/ui/tooltip";
-import { AjusteSeleccionado, StockInventarioItem } from "@/types/Inventario";
+import { AjusteSeleccionado } from "@/types/Inventario/Operaciones/InventarioFisico/Ajustes"; 
+import { StockInventarioItem } from "@/types/Inventario/Operaciones/InventarioFisico/Stock"; 
 import { createColumnHelper } from "@tanstack/react-table";
 import { AnimatePresence, motion } from "framer-motion";
 import { BrushCleaning, Clock10, Pencil, Save } from "lucide-react";

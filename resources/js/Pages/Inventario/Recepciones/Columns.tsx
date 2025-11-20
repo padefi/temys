@@ -3,7 +3,7 @@ import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/Components/ui/button";
 import { ChevronRight, ChevronDown, PackageCheck, Eye } from "lucide-react";
 import { DataTableColumnHeader } from "../Existencias/column-header";
-import { RecepcionesItem} from "./RecepcionesManagement";
+import { RecepcionesItem } from "@/types/Inventario/Operaciones/Recepciones/Recepciones"; 
 
 
 interface GetColumnsProps {
