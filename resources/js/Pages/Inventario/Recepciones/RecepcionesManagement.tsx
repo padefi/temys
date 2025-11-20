@@ -9,28 +9,8 @@ import { useEffect, useMemo, useState } from "react";
 import { getColumns } from "./Columns";
 import RecepcionProductos from "./modals/ConteoModal";
 import { TrackingModal } from "../Modales/SeguimientoModal";
+import { RecepcionesItem } from "@/types/Inventario/Operaciones/Recepciones/Recepciones";
 
-export interface RecepcionDetalle {
-    id: number;
-    producto_id: number;
-    nombreProducto: string;
-    cantidadRecibida: number;
-    cantidadEsperada: number;
-    estado: string;
-}
-
-export interface  RecepcionesItem {
-    id: string;
-    orden_id:number;
-    origen_id: number;
-    destino_id: number;
-    tipo_recepcion: string;
-    movimiento_id: number;
-    fecha_recepcion: Date;
-    estado: string;
-    usuario_creacion: string;
-    detalles?: RecepcionDetalle[];
-}
 
 type PageProps = InertiaPageProps & {
     recepcionProductos: ExistenciaPagination;
@@ -69,7 +49,9 @@ export default function RecepcionesManagement() {
     useEffect(() => {
         setData(recepcionProductos.data);
     }, [recepcionProductos]);
+
     console.log(recepcionProductos)
+
 
     const abrirModal = (recepcion: RecepcionesItem) => {
 

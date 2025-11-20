@@ -1,58 +1,11 @@
-"use client"
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card"
 import { Badge } from "@/Components/ui/badge"
 import { Separator } from "@radix-ui/react-select"
 import { Package, MapPin, Calendar, Clock, AlertCircle, CheckCircle2, Truck } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-
-export interface MovimientoEstado {
-  id: number;
-  transito_id: number;
-  estado: string;
-  usuario_id: number;
-  fecha: string;
-  observacion: string;
-  usuario?: {
-    id: number;
-    name: string;
-  };
-}
-
-export interface Almacen {
-  id: number;
-  nombre: string;
-}
-
-export interface Producto {
-  id: number;
-  nombre: string;
-}
-
-export interface InventarioOrdenEntrega {
-  id: number;
-  origen: Almacen;
-  destino: Almacen;
-
-}
-
-export interface InventarioStockTransito {
-  id: number;
-  movimiento_id: number;
-  producto_id: number;
-  origen_id: number;
-  destino_id: number;
-  cantidad: number;
-  estado: string;
-  ubicacion_actual: string;
-  fecha_salida: string;
-  fecha_llegada: string;
-  observaciones: string;
-  producto: Producto;
-  orden_entrega: InventarioOrdenEntrega;
-  movimiento_estados: MovimientoEstado[];
-}
+import { InventarioStockTransito } from "@/types/Inventario/Reportes/Seguimiento/Seguimiento"
+import { MovimientoEstado } from "@/types/Inventario/Reportes/Seguimiento/Seguimiento"
+import { dateTimeFormat } from "@/utils/formatterFunctions"
 
 
 
@@ -67,12 +20,12 @@ interface ProductTrackingProps {
 const estadoConfig = {
   pendiente: {
     label: "Pendiente",
-    color: "bg-muted text-muted-foreground",
+    color: "bg-orange-100 text-orange-800",
     icon: Clock,
   },
   en_transito: {
     label: "En Tránsito",
-    color: "bg-primary text-primary-foreground",
+    color: "bg-blue-100 text-blue-800",
     icon: Truck,
   },
   en_ruta: {
@@ -87,12 +40,12 @@ const estadoConfig = {
   },
   entregado: {
     label: "Entregado",
-    color: "bg-chart-3 text-primary-foreground",
+    color: "bg-green-100 text-green-800",
     icon: CheckCircle2,
   },
   cancelado: {
     label: "Cancelado",
-    color: "bg-destructive text-destructive-foreground",
+    color: "bg-red-100 text-red-800",
     icon: AlertCircle,
   },
   retenido: {
@@ -115,13 +68,7 @@ export function ProductTracking({
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "No especificada"
     const date = new Date(dateString)
-    return date.toLocaleDateString("es-ES", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
+    return dateTimeFormat(date)
   }
 
   return (
@@ -131,9 +78,9 @@ export function ProductTracking({
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <CardTitle className="text-2xl font-bold">Movimiento #{stockTransito?.movimiento_id}</CardTitle>
+              <CardTitle className="text-2xl font-bold">Entrega #{stockTransito?.entrega_id}</CardTitle>
               <p className="text-sm text-muted-foreground">
-                {productoNombre} • {stockTransito?.cantidad} unidades
+                CANTIDAD TOTAL • {stockTransito?.cantidad_total} unidades
               </p>
             </div>
             <Badge className={cn("text-sm px-3 py-1", estadoActual.color)}>
@@ -257,7 +204,7 @@ export function ProductTracking({
                           <p className="text-sm text-muted-foreground">{formatDate(estado.fecha)}</p>
                         </div>
                         {isLast && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="secondary" className="text-xs bg-yellow-200 text-yellow-700">
                             Actual
                           </Badge>
                         )}

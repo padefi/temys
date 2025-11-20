@@ -1,7 +1,8 @@
 import { Badge } from "@/Components/ui/badge";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/Components/ui/tooltip";
-import { AjusteSeleccionado, StockInventarioItem } from "@/types/Inventario";
+import { AjusteSeleccionado } from "@/types/Inventario/Operaciones/InventarioFisico/Ajustes"; 
+import { StockInventarioItem } from "@/types/Inventario/Operaciones/InventarioFisico/Stock"; 
 import { createColumnHelper } from "@tanstack/react-table";
 import { AnimatePresence, motion } from "framer-motion";
 import { BrushCleaning, Clock10, Pencil, Save } from "lucide-react";
@@ -208,7 +209,19 @@ export const getStockColumns = ({
     }),
     columnHelper.display({
       id: 'estado',
-      header: 'Estado',
+      header: ({ column, table }) => {
+        const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
+        return (
+          <DataTableColumnHeader
+            column={column}
+            title="Estado"
+            disabled={disabled}
+            className="justify-center font-bold min-w-[90px]"
+            isVisible={false}
+          />
+        )
+      },
+     
       cell: (info) => {
         const row = info.row.original;
         const stockStatus = getStockStatus(row.cantidad_actual, row.stock_minimo);

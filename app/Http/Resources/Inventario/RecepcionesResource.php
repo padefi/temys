@@ -23,6 +23,7 @@ public function toArray(Request $request): array
         'fecha_recepcion' => $this->fecha_recepcion,
         'estado' => $this->estado,
         'usuarioCreacion' => $this->usuarioCreacion,
+        'estado_orden_entrega' => $this->estado_orden_entrega,
         'detalles' => $this->detalles->map(function ($detalle) {
             return [
                 'id' => $detalle->id,

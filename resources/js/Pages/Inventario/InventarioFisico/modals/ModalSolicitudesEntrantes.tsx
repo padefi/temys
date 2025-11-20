@@ -6,7 +6,7 @@ import { Fragment, useEffect, useState } from "react";
 import AceptarStock from "./ModalAprobarORechazarStock";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Pagination } from "../components/PaginationSolicitud";
-import { Solicitudes } from "../../../../types/Inventario";
+import { Solicitudes } from "@/types/Inventario/Operaciones/InventarioFisico/SolicitudesStock"; 
 import { Calendar, ChevronDown, ChevronRight, MapPin, Package } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { DataTableSkeleton } from "@/Components/DataTableSkeleton";

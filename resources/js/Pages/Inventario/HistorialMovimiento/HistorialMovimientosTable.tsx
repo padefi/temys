@@ -1,7 +1,7 @@
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table"
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
-import { MovimientosItem } from "@/types/Inventario";
+import { MovimientosItem } from "@/types/Inventario/InventarioFisico/Inventario";
 import { Footer } from "@/Pages/UserModulePanel/footer";
 import { links } from "@/types/links";
 import { meta } from "@/types/meta";

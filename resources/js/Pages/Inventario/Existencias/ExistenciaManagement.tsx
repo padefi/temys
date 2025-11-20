@@ -12,7 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 
 import ExistenciasTable from "./ExistenciasTable";
 import ChipSearch, { Chip } from "./Search";
-import { ExistenciasItem } from "@/types/Inventario";
+import { ExistenciasItem } from "@/types/Inventario/Reportes/Existencias"; 
 type PageProps = InertiaPageProps & {
     existenciaStocks: ExistenciaPagination,
 };
@@ -34,7 +34,6 @@ export default function ExistenciaManagement() {
         if (existenciaData != existencias) setExistenciaData(existencias)
     }, [existencias]);
 
-    console.log(existencias)
     const filteredData = existenciaData.filter((item) => {
         if (chips.length === 0) return true;
         return chips.some((chip) =>

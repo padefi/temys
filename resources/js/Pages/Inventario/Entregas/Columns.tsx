@@ -1,5 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { EntregaItem } from "./EntregasManagement";
+import { EntregaItem } from "@/types/Inventario/Operaciones/Entregas/Entregas";
 import { DataTableColumnHeader } from "./colum-header";
 import { Button } from "@/Components/ui/button";
 import { motion } from 'framer-motion';
