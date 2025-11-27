@@ -13,7 +13,6 @@ class InventarioTracking extends Model
     protected $fillable = [
         'entrega_id',
         'estado',
-        'ubicacion_actual',
         'fecha_salida',
         'fecha_llegada',
         'observaciones',

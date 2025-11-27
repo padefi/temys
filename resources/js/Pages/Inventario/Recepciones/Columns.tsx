@@ -138,9 +138,9 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
                     class: "bg-blue-100 text-blue-800",
                     label: "Parcial"
                 },
-                completa: {
+                completo: {
                     class: "bg-green-100 text-green-800",
-                    label: "Completa"
+                    label: "Completo"
                 },
                  cancelado: {
                     class: "bg-red-100 text-red-800",

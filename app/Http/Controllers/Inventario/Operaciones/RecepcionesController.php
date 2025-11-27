@@ -90,12 +90,14 @@ class RecepcionesController extends Controller
             $recepcion = InventarioRecepcionProducto::with(['detalles.producto', 'origen', 'destino'])
                 ->findOrFail($request->recepcion_id);
 
+
             $estadoGeneral = 'completa';
 
             foreach ($request->productos as $detalleRequest) {
 
                 $detalle = $recepcion->detalles
                     ->firstWhere('producto_id', $detalleRequest['producto_id']);
+
 
                 if (!$detalle) continue;
 
@@ -123,29 +125,42 @@ class RecepcionesController extends Controller
                         'fecha_actualizacion' => now(),
                     ]);
 
-                $transito_id = InventarioTracking::where('entrega_id', $recepcion->orden_entrega_id)
-                    ->value('id');
-
-                InventarioEstadosTracking::create([
-                    'seguimiento_id' => $transito_id,
-                    'estado' => 'completado',
-                    'usuario_id' => Auth::id(),
-                    'ubicacion_actual'=>$recepcion->origen->nombre,
-                    'fecha' => now(),
-                    'observaciones' => 'Producto en llego al almacen ' . $recepcion->origen->nombre,
-                ]);
 
                 //Actualizar detalle de recepción
+                if ($cantidadEsperada = $detalle->cantidad_esperada) {
+                    if ($cantidadContada < $cantidadEsperada) {
+                        $estadoGeneral = 'Parcial';
+                    } else {
+                        $estadoGeneral = 'Completo';
+                    }
+                } else {
+                    $estadoGeneral = 'Completa';
+                }
+
                 $detalle->update([
                     'cantidad_recibida' => $cantidadContada,
-                    'estado' => $detalleRequest['estado'] ?? 'completo',
+                    'estado' => $estadoGeneral,
+                ]);
+            }
+
+            $transito_id = InventarioTracking::where('entrega_id', $recepcion->orden_entrega_id)
+                ->value('id');
+
+            InventarioTracking::where('entrega_id', $recepcion->orden_entrega_id)
+                ->update([
+                    'estado' => 'entregado',
+
                 ]);
 
-                // Detectar si el estado del detalle afecta al estado general
-                if (($detalleRequest['estado'] ?? 'completo') !== 'completo') {
-                    $estadoGeneral = 'parcial';
-                }
-            }
+            InventarioEstadosTracking::create([
+                'seguimiento_id' => $transito_id,
+                'estado' => 'completado',
+                'usuario_id' => Auth::id(),
+                'ubicacion_actual' => $recepcion->origen->nombre,
+                'fecha' => now(),
+                'observacion' => 'Producto llego al almacen ' . $recepcion->origen->nombre,
+            ]);
+
 
             //Cambiar estado general de la recepción
             $recepcion->update([
