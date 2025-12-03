@@ -36,4 +36,14 @@ class InventarioOrdenEntregaDetalle extends Model
     {
         return $this->belongsTo(User::class, 'usuario_creacion');
     }
+
+    public function movimientos()
+{
+    return $this->morphMany(InventarioMovimientoStock::class, 'movible');
+}
+    public function movimiento()
+{
+    return $this->belongsTo(InventarioMovimientoStock::class, 'movimiento_stock_id');
+}
+
 }

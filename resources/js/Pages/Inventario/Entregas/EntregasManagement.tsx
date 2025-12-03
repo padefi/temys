@@ -10,32 +10,8 @@ import { meta } from "@/types/meta";
 import CancelarEntrega from "./modals/ModalCancelar";
 import AceptarEntrega from "./modals/ModalAceptar";
 import MostrarRemito from "./modals/ModalAbrirRemito";
-
-export interface DetalleProducto {
-    id: string;
-    nombre: string;
-    cantidad: number;
-    fecha_creacion: string;
-    usuarioCreacion: string;
-}
-
-export interface DetalleCancelacion {
-    motivo: string;
-    fecha: string;
-    usuario: string;
-}
-
-export interface EntregaItem {
-    id: number;
-    fecha_envio: string | null;
-    fecha_creacion: string | null;
-    usuario_creacion: string;
-    estado: string;
-    origen: string;
-    destino: string;
-    productos: DetalleProducto[];
-    cancelacion: DetalleCancelacion;
-}
+import { TrackingModal } from "../Modales/SeguimientoModal";
+import { EntregaItem } from "@/types/Inventario/Operaciones/Entregas/Entregas";
 
 type PageProps = InertiaPageProps & {
     ordenEntregas: EntregasPagination;
@@ -48,6 +24,8 @@ interface EntregasPagination {
 }
 
 export default function EntregasManagement() {
+    const [isModalSeguimientoOpen, setisModalSeguimientoOpen] = useState(false);
+    const [recepcionSeguimiento, setRecepcionSeguimiento] = useState<number | null>(null);
     const { ordenEntregas } = usePage<PageProps>().props;
     const [data, setData] = useState<EntregaItem[]>([]);
 
@@ -67,7 +45,6 @@ export default function EntregasManagement() {
         setData(ordenEntregas.data);
     }, [ordenEntregas]);
 
-    console.log(ordenEntregas);
 
     // Funciones para manejar las expansiones
     const toggleExpandProductos = (id: number) => {
@@ -90,10 +67,14 @@ export default function EntregasManagement() {
     };
 
     const openCancelarModal = (entrega: EntregaItem) => {
-        console.log('hola');
         setEntregaSeleccionada(entrega);
         setMotivo('');
         setModalOpen(true);
+    };
+
+    const abrirModalSeguimiento = (idSeguimiento: number) => {
+        setRecepcionSeguimiento(idSeguimiento);
+        setisModalSeguimientoOpen(true);
     };
 
     const columns = useMemo(
@@ -105,6 +86,7 @@ export default function EntregasManagement() {
             cancelarModal: openCancelarModal,
             expandedProductos: expandedProductos,
             expandedMotivos: expandedMotivos,
+            abrirModalSeguimiento: abrirModalSeguimiento
         }),
         [expandedProductos, expandedMotivos]
     );
@@ -153,10 +135,16 @@ export default function EntregasManagement() {
             />
 
             {/* Modal para mostrar remito existente */}
-            <MostrarRemito   
+            <MostrarRemito
                 isOpen={modalRemitoAbierto}
                 onClose={() => setModalRemitoAbierto(false)}
                 remitoActual={remitoActual}
+            />
+
+            <TrackingModal
+                open={isModalSeguimientoOpen}
+                onOpenChange={() => setisModalSeguimientoOpen(false)}
+                idEntregas={recepcionSeguimiento}
             />
         </AuthenticatedLayout>
     );

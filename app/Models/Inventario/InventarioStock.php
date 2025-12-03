@@ -37,4 +37,10 @@ class InventarioStock extends Model
     {
         return $this->belongsTo(Almacen::class, 'almacen_id');
     }
+
+    public function movible()
+{
+    return $this->morphTo();
+}
+
 }

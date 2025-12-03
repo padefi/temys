@@ -16,12 +16,14 @@ public function toArray(Request $request): array
 {
     return [
         'id' => $this->id,
+        'orden_id'=>$this->orden_entrega_id,
         'origen' => $this->origen,
         'destino' => $this->destino,
         'tipo_recepcion' => $this->tipo_recepcion,
         'fecha_recepcion' => $this->fecha_recepcion,
         'estado' => $this->estado,
         'usuarioCreacion' => $this->usuarioCreacion,
+        'estado_orden_entrega' => $this->estado_orden_entrega,
         'detalles' => $this->detalles->map(function ($detalle) {
             return [
                 'id' => $detalle->id,

@@ -34,4 +34,9 @@ class InventarioAjuste extends Model
     {
         return $this->belongsTo(Almacen::class, 'almacen_destino_id');
     }
+
+        public function movimientos()
+{
+    return $this->morphMany(InventarioMovimientoStock::class, 'movible');
+}
 }

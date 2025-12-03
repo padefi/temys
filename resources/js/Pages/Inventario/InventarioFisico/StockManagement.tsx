@@ -8,7 +8,7 @@ import { Head } from "@inertiajs/react";
 import { PageProps as InertiaPageProps } from "@inertiajs/core";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { SolicitarStock } from "./modals/ModalCrearSolicitudStock";
-import { StockInventarioItem } from "../../../types/Inventario";
+import { StockInventarioItem } from "@/types/Inventario/Operaciones/InventarioFisico/Stock"; 
 import { StockTable } from "./modeloDataTable";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { links } from "@/types/links";
@@ -60,7 +60,7 @@ export default function StockManagement() {
     setStock(stocks.data);
   }, [stocks]);
 
-  console.log(stocks)
+
   const handleAbrirModal = () => {
     const productosFiltrados = stock.filter(
       (item) => item.cantidad_actual <= item.stock_minimo

@@ -1,16 +1,17 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Button } from "@/Components/ui/button";
-import { History, ChevronRight, ChevronDown, PackageCheck } from "lucide-react";
+import { ChevronRight, ChevronDown, PackageCheck, Eye } from "lucide-react";
 import { DataTableColumnHeader } from "../Existencias/column-header";
-import { RecepcionesItem } from "./RecepcionesManagement";
-import { Badge } from "lucide-react";
+import { RecepcionesItem } from "@/types/Inventario/Operaciones/Recepciones/Recepciones"; 
+
 
 interface GetColumnsProps {
     onAbrirModal: (recepcion: RecepcionesItem) => void;
+    abrirModalSeguimiento: (idSeguimiento: number) => void
 }
 
-export const getColumns = ({ onAbrirModal }: GetColumnsProps): ColumnDef<RecepcionesItem>[] => [
+export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsProps): ColumnDef<RecepcionesItem>[] => [
     {
         id: "expander",
         header: "",
@@ -89,7 +90,7 @@ export const getColumns = ({ onAbrirModal }: GetColumnsProps): ColumnDef<Recepci
 
     {
         accessorKey: "fecha_recepcion",
-         header: ({ column, table }) => {
+        header: ({ column, table }) => {
             const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
             return (
                 <DataTableColumnHeader
@@ -130,16 +131,20 @@ export const getColumns = ({ onAbrirModal }: GetColumnsProps): ColumnDef<Recepci
 
             const estadoConfig = {
                 pendiente: {
-                    class: "bg-yellow-100 text-yellow-800 border-yellow-300",
+                    class: "bg-yellow-100 text-yellow-800 ",
                     label: "Pendiente"
                 },
                 parcial: {
-                    class: "bg-blue-100 text-blue-800 border-blue-300",
+                    class: "bg-blue-100 text-blue-800",
                     label: "Parcial"
                 },
                 completa: {
-                    class: "bg-green-100 text-green-800 border-green-300",
+                    class: "bg-green-100 text-green-800",
                     label: "Completa"
+                },
+                 cancelado: {
+                    class: "bg-red-100 text-red-800",
+                    label: "Cancelado"
                 }
             };
 
@@ -150,7 +155,7 @@ export const getColumns = ({ onAbrirModal }: GetColumnsProps): ColumnDef<Recepci
 
             return (
                 <div className="text-center">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${config.class}`}>
+                    <span className={`inline-flex items-center px-2 py-1 text-sm font-medium rounded-full ${config.class}`}>
                         {config.label}
                     </span>
                 </div>
@@ -159,7 +164,7 @@ export const getColumns = ({ onAbrirModal }: GetColumnsProps): ColumnDef<Recepci
     },
     {
         accessorKey: "tipo_recepcion",
-             header: ({ column, table }) => {
+        header: ({ column, table }) => {
             const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
             return (
                 <DataTableColumnHeader
@@ -183,21 +188,37 @@ export const getColumns = ({ onAbrirModal }: GetColumnsProps): ColumnDef<Recepci
         header: "Acciones",
         cell: ({ row }) => {
             const item = row.original;
+        
 
             return (
-                item.estado === "Pendiente" ? (
+                <>
+                   { item.estado_orden_entrega=== "Enviado" ? (
                     <div className="text-center">
                         <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
-                            className="hover:bg-accent/10"
+                            className="hover:bg-accent/10  cursor-pointer mb-2"
                             onClick={() => onAbrirModal(item)}
                         >
                             <PackageCheck className="h-4 w-4" />
                             Contar y Verificar
                         </Button>
+
                     </div>
-                ) : null
+                    ) : null}
+
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="hover:bg-accent/10 cursor-pointer"
+                        onClick={() => abrirModalSeguimiento(Number(item.orden_id))}
+                    >
+                        <Eye className="h-4 w-4" />
+
+                        Seguimiento
+                    </Button>
+                </>
+
             );
 
         },

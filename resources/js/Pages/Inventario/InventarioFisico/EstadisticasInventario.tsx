@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card"
-import { ExistenciasItem, StockInventarioItem} from "@/types/Inventario"
-import { Package, TrendingUp, TrendingDown, ChartArea } from "lucide-react"
+import { StockInventarioItem } from "@/types/Inventario/Operaciones/InventarioFisico/Stock"; 
+import { Package, TrendingUp, TrendingDown } from "lucide-react"
 
 
 interface EstadosMovimientoProps {

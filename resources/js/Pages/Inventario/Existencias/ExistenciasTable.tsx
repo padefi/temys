@@ -9,8 +9,8 @@ import { links } from "@/types/links";
 import { meta } from "@/types/meta";
 import { router } from "@inertiajs/react";
 import { getColumns } from "./columns";
-import { ExtendedExistenciasItem } from "@/types/Inventario";
-import { ExistenciasItem } from "@/types/Inventario";
+import { ExtendedExistenciasItem } from "@/types/Inventario/Reportes/Existencias";
+import { ExistenciasItem } from "@/types/Inventario/Reportes/Existencias"; 
 
 interface ExistenciaTableProps {
   data: ExistenciasItem[];

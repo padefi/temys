@@ -6,7 +6,7 @@ import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Textarea } from "@/Components/ui/textarea";
 import axios from "axios";
-import { StockItem,AlmacenStock ,StockInventarioItem} from "../../../../types/Inventario";
+import { AlmacenStock ,StockInventarioItem} from "@/types/Inventario/Operaciones/InventarioFisico/Stock";
 
 
  interface SolicitarStockProps {
@@ -36,7 +36,6 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
 
     useEffect(() => {
         const selectedProductoIds = selectedItems.map((item) => item.producto.productoId);
-        console.log(selectedProductoIds)
 
         if (selectedProductoIds.length === 0) {
             setAlmacenes([]);

@@ -1,7 +1,7 @@
 import { Button } from "@/Components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { Textarea } from "@/Components/ui/textarea";
-import { EntregaItem } from "../EntregasManagement";
+import { EntregaItem } from "@/types/Inventario/Operaciones/Entregas/Entregas"; 
 import axios from "axios";
 import { router } from "@inertiajs/react";
 

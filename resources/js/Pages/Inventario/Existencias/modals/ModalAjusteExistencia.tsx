@@ -7,9 +7,9 @@ import { Separator } from "@/Components/ui/separator"
 import { Calendar, Package, User, TrendingUp, History } from "lucide-react"
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { StockItem } from "../../../../types/Inventario"
-import { toast } from "sonner"
+import { StockItem } from "@/types/Inventario/Operaciones/InventarioFisico/Stock" 
 import { router } from "@inertiajs/react"
+import { toast } from "sonner"
 
 
 interface ProductModalProps {

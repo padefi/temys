@@ -9,6 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        
         // 🔹 Cambiar enum
         DB::statement("ALTER TABLE inventario_recepcion_productos MODIFY COLUMN estado ENUM('Completa','Parcial','Pendiente','Cancelado') NOT NULL DEFAULT 'Pendiente'");
 
