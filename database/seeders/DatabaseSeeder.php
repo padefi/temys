@@ -69,6 +69,7 @@ class DatabaseSeeder extends Seeder
             ProvinciaSeeder::class,
             LocalidadSeeder::class,
             CalleSeeder::class,
+            RelacionComprobantePartidaSeeder::class,
         ]);
     }
 }

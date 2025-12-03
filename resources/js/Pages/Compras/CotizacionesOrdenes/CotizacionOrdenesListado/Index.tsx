@@ -212,7 +212,7 @@ export default function CotizacionOrdenesListado({ onSelectionChange }: Cotizaci
                                         Aceptar Solicitud
                                     </ContextMenuItem>
                                     )}
-                                    {solicitud.estado === 'Aceptada' ? (
+                                    {solicitud.estado === 'Aceptada' || solicitud.estado === 'Pendiente' ? (
                                     <ContextMenuItem onClick={() => handleRechazarSolicitud(solicitud.id)}>
                                         Rechazar Solicitud
                                     </ContextMenuItem>
@@ -222,7 +222,7 @@ export default function CotizacionOrdenesListado({ onSelectionChange }: Cotizaci
                                     </ContextMenuItem>
                                     )}
                                     <ContextMenuSeparator />
-                                    {(solicitud.estado === 'Pendiente' || solicitud.estado === 'Aceptada') ? (
+                                    {(solicitud.estado === 'Aceptada') ? (
                                     <ContextMenuItem onClick={() => handleAgregarOrden(solicitud.id)}>
                                         Agregar Orden
                                     </ContextMenuItem>
@@ -310,7 +310,7 @@ export default function CotizacionOrdenesListado({ onSelectionChange }: Cotizaci
                                     router.visit(`/compras/cotizaciones-ordenes/${solicitud.id}/${orden.id}`);
                                     }}
                                 >
-                                    Ver Cotización
+                                    Ver Presupuesto
                                 </Button>
                             </TableCell>
                           </TableRow>
@@ -318,7 +318,7 @@ export default function CotizacionOrdenesListado({ onSelectionChange }: Cotizaci
                       ) : (
                         <TableRow>
                           <TableCell colSpan={5} className="text-center">
-                            No hay órdenes de cotización.
+                            No hay presupuestos.
                           </TableCell>
                         </TableRow>
                       )}

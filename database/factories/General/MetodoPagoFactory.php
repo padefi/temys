@@ -2,6 +2,7 @@
 
 namespace Database\Factories\General;
 
+use App\Models\Contabilidad\PlanCuentas\Cuenta;
 use App\Models\General\MetodoPago;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -22,6 +23,7 @@ class MetodoPagoFactory extends Factory
             ]),
             'descripcion' => $this->faker->sentence(),
             'habilitado' => $this->faker->boolean(),
+            'co_cuenta_id' => Cuenta::inRandomOrder()->first()->id ?? Cuenta::factory(),
         ];
     }
 }

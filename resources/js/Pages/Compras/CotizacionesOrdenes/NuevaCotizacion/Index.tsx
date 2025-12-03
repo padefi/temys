@@ -24,6 +24,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { AlertDialogFooter, AlertDialogHeader } from '@/Components/ui/alert-dialog'
 import { X } from 'lucide-react'
 import * as Dialog from '@radix-ui/react-dialog'
+import { Typography } from '@/Components/ui/typography'
 
 type PageProps = InertiaPageProps & {
   auth: { user: { id: number; name: string; email: string } }
@@ -62,18 +63,25 @@ export default function Index() {
     const ordenCotizacion = solicitudCompra?.ordenes_cotizacion
     const [busqueda, setBusqueda] = useState( ordenCotizacion?.[0]?.proveedor?.nombre_fantasia || '')
     const [mostrarLista, setMostrarLista] = useState(false)
-    const [monedaId, setMonedaId] = useState<number | null>(ordenCotizacion?.[0].tipo_moneda?.id || null);
+    const [monedaId, setMonedaId] = useState<number | null>(
+    ordenCotizacion?.[0]?.tipo_moneda?.id ?? null
+    );
+
     const [monedaNombre, setMonedaNombre] = useState(
-    ordenCotizacion?.[0].tipo_moneda
-        ? `${ordenCotizacion[0].tipo_moneda.descripcion} - ${ordenCotizacion[0].tipo_moneda.simbolo}`
+    ordenCotizacion?.[0]?.tipo_moneda
+        ? `${ordenCotizacion?.[0]?.tipo_moneda.descripcion} - ${ordenCotizacion?.[0]?.tipo_moneda.simbolo}`
         : ''
     );
+
     const [monedaInvalida, setMonedaInvalida] = useState(false)
 
-    const [almacenId, setAlmacenId] = useState<number | null>(ordenCotizacion?.[0].almacen?.id || null);
+    const [almacenId, setAlmacenId] = useState<number | null>(
+    ordenCotizacion?.[0]?.almacen?.id ?? null
+    );
+
     const [almacenNombre, setAlmacenNombre] = useState(
-    ordenCotizacion?.[0].almacen
-        ? `${ordenCotizacion[0].almacen.nombre} - ${ordenCotizacion[0].almacen.tipo}`
+    ordenCotizacion?.[0]?.almacen
+        ? `${ordenCotizacion?.[0]?.almacen.nombre} - ${ordenCotizacion?.[0]?.almacen.tipo}`
         : ''
     );
     const [almacenInvalida, setAlmacenInvalida] = useState(false)
@@ -90,12 +98,15 @@ export default function Index() {
     const [archivoSeleccionado, setArchivoSeleccionado] = useState<Archivo | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
 
+    const [estadoOrden, setEstadoOrden] = useState(ordenCotizacion?.[0]?.estado || '');
+    const estaBloqueada = estadoOrden === "Confirmada" || estadoOrden === "Finalizada"
+
 
     useEffect(() => {
 
-    if (solicitudCompra?.ordenes_cotizacion?.[0].archivos?.length) {
+    if (solicitudCompra?.ordenes_cotizacion?.[0]?.archivos?.length) {
         setArchivos(
-        solicitudCompra.ordenes_cotizacion?.[0].archivos.map((a: any) => ({
+        solicitudCompra.ordenes_cotizacion?.[0]?.archivos.map((a: any) => ({
             id: a.id,
             nombre: a.nombre,
             url: `/compras/cotizaciones-ordenes/archivo/${a.id}`, // tu nuevo endpoint
@@ -181,13 +192,19 @@ export default function Index() {
       productos,
       usuario_id: auth.user.id,
     }, {
+        preserveScroll: true,
+        preserveState: true,
         onSuccess: () => {
-            router.reload({ only: ["flash"] });
+            toast.success("Orden de cotización enviada correctamente.", { duration: 4000 });
         },
         onError: (errors) => {
-            router.reload({ only: ["flash"] });
-        },
-    })
+            console.error(errors)
+            toast.error(
+                Object.values(errors).flat().join("\n")
+            )
+        }
+
+    });
     }
 
 
@@ -206,18 +223,26 @@ export default function Index() {
       productos,
       usuario_id: auth.user.id,
     }, {
+        preserveScroll: true,
+        preserveState: true,
         onSuccess: () => {
-            router.reload({ only: ["flash"] });
+            setEstadoOrden('Confirmada'); // Actualizamos el estado localmente
+            toast.success("Orden de cotización confirmada correctamente.", { duration: 4000 });
         },
         onError: (errors) => {
-            router.reload({ only: ["flash"] });
-        },
+            console.error(errors)
+            toast.error(
+                Object.values(errors).flat().join("\n")
+            )
+        }
+
     });
     };
 
     ///////////Guardar Orden Compra
     const guardar = () => {
       router.post('/compras/cotizaciones-ordenes/guardar', {
+        solicitudCompra: solicitudCompra?.id,
         ordenCotizacion: ordenCotizacion?.[0]?.id,
         proveedor: busqueda,
         moneda: monedaId,
@@ -227,24 +252,26 @@ export default function Index() {
         observaciones,
         productos,
         usuario_id: auth.user.id,
-      },
-      {
+      }, {
+        preserveScroll: true,
         onSuccess: () => {
-            router.reload({ only: ["flash"] });
+            toast.success("Orden guardada correctamente.", { duration: 4000 });
+            router.reload({ only: ['solicitudCompraElegida', 'ordenCotizacion'] })
         },
         onError: (errors) => {
-            console.log(errors);
-          const mensajes = Object.values(errors).flat().join('\n');
-          toast("Error al guardar la orden de compra", {
-            description: mensajes,
-          });
-        },
+            console.error(errors)
+            toast.error(
+                Object.values(errors).flat().join("\n")
+            )
+        }
+
     });
     };
 
     const handleGenerarOrdenCompra = () => {
 
     router.post('/compras/cotizaciones-ordenes/guardar', {
+        solicitudCompra: solicitudCompra?.id,
         ordenCotizacion: ordenCotizacion?.[0]?.id,
         proveedor: busqueda,
         moneda: monedaId,
@@ -278,6 +305,7 @@ export default function Index() {
             })
         },
         onError: (errors) => {
+            console.error("ERRORES GUARDAR:", errors);
             router.reload({ only: ["flash"] });
         },
     })
@@ -327,6 +355,9 @@ export default function Index() {
     <AuthenticatedLayout header={<h2 className="text-xl font-semibold">Nueva Cotización</h2>}>
       <Head title="Nueva Cotización" />
       <div className="py-12">
+        <Typography  className="text-2xl font-bold mb-4 text-center">
+            Presupuesto
+        </Typography>
         <div className="mx-auto px-10">
         <Button
             variant="outline"
@@ -338,7 +369,7 @@ export default function Index() {
          <Button
             variant="outline"
             size="lg"
-            disabled={!formularioCompleto || ordenCotizacion?.[0]?.estado === 'Cancelada' || ordenCotizacion?.[0]?.ordenes_compra?.length > 0 }
+            disabled={!formularioCompleto || ordenCotizacion?.[0]?.estado === 'Cancelada' || ordenCotizacion?.[0]?.estado === 'Confirmada' || ordenCotizacion?.[0]?.ordenes_compra?.length > 0 }
             onClick={() => guardar()}
         >
             Guardar
@@ -347,7 +378,7 @@ export default function Index() {
             <div className="flex flex-col items-end">
                 {solicitudCompra?.id ? (
                     <div>
-                    N° Solicitud : {solicitudCompra?.id}
+                    N° Solicitud de compra: {solicitudCompra?.id}
                     </div>
                 ) : (
                     <div>
@@ -356,7 +387,7 @@ export default function Index() {
                 )}
                 {ordenCotizacion?.[0]?.id ? (
                     <div>
-                    N° Orden : {ordenCotizacion?.[0]?.id}
+                    N° Presupuesto : {ordenCotizacion?.[0]?.id}
                     </div>
                 ) : (
                     <div>
@@ -389,6 +420,7 @@ export default function Index() {
             <div>
               <Label>Proveedor</Label>
               <Input
+                disabled={estaBloqueada}
                 value={busqueda}
                 onChange={e => {
                   setBusqueda(e.target.value)
@@ -416,6 +448,7 @@ export default function Index() {
               <Label className="mt-4 block">Moneda</Label>
 
                 <Input
+                disabled={estaBloqueada}
                 list="monedas"
                 value={
                     monedaId
@@ -443,18 +476,21 @@ export default function Index() {
             <div>
               <Label>Cotizar antes de</Label>
               <Input
+                disabled={estaBloqueada}
                 type="date"
                 value={cotizar_antes_de}
                 onChange={e => setCotizar_antes_de(e.target.value)}
               />
               <Label className="mt-4">Entrega Esperada</Label>
               <Input
+                disabled={estaBloqueada}
                 type="date"
                 value={entrega_esperada}
                 onChange={e => setEntregaEsperada(e.target.value)}
               />
               <Label className="mt-4 block">Entregar a</Label>
                 <Input
+                disabled={estaBloqueada}
                 list="almacenes"
                 value={
                     almacenId
@@ -480,7 +516,13 @@ export default function Index() {
           </div>
 
           <div className="mt-6">
-            <CargaProductos setProductosValidos={setProductosValidos} setProductos={setProductos} detalles={ordenCotizacion?.[0]?.detalles}/>
+            <CargaProductos
+                setProductosValidos={setProductosValidos}
+                setProductos={setProductos}
+                detalles={ordenCotizacion?.[0]?.detalles}
+                ordenCotizacion={ordenCotizacion?.[0]}
+                estadoOrden={ordenCotizacion?.[0]?.estado}
+            />
             <Textarea placeholder="Observaciones." value={observaciones} onChange={e => setObservaciones(e.target.value)} />
           </div>
 
@@ -544,14 +586,14 @@ export default function Index() {
                 onClick={confirmarOrdenCotizacion}
                 disabled={!formularioCompleto || (ordenCotizacion?.[0]?.estado === 'Confirmada' || ordenCotizacion?.[0]?.estado === 'Cancelada')}
                 >
-                    Confirmar Orden de Cotización
+                    Confirmar Orden de Cotización | Presupuesto
                 </Button>
 
                 <Button
                 variant="outline"
                 onClick={enviarCotizacion} disabled={!formularioCompleto || (ordenCotizacion?.[0]?.estado === 'Confirmada' || ordenCotizacion?.[0]?.estado === 'Cancelada')}
                 >
-                    Enviar Cotización
+                    Enviar Orden de Cotización
                 </Button>
 
             {ordenCotizacion?.[0]?.ordenes_compra?.[0]?.id !== undefined ? (

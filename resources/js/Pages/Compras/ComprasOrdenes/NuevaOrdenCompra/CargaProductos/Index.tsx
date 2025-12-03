@@ -90,7 +90,9 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
         referencia: det.producto?.referencia || '',
         cantidad: det.cantidad || 0,
         precio_unitario: +det.precio_unitario || 0,
-        impuestos_seleccionados: det.impuestos ? det.impuestos.map((i: any) => i.id) : [],
+         impuestos_seleccionados: det.detalles_impuesto
+            ? det.detalles_impuesto.map(i => i.impuesto_id)
+            : [],
         porcentaje_descuento: +det.porcentaje_descuento || 0,
         importe: +det.importe || 0,
         usuario_id: auth.user.id,
@@ -114,7 +116,6 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
 
 
     }, [productosLocal])
-
 
   const agregarLinea = () => {
     setProductosLocal([
@@ -427,7 +428,8 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                         <TableCell>
                         <Popover>
                             <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start" disabled={!habilitado || bloqueado}>
+                            <Button variant="outline" className="w-full justify-start"
+                            disabled={!habilitado}>
                                 {producto.impuestos_seleccionados.length
                                 ? impuestos
                                     .filter(i => producto.impuestos_seleccionados.includes(i.id))

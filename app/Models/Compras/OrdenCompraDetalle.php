@@ -25,6 +25,7 @@ class OrdenCompraDetalle extends Model
         'precio_unitario',
         'porcentaje_descuento',
         'importe',
+        'entrega_esperada',
         'co_cuenta_id',
         'usuario_creacion',
         'fecha_actualizacion',
@@ -38,6 +39,7 @@ class OrdenCompraDetalle extends Model
         'precio_unitario'=>'float',
         'importe'=>'float',
         'co_cuenta_id'=>'integer',
+        'entrega_esperada'=>'date',
     ];
     ////ORDEN COMPRA RELACIONADA
     public function ordenCompra()
@@ -57,6 +59,15 @@ class OrdenCompraDetalle extends Model
             'orden_compras_detalles_impuestos',   // nombre de la tabla pivot
             'orden_compras_detalles_id',         // FK al detalle
             'impuesto_id'                        // FK al impuesto
+        );
+    }
+
+        ////DETALLES DE IMPUESTO RELACIONADOS
+    public function detallesImpuesto()
+    {
+        return $this->hasMany(
+            OrdenCompraDetalleImpuesto::class,
+            'orden_compras_detalles_id'
         );
     }
 }

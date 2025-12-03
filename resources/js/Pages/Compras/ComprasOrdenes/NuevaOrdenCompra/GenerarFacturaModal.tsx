@@ -21,18 +21,16 @@ import {
 } from "@/Components/ui/dropdown-menu"
 import { Popover, PopoverTrigger, PopoverContent } from "@/Components/ui/popover"
 import { Command, CommandInput, CommandList, CommandEmpty, CommandItem } from "@/Components/ui/command"
-import { usePage } from "@inertiajs/react"
+import { router, usePage } from "@inertiajs/react"
 import { ProductosDisponibles } from "@/types/Producto"
-import { OrdenCompra } from "@/types/OrdenCompra"
+import { OrdenesCompra } from "@/types/OrdenCompra"
 import axios from "axios"
 import { toast } from "sonner"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle, AlertDialogTrigger } from "@radix-ui/react-alert-dialog"
+import { AlertDialogFooter, AlertDialogHeader } from "@/Components/ui/alert-dialog"
+import { Archivo } from "@/types/Archivos"
 
-type PageProps = {
-  auth: { user: { id: number; name: string; email: string } }
-  productos: ProductosDisponibles[]
-  impuestos: { id: number; descripcion: string; porcentaje: number }[]
-  co_cuentas: { id: number; codigo: string; descripcion: string }[]
-}
+
 
 type ProductoEditable = {
   id: number
@@ -57,7 +55,8 @@ type ProductoEditable = {
 }
 
 type Props = {
-  estadoOrden: string
+ auth: { user: { id: number; name: string; email: string } }
+  /*productos: ProductosDisponibles[]*/
   detalles?: any[]
   open: boolean
   onClose: () => void
@@ -69,8 +68,11 @@ type Props = {
   co_cuentas: { id: number; codigo: string; descripcion: string }[]
   impuestos: { id: number; descripcion: string; porcentaje: number }[]
   productos: ProductoEditable[]
-  ordenCompra: OrdenCompra[]
+  ordenCompra?: OrdenesCompra
+  estadoOrden: number | string
+  setProductosValidosFactura: (valid: boolean) => void
   setProductos: (productos: ProductoEditable[]) => void
+
 }
 
 export default function GenerarFacturaModal({
@@ -84,11 +86,14 @@ export default function GenerarFacturaModal({
   estadoOrden,
   detalles,
   productos,
+  impuestos,
   ordenCompra,
+  co_cuentas,
   setProductos,
+  setProductosValidosFactura,
 
 }: Props) {
-    const { auth,impuestos, co_cuentas = [] } = usePage<PageProps>().props
+    const { auth, productos: productosDisponibles = [], } = usePage().props
     const [productosLocal, setProductosLocal] = useState<ProductoEditable[]>([])
 
     const [tiposComprobante, setTiposComprobante] = useState<{id:number, nombre:string}[]>([])
@@ -133,6 +138,21 @@ export default function GenerarFacturaModal({
         setProductosLocal(productos)
         }
     }, [detalles, open])
+
+    // Actualiza productos y validez
+        useEffect(() => {
+            setProductos(productosLocal)
+            const todosValidos = productosLocal.length > 0 &&
+                productosLocal.every(p =>
+                p.producto_id > 0 &&
+                p.descripcion.trim() !== '' &&
+                p.cantidad > 0 &&
+                p.precio_unitario > 0
+                )
+            setProductosValidosFactura(todosValidos)
+
+
+        }, [productosLocal])
 
     // 🧾 Campos de factura
     const [fechaFactura, setFechaFactura] = useState("")
@@ -203,7 +223,7 @@ export default function GenerarFacturaModal({
             estado: "Pendiente",
             moneda_id: monedaOrden,
             usuario_creacion: auth.user.id,
-            orden_compra_id: [ordenCompra.id],
+            orden_compra_id: [ordenCompra?.id],
             detalles: productosLocal.map(p => ({
                 descripcion: p.descripcion,
                 modelo: p.modelo_descripcion,
@@ -217,6 +237,7 @@ export default function GenerarFacturaModal({
                 usuario_creacion: auth.user.id,
                 impuestos: p.impuestos_seleccionados,
             })),
+            totalOrden : totalOrden,
             }
 
             const res = await axios.post("/compras/ordenes-compras/comprobantes-proveedores", payload)
@@ -271,7 +292,53 @@ export default function GenerarFacturaModal({
         setProductosLocal(nuevos)
     }
 
+    const agregarLinea = () => {
+        setProductosLocal([
+        ...productosLocal,
+        {
+            id: Date.now(),
+            producto_id: 0,
+            entrega_esperada: new Date(),
+            nombre: '',
+            descripcion: '',
+            modelo_descripcion: '',
+            subcategoria_descripcion: '',
+            co_cuenta_descripcion: '',
+            codigo_barras: '',
+            referencia: '',
+            cantidad: 0,
+            precio_unitario: 0,
+            impuestos_seleccionados: [],
+            porcentaje_descuento: 0,
+            importe: 0,
+            usuario_id: auth.user.id
+        }
+        ])
+    }
 
+    const eliminarLinea = (id: number) => setProductosLocal(productosLocal.filter(p => p.id !== id))
+
+    const handleChangeProducto = (index: number, value: string) => {
+        const nuevos = [...productosLocal]
+        const producto = productosDisponibles.find(p => p.nombre === value)
+        if (producto) {
+        nuevos[index] = {
+            ...nuevos[index],
+            producto_id: producto.id,
+            nombre: producto.nombre,
+            descripcion: producto.descripcion,
+            modelo_descripcion: producto.modelo?.descripcion || '',
+            subcategoria_descripcion: producto.sub_categoria?.descripcion || '',
+            co_cuenta_id: producto.co_cuenta_id || undefined,
+            co_cuenta_descripcion: producto.co_cuenta?.descripcion || '',
+            codigo_barras: producto.codigo_barras || '',
+            referencia: producto.referencia || ''
+        }
+        } else {
+        nuevos[index].nombre = value
+        }
+        setProductosLocal(nuevos)
+    }
 
     const handleEliminarProducto = (index: number) => {
         const nuevos = [...productosLocal]
@@ -285,7 +352,51 @@ export default function GenerarFacturaModal({
     return value.padStart(length, "0");
     };
 
+    ////archivos adjuntos
+    const [archivos, setArchivos] = useState<Archivo[]>([]);
+    const [archivoSeleccionado, setArchivoSeleccionado] = useState<Archivo | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
+
+    // 🚀 Subida de archivos
+    const handleUploadFile = async (ordenId: number, archivo: File) => {
+            const formData = new FormData()
+            formData.append("archivo", archivo)
+
+            router.post(`/compras/ordenes-compras/${ordenId}/archivoFactura`, formData, {
+            forceFormData: true,
+            onSuccess: () => toast.success(`Archivo ${archivo.name} subido con éxito`),
+            onError: () => toast.error(`Error al subir ${archivo.name}`),
+            })
+    }
+
+    ////////////Manejo de archivos adjuntos
+        const handleArchivosChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files?.length || !ordenCompra?.id) return;
+
+        const nuevosArchivos: Archivo[] = Array.from(e.target.files).map(f => ({
+            nombre: f.name,
+            file: f,
+            mime: f.type,
+            size: f.size,
+        }));
+
+        setArchivos(prev => [...prev, ...nuevosArchivos]);
+
+        nuevosArchivos.forEach(a => handleUploadFile(ordenCompra.id!, a.file!));
+        }
+
+        const abrirModal = (archivo: Archivo) => {
+        setArchivoSeleccionado(archivo);
+        setModalVisible(true);
+        };
+
+        const cerrarModal = () => {
+        setArchivoSeleccionado(null);
+        setModalVisible(false);
+        };
+
   return (
+    <>
     <Dialog.Root open={open} onOpenChange={onClose}>
       <Dialog.Overlay className="fixed inset-0 bg-black/50" />
       <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-2xl w-full max-w-7xl shadow-lg max-h-[90vh] overflow-auto">
@@ -377,6 +488,7 @@ export default function GenerarFacturaModal({
 
       <TabsContent value="productos">
         <div className="flex justify-between items-center mb-4">
+          <Button onClick={agregarLinea}>Agregar línea</Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">Mostrar Columnas</Button>
@@ -429,9 +541,9 @@ export default function GenerarFacturaModal({
                     <input
                       list="sugerencias-productos"
                       type="text"
-                      disabled={producto.producto_id > 0}
+                      //disabled={producto.producto_id > 0}
                       value={producto.nombre}
-
+                      onChange={(e) => handleChangeProducto(index, e.target.value)}
                       className="w-full border px-2 py-1 rounded"
                     />
                   </TableCell>
@@ -656,6 +768,62 @@ export default function GenerarFacturaModal({
           </TableBody>
         </Table>
 
+
+        <Label>Adjuntar Factura</Label>
+            <Input
+              type="file"
+              multiple
+              accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+              onChange={handleArchivosChange}
+            />
+            {archivos.map((file, idx) => (
+            <li key={idx} className="flex justify-between items-center py-1 px-2 hover:bg-gray-100">
+                <span
+                className="cursor-pointer hover:underline"
+                onClick={() => abrirModal(file)}
+                >
+                📄 {file.nombre}
+                </span>
+
+                {!file.isCotizacion && estadoOrden == 'Pendiente' && (
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                    <button className="ml-2 text-red-600 hover:text-red-800">
+                        <X size={16} />
+                    </button>
+                    </AlertDialogTrigger>
+
+                    <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Eliminar archivo</AlertDialogTitle>
+                        <AlertDialogDescription>
+                        ¿Estás seguro que quieres eliminar <strong>{file.nombre}</strong>? Esta acción no se puede deshacer.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                        onClick={() => {
+                            setArchivos(prev => prev.filter(f => f !== file));
+                            if (file.id) {
+                            router.post(`/compras/ordenes-compras/archivoFactura/${file.id}/eliminarFactura`, {}, {
+                                onSuccess: () => toast.success('Archivo eliminado correctamente'),
+                                onError: () => toast.error('Error al eliminar el archivo')
+                            });
+                            }
+                        }}
+                        >
+                        Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+                )}
+
+            </li>
+            ))}
+
+
         <div className="flex flex-col items-end mt-2 pr-2 text-sm space-y-1">
         {/* Subtotal */}
         <div className="text-right">
@@ -719,6 +887,7 @@ export default function GenerarFacturaModal({
             Total: {tipoMonedas.find(m => m.id === monedaOrden)?.simbolo || "$"}{" "}
             {totalOrden.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
           </Typography>
+
           <div className="flex gap-3">
             <Button variant="outline" onClick={onClose}>Cancelar</Button>
             <Button
@@ -732,6 +901,61 @@ export default function GenerarFacturaModal({
           </div>
         </div>
       </Dialog.Content>
+
     </Dialog.Root>
+
+    <Dialog.Root open={modalVisible} onOpenChange={setModalVisible}>
+        <Dialog.Overlay className="fixed inset-0 bg-black/50" />
+
+        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-auto">
+            <Dialog.Title className="text-lg font-bold mb-2">{archivoSeleccionado?.nombre}</Dialog.Title>
+            <Dialog.Close asChild>
+            <button className="absolute top-3 right-3 p-1 rounded hover:bg-gray-200">
+                <X size={20} />
+            </button>
+            </Dialog.Close>
+
+            {archivoSeleccionado && (
+            <>
+                {archivoSeleccionado.file ? (
+                // Recién subido
+                archivoSeleccionado.file.type.startsWith('image/') ? (
+                    <img
+                    src={URL.createObjectURL(archivoSeleccionado.file)}
+                    alt={archivoSeleccionado.nombre}
+                    className="max-h-96 w-auto mx-auto"
+                    />
+                ) : archivoSeleccionado.file.type === 'application/pdf' ? (
+                    <iframe
+                    src={URL.createObjectURL(archivoSeleccionado.file)}
+                    className="w-full h-96"
+                    />
+                ) : (
+                    <p className="mt-4 text-gray-500">No se puede previsualizar este tipo de archivo.</p>
+                )
+                ) : (
+                // Existente
+                archivoSeleccionado.mime.startsWith('image/') ? (
+                    <img
+                    src={archivoSeleccionado.url}
+                    alt={archivoSeleccionado.nombre}
+                    className="max-h-96 w-auto mx-auto"
+                    />
+                ) : archivoSeleccionado.mime === 'application/pdf' ? (
+                    <iframe
+                    src={archivoSeleccionado.url}
+                    className="w-full h-96"
+                    />
+                ) : (
+                    <p className="mt-4 text-gray-500">No se puede previsualizar este tipo de archivo.</p>
+                )
+                )}
+            </>
+            )}
+        </Dialog.Content>
+        </Dialog.Root>
+    </>
   )
+
+
 }

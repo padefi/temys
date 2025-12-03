@@ -9,7 +9,7 @@ import { Search, Truck, CheckCircle2, XCircle, Clock10 } from "lucide-react";
 import { useForm } from '@inertiajs/react';
 import { useEffect, useState, Fragment } from 'react';
 import { router } from '@inertiajs/react';
-import { safeDateFormat, safeDateTimeFormat  } from '@/utils/formatterFunctions';
+import { dateFormat, dateTimeFormat } from '@/utils/formatterFunctions';
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from "axios";
@@ -414,7 +414,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                             <TableRow>
                                                 <TableCell>{entrega.origen}</TableCell>
                                                 <TableCell>{entrega.destino}</TableCell>
-                                                <TableCell>{safeDateFormat(entrega.fecha_envio)}</TableCell>
+                                                <TableCell>{dateFormat(entrega.fecha_envio)}</TableCell>
                                                 <TableCell>
                                                     {entrega.estado === "Entregado" && (
                                                         <span className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">
@@ -462,7 +462,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                                         {expandedRows.includes(entrega.id) ? "Ocultar detalle" : "Mostrar detalle"}
                                                     </Button>
                                                 </TableCell>
-                                                <TableCell>{safeDateTimeFormat(entrega.fecha_creacion)}
+                                                <TableCell>{dateTimeFormat(entrega.fecha_creacion)}
                                                 </TableCell>
                                                 <TableCell>{entrega.usuario_creacion || '-'}</TableCell>
                                                 <TableCell>
@@ -563,7 +563,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                                                                     <tr key={i} className="hover:bg-gray-50">
                                                                                         <td className="px-4 py-2 text-sm text-gray-700">{producto.nombre}</td>
                                                                                         <td className="px-4 py-2 text-sm text-gray-700">{producto.cantidad}</td>
-                                                                                        <td className="px-4 py-2 text-sm text-gray-700">{safeDateTimeFormat(producto.fecha_creacion)}</td>
+                                                                                        <td className="px-4 py-2 text-sm text-gray-700">{dateTimeFormat(producto.fecha_creacion)}</td>
                                                                                         <td className="px-4 py-2 text-sm text-gray-700">{producto.usuario_creacion || '-'}</td>
                                                                                     </tr>
                                                                                     ))}
@@ -606,7 +606,7 @@ export default function Index({ entregas, almacenes, filters, errors }: Props) {
                                                                                         <tr className="hover:bg-gray-50">
                                                                                             <td className="px-4 py-2 text-sm text-gray-700">{entrega.cancelacion.motivo}</td>
                                                                                             {entrega.cancelacion.fecha && (
-                                                                                            <td className="px-4 py-2 text-sm text-gray-700">{safeDateTimeFormat(entrega.cancelacion.fecha)}</td>
+                                                                                            <td className="px-4 py-2 text-sm text-gray-700">{dateTimeFormat(entrega.cancelacion.fecha)}</td>
                                                                                             )}
                                                                                             {entrega.cancelacion.usuario && (
                                                                                             <td className="px-4 py-2 text-sm text-gray-700">{entrega.cancelacion.usuario || '-'}</td>

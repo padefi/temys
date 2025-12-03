@@ -26,7 +26,7 @@ type PageProps = {
                 email: string
             }
         }
-    productos: ProductosDisponibles[] ,
+    productos: ProductosDisponibles[],
     impuestos: { id: number; descripcion: string }[]
 }
 
@@ -51,9 +51,12 @@ type ProductoEditable = {
 type Props = {
   setProductosValidos: (valid: boolean) => void
   setProductos: (productos: ProductoEditable[]) => void
+  estadoOrden: string;  // 👈 estado de la orden de compra
   detalles?: any[]  // o tipa mejor si tienes tipo
+  ordenCotizacion?: any
 }
-export default function CargaProductos({ setProductosValidos, setProductos, detalles, }: Props) {
+
+export default function CargaProductos({ setProductosValidos, setProductos, detalles, ordenCotizacion,estadoOrden }: Props) {
 
     const [productos, setLocalProductos] = useState<ProductoEditable[]>([])
     const { impuestos, auth, productos: productosDisponibles = [], } = usePage<PageProps>().props
@@ -101,7 +104,9 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
         const iniciales = detalles.map(det => ({
             id: det.id,
             producto_id: det.producto_id,
-            entrega_esperada: new Date(det.entrega_esperada),
+            entrega_esperada: det.entrega_esperada
+            ? det.entrega_esperada.split('T')[0]
+            : '',
             nombre: det.producto?.nombre || '',
             descripcion: det.descripcion || '',
             modelo_descripcion: det.producto?.modelo?.descripcion || '',
@@ -110,7 +115,9 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
             referencia: det.referencia || '',
             cantidad: det.cantidad || 0,
             precio_unitario: +det.precio_unitario || 0,
-            impuestos_seleccionados: det.impuestos_ids || [],
+            impuestos_seleccionados: det.detalles_impuesto
+            ? det.detalles_impuesto.map(i => i.impuesto_id)
+            : [],
             porcentaje_descuento: +det.porcentaje_descuento || 0,
             importe: +det.importe || 0,
             usuario_id: auth.user.id,
@@ -161,13 +168,26 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
 
   const handleChangeCampo = (index: number, campo: keyof ProductoEditable, valor: string | number) => {
     const nuevos = [...productos]
+      if (campo === 'entrega_esperada') {
+    nuevos[index] = { ...nuevos[index], entrega_esperada: new Date(valor) }
+  } else {
     nuevos[index] = { ...nuevos[index], [campo]: valor }
-    setLocalProductos(nuevos)
   }
+
+  setLocalProductos(nuevos)
+}
 
   const eliminarLinea = (id: number) => {
     setLocalProductos(productos.filter(p => p.id !== id))
   }
+
+
+    const formatFecha = (f: any) => {
+        if (!f) return "";
+        return f instanceof Date
+            ? f.toISOString().split("T")[0]
+            : f.split("T")[0];
+    };
 
   return (
     <Tabs defaultValue="productos" className="w-full">
@@ -178,7 +198,10 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
 
       <TabsContent value="productos">
         <div className="flex justify-between items-center mb-4">
-          <Button onClick={agregarLinea}>Agregar línea</Button>
+          <Button
+            onClick={agregarLinea}
+            disabled={(ordenCotizacion?.estado === 'Confirmada' || ordenCotizacion?.estado === 'Cancelada')}
+          >Agregar línea</Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -223,10 +246,15 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
             </TableRow>
           </TableHeader>
           <TableBody>
-            {productos.map((producto, index) => (
+            {productos.map((producto, index) => {
+
+            const habilitado = estadoOrden !== "Confirmada" && estadoOrden !== "Cancelada";
+
+            return (
               <TableRow key={producto.id}>
                 <TableCell>
                   <input
+                    disabled={!habilitado}
                     list="sugerencias-productos"
                     type="text"
                     value={producto.nombre}
@@ -238,8 +266,9 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                  {columnasVisibles.entrega_esperada && (
                   <TableCell>
                     <input
-                      type="text"
-                      value={producto.entrega_esperada?.toLocaleDateString()}
+                      type="date"
+                      value={formatFecha(producto.entrega_esperada)}
+                      disabled={!habilitado}
                       onChange={(e) => handleChangeCampo(index, 'entrega_esperada', e.target.value)}
                       className="w-full border px-2 py-1 rounded"
                     />
@@ -252,6 +281,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                       value={producto.descripcion}
                       onChange={(e) => handleChangeCampo(index, 'descripcion', e.target.value)}
                       className="w-full border px-2 py-1 rounded"
+                      disabled={!habilitado}
                     />
                   </TableCell>
                 )}
@@ -280,6 +310,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                     <input
                       type="text"
                       value={producto.codigo_barras}
+                      disabled={!habilitado}
                       onChange={(e) => handleChangeCampo(index, 'codigo_barras', e.target.value)}
                       className="w-full border px-2 py-1 rounded"
                     />
@@ -290,6 +321,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                     <input
                       type="text"
                       value={producto.referencia}
+                      disabled={!habilitado}
                       onChange={(e) => handleChangeCampo(index, 'referencia', e.target.value)}
                       className="w-full border px-2 py-1 rounded"
                     />
@@ -300,6 +332,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                     <input
                       type="number"
                       min="1"
+                      disabled={!habilitado}
                       value={producto.cantidad}
                       onChange={(e) => handleChangeCampo(index, 'cantidad', +e.target.value)}
                       className="w-20 border px-2 py-1 rounded"
@@ -310,6 +343,8 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                   <TableCell>
                     <input
                       type="number"
+                      min="0"
+                      disabled={!habilitado}
                       value={producto.precio_unitario}
                       onChange={(e) => handleChangeCampo(index, 'precio_unitario', +e.target.value)}
                       className="w-30 border px-2 py-1 rounded"
@@ -320,7 +355,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                 <TableCell>
                     <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start">
+                        <Button variant="outline" className="w-full justify-start" disabled={!habilitado}>
                         {producto.impuestos_seleccionados.length > 0
                             ? impuestos
                                 .filter(i => producto.impuestos_seleccionados.includes(i.id))
@@ -367,6 +402,8 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                   <TableCell>
                     <input
                       type="number"
+                      min="0"
+                      disabled={!habilitado}
                       value={producto.porcentaje_descuento}
                       onChange={(e) => handleChangeCampo(index, 'porcentaje_descuento', +e.target.value)}
                       className="w-20 border px-2 py-1 rounded"
@@ -391,12 +428,14 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                         onClick={() => eliminarLinea(producto.id)}
                         className="text-red-500 hover:text-red-700"
                         title="Eliminar fila"
+                        disabled={!habilitado}
                     >
                         🗑
                     </Button>
                 </TableCell>
               </TableRow>
-            ))}
+            )
+            })}
           </TableBody>
         </Table>
         <div className="flex justify-end mt-4 pr-4 text-lg font-semibold">

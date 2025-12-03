@@ -18,7 +18,7 @@ return new class extends Migration {
             $table->string('numero_factura', 20);
             $table->foreignId('tipo_comprobante_id')->constrained('tipo_comprobantes'); // ej: Factura A, Recibo, etc.
             $table->unsignedBigInteger('moneda_id');
-            $table->foreign('moneda_id')->references('id')->on('tipo_monedas');
+            $table->foreign('moneda_id')->references('id')->on('tipo_monedas')->nullable();
             $table->string('estado')->default('Pendiente'); // Pendiente, Pagado, Anulado, etc.
             $table->text('descripcion')->nullable();
             $table->foreignId('usuario_creacion')->constrained('users');

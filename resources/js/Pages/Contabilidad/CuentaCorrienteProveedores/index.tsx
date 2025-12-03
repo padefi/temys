@@ -127,7 +127,7 @@ export default function CuentaCorrienteModal({ open, onClose, proveedor }: Props
                         expandedRows.includes(idx) ? <ChevronDown size={16} /> : <ChevronRight size={16} />
                         ) : null}
                     </TableCell>
-                    <TableCell>{m.fecha}</TableCell>
+                    <TableCell>{new Date(m.fecha).toLocaleDateString("es-AR")}</TableCell>
                     <TableCell>{m.tipo}</TableCell>
                     <TableCell>{m.numero}</TableCell>
                     <TableCell>{m.descripcion}</TableCell>
@@ -150,7 +150,7 @@ export default function CuentaCorrienteModal({ open, onClose, proveedor }: Props
                         return (
                         <TableRow key={`op-${idx}-${j}`} className="bg-gray-50">
                             <TableCell></TableCell>
-                            <TableCell>{op.fecha}</TableCell>
+                            <TableCell>{new Date(op.fecha).toLocaleDateString("es-AR")}</TableCell>
                             <TableCell className={estadoClase}>{op.tipo}</TableCell>
                             <TableCell>{op.numero}</TableCell>
                             <TableCell>{op.descripcion}</TableCell>

@@ -7,8 +7,6 @@ import { Label } from "@/Components/ui/label"
 import { TipoMoneda } from '@/types/TipoMoneda'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs"
 import CampoBancoTarjeta from "./CampoBancoTarjeta"
-import { router } from '@inertiajs/react';
-import { Typography } from "@/Components/ui/typography"
 import { ComprobanteProveedor } from "@/types/ComprobanteProveedor"
 import axios from "axios"
 import { toast } from "sonner"
@@ -38,16 +36,17 @@ type MetodoPago = {
   id: number;
   nombre: string;
   descripcion: string;
+  co_cuenta_id: number;
 }
 
 type Props = {
   open: boolean
-  onClose: () => void
+  onClose: (updated?: boolean) => void
   proveedorId: number
   facturasSeleccionadas: { id: number; monedaOrden: number; total: number; montoAPagar: number }[]
   facturasDetalle: ComprobanteProveedor[]
+  onSubmit: (data: any) => void
 }
-
 
 export default function GenerarOrdenPagoModal({
   open,
@@ -72,7 +71,15 @@ export default function GenerarOrdenPagoModal({
     const [tipoMonedas, setTipoMonedas] = useState<TipoMoneda[]>([]);
     const [metodoPagos, setMetodoPagos] = useState<MetodoPago[]>([]);
 
+
+    const toNumber = (value: any): number => {
+        const n = Number(value)
+        return isNaN(n) ? 0 : n
+    }
+
     useEffect(() => {
+
+    //////////TRAE TIPO MONEDAS
     const fetchMonedas = async () => {
         try {
             const res = await axios.get("/tipo-monedas");
@@ -85,6 +92,7 @@ export default function GenerarOrdenPagoModal({
     };
     if (open) fetchMonedas();
 
+    //////////TRAE METODO PAGOS
     const fetchMetodoPagos = async () => {
         try {
             const res = await axios.get("/metodo-pagos");
@@ -122,14 +130,6 @@ export default function GenerarOrdenPagoModal({
         }
     }, [cuotas, plan])
 
-    const isPagoCompleto = (p: Pago) => {
-        const camposBasicos = !!p.metodo_pago_id && !!p.metodo && !!p.moneda && p.importe > 0 && !!p.fecha
-        if (!camposBasicos) return false
-        if (p.metodo === "Cheque") return !!p.bancoId
-        if (p.metodo === "Tarjeta") return !!p.tarjetaId
-        if (p.metodo === "Transferencia") return !!p.bancoId && !!p.cuentaBancaria && !!p.cbuProveedorId
-        return true
-    }
 
   const handleUpdatePagoCuota = useCallback(
     (cuotaIdx: number, updater: Pago[] | ((prev: Pago[]) => Pago[])) => {
@@ -144,8 +144,14 @@ export default function GenerarOrdenPagoModal({
     []
   );
 
-    const calcTotal = (pagos: Pago[]) => pagos.reduce((acc, p) => acc + p.importe, 0)
-    const totalFacturas = facturasSeleccionadas.reduce((acc, f) => acc + f.montoAPagar, 0)
+    const calcTotal = (pagos: Pago[]) =>
+    pagos.reduce((acc, p) => acc + toNumber(p.importe), 0)
+
+    const totalFacturas = facturasSeleccionadas.reduce(
+        (acc, f) => acc + toNumber(f.montoAPagar),
+        0
+    )
+
     const totalPagosUnicos = calcTotal(pagosUnicos)
     const totalPagosCuotas = calcTotal(pagosCuotas.flat())
 
@@ -195,7 +201,18 @@ export default function GenerarOrdenPagoModal({
         setStep(2);
     };
 
+    const formatCurrency = (amount: number, code = "ARS") => {
+    return toNumber(amount).toLocaleString("es-AR", {
+        style: "currency",
+        currency: code,
+        minimumFractionDigits: 2
+    })
+    }
+
   const handleFinalSubmit = async () => {
+
+
+
     setIntentoSubmit(true)
     const totalPagos = plan === "unico" ? totalPagosUnicos : totalPagosCuotas
     const faltante = getImporteFaltante(totalPagos)
@@ -248,7 +265,8 @@ try{
     const res = await axios.post("/contabilidad/ordenesPagos", dataToSend)
     if (res.status === 201) {
         toast.success("Orden de pago generada exitosamente")
-        onClose();
+
+        onClose(true);
     }
     }catch (error: any) {
             // 🧩 Si el backend envía un mensaje claro (como en tu caso)
@@ -260,6 +278,7 @@ try{
             toast.error(backendMessage);
         }
     };
+
 
 
   const scrollTabs = (offset: number) => {
@@ -282,6 +301,8 @@ try{
         return newList;
       });
     };
+
+
 
     return (
       <>
@@ -332,6 +353,23 @@ try{
     );
   };
 
+const isPagoCompleto = (p: Pago) => {
+    const camposBasicos = p.metodo_pago_id > 0 && p.moneda > 0 && p.importe > 0 && !!p.fecha
+    if (!camposBasicos) return false
+
+    if (p.metodo === "Cheque") return !!p.bancoId
+    if (p.metodo === "Tarjeta") return !!p.tarjetaId
+    if (p.metodo === "Transferencia") return !!p.bancoId && !!p.cuentaBancaria && !!p.cbuProveedorId
+
+    return true
+}
+
+const isFormValid = plan === "unico"
+  ? pagosUnicos.length > 0 && pagosUnicos.every(isPagoCompleto)
+  : // plan === "pagos"
+    pagosCuotas.length > 0 &&
+    pagosCuotas.every((cuota) => cuota.length > 0 && cuota.every(isPagoCompleto));
+
   return (
     <Dialog.Root open={open} onOpenChange={onClose}>
       <Dialog.Overlay className="fixed inset-0 bg-black/50" />
@@ -363,22 +401,14 @@ try{
                         </span>
                         <span className="text-sm text-gray-500 italic">
                             Total factura:{" "}
-                            {totalFactura.toLocaleString("es-AR", {
-                            style: "currency",
-                            currency: f.tipo_moneda?.codigo || "ARS",
-                            minimumFractionDigits: 2,
-                            })}
+                            {formatCurrency(Number(totalFactura), f.tipo_moneda?.codigo)}
                         </span>
                         </div>
 
                         <div className="text-right">
                         <div>
                             <span className="text-gray-700 font-semibold">
-                            {Number(seleccion?.montoAPagar || 0).toLocaleString("es-AR", {
-                                style: "currency",
-                                currency: f.tipo_moneda?.codigo || "ARS",
-                                minimumFractionDigits: 2,
-                            })}
+                                {formatCurrency(Number(seleccion?.montoAPagar || 0), f.tipo_moneda?.codigo)}
                             </span>
                         </div>
                         </div>
@@ -391,13 +421,8 @@ try{
             <li className="flex justify-between font-semibold pt-2 border-t">
                 <span>Total a pagar</span>
                 <span>
-                    {facturasSeleccionadas
-                    .reduce((acc, f) => acc + Number(f.montoAPagar || 0), 0)
-                    .toLocaleString("es-AR", {
-                        style: "currency",
-                        currency: facturasDetalle[0]?.tipo_moneda?.codigo || "ARS",
-                        minimumFractionDigits: 2,
-                    })}
+                    {formatCurrency(facturasSeleccionadas
+                    .reduce((acc, f) => acc + Number(f.montoAPagar || 0), 0), facturasDetalle[0]?.tipo_moneda?.codigo)}
                 </span>
             </li>
             </ul>
@@ -444,7 +469,7 @@ try{
                 {pagosUnicos.map((p, idx) => (
                   <div key={idx} className="grid grid-cols-6 gap-2 mb-2 items-center">
                     <select
-                    value={p.metodo_pago_id || ""}
+                    value={p.metodo_pago_id}
                     onChange={(e) => {
                         const selectedId = Number(e.target.value);
                         const selectedMetodo = metodoPagos.find((m) => m.id === selectedId);
@@ -510,7 +535,7 @@ try{
                     {Array.isArray(pagoList) ? pagoList.map((p, idx) => (
                       <div key={idx} className="grid grid-cols-6 gap-2 mb-2 items-center">
                         <select
-                        value={p.metodo_pago_id || ""}
+                        value={p.metodo_pago_id}
                         onChange={(e) => {
                             const selectedId = Number(e.target.value);
                             const selectedMetodo = metodoPagos.find((m) => m.id === selectedId);
@@ -555,7 +580,8 @@ try{
                     )) : null}
 
                     <Button variant="outline" onClick={() => handleAddPagoCuota(cuotaIdx)}>+ Agregar fila</Button>
-                    <div className="text-sm text-gray-600 mt-2">Total de esta cuota: {}</div>
+                    <div className="text-sm text-gray-600 mt-2">Total de esta cuota: {formatCurrency(calcTotal(pagoList), tipoMonedas[0]?.codigo)}</div>
+
                   </TabsContent>
                 ))}
 
@@ -565,7 +591,7 @@ try{
 
             <div className="flex justify-end gap-2 mt-6">
               <Button variant="outline" onClick={() => setStep(1)}>Atrás</Button>
-              <Button onClick={handleFinalSubmit} >Confirmar</Button>
+              <Button disabled={!isFormValid} onClick={handleFinalSubmit} >Confirmar</Button>
             </div>
           </div>
         )}

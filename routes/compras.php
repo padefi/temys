@@ -125,6 +125,16 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
         ->middleware('auth'); // protege el archivo
 
 
+        //SUBE ARCHIVO FACTURA
+        Route::post('{orden}/archivoFactura', [OrdenComprasController::class, 'subirArchivoFactura'])
+        ->name('ordenesCompras.subirArchivoFactura');
+
+        Route::post('/archivoFactura/{archivo}/eliminarFactura', [OrdenComprasController::class, 'eliminarArchivoFactura'])
+        ->name('ordenesCompras.eliminarFactura');
+
+        Route::get('/archivoFactura/{archivo}', [OrdenComprasController::class, 'visualizarArchivoFactura'])
+        ->name('ordenesCompras.visualizarArchivoFactura')
+        ->middleware('auth'); // protege el archivo
 
     //Rutas para ordenes de pago
         // Listado
@@ -150,12 +160,12 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
     });
 
 
-
-        Route::middleware(['submenu:facturasProveedores'])
+/////////////////////verrrrrrrrrrrrrr
+        Route::middleware(['submenu:facturasProveedoresCompras'])
         ->group(function () {
             // Vista principal
             Route::get('compras/comprobantes-proveedores', [ComprobantesProveedoresController::class, 'index'])
-                ->name('facturasProveedores');
+                ->name('facturasProveedoresCompras');
 
 
 

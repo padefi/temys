@@ -2,6 +2,7 @@
 
 namespace App\Models\Compras;
 
+use App\Models\Contabilidad\Asientos\Partida;
 use App\Models\ControlAcceso\User;
 use App\Models\General\CondicionVenta;
 use App\Models\General\TipoComprobante;
@@ -107,5 +108,26 @@ class ComprobanteProveedor extends Model
     {
         return $this->belongsTo(TipoMoneda::class, 'moneda_id');
     }
+
+    //RELACION CON LA PARTIDA DEL ASIENTO Y EL COMPROBANTE
+    public function partidas()
+    {
+        return $this->belongsToMany(
+            Partida::class,
+            'relacion_comprobante_partida',
+            'comprobante_id',
+            'partida_id'
+        )
+        ->withPivot(['importe_aplicado', 'fecha_aplicacion'])
+        ->withTimestamps();
+    }
+
+    ////IMPUESTOS ASOCIADOS A LA FACTURA ORIGEN
+    public function impuestos()
+    {
+        return $this->hasMany(ComprobanteProveedorDetalleImpuesto::class, 'comprobante_proveedor_id');
+    }
+
+
 
 }

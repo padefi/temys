@@ -5,6 +5,7 @@ import { OrdenesCompra } from "./OrdenCompra";
 import { Almacen } from "./Almacen";
 
 import { Archivo } from "./Archivos";
+import { Impuesto } from "./Impuesto";
 // types/CotizacionOrdenes.ts
 export interface CotizacionOrden {
     id: number;
@@ -40,6 +41,7 @@ export interface DetalleCotizacion {
     codigo_barras: string
     referencia?: string
     cantidad: number
+    detalles_impuesto: Impuesto[]
     precio_unitario: number
     porcentaje_descuento: number
     importe: number

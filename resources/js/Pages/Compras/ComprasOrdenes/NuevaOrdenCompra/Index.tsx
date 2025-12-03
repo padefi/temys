@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { Terminal } from 'lucide-react'
+import { Subtitles, Terminal } from 'lucide-react'
 import { Head, usePage, router } from '@inertiajs/react'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
 import { PageProps as InertiaPageProps } from '@inertiajs/core'
@@ -71,7 +71,6 @@ export default function Index() {
     }, [flash]);
 
     const ordenCompra = ordenCompraElegida;
-console.log(ordenCompra)
     const [busqueda, setBusqueda] = useState( ordenCompra?.proveedor?.nombre_fantasia || '')
     const [mostrarLista, setMostrarLista] = useState(false)
 
@@ -98,6 +97,7 @@ console.log(ordenCompra)
     const [observaciones, setObservaciones] = useState(ordenCompra?.observaciones || '')
     const [productos, setProductos] = useState<any[]>([])
     const [productosValidos, setProductosValidos] = useState(false)
+    const [productosValidosFactura, setProductosValidosFactura] = useState(false)
 
     const [estadoOrden, setEstadoOrden] = useState(ordenCompra?.estado || '');
 
@@ -215,6 +215,7 @@ console.log(ordenCompra)
         //observaciones.trim()
     ].filter(Boolean).length
 
+
     const porcentaje = (completados / totalCampos) * 100
 
   ///////////Handle de Envio de Cotizacion
@@ -250,7 +251,7 @@ console.log(ordenCompra)
     }
 
 
-    /////////////Confirmar Orden Cotizacion
+    /////////////Confirmar Orden Compra
     const confirmarOrdenCompra= () => {
 
     router.post('/compras/ordenes-compras/confirmar', {
@@ -354,7 +355,12 @@ console.log(ordenCompra)
 return (
     <AuthenticatedLayout header={<h2 className="text-xl font-semibold">Nueva Orden de Compra</h2>}>
       <Head title="Nueva Orden de Compra"></Head>
-      <div className="py-12">
+
+
+    <div className="py-12">
+        <Typography  className="text-2xl font-bold mb-4 text-center">
+            Orden de Compra
+        </Typography>
         <div className="mx-auto px-10">
         <Button
             variant="outline"
@@ -395,6 +401,8 @@ return (
                 )}
                {estadoOrden && (
                 <div>
+                    Orden de Compra N° {ordenCompra?.id}
+                    <br></br>
                     Estado : {estadoOrden}
                 </div>
                 )}
@@ -518,7 +526,7 @@ return (
             />
             <div className="flex justify-end mt-2">
             {/* 🔹 Mostrar el total */}
-            <Typography variant="h2" sx={{ mt: 2}}>
+            <Typography variant="h2" className="mt-2">
             Total: {monedaSeleccionada?.simbolo || "$"}{" "}
             {totalOrden.toLocaleString("es-AR", {
                 minimumFractionDigits: 2,
@@ -616,7 +624,7 @@ return (
                     Cargar Factura
                 </Button>
 
-                <Button
+                {/*<Button
                 className="bg-green-800 hover:bg-green-900 text-white"
                 variant="secondary"
                 onClick={() => setModalPagoVisible(true)}
@@ -628,7 +636,7 @@ return (
                 }
                 >
                 Generar Orden de Pago
-                </Button>
+                </Button>*/}
 
           </div>
             {/* 📄 Facturas asociadas con selección */}
@@ -652,16 +660,16 @@ return (
                             setFacturasSeleccionadas((prev) => prev.filter((id) => id !== f.id));
                             }
                         }}
-                        disabled={ordenCompra?.estado !== 'Confirmada'}
+                        //disabled={ordenCompra?.estado !== 'Confirmada'}
                         />
                         <div>
                         <strong>{f.tipo_comprobante?.nombre || '-'}</strong> Nº {f.id || '-'}
                         <div className="text-sm text-gray-600">
                             Fecha: {new Date(f.fecha_factura).toLocaleDateString('es-AR')}
                         </div>
-                        <div className="text-sm text-gray-600">
-                            Total: {f.importe?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                        </div>
+                        {/*<div className="text-sm text-gray-600">
+                            Total: {f.detalles?.reduce((acc, det) => acc + (det.importe || 0), 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                        </div>*/}
                         </div>
                     </div>
 
@@ -738,7 +746,7 @@ return (
     </Dialog.Content>
     </Dialog.Root>
 
-    <GenerarOrdenPagoModal
+    {/*<GenerarOrdenPagoModal
         open={modalPagoVisible}
         onClose={() => setModalPagoVisible(false)}
         onSubmit={handleGenerarOrdenPago}
@@ -749,20 +757,26 @@ return (
         facturasSeleccionadas={facturasSeleccionadas}
         comprobantes={ordenCompra?.comprobantes_proveedores || []}
 
-    />
+    />*/}
 
     <GenerarFacturaModal
-        open={modalFacturaVisible}
-        onClose={() => setModalFacturaVisible(false)}
-        onSubmit={handleGenerarFactura}
-        totalOrden={totalOrden}
-        monedaOrden={monedaSeleccionada?.id}
-        setProductosValidos={setProductosValidos}
-        setProductos={setProductos}
-        tipoMonedas={tipoMonedas}
-        proveedorId={ordenCompra?.proveedor?.id || 0}
-        ordenCompra={ordenCompra}
-        productos={productos}
+            open={modalFacturaVisible}
+            onClose={() => setModalFacturaVisible(false)}
+            onSubmit={handleGenerarFactura}
+            totalOrden={totalOrden}
+            monedaOrden={monedaSeleccionada?.id || null}
+            setProductosValidosFactura={setProductosValidosFactura}
+            setProductos={setProductos}
+            tipoMonedas={tipoMonedas}
+            proveedorId={ordenCompra?.proveedor?.id || 0}
+            ordenCompra={ordenCompra}
+            productos={productos}
+            co_cuentas={[]}
+            impuestos={[]}
+            estadoOrden={''}
+            detalles={[]}
+            auth={auth}
+
     />
 
     </AuthenticatedLayout>

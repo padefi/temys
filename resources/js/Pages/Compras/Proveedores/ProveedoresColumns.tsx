@@ -3,12 +3,13 @@ import { Input } from "@/Components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { usePermissions } from "@/composables/permissions";
 import { ColumnDef } from "@tanstack/react-table"
-import { Funnel, FunnelX, Waypoints } from "lucide-react";
+import { Funnel, FunnelX, Waypoints, CreditCard  } from "lucide-react";
 import { ArrowUpDown } from "lucide-react"
 import { useEffect, useState } from "react";
 
 import { ProveedoresEditar } from "./ProveedoresEditar";
 import { Proveedor } from '@/types/Proveedor'; // Cambia la ruta según tu estructura
+import CuentaCorrienteModal from "@/Pages/Contabilidad/CuentaCorrienteProveedores"
 
 
 
@@ -198,9 +199,11 @@ export const columns: ColumnDef<Proveedor>[] = [
             const { module } = table.options.meta as { module: number };
             const { userAuth } = usePermissions();
             const [isDialogOpen, setIsDialogOpen] = useState(false);
+            const [isModalCCOpen, setIsModalCCOpen] = useState(false);
 
             return (
                 userAuth.id ? (
+                    <>
                     <div className="text-right flex gap-3">
                         <TooltipProvider>
                             <Tooltip>
@@ -220,7 +223,28 @@ export const columns: ColumnDef<Proveedor>[] = [
                         </TooltipProvider>
 
                         <ProveedoresEditar open={isDialogOpen} setOpen={setIsDialogOpen} proveedor={row.original} module={module} />
+
+
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
+                                        onClick={() => setIsModalCCOpen(true)}
+                                    >
+                                        <CreditCard className='w-6! h-6! text-emerald-500' />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Cuenta Corriente</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+
+                        <CuentaCorrienteModal open={isModalCCOpen} onClose={() => setIsModalCCOpen(false)} proveedor={row.original} />
                     </div>
+                    </>
                 ) : (
                     <span className="text-sm text-gray-500">Sin acciones</span>
                 )

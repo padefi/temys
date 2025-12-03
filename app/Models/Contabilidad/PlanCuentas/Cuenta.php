@@ -4,6 +4,7 @@ namespace App\Models\Contabilidad\PlanCuentas;
 
 use App\Models\Compras\ComprobanteProveedorDetalle;
 use App\Models\ControlAcceso\User;
+use App\Models\General\Impuesto;
 use Illuminate\Database\Eloquent\Model;
 
 class Cuenta extends Model
@@ -49,5 +50,10 @@ class Cuenta extends Model
 
     public function comprobantesProveedorDetalle() {
         return $this->belongsTo(ComprobanteProveedorDetalle::class, 'id');
+    }
+
+    public function impuestos()
+    {
+        return $this->hasMany(Impuesto::class, 'co_cuenta_id');
     }
 }

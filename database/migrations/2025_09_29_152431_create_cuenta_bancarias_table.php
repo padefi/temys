@@ -17,6 +17,10 @@ return new class extends Migration
                   ->constrained('bancos')        // Hace la FK a la tabla bancos
                   ->cascadeOnUpdate()
                   ->cascadeOnDelete();
+            $table->foreignId('co_cuenta_id')         // Relación con bancos
+                  ->constrained('co_cuentas')        // Hace la FK a la tabla bancos
+                  ->cascadeOnUpdate()
+                  ->cascadeOnDelete();
             $table->string('numero_cuenta');      // Número de cuenta
             $table->boolean('activo')->default(true);  // Activo o inactivo
             $table->string('tipo_cuenta');        // Tipo de cuenta (caja de ahorro pesos, dólares, etc)
