@@ -4,7 +4,7 @@ import { Column } from "@tanstack/react-table";
 import { InputFilter } from "@/Components/ui/input-filter";
 import { ArrowDownNarrowWide, ArrowUpDown, ArrowUpNarrowWide, Funnel, FunnelX } from "lucide-react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 
 interface DataTableColumnHeaderProps<TData, TValue> extends React.HTMLAttributes<HTMLDivElement> {
     column: Column<TData, TValue>;

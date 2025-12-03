@@ -1,6 +1,5 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
-import { DetalleProducto } from "./EntregasManagement";
-import { Separator } from "@radix-ui/react-select";
+import { DetalleProducto } from "@/types/Inventario/Operaciones/Entregas/Entregas"; 
 
 interface DetallesProductosTablaProps{
     productos?:DetalleProducto[]

@@ -13,7 +13,8 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Textarea } from "@/Components/ui/textarea";
 import axios from "axios";
-import { StockItem, StockRequest } from "../../../../types/Inventario";
+import { StockItem } from "@/types/Inventario/Operaciones/InventarioFisico/Stock"; 
+import { StockRequest } from "@/types/Inventario/Operaciones/InventarioFisico/SolicitudesStock";
 import { Button } from "@/Components/ui/button";
 
 interface StockApprovalModalProps {

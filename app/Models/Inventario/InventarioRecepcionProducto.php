@@ -73,4 +73,7 @@ public function ordenEntrega()
     {
         return $this->hasOne(InventarioRecepcionCancelada::class, 'recepcion_id');
     }
+
+
+
 }

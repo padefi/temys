@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card"
-import { ExistenciasItem} from "@/types/Inventario"
+import { ExistenciasItem } from "@/types/Inventario/Reportes/Existencias"; 
 import { Package, TrendingUp, TrendingDown, ChartArea } from "lucide-react"
 
 

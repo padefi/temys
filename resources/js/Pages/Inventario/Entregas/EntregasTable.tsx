@@ -1,5 +1,5 @@
 import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
-import { EntregaItem } from "./EntregasManagement";
+import { EntregaItem } from "@/types/Inventario/Operaciones/Entregas/Entregas";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
 import { useDataTableParams } from "@/hooks/useDataTableParams";
 import { DataTableSkeleton } from "@/Components/DataTableSkeleton";

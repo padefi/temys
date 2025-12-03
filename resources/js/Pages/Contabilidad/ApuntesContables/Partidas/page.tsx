@@ -5,18 +5,20 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 import { DataTable } from './data-table';
 import { columns } from './columns';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/Components/ui/button';
 import { ArrowLeftIcon } from 'lucide-react';
+import { dateFormat } from '@/utils/formatterFunctions';
 
 type PageProps = InertiaPageProps & {
   partidas: {
     data: Partida[];
   },
   numero: number;
+  fecha: string;
 };
 
 export default function PartidasPage() {
-  const { partidas: { data: initialPartidas }, numero } = usePage<PageProps>().props;
+  const { partidas: { data: initialPartidas }, numero, fecha  } = usePage<PageProps>().props;
   const [partidas, setPartidas] = useState<Partida[]>(initialPartidas);
 
   const memoizedColumns = useMemo(() => columns, []);
@@ -39,7 +41,7 @@ export default function PartidasPage() {
               <Button size="icon" variant="outline" onClick={handleBack}>
                 <ArrowLeftIcon />
               </Button>
-              <h1 className="text-2xl my-3 font-bold">Asiento {numero}</h1>
+              <h1 className="text-2xl my-3 font-bold">Asiento {numero} - {dateFormat(fecha)}</h1>
             </div>
 
             <DataTable

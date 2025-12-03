@@ -5,7 +5,8 @@ import {
 } from '@tanstack/react-table';
 import { getStockColumns } from './Columns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import { AjusteSeleccionado, StockInventarioItem } from '@/types/Inventario';
+import { AjusteSeleccionado } from '@/types/Inventario/Operaciones/InventarioFisico/Ajustes';
+import { StockInventarioItem } from "@/types/Inventario/Operaciones/InventarioFisico/Stock"; 
 import { usePermissions } from '@/composables/permissions';
 import { useState } from 'react';
 import { toast } from 'sonner';

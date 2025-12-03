@@ -21,6 +21,7 @@ class PartidaController extends Controller
 
         return Inertia::render('Contabilidad/ApuntesContables/Partidas/page', [
             'partidas' => PartidaResource::collection($partidas),
+            'fecha' => $asiento->fecha,
             'numero' => $asiento->numero,
         ]);
     }

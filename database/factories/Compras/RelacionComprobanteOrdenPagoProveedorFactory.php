@@ -1,6 +1,6 @@
 <?php
 // database/factories/ComprobantePagoFactory.php
-namespace Database\Factories;
+namespace Database\Factories\Compras;
 
 use App\Models\Compras\RelacionComprobanteOrdenPagoProveedor;
 use App\Models\Compras\ComprobanteProveedor;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\Contabilidad;
+namespace App\Http\Resources\Contabilidad\PlanCuentas;
 
 use App\Http\Resources\Contabilidad\PlanCuentas\SubcapituloResource;
 use Illuminate\Http\Request;

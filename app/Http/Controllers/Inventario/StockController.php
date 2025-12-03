@@ -4,11 +4,8 @@ namespace App\Http\Controllers\Inventario;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\inventario\StockResource;
-use App\Models\Inventario\InventarioAjuste;
-use App\Models\Inventario\InventarioAjusteDetalle;
 use App\Models\Inventario\InventarioStock;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
@@ -41,9 +38,9 @@ class StockController extends Controller
         $productoSub = DB::table('productos as p')
             ->join('producto_subcategorias as psc', 'psc.id', '=', 'p.subcategoria_id')
             ->join('producto_categorias as pc', 'pc.id', '=', 'psc.categoria_id')
-            ->select('p.id', 'p.nombre', 'psc.descripcion AS subCategoria', 'pc.descripcion AS categoria')
-            ->where('p.es_inventario', 1);
-            
+            ->select('p.id', 'p.nombre', 'psc.descripcion AS subCategoria', 'pc.descripcion AS categoria');
+           /*  ->where('p.es_inventario', 1); */
+        
         $inventarioStock = QueryBuilder::for(
 
             InventarioStock::query()

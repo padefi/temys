@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Session;
 
 class AjustesController extends Controller
 {
-
     public function updateStock(Request $request, $id)
     {
         $request->validate([
@@ -147,7 +146,7 @@ class AjustesController extends Controller
         return response()->json(['data' => $ajusteData, 'success' => true]);
     }
 
-    public function aprobarAjuste(Request $request)
+    /*  public function aprobarAjuste(Request $request)
     {
         try {
             $ajuste = InventarioMovimientoStock::create([
@@ -183,19 +182,67 @@ class AjustesController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al aprobar ajuste: ' . $e->getMessage(), 'success' => false], 500);
         }
+    } */
+
+    public function aprobarAjuste(Request $request)
+    {
+        try {
+            DB::transaction(function () use ($request) {
+                // Buscar el ajuste
+                $ajuste = InventarioAjuste::findOrFail($request->input('ajuste_id'));
+
+                // Crear movimiento polimórfico asociado al ajuste
+                $ajuste->movimientos()->create([
+                    'producto_id' => $request->input('producto_id'),
+                    'origen_id' => $request->input('almacen_id'),
+                    'destino_id' => $request->input('almacen_id'),
+                    'cantidad' => $request->input('cantidad_contada'),
+                    'tipo_movimiento' => 'ajuste',
+                    'fecha_creacion' => now(),
+                    'usuario_creacion' => Auth::id(),
+                ]);
+
+                // Actualizar stock con la cantidad contada
+                InventarioStock::where('producto_id', $request->input('producto_id'))
+                    ->where('almacen_id', $request->input('almacen_id'))
+                    ->update([
+                        'cantidad_actual' => $request->input('cantidad_contada'),
+                        'usuario_actualizacion' => Auth::id(),
+                        'fecha_actualizacion' => now(),
+                    ]);
+
+                // Actualizar estado del ajuste
+                $ajuste->update([
+                    'estado_ajuste' => 'hecho',
+                    'usuario_actualizacion' => Auth::id(),
+                    'fecha_actualizacion' => now(),
+                ]);
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Ajuste aprobado correctamente',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al aprobar ajuste: ' . $e->getMessage(),
+                'success' => false,
+            ], 500);
+        }
     }
 
 
-public function cancelarAjuste(Request $request)
-{ 
-    $id = $request->ajuste_id;
-    $ajuste = InventarioAjuste::findOrFail($id);
-    $ajuste->estado_ajuste = 'cancelado';
-    $ajuste->save();
 
-    return response()->json([
-        'message' => 'Ajuste cancelado correctamente',
-        'ajuste' => $ajuste
-    ], 200);
-}
+    public function cancelarAjuste(Request $request)
+    {
+        $id = $request->ajuste_id;
+        $ajuste = InventarioAjuste::findOrFail($id);
+        $ajuste->estado_ajuste = 'cancelado';
+        $ajuste->save();
+
+        return response()->json([
+            'message' => 'Ajuste cancelado correctamente',
+            'ajuste' => $ajuste
+        ], 200);
+    }
 }

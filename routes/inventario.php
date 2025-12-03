@@ -9,6 +9,7 @@ use App\Http\Controllers\Inventario\EntregaController;
 use App\Http\Controllers\Inventario\Operaciones\RecepcionesController;
 use App\Http\Controllers\Inventario\Reportes\ExistenciasController;
 use App\Http\Controllers\Inventario\Reportes\MovimientoHistorialController;
+use App\Http\Controllers\Inventario\SeguimientoController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -22,7 +23,8 @@ Route::middleware('module:inventario')->group(function () {
             'modulo' => 'inventario',
         ]);
     })->name('inventario');
-
+ Route::post('/inventario/seguimiento', [SeguimientoController::class, 'index'])->name('inventario.seguimiento');
+               
     Route::middleware(['menu:operaciones'])->group(callback: function () {
         Route::middleware('submenu_permission:read entregas')->group(function () {
             Route::get('/inventario/entregas', [EntregaController::class, 'index'])->name('entregas');
