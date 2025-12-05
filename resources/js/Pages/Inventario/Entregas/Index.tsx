@@ -9,7 +9,7 @@ import { Search, Truck, CheckCircle2, XCircle, Clock10 } from "lucide-react";
 import { useForm } from '@inertiajs/react';
 import { useEffect, useState, Fragment } from 'react';
 import { router } from '@inertiajs/react';
-import { safeDateFormat, safeDateTimeFormat  } from '@/utils/formatterFunctions';
+import { dateFormat, dateTimeFormat  } from '@/utils/formatterFunctions';
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from "axios";

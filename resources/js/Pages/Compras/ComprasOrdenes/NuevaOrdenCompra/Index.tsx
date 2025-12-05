@@ -771,11 +771,12 @@ return (
             proveedorId={ordenCompra?.proveedor?.id || 0}
             ordenCompra={ordenCompra}
             productos={productos}
-            co_cuentas={[]}
-            impuestos={[]}
             estadoOrden={''}
             detalles={[]}
             auth={auth}
+            co_cuentas={[]}
+
+
 
     />
 

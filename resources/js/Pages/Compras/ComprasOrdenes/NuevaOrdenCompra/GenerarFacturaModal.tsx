@@ -29,6 +29,8 @@ import { toast } from "sonner"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle, AlertDialogTrigger } from "@radix-ui/react-alert-dialog"
 import { AlertDialogFooter, AlertDialogHeader } from "@/Components/ui/alert-dialog"
 import { Archivo } from "@/types/Archivos"
+import { Cuenta } from "@/types/Contabilidad/PlanCuentas/Cuenta"
+import { Impuesto } from "@/types/Impuesto"
 
 
 
@@ -65,8 +67,8 @@ type Props = {
   tipoMonedas: TipoMoneda[]
   proveedorId: number
   onSubmit: (data: any) => void
-  co_cuentas: { id: number; codigo: string; descripcion: string }[]
-  impuestos: { id: number; descripcion: string; porcentaje: number }[]
+  co_cuentas: Cuenta[]
+
   productos: ProductoEditable[]
   ordenCompra?: OrdenesCompra
   estadoOrden: number | string
@@ -86,14 +88,18 @@ export default function GenerarFacturaModal({
   estadoOrden,
   detalles,
   productos,
-  impuestos,
   ordenCompra,
-  co_cuentas,
   setProductos,
   setProductosValidosFactura,
 
 }: Props) {
-    const { auth, productos: productosDisponibles = [], } = usePage().props
+    const {
+        auth,
+        impuestos,
+        co_cuentas,
+        productos: productosDisponibles = [],
+    } = usePage().props
+
     const [productosLocal, setProductosLocal] = useState<ProductoEditable[]>([])
 
     const [tiposComprobante, setTiposComprobante] = useState<{id:number, nombre:string}[]>([])
@@ -134,8 +140,8 @@ export default function GenerarFacturaModal({
             usuario_id: auth.user.id,
         }))
         setProductosLocal(iniciales)
-        } else {
-        setProductosLocal(productos)
+        }  else if (open && productosLocal.length === 0) {
+            setProductosLocal(productos)
         }
     }, [detalles, open])
 
