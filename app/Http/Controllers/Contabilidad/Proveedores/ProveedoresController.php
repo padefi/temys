@@ -79,8 +79,10 @@ class ProveedoresController extends Controller
             'detalles',
             'tipoMoneda',
             'ordenesPago' => function ($q) {
-                $q->withPivot(['importe_aplicado'])
-                ->where('estado', 'pendiente');
+                $q->withPivot(['importe_aplicado']);
+                //->where('estado',  ['Pendiente', 'Confirmado']);
+                //si quiero solo las pendientes
+                //->where('estado', 'pendiente');
                 }
             ])
             ->where('proveedor_id', $proveedorId)
@@ -227,59 +229,7 @@ class ProveedoresController extends Controller
         ]);
     }
 
-    /*public function index(Request $request)
-    {
-        $query = OrdenPago::with([
-            'comprobantesProveedores.proveedor',
-            'metodoPago',
-            'moneda',
-            'planPago',
-            'comprobantesProveedores.tipoComprobante',
-        ]);
 
-        // 🔹 Filtros
-        if ($request->filled('proveedor_id')) {
-            $query->where('proveedor_id', $request->proveedor_id);
-        }
-
-        if ($request->filled('metodo_pago_id')) {
-            $query->where('metodo_pago_id', $request->metodo_pago_id);
-        }
-
-        if ($request->filled('moneda_id')) {
-            $query->where('moneda_id', $request->moneda_id);
-        }
-
-        if ($request->filled('numero_factura')) {
-            $query->whereHas('comprobantesProveedores', function ($q) use ($request) {
-                $q->where('numero_factura', 'like', "%{$request->numero_factura}%")
-                ->orWhere('punto_venta', 'like', "%{$request->numero_factura}%");
-            });
-        }
-
-        if ($request->filled('tipo_comprobante_id')) {
-            $query->whereHas('comprobantesProveedores', function ($q) use ($request) {
-                $q->where('tipo_comprobante_id', $request->tipo_comprobante_id);
-            });
-        }
-
-        if ($request->filled('fecha_desde') && $request->filled('fecha_hasta')) {
-            $query->whereBetween('fecha_pago', [$request->fecha_desde, $request->fecha_hasta]);
-        }
-
-        $ordenesPago = $query->latest()->get();
-
-        return Inertia::render('Contabilidad/OrdenesPago/Index', [
-            'ordenesPago' => $ordenesPago,
-            'filtros' => $request->only([
-                'proveedor_id', 'metodo_pago_id', 'moneda_id', 'numero_factura', 'tipo_comprobante_id', 'fecha_desde', 'fecha_hasta'
-            ]),
-            'proveedores' => Proveedor::select('id', 'nombre_fantasia')->orderBy('nombre_fantasia')->get(),
-            'metodosPago' => MetodoPago::select('id', 'nombre')->get(),
-            'monedas' => TipoMoneda::select('id', 'descripcion')->get(),
-            'tiposComprobante' => TipoComprobante::select('id', 'nombre')->get(),
-        ]);
-    }*/
 
 
 }

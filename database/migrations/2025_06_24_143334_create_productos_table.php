@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('productos', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
-            $table->string('descripcion');
+            $table->string('descripcion')->nullable();
             $table->unsignedBigInteger('modelo_id');
             $table->unsignedBigInteger('subcategoria_id');
             $table->decimal('peso');
@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('referencia');
             $table->timestamp('fecha_creacion');
             $table->unsignedBigInteger('usuario_creacion');
-            $table->dateTime('fecha_actualizacion');
+            $table->dateTime('fecha_actualizacion')->nullable();
             $table->unsignedBigInteger('usuario_actualizacion')->nullable();
 
 

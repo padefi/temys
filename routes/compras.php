@@ -6,6 +6,7 @@ use App\Http\Controllers\Compras\OrdenCotizaciones\OrdenCotizacionesController;
 use App\Http\Controllers\Compras\OrdenCompras\OrdenComprasController;
 use App\Http\Controllers\Compras\OrdenPagoController;
 use App\Http\Controllers\Compras\ComprobantesProveedores\ComprobantesProveedoresController;
+use App\Http\Controllers\Inventario\Productos\ProductoController;
 use App\Http\Controllers\UserModulePanel\UserModuleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -124,6 +125,16 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
         ->middleware('auth'); // protege el archivo
 
 
+        //SUBE ARCHIVO FACTURA
+        Route::post('{orden}/archivoFactura', [OrdenComprasController::class, 'subirArchivoFactura'])
+        ->name('ordenesCompras.subirArchivoFactura');
+
+        Route::post('/archivoFactura/{archivo}/eliminarFactura', [OrdenComprasController::class, 'eliminarArchivoFactura'])
+        ->name('ordenesCompras.eliminarFactura');
+
+        Route::get('/archivoFactura/{archivo}', [OrdenComprasController::class, 'visualizarArchivoFactura'])
+        ->name('ordenesCompras.visualizarArchivoFactura')
+        ->middleware('auth'); // protege el archivo
 
     //Rutas para ordenes de pago
         // Listado
@@ -149,15 +160,41 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
     });
 
 
-
-        Route::middleware(['submenu:facturasProveedores'])
+/////////////////////verrrrrrrrrrrrrr
+        Route::middleware(['submenu:facturasProveedoresCompras'])
         ->group(function () {
             // Vista principal
             Route::get('compras/comprobantes-proveedores', [ComprobantesProveedoresController::class, 'index'])
-                ->name('facturasProveedores');
+                ->name('facturasProveedoresCompras');
 
 
 
         });
 });
+
+//////Productos Compras vista principal
+ Route::middleware(['submenu:productosCompras'])->prefix('compras')
+
+    ->group(function () {
+
+        Route::get('productosCompras', [ProductoController::class, 'index'])
+                ->name('productosCompras');
+
+    });
+
+
+//////Productos Compras
+ Route::resource('compras/productos', ProductoController::class)
+            ->names([
+                'index' => 'productos.index',
+                'create' => 'productos.create',
+                'store' => 'productos.store',
+                'edit' => 'productos.edit',
+                'update' => 'productos.update',
+                'destroy' => 'productos.destroy',
+                'show' => 'productos.show',
+            ]);
+
+
+
 });

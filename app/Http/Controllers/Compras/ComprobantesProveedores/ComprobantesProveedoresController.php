@@ -4,6 +4,11 @@ namespace App\Http\Controllers\Compras\ComprobantesProveedores;
 use App\Http\Controllers\Controller;
 use App\Models\Compras\ComprobanteProveedor;
 use App\Models\Compras\OrdenCompra;
+use App\Models\Contabilidad\Asientos\Asiento;
+use App\Models\Contabilidad\Asientos\Partida;
+use App\Models\Contabilidad\PlanCuentas\Ejercicio;
+use App\Models\General\Impuesto;
+use App\Models\Padron\Proveedor\Proveedor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -37,21 +42,21 @@ class ComprobantesProveedoresController extends Controller
     }
 
 
-    ////CREAR COMPROBANTE PROVEEDOR
     public function store(Request $request)
     {
         DB::beginTransaction();
         try {
-            // ✅ Validar datos básicos
+            // ---------------- VALIDACIÓN ----------------
             $request->validate([
                 'proveedor_id' => 'required|exists:proveedores,id',
                 'punto_venta' => 'required|string|max:10',
                 'numero_factura' => 'required|string|max:20',
                 'tipo_comprobante_id' => 'required|exists:tipo_comprobantes,id',
                 'detalles' => 'required|array|min:1',
+                'totalOrden' => 'required|numeric|min:0',
             ]);
 
-            // 🚫 Verificar duplicado: mismo proveedor + punto venta + nro factura + tipo comprobante
+            // ---------------- DUPLICADOS ----------------
             $existe = ComprobanteProveedor::where('proveedor_id', $request->proveedor_id)
                 ->where('punto_venta', $request->punto_venta)
                 ->where('numero_factura', $request->numero_factura)
@@ -64,7 +69,7 @@ class ComprobantesProveedoresController extends Controller
                 ], 422);
             }
 
-            // 1️⃣ Crear el comprobante principal
+            // ---------------- CREAR COMPROBANTE ----------------
             $comprobante = ComprobanteProveedor::create([
                 'proveedor_id' => $request->proveedor_id,
                 'fecha_factura' => $request->fecha_factura,
@@ -78,8 +83,17 @@ class ComprobantesProveedoresController extends Controller
                 'usuario_creacion' => $request->usuario_creacion,
             ]);
 
-            // 2️⃣ Crear los detalles
+            // ---------------- PREPARAR ACUMULADORES ----------------
+            $gastosAgrupados = [];  // cuenta contable => importe
+            $impuestosAgrupados = []; // cuenta contable impuesto => importe
+            $totalFactura = 0;
+
+            // --------------------------------------------------------
+            // 1️⃣ RECORRER DETALLES
+            // --------------------------------------------------------
             foreach ($request->detalles as $detalle) {
+
+                // Crear detalle del comprobante
                 $detalleComprobante = $comprobante->detalles()->create([
                     'producto_id' => $detalle['producto_id'],
                     'descripcion' => $detalle['descripcion'],
@@ -93,33 +107,125 @@ class ComprobantesProveedoresController extends Controller
                     'usuario_creacion' => $detalle['usuario_creacion'],
                 ]);
 
+                // Acumular gasto por cuenta
+                if (!isset($gastosAgrupados[$detalle['co_cuenta_id']])) {
+                    $gastosAgrupados[$detalle['co_cuenta_id']] = 0;
+                }
+
+                $gastosAgrupados[$detalle['co_cuenta_id']] += $detalle['importe'];
+                $totalFactura += $detalle['importe'];
+
+                // ---------------- IMPUESTOS DEL DETALLE ----------------
                 if (!empty($detalle['impuestos'])) {
+
                     foreach ($detalle['impuestos'] as $impuestoId) {
+
+                        $imp = Impuesto::find($impuestoId);
+
+                        if (!$imp) continue;
+
+                        // Validación clave
+                        if (empty($imp->co_cuenta_id)) {
+                            throw new \Exception("El impuesto '{$imp->descripcion}' no tiene una cuenta contable asignada.");
+                        }
+
+                        // Calcular importe del impuesto
+                        $importeImpuesto = ($detalle['importe'] * $imp->porcentaje) / 100;
+
+                        // Guardar pivote
                         DB::table('comprobantes_proveedores_detalles_impuestos')->insert([
                             'detalle_id' => $detalleComprobante->id,
-                            'impuesto_id' => $impuestoId,
+                            'impuesto_id' => $imp->id
                         ]);
+
+                        // Acumular impuesto por su cuenta contable
+                       if (!isset($impuestosAgrupados[$imp->co_cuenta_id]) || !is_array($impuestosAgrupados[$imp->co_cuenta_id])) {
+                            $impuestosAgrupados[$imp->co_cuenta_id] = [
+                                'nombre' => $imp->descripcion,
+                                'importe' => 0
+                            ];
+                        }
+
+                        $impuestosAgrupados[$imp->co_cuenta_id]['importe'] += $importeImpuesto;
+                        $totalFactura += $importeImpuesto;
                     }
                 }
             }
 
-            // 3️⃣ Asociar con las órdenes de compra
+            // --------------------------------------------------------
+            // 2️⃣ ASOCIAR ORDENES DE COMPRA (si corresponde)
+            // --------------------------------------------------------
             $ordenes = array_filter(array_unique($request->orden_compra_id ?? []));
             if (!empty($ordenes)) {
                 $comprobante->ordenesCompra()->syncWithoutDetaching($ordenes);
             }
 
+            // --------------------------------------------------------
+            // 3️⃣ GENERAR ASIENTO CONTABLE
+            // --------------------------------------------------------
+            $ejercicio = Ejercicio::where('estado', 'ABIERTO')->firstOrFail();
+
+            $asiento = Asiento::create([
+                'numero' => Asiento::max('numero') + 1,
+                'co_ejercicio_id' => $ejercicio->id,
+                'fecha' => $request->fecha_factura,
+                'concepto' => "Comprobante proveedor N° {$comprobante->id}",
+                'estado' => 'Pendiente',
+                'importe' => $totalFactura,
+                'model_id_created' => $request->usuario_creacion,
+                'created_at' => now(),
+            ]);
+
+            // ---------------- PARTIDAS DE GASTOS ----------------
+            foreach ($gastosAgrupados as $cuentaId => $importe) {
+                Partida::create([
+                    'co_asiento_id' => $asiento->id,
+                    'co_cuenta_id' => $cuentaId,
+                    'concepto' => "Gasto comprobante proveedor",
+                    'debe' => $importe,
+                    'haber' => 0,
+                ]);
+            }
+
+            // ---------------- PARTIDAS DE IMPUESTOS ----------------
+            foreach ($impuestosAgrupados as $cuentaId => $data) {
+                Partida::create([
+                    'co_asiento_id' => $asiento->id,
+                    'co_cuenta_id' => $cuentaId,
+                    'concepto' => "Impuesto: {$data['nombre']}",
+                    'debe' => $data['importe'],
+                    'haber' => 0,
+                ]);
+            }
+
+
+            // ---------------- PARTIDA DE PROVEEDOR (HABER) ----------------
+            $proveedor = Proveedor::find($request->proveedor_id);
+
+            Partida::create([
+                'co_asiento_id' => $asiento->id,
+                'co_cuenta_id' => '222',
+                'concepto' => "Proveedor {$proveedor->nombre}",
+                'debe' => 0,
+                'haber' => $totalFactura,
+            ]);
+
+            // --------------------------------------------------------
             DB::commit();
+
             return response()->json($comprobante->load('detalles.impuestos'), 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
             return response()->json(['errors' => $e->errors()], 422);
+
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+
 
 
 

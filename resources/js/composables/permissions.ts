@@ -1,4 +1,5 @@
 import { usePage } from "@inertiajs/react";
+
 import { PageProps as InertiaPageProps } from "@inertiajs/core";
 
 type Role = { id: number; name: string };

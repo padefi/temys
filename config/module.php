@@ -68,7 +68,7 @@ return [
                         ['key' => 'cotizacionesOrdenesCompras', 'name' => 'Cotizaciones'],
                         ['key' => 'ordenesCompras', 'name' => 'Ordenes de Compras'],
                         ['key' => 'equiposDeVentas', 'name' => 'Equipos de ventas'],
-                        ['key' => 'facturasProveedores', 'name' => 'Facturas'],
+                        ['key' => 'facturasProveedoresCompras', 'name' => 'Facturas'],
                         ['key' => 'proveedoresCompras', 'name' => 'Proveedores'],
                     ]
                 ],

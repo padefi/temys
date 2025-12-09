@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\Compras\OrdenCompras;
 use App\Http\Controllers\Controller;
 use App\Models\Almacenes\Almacen;
+use App\Models\Compras\ComprobanteProveedor;
+use App\Models\Compras\ComprobanteProveedorArchivo;
 use App\Models\Compras\OrdenCompra;
 use App\Models\Compras\OrdenCompraArchivo;
 use App\Models\Compras\OrdenCompraDetalle;
 use App\Models\Contabilidad\PlanCuentas\Cuenta;
 use App\Models\General\Impuesto;
 use App\Models\General\TipoMoneda;
+use App\Models\Inventario\InventarioRecepcionProducto;
+use App\Models\Inventario\InventarioRecepcionProductoDetalle;
 use App\Models\Inventario\Productos\Producto;
 use App\Models\Padron\Proveedor\Proveedor;
 use Illuminate\Http\Request;
@@ -64,7 +68,7 @@ class OrdenComprasController extends Controller
     ////CONFIRMAR ORDEN DE COMPRA
     public function confirmarOrdenCompra(Request $request)
     {
-        Log::info('Confirmar Orden de Compra', $request->all());
+
         $validated = $request->validate([
             'solicitudCompra' => 'nullable|numeric',
             'ordenCotizacion' => 'nullable|numeric',
@@ -165,9 +169,9 @@ class OrdenComprasController extends Controller
                     ]);
                 }
 
-                // pivot impuestos
-                $impuestos = $producto['impuestos_seleccionados'] ?? [];
-                $detalle->impuestos()->sync($impuestos);
+            // pivot impuestos — usar array vacío si no vino nada
+            $impuestos = $producto['impuestos_seleccionados'] ?? [];
+            $detalle->impuestos()->sync(is_array($impuestos) ? $impuestos : []);
 
                 $productosIds[] = $detalle->id;
             }
@@ -178,14 +182,38 @@ class OrdenComprasController extends Controller
                 ->delete();
 
 
+            //////////////////////////////////////////////////////////////
+            // ✅ Crear la recepción asociada a esta orden
+            $recepcion = InventarioRecepcionProducto::create([
+                'origen_id' => 1, //id de compras
+                'destino_id' => $validated['almacen'],
+                'orden_entrega_id' => null,
+                'tipo_recepcion' => 'Orden de compra',
+                'fecha_recepcion' => now(),
+                'estado' => 'Pendiente',
+                'usuario_creacion' => $validated['usuario_id'],
+            ]);
+
+            foreach ($validated['productos'] as $producto) {
+                InventarioRecepcionProductoDetalle::create([
+                    'recepcion_id' => $recepcion->id,
+                    'producto_id' => $producto['producto_id'],
+                    'cantidad_recibida' => 0,
+                    'cantidad_esperada' => $producto['cantidad'] ?? 0,
+                    'estado' => 'completo',
+                    'fecha_creacion' => now(),
+                    'usuario_creacion' => $validated['usuario_id'],
+                ]);
+            }
+            ////////////////////////////////////////////////////////////
+
             DB::commit();
 
         return redirect()->back()->with('success', 'Orden de Compra confirmada correctamente.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-
-            return redirect()->back()->with('danger', $e);
+            return redirect()->back()->with('danger', $e->getMessage());
         }
     }
 
@@ -203,12 +231,12 @@ class OrdenComprasController extends Controller
             'detalles.producto',
             'detalles.producto.modelo',
             'detalles.producto.subCategoria',
-            'detalles.impuestos',
             'comprobantesProveedores',
             'comprobantesProveedores.archivos',
             'comprobantesProveedores.detalles',
             'comprobantesProveedores.condicionVenta',
             'comprobantesProveedores.tipoComprobante',
+            'detalles.detallesImpuesto',
             ]);
 
         /*if ($orden_compra_id) {
@@ -346,9 +374,9 @@ class OrdenComprasController extends Controller
                 ]);
             }
 
-            // pivot impuestos
+            // pivot impuestos — usar array vacío si no vino nada
             $impuestos = $producto['impuestos_seleccionados'] ?? [];
-            $detalle->impuestos()->sync($impuestos);
+            $detalle->impuestos()->sync(is_array($impuestos) ? $impuestos : []);
 
             $productosIds[] = $detalle->id;
         }
@@ -434,6 +462,55 @@ class OrdenComprasController extends Controller
     public function visualizarArchivo(OrdenCompraArchivo $archivo)
     {
         // Esto asume que los archivos están en storage/app/private/ordenes-compras
+        return response()->file(storage_path('app/private/' . $archivo->path));
+    }
+
+
+    //////////////////////////////
+    ////SUBIR ARCHIVO A FACTURAS
+    public function subirArchivoFactura(Request $request, $id)
+    {
+        $request->validate([
+            'archivo' => 'required|file|max:10240',
+        ]);
+
+        $comprobante = ComprobanteProveedor::findOrFail($id);
+
+        $file = $request->file('archivo');
+        $path = $file->store('comprobantes_proveedores');
+
+        $comprobante->archivos()->create([
+            'nombre' => $file->getClientOriginalName(),
+            'path'   => $path,
+            'mime'   => $file->getMimeType(),
+            'size'   => $file->getSize(),
+        ]);
+
+        return redirect()->back()->with('success', 'Archivo subido correctamente');
+    }
+
+    ////ELIMINAR ARCHIVO DE FACTURAS
+    public function eliminarArchivoFactura(ComprobanteProveedorArchivo $archivo)
+    {
+        try {
+            // Eliminar el archivo físico
+            if (Storage::exists($archivo->path)) {
+                Storage::delete($archivo->path);
+            }
+
+            // Eliminar registro en la DB
+            $archivo->delete();
+
+            return redirect()->back()->with('success', 'Archivo eliminado correctamente');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('danger', 'El archivo no pudo ser eliminado', 500);
+        }
+    }
+
+    ////VISUALIZAR ARCHIVO DE FACTURAS
+    public function visualizarArchivoFactura(ComprobanteProveedorArchivo $archivo)
+    {
+        // Esto asume que los archivos están en storage/app/private/comprobantes-proveedores
         return response()->file(storage_path('app/private/' . $archivo->path));
     }
 

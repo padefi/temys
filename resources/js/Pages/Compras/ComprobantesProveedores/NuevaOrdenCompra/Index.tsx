@@ -36,6 +36,7 @@ import { OrdenesCompra } from '@/types/OrdenCompra'
 import { toast } from 'sonner'
 import { Almacen } from '@/types/Almacen'
 import { Archivo } from '@/types/Archivos'
+import GenerarFacturaModal from './GenerarFacturaModal'
 
 type PageProps = InertiaPageProps & {
   auth: { user: { id: number; name: string; email: string } }
@@ -513,7 +514,7 @@ export default function Index() {
             />
             <div className="flex justify-end mt-2">
             {/* 🔹 Mostrar el total */}
-            <Typography variant="h2" sx={{ mt: 2}}>
+            <Typography variant="h2" className='mt-2'>
             Total: {monedaSeleccionada?.simbolo || "$"}{" "}
             {totalOrden.toLocaleString("es-AR", {
                 minimumFractionDigits: 2,
@@ -691,6 +692,7 @@ export default function Index() {
         monedaOrden={monedaSeleccionada?.id}
         tipoMonedas={tipoMonedas}
         proveedorId={ordenCompra?.proveedor?.id || 0}
+
     />
 
     </AuthenticatedLayout>

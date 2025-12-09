@@ -13,6 +13,9 @@ return new class extends Migration
             $table->string('nombre')->unique();
             $table->string('descripcion')->nullable();
             $table->boolean('habilitado')->default(true);
+            $table->foreignId('co_cuenta_id')->nullable()         // Relación con bancos
+                  ->constrained('co_cuentas')        // Hace la FK a la tabla bancos
+                  ->cascadeOnUpdate();
             $table->timestamps();
         });
     }

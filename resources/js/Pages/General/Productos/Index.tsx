@@ -1,119 +1,122 @@
-import React, { useState } from "react";
-import { usePage, router } from "@inertiajs/react";
-import { Producto, FlashMessages } from "@/types/Producto";
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head, router, usePage } from '@inertiajs/react';
 import { Button } from "@/Components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/Components/ui/table";
+import { Input } from "@/Components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
+import { toast } from "sonner";
+import { useState } from "react";
 
-import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogClose } from "@/Components/ui/dialog";
+export default function Index() {
+  const { productos, flash, modulo } = usePage().props as any;
+  const [search, setSearch] = useState("");
 
-import Form from "./Form"; // el formulario que mostraste
-
-type ProductosPageProps = {
-  auth: {
-    user: {
-      id: number;
-      name: string;
-      email: string;
-    };
-  };
-  productos: Producto[];
-  flash: FlashMessages;
-};
-
-export default function ProductosIndex() {
-  const { productos } = usePage<ProductosPageProps>().props;
-
-  const [modalOpen, setModalOpen] = useState(false);
-  const [productoEditar, setProductoEditar] = useState<Producto | null>(null);
-
-  const eliminarProducto = (id: number) => {
-    if (confirm("¿Seguro que quieres eliminar este producto?")) {
-      router.delete(`/productos/${id}`);
-    }
+  const handleSearch = (e: any) => {
+    e.preventDefault();
+    router.get(route(`productos.index`), { search }, { preserveState: true });
   };
 
-  // Función para manejar submit del formulario (crear o editar)
-  const handleSubmit = (data: any) => {
-    if (productoEditar) {
-      // Editar
-      router.put(`/productos/${productoEditar.id}`, data, {
-        onSuccess: () => setModalOpen(false),
-      });
-    } else {
-      // Crear
-      router.post(`/productos`, data, {
-        onSuccess: () => setModalOpen(false),
+  const handleDelete = (id: number) => {
+    if (confirm("¿Seguro que deseas eliminar este producto?")) {
+      router.delete(route('productos.destroy', id), {
+        onSuccess: () => toast.success("Producto eliminado correctamente"),
+        onError: () => toast.error("Error al eliminar producto"),
       });
     }
-  };
-
-  // Abrir modal para nuevo producto
-  const abrirNuevo = () => {
-    setProductoEditar(null);
-    setModalOpen(true);
-  };
-
-  // Abrir modal para editar producto existente
-  const abrirEditar = (producto: Producto) => {
-    setProductoEditar(producto);
-    setModalOpen(true);
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Lista de Productos</h1><Button onClick={abrirNuevo} className="mb-4">Nuevo Producto</Button>
-      <Table>
-        <TableCaption>Listado de productos registrados.</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Descripción</TableHead>
-            <TableHead>Código de Barras</TableHead>
-            <TableHead className="text-center">Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {productos.map((p: Producto) => (
-            <TableRow key={p.id} className="hover:bg-gray-50">
-              <TableCell>{p.nombre}</TableCell>
-              <TableCell>{p.descripcion}</TableCell>
-              <TableCell>{p.cod_barras}</TableCell>
-              <TableCell className="flex justify-center gap-2">
-                <Button size="sm" variant="outline" onClick={() => abrirEditar(p)}>
-                  Editar
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => eliminarProducto(p.id)}
-                >
-                  Eliminar
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800 capitalize">
+      {modulo} / Productos
+    </h2>}>
+      <Head title={`Productos (${modulo})`} />
 
+      <div className="p-6 space-y-6">
+        {flash?.success && (
+          <div className="p-3 bg-green-100 text-green-700 rounded-md">{flash.success}</div>
+        )}
 
+        {/* 🔍 Buscador + botón crear */}
+        <div className="flex justify-between items-center">
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <Input
+              placeholder="Buscar producto..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-64"
+            />
+            <Button type="submit">Buscar</Button>
+          </form>
 
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="sm:max-w-lg sm:mx-auto p-6">
-          <DialogTitle>{productoEditar ? "Editar Producto" : "Nuevo Producto"}</DialogTitle>
-          <Form producto={productoEditar} onSubmit={handleSubmit} />
-          <DialogClose asChild>
-            <button className="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cerrar</button>
-          </DialogClose>
-        </DialogContent>
-      </Dialog>
-    </div>
+          <Button onClick={() => router.visit('productos/create')}>
+            Nuevo producto
+          </Button>
+        </div>
+
+        {/* 📋 Tabla de productos */}
+        <div className="border rounded-md overflow-hidden shadow-sm">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-100">
+                <TableHead>ID</TableHead>
+                <TableHead>Nombre</TableHead>
+                <TableHead>Modelo</TableHead>
+                <TableHead>Subcategoría</TableHead>
+                <TableHead>Peso</TableHead>
+                <TableHead></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {productos?.data?.length ? (
+                productos.data.map((p: any) => (
+                  <TableRow key={p.id}>
+                    <TableCell>{p.id}</TableCell>
+                    <TableCell>{p.nombre}</TableCell>
+                    <TableCell>{p.modelo?.descripcion ?? "-"}</TableCell>
+                    <TableCell>{p.sub_categoria?.descripcion ?? "-"}</TableCell>
+                    <TableCell>{p.peso ?? "-"}</TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <Button size="sm" variant="outline"
+                        onClick={() => router.visit(route(`productos.edit`, p.id))}>
+                        Editar
+                      </Button>
+                      <Button size="sm" variant="destructive"
+                        onClick={() => handleDelete(p.id)}>
+                        Eliminar
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-gray-500 py-6">
+                    No hay productos cargados
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* 🔢 Paginación simple */}
+        <div className="flex justify-between items-center mt-4 text-sm text-gray-600">
+          <div>
+            Mostrando {productos.from} - {productos.to} de {productos.total}
+          </div>
+          <div className="flex gap-2">
+            {productos.links.map((link: any, i: number) => (
+              <button
+                key={i}
+                disabled={!link.url}
+                className={`px-3 py-1 rounded ${
+                  link.active ? "bg-blue-600 text-white" : "hover:bg-gray-100"
+                }`}
+                onClick={() => link.url && router.visit(link.url)}
+                dangerouslySetInnerHTML={{ __html: link.label }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </AuthenticatedLayout>
   );
 }
