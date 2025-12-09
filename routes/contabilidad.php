@@ -58,5 +58,47 @@ Route::middleware('module:contabilidad')->group(function () {
             Route::get('/contabilidad/asiento/{asiento}', [PartidaController::class, 'show']);
         });
     });
+
+
+    Route::middleware(['menu:reportesContabilidad'])->group(function () {
+            //////LIBRO MAYOR
+            Route::middleware(['submenu:libroMayor'])->prefix('contabilidad')->group(function () {
+                // Vista principal
+                Route::get('/libroMayor', [ContabilidadController::class, 'libroMayor'])->name('libroMayor');
+
+                // Listar Libro Mayor
+                Route::get('/libroMayorListar', [ContabilidadController::class, 'libroMayorListar'])->name('libroMayorListar');
+
+            });
+
+            /////LIBRO DIARIO
+            Route::middleware(['submenu:auditoriaDiario'])->prefix('contabilidad')->group(function () {
+                // Vista principal
+                Route::get('/libroDiario', [ContabilidadController::class, 'libroDiario'])->name('auditoriaDiario');
+
+                // Listar Libro Diario
+                Route::get('/libroDiarioListar', [ContabilidadController::class, 'libroDiarioListar'])->name('libroDiarioListar');
+            });
+
+            //////LIBRO MAYOR POR EMPRESA
+            Route::middleware(['submenu:libroMayorEmpresa'])->prefix('contabilidad')->group(function () {
+                // Vista principal
+                Route::get('/libroMayorEmpresa', [ContabilidadController::class, 'libroMayorEmpresa'])->name('libroMayorEmpresa');
+
+                // Listar Libro Mayor
+                Route::get('/libroMayorEmpresaListar', [ContabilidadController::class, 'libroMayorEmpresaListar'])->name('libroMayorEmpresaListar');
+
+            });
+
+            //////BALANCE GENERAL
+            Route::middleware(['submenu:balanceGeneral'])->prefix('contabilidad')->group(function () {
+                // Vista principal
+                Route::get('/balanceGeneral', [ContabilidadController::class, 'balanceGeneral'])->name('balanceGeneral');
+
+                // Listar Balance General
+                Route::get('/balanceGeneralListar', [ContabilidadController::class, 'balanceGeneralListar'])->name('balanceGeneralListar');
+
+            });
+    });
 });
 

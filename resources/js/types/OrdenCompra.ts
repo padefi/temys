@@ -20,7 +20,7 @@ export interface OrdenesCompra {
     observaciones: string;
     almacen_destino: number
     almacen: Almacen;
-    ordenes_cotizacion: CotizacionOrden
+    ordenes_cotizacion: CotizacionOrden[]
     detalles?: OrdenesCompraDetalle[]  // usa el tipo correcto si tienes uno
     archivos?: Archivo[]
     comprobantes_proveedores?: ComprobanteProveedor[]

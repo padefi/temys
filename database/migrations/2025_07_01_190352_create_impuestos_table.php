@@ -15,6 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('descripcion');
             $table->decimal('porcentaje', 5, 2);
+            $table->unsignedBigInteger('co_cuenta_id');
+            $table->foreign('co_cuenta_id')
+                ->references('id')
+                ->on('co_cuentas')
+                ->onDelete('cascade');
             $table->boolean('habilitado')->default(true);
             $table->timestamps();
         });

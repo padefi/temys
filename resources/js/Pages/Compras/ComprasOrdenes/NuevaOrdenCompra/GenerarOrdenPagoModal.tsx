@@ -15,6 +15,7 @@ import { toast } from "sonner"
 
 type Pago = {
   metodo: string
+  metodo_id: number
   moneda: number
   importe: number
   fecha: string
@@ -61,7 +62,7 @@ export default function GenerarOrdenPagoModal({
   const tabsRef = useRef<HTMLDivElement>(null)
 
   const [pagosUnicos, setPagosUnicos] = useState<Pago[]>([
-    { metodo: "", moneda: Number(monedaOrden), importe: 0, fecha: "" }
+    { metodo: "", moneda: Number(monedaOrden), importe: 0, fecha: "", metodo_id: 0 }
   ])
 
   const [pagosCuotas, setPagosCuotas] = useState<Pago[][]>([])
@@ -88,7 +89,7 @@ export default function GenerarOrdenPagoModal({
       const newCuotas: Pago[][] = Array.from({ length: cuotas }, (_, i) => {
         const existing = pagosCuotas[i];
         if (!Array.isArray(existing)) {
-          return [{ metodo: "", moneda: Number(monedaOrden), importe: 0, fecha: "" }];
+          return [{ metodo: "", moneda: Number(monedaOrden), importe: 0, fecha: "", metodo_id: 0 }];
         }
         return existing;
       });
@@ -97,7 +98,7 @@ export default function GenerarOrdenPagoModal({
   }, [cuotas, plan]);
 
   const isPagoCompleto = (p: Pago) => {
-    const camposBasicos = !!p.metodo && !!p.moneda && p.importe > 0 && !!p.fecha
+    const camposBasicos = !!p.metodo && !!p.metodo_id && !!p.moneda && p.importe > 0 && !!p.fecha
     if (!camposBasicos) return false
 
     if (p.metodo === "Cheque") return !!p.bancoId
@@ -143,7 +144,7 @@ export default function GenerarOrdenPagoModal({
     if (faltante > 0) {
       setPagosUnicos([
         ...pagosUnicos,
-        { metodo: "", moneda: monedaOrden, importe: faltante, fecha: "" }
+        { metodo: "", moneda: monedaOrden, importe: faltante, fecha: "", metodo_id: 0 }
       ])
     }
   }
@@ -157,7 +158,7 @@ export default function GenerarOrdenPagoModal({
       const updated = [...pagosCuotas]
       updated[cuotaIdx] = [
         ...pagosDeEstaCuota,
-        { metodo: "", moneda: monedaOrden, importe: faltante, fecha: "" }
+        { metodo: "", moneda: monedaOrden, importe: faltante, fecha: "", metodo_id: 0 }
       ]
       setPagosCuotas(updated)
     }
@@ -175,7 +176,7 @@ export default function GenerarOrdenPagoModal({
       const initialCuotas = Array.from({ length: cuotas }, () => [
         { metodo: "", moneda: monedaOrden, importe: 0, fecha: "" }
       ]);
-      setPagosCuotas(initialCuotas);
+      setPagosCuotas(initialCuotas.map((cuota) => cuota.map((p) => ({ ...p, metodo_id: 0 }))));
       setActiveTab("0");
     }
     setStep(2);
@@ -192,6 +193,7 @@ try{
             facturasSeleccionadas: facturasSeleccionadas,
             pagos: pagosUnicos.map((p) => ({
                 metodo_pago: p.metodo,
+                metodo_pago_id: p.metodo_id,
                 moneda_id: p.moneda, // ✅ número
                 importe: p.importe,
                 fecha_pago: p.fecha,

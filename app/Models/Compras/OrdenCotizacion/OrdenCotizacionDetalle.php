@@ -2,6 +2,7 @@
 
 namespace App\Models\Compras\OrdenCotizacion;
 
+use App\Models\General\Impuesto;
 use App\Models\Inventario\Productos\Producto;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,7 @@ class OrdenCotizacionDetalle extends Model
         'producto_id',
         'descripcion',
         'codigo_barras',
+        'entrega_esperada',
         'referencia',
         'cantidad',
         'precio_unitario',
@@ -30,6 +32,8 @@ class OrdenCotizacionDetalle extends Model
         'precio_unitario' => 'decimal:2',
         'porcentaje_descuento' => 'decimal:2',
         'importe' => 'decimal:2',
+        'entrega_esperada' => 'date',
+        'impuestos_seleccionados' => 'array',
     ];
 
 
@@ -41,12 +45,27 @@ class OrdenCotizacionDetalle extends Model
     ////DETALLES DE IMPUESTO RELACIONADOS
     public function detallesImpuesto()
     {
-        return $this->hasMany(OrdenCotizacionDetalleImpuesto::class);
+        return $this->hasMany(
+            OrdenCotizacionDetalleImpuesto::class,
+            'orden_cotizaciones_detalles_id'
+        );
     }
+
     ////PRODUCTO RELACIONADO
     public function producto()
     {
         return $this->belongsTo(Producto::class, 'producto_id');
+    }
+
+    ////IMPUESTOS RELACIONADOS
+    public function impuestos()
+    {
+        return $this->belongsToMany(
+            Impuesto::class,
+            'orden_cotizaciones_detalles_impuestos',
+            'orden_cotizaciones_detalles_id',
+            'impuesto_id'
+        );
     }
 
 }

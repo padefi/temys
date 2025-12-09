@@ -17,6 +17,7 @@ export interface Proveedor {
     nombre_fantasia: string;
     razon_social: string;
     padron: Padron;
+    saldo?: number;
 }
 
 // Tipo para el formulario que funciona con useForm

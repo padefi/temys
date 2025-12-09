@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { usePage } from '@inertiajs/react'
+
+import { PageProps as InertiaPageProps } from "@inertiajs/core";
 import {
   Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow
 } from '@/Components/ui/table'
@@ -17,7 +19,7 @@ import {
 } from '@/Components/ui/dropdown-menu'
 import { ProductosDisponibles } from '@/types/Producto'
 
-type PageProps = {
+type PageProps = InertiaPageProps & {
   auth: { user: { id: number; name: string; email: string } }
   productos: ProductosDisponibles[]
   impuestos: { id: number; descripcion: string; porcentaje: number }[]
@@ -72,7 +74,8 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
         co_cuenta: false,
     })
 
-    const bloqueado = useState(true);
+  const [bloqueado, setBloqueado] = useState(true)
+
   // Inicializa con detalles si llegan
   useEffect(() => {
     if (detalles && detalles.length > 0) {
@@ -90,7 +93,9 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
         referencia: det.producto?.referencia || '',
         cantidad: det.cantidad || 0,
         precio_unitario: +det.precio_unitario || 0,
-        impuestos_seleccionados: det.impuestos ? det.impuestos.map((i: any) => i.id) : [],
+         impuestos_seleccionados: det.detalles_impuesto
+            ? det.detalles_impuesto.map((i: { impuesto_id: any; }) => i.impuesto_id)
+            : [],
         porcentaje_descuento: +det.porcentaje_descuento || 0,
         importe: +det.importe || 0,
         usuario_id: auth.user.id,
@@ -99,21 +104,34 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
     }
   }, [detalles])
 
+    const esIgual = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b);
 
-  // Actualiza productos y validez
+    // Actualiza productos y validez
     useEffect(() => {
-        setProductos(productosLocal)
-        const todosValidos = productosLocal.length > 0 &&
-            productosLocal.every(p =>
-            p.producto_id > 0 &&
-            p.descripcion.trim() !== '' &&
-            p.cantidad > 0 &&
-            p.precio_unitario > 0
-            )
-        setProductosValidos(todosValidos)
+    setProductos(prev => {
+        if (!esIgual(prev, productosLocal)) {
+        return productosLocal;
+        }
+        return prev;
+    });
+    }, [productosLocal]);
 
 
-    }, [productosLocal])
+    useEffect(() => {
+    const todosValidos =
+        productosLocal.length > 0 &&
+        productosLocal.every(p =>
+        p.producto_id > 0 &&
+        p.descripcion.trim() !== '' &&
+        p.cantidad > 0 &&
+        p.precio_unitario > 0
+        );
+
+    setProductosValidos(prev => {
+        if (prev !== todosValidos) return todosValidos;
+        return prev;
+    });
+    }, [productosLocal]);
 
 
   const agregarLinea = () => {
@@ -427,7 +445,8 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
                         <TableCell>
                         <Popover>
                             <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start" disabled={!habilitado || bloqueado}>
+                            <Button variant="outline" className="w-full justify-start"
+                            disabled={!habilitado}>
                                 {producto.impuestos_seleccionados.length
                                 ? impuestos
                                     .filter(i => producto.impuestos_seleccionados.includes(i.id))

@@ -4,6 +4,7 @@ namespace App\Models\General;
 
 use App\Models\Compras\OrdenCompraDetalle;
 use App\Models\Compras\OrdenCotizacion\OrdenCotizacionDetalle;
+use App\Models\Contabilidad\PlanCuentas\Cuenta;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,6 +17,7 @@ class Impuesto extends Model
     protected $fillable = [
         'descripcion',
         'porcentaje',
+        'co_cuenta_id',
         'habilitado',
     ];
 
@@ -33,5 +35,11 @@ class Impuesto extends Model
             'impuesto_id',
             'orden_compras_detalles_id'
         );
+    }
+
+    ////CUENTA RELACIONADA
+    public function coCuenta()
+    {
+        return $this->belongsTo(Cuenta::class, 'co_cuenta_id');
     }
 }

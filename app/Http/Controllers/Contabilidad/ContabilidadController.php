@@ -5,7 +5,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Compras\ComprobanteProveedor;
 use App\Models\Compras\OrdenPago;
 use App\Models\Compras\PlanPago;
+use App\Models\Contabilidad\Asientos\Asiento;
 use App\Models\Contabilidad\MovimientoTesoreria;
+use App\Models\Contabilidad\PlanCuentas\Cuenta;
+use App\Models\Contabilidad\PlanCuentas\Ejercicio;
 use App\Models\General\Banco;
 use App\Models\General\CuentaBancaria;
 use App\Models\General\MetodoPago;
@@ -14,6 +17,7 @@ use App\Models\General\TipoComprobante;
 use App\Models\General\TipoMoneda;
 use App\Models\Padron\Proveedor\Proveedor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class ContabilidadController extends Controller
@@ -50,7 +54,7 @@ class ContabilidadController extends Controller
             'ids' => 'required|array',
         ]);
 
-        $userId = auth()->id();
+        $userId = Auth::id();
         $fecha = now();
 
 
@@ -71,6 +75,209 @@ class ContabilidadController extends Controller
         ]);
     }
 
+    public function planCuentas()
+    {
+        return Cuenta::all();
+    }
+
+
+    public function libroMayor()
+    {
+
+       return Inertia::render('Contabilidad/LibroMayor/Index', [
+
+            'ejercicios' => Ejercicio::all(),
+        ]);
+    }
+
+    ////LISTAR LIBRO MAYOR
+    public function libroMayorListar(Request $request)
+    {
+        $request->validate([
+            'ejercicio_id' => 'required|integer',
+            'desde' => 'required|date',
+            'hasta' => 'required|date',
+        ]);
+
+        $ejercicios = Ejercicio::all();
+
+        $asientos = Asiento::with([
+            'partidas',
+            'partidas.cuenta',
+            'ejercicio',
+        ])
+        ->where('co_ejercicio_id', $request->ejercicio_id)
+        ->whereDate('fecha', '>=', $request->desde)
+        ->whereDate('fecha', '<=', $request->hasta)
+        ->get();
+
+        return inertia('Contabilidad/LibroMayor/Index', [
+            'ejercicios' => $ejercicios,
+            'asientos'   => $asientos,
+            'ejercicio_id' => $request->ejercicio_id,
+            'desde'   => $request->desde,
+            'hasta'   => $request->hasta,
+        ]);
+
+    }
+
+    public function libroMayorEmpresa()
+    {
+
+       return Inertia::render('Contabilidad/LibroMayorEmpresa/Index', [
+
+            'ejercicios' => Ejercicio::all(),
+            'empresas' => Proveedor::all(),
+        ]);
+    }
+
+    ////LISTAR LIBRO MAYOR
+    public function libroMayorEmpresaListar(Request $request)
+    {
+        $request->validate([
+            'ejercicio_id' => 'required|integer',
+            'desde' => 'required|date',
+            'hasta' => 'required|date',
+            'proveedor_id' => 'required|integer',
+        ]);
+
+        $ejercicios = Ejercicio::all();
+        $empresas = Proveedor::all();
+
+        $asientos = Asiento::with([
+            'partidas',
+            'partidas.cuenta',
+            'partidas.comprobantes.proveedor',
+            'ejercicio',
+        ])
+        ->where('co_ejercicio_id', $request->ejercicio_id)
+        ->whereDate('fecha', '>=', $request->desde)
+        ->whereDate('fecha', '<=', $request->hasta)
+        ->when($request->proveedor_id, function ($q) use ($request) {
+            $q->whereHas('partidas.comprobantes', function ($q2) use ($request) {
+                $q2->where('proveedor_id', $request->proveedor_id);
+            });
+        })
+        ->get();
+
+        return inertia('Contabilidad/LibroMayorEmpresa/Index', [
+            'ejercicios' => $ejercicios,
+            'asientos'   => $asientos,
+            'empresas'   => $empresas,
+            'ejercicio_id' => $request->ejercicio_id,
+            'desde'   => $request->desde,
+            'hasta'   => $request->hasta,
+            'proveedor_id' => $request->proveedor_id,
+
+        ]);
+
+    }
+
+
+    public function libroDiario()
+    {
+       return Inertia::render('Contabilidad/LibroDiario/Index', [
+
+            'ejercicios' => Ejercicio::all(),
+        ]);
+    }
+
+    ////LISTAR LIBRO DIARIO
+    public function libroDiarioListar(Request $request)
+    {
+        $request->validate([
+            'ejercicio_id' => 'required|integer',
+            'desde' => 'required|date',
+            'hasta' => 'required|date',
+        ]);
+
+        $ejercicios = Ejercicio::all();
+
+        $asientos = Asiento::with([
+            'partidas',
+            'partidas.cuenta',
+            'ejercicio',
+        ])
+        ->where('co_ejercicio_id', $request->ejercicio_id)
+        ->whereDate('fecha', '>=', $request->desde)
+        ->whereDate('fecha', '<=', $request->hasta)
+        ->get();
+
+        return inertia('Contabilidad/LibroDiario/Index', [
+            'ejercicios' => $ejercicios,
+            'asientos'   => $asientos,
+            'ejercicio_id' => $request->ejercicio_id,
+            'desde'   => $request->desde,
+            'hasta'   => $request->hasta,
+        ]);
+
+    }
+
+    ////////BALANCE GENERAL
+    public function balanceGeneral()
+    {
+       return Inertia::render('Contabilidad/BalanceGeneral/Index', [
+
+            'ejercicios' => Ejercicio::all(),
+        ]);
+    }
+
+    //// LISTAR BALANCE GENERAL
+    public function balanceGeneralListar(Request $request)
+    {
+        $request->validate([
+            'ejercicio_id' => 'required|integer',
+            'desde' => 'required|date',
+            'hasta' => 'required|date',
+        ]);
+
+        $ejercicios = Ejercicio::all();
+
+        $asientos = Asiento::with([
+            'partidas',
+            'partidas.cuenta',
+        ])
+        ->where('co_ejercicio_id', $request->ejercicio_id)
+        ->whereDate('fecha', '>=', $request->desde)
+        ->whereDate('fecha', '<=', $request->hasta)
+        ->get();
+
+        // ================================
+        // ARMAR BALANCE POR CUENTA
+        // ================================
+        $cuentas = [];
+
+        foreach ($asientos as $asiento) {
+            foreach ($asiento->partidas as $p) {
+
+                $id = $p->cuenta->id;
+
+                if (!isset($cuentas[$id])) {
+                    $cuentas[$id] = [
+                        'cuenta_id' => $id,
+                        'codigo'    => $p->cuenta->codigo,
+                        'descripcion' => $p->cuenta->descripcion,
+                        'grupo'     => $p->cuenta->grupo,    // EJ: ACTIVO, PASIVO, PN
+                        'subgrupo'  => $p->cuenta->subgrupo, // EJ: corriente, no corriente
+                        'saldo'     => 0,
+                    ];
+                }
+
+                $cuentas[$id]['saldo'] += floatval($p->debe) - floatval($p->haber);
+            }
+        }
+
+        // Convertir a array ordenado
+        $balance = array_values($cuentas);
+
+        return inertia('Contabilidad/BalanceGeneral/Index', [
+            'ejercicios'   => $ejercicios,
+            'balance'      => $balance,
+            'ejercicio_id' => $request->ejercicio_id,
+            'desde'        => $request->desde,
+            'hasta'        => $request->hasta,
+        ]);
+    }
 
 
 

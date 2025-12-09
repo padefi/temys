@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Almacenes\Almacen;
 use App\Models\Compras\OrdenCompra;
 use App\Models\Compras\OrdenCompraDetalle;
+use App\Models\Compras\OrdenCompraDetalleImpuesto;
 use App\Models\General\Impuesto;
 use App\Models\Padron\Proveedor\Proveedor;
 use App\Models\General\TipoMoneda;
@@ -13,6 +14,7 @@ use App\Models\Compras\OrdenCotizacion\OrdenCotizacion;
 use App\Models\Compras\OrdenCotizacion\OrdenCotizacionArchivo;
 use App\Models\Compras\OrdenCotizacion\OrdenCotizacionDetalle;
 use App\Models\Compras\SolicitudCompra;
+use App\Models\Compras\SolicitudCompraOrdenCotizacion;
 use Illuminate\Support\Facades\DB;
 use App\Models\Inventario\Productos\Producto;
 use Illuminate\Support\Facades\Storage;
@@ -83,6 +85,7 @@ class OrdenCotizacionesController extends Controller
             'productos.*.precio_unitario' => 'nullable|numeric',
             'productos.*.porcentaje_descuento' => 'nullable|numeric',
             'productos.*.importe' => 'nullable|numeric',
+            'productos.*.impuestos_seleccionados' => 'sometimes|array|exists:impuestos,id',
         ]);
 
         $proveedor = Proveedor::where('nombre_fantasia', $validated['proveedor'])->firstOrFail();
@@ -178,25 +181,39 @@ class OrdenCotizacionesController extends Controller
                     ]);
                 }
 
-                $productosIds[] = $detalle->id;
+                 // pivot impuestos — usar array vacío si no vino nada
+                    $impuestos = $producto['impuestos_seleccionados'] ?? [];
+                    $detalle->impuestos()->sync(is_array($impuestos) ? $impuestos : []);
+
+                    $productosIds[] = $detalle->id;
             }
 
-            // 🔴 Borrar los detalles que ya no están en el request
-            $orden->detalles()
-                ->whereNotIn('id', $productosIds)
-                ->delete();
+                    // 🔴 Borrar los detalles que ya no están en el request — con pivot detach
+                    $detallesEliminar = $orden->detalles()
+                        ->whereNotIn('id', $productosIds)
+                        ->get();
 
-            DB::commit();
+                    foreach ($detallesEliminar as $detalle) {
+                        $detalle->impuestos()->detach();
+                        $detalle->delete();
+                    }
+
+                    DB::commit();
 
 
-            return redirect()->back()->with('success', 'Orden de cotización confirmada correctamente.');
-        } catch (\Exception $e) {
-            DB::rollBack();
 
-            return redirect()->back()->with('danger', 'Error al enviada la orden de cotización.');
-        }
+                    return redirect()->route('cotizacionesOrdenes.show', [
+                        'solicitud_id' => $validated['solicitudCompra'],
+                        'orden_id' => $orden->id
+                    ])->with('success', 'Orden de cotización enviada correctamente.');
 
-    }
+                } catch (\Exception $e) {
+                    DB::rollBack();
+
+                    return redirect()->back()->with('danger', 'Error: ' . $e->getMessage());
+                    dd($e->getMessage(), $e->getLine(), $e->getFile());
+                }
+            }
 
     ////CONFIRMAR COTIZACION
     public function confirmarCotizacion(Request $request)
@@ -223,6 +240,7 @@ class OrdenCotizacionesController extends Controller
             'productos.*.precio_unitario' => 'nullable|numeric',
             'productos.*.porcentaje_descuento' => 'nullable|numeric',
             'productos.*.importe' => 'nullable|numeric',
+            'productos.*.impuestos_seleccionados' => 'sometimes|array|exists:impuestos,id',
         ]);
 
         $proveedor = Proveedor::where('nombre_fantasia', $validated['proveedor'])->firstOrFail();
@@ -274,8 +292,12 @@ class OrdenCotizacionesController extends Controller
             }
 
             // 🔵 3) Vincular
-            if (!$orden->solicitudCompra()->where('solicitud_compras.id', $solicitud->id)->exists()) {
-                $orden->solicitudCompra()->attach($solicitud->id);
+            // 🔗 Vincular con solicitud si aplica
+            if (!empty($validated['solicitudCompra'])) {
+                SolicitudCompraOrdenCotizacion::firstOrCreate([
+                    'solicitud_compra_id'    => $validated['solicitudCompra'],
+                    'orden_cotizaciones_id'  => $orden->id,
+                ]);
             }
 
             // 4) Detalles
@@ -318,26 +340,39 @@ class OrdenCotizacionesController extends Controller
                     ]);
                 }
 
-                $productosIds[] = $detalle->id;
+                    // pivot impuestos — usar array vacío si no vino nada
+                    $impuestos = $producto['impuestos_seleccionados'] ?? [];
+                    $detalle->impuestos()->sync(is_array($impuestos) ? $impuestos : []);
+
+                    $productosIds[] = $detalle->id;
             }
 
-            // 🔴 Borrar los detalles que ya no están en el request
-            $orden->detalles()
-                ->whereNotIn('id', $productosIds)
-                ->delete();
+                    // 🔴 Borrar los detalles que ya no están en el request — con pivot detach
+                    $detallesEliminar = $orden->detalles()
+                        ->whereNotIn('id', $productosIds)
+                        ->get();
 
-            DB::commit();
+                    foreach ($detallesEliminar as $detalle) {
+                        $detalle->impuestos()->detach();
+                        $detalle->delete();
+                    }
+
+                    DB::commit();
 
 
-        return redirect()->back()->with('success', 'Orden de cotización confirmada correctamente.');
 
-        } catch (\Exception $e) {
-            DB::rollBack();
+                    return redirect()->route('cotizacionesOrdenes.show', [
+                        'solicitud_id' => $validated['solicitudCompra'],
+                        'orden_id' => $orden->id
+                    ])->with('success');
 
-        return redirect()->back()->with('danger', $e);
+                } catch (\Exception $e) {
+                    DB::rollBack();
 
-        }
-    }
+                    return redirect()->back()->with('danger', 'Error: ' . $e->getMessage());
+                    dd($e->getMessage(), $e->getLine(), $e->getFile());
+                }
+            }
 
     ////VISUALIZAR DETALLE DE COTIZACION
     public function show($solicitud_id, $orden_id = null)
@@ -354,6 +389,7 @@ class OrdenCotizacionesController extends Controller
                 'ordenesCotizacion.detalles',
                 'ordenesCotizacion.almacenDestino',
                 'ordenesCotizacion.almacen',
+                'ordenesCotizacion.detalles.detallesImpuesto',
                 'ordenesCotizacion.detalles.producto',
                 'ordenesCotizacion.detalles.producto.modelo',
                 'ordenesCotizacion.detalles.producto.subCategoria',
@@ -441,9 +477,12 @@ class OrdenCotizacionesController extends Controller
 
                 // Copiar los detalles
                 foreach ($oc->detalles as $detalle) {
-                    OrdenCompraDetalle::create([
+
+                    // Crear el detalle de Orden de Compra
+                    $detalleOC = OrdenCompraDetalle::create([
                         'orden_compras_id' => $ordenCompra->id,
                         'orden_cotizaciones_id' => $oc->id,
+                        'entrega_esperada' => $detalle->entrega_esperada,
                         'producto_id' => $detalle->producto_id,
                         'descripcion' => $detalle->descripcion ?? '',
                         'cantidad' => $detalle->cantidad,
@@ -453,16 +492,28 @@ class OrdenCotizacionesController extends Controller
                         'usuario_creacion' => $validated['usuario_id'],
                         'created_at' => now(),
                     ]);
-                }
 
-                // Cambiar estado de la orden de cotización
-                $oc->estado = 'Confirmada';
-                $oc->save();
+                    // ============================================
+                    // COPIAR IMPUESTOS DEL DETALLE
+                    // ============================================
+                    if ($detalle->detallesImpuesto && $detalle->detallesImpuesto->count() > 0) {
+
+                        foreach ($detalle->detallesImpuesto as $impPivot) {
+
+                            OrdenCompraDetalleImpuesto::create([
+                                'orden_compras_detalles_id' => $detalleOC->id,
+                                'impuesto_id' => $impPivot->impuesto_id,
+                            ]);
+
+                        }
+                    }
+                }
             }
+
 
             DB::commit();
 
-            return back()->with('success', 'Ordenes de compra generadas correctamente.');
+            return back()->with('success');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -494,6 +545,7 @@ class OrdenCotizacionesController extends Controller
             'productos.*.precio_unitario' => 'nullable|numeric',
             'productos.*.porcentaje_descuento' => 'nullable|numeric',
             'productos.*.importe' => 'nullable|numeric',
+            'productos.*.impuestos_seleccionados' => 'sometimes|array|exists:impuestos,id',
         ]);
 
         $proveedor = Proveedor::where('nombre_fantasia', $validated['proveedor'])->firstOrFail();
@@ -527,31 +579,42 @@ class OrdenCotizacionesController extends Controller
                 ]);
             }
 
+            // 🔗 Vincular con solicitud si aplica
+            if (!empty($validated['solicitudCompra'])) {
+                SolicitudCompraOrdenCotizacion::firstOrCreate([
+                    'solicitud_compra_id'    => $validated['solicitudCompra'],
+                    'orden_cotizaciones_id'  => $orden->id,
+                ]);
+            }
+
+
             // 2) Detalles
             $productosIds = [];
 
             foreach ($validated['productos'] as $producto) {
+                // Intento de encontrar detalle por id (si viene)
+                $detalle = null;
+
                 if (!empty($producto['id'])) {
-                    // 🔄 Actualiza detalle existente
                     $detalle = OrdenCotizacionDetalle::where('id', $producto['id'])
                         ->where('orden_cotizaciones_id', $orden->id)
                         ->first();
+                }
 
-                    if ($detalle) {
-                        $detalle->update([
-                            'entrega_esperada'     => $producto['entrega_esperada'],
-                            'descripcion'          => $producto['descripcion'] ?? '',
-                            'codigo_barras'        => $producto['codigo_barras'] ?? '',
-                            'referencia'           => $producto['referencia'] ?? '',
-                            'cantidad'             => $producto['cantidad'] ?? 0,
-                            'precio_unitario'      => $producto['precio_unitario'] ?? 0,
-                            'porcentaje_descuento' => $producto['porcentaje_descuento'] ?? 0,
-                            'importe'              => $producto['importe'] ?? 0,
-                            'usuario_actualizacion'=> $validated['usuario_id'],
-                        ]);
-                    }
+                // Si existe lo actualizo, si no existe lo creo
+                if ($detalle) {
+                    $detalle->update([
+                        'entrega_esperada'     => $producto['entrega_esperada'],
+                        'descripcion'          => $producto['descripcion'] ?? '',
+                        'codigo_barras'        => $producto['codigo_barras'] ?? '',
+                        'referencia'           => $producto['referencia'] ?? '',
+                        'cantidad'             => $producto['cantidad'] ?? 0,
+                        'precio_unitario'      => $producto['precio_unitario'] ?? 0,
+                        'porcentaje_descuento' => $producto['porcentaje_descuento'] ?? 0,
+                        'importe'              => $producto['importe'] ?? 0,
+                        'usuario_actualizacion'=> $validated['usuario_id'],
+                    ]);
                 } else {
-                    // 🆕 Crea nuevo detalle
                     $detalle = OrdenCotizacionDetalle::create([
                         'orden_cotizaciones_id' => $orden->id,
                         'producto_id'           => $producto['producto_id'],
@@ -567,22 +630,37 @@ class OrdenCotizacionesController extends Controller
                     ]);
                 }
 
+                // pivot impuestos — usar array vacío si no vino nada
+                $impuestos = $producto['impuestos_seleccionados'] ?? [];
+                $detalle->impuestos()->sync(is_array($impuestos) ? $impuestos : []);
+
                 $productosIds[] = $detalle->id;
             }
 
-            // 🔴 Borrar los detalles que ya no están en el request
-            $orden->detalles()
+            // 🔴 Borrar los detalles que ya no están en el request — con pivot detach
+            $detallesEliminar = $orden->detalles()
                 ->whereNotIn('id', $productosIds)
-                ->delete();
+                ->get();
+
+            foreach ($detallesEliminar as $detalle) {
+                $detalle->impuestos()->detach();
+                $detalle->delete();
+            }
 
             DB::commit();
 
 
-            return redirect()->back()->with('success', 'Orden de cotización guardada correctamente.');
+
+            return redirect()->route('cotizacionesOrdenes.show', [
+                'solicitud_id' => $validated['solicitudCompra'],
+                'orden_id' => $orden->id
+            ])->with('success',' Cotización creada correctamente');
+
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with('danger', 'Error al guardar la orden de cotización.');
+            return redirect()->back()->with('danger', 'Error: ' . $e->getMessage());
+            dd($e->getMessage(), $e->getLine(), $e->getFile());
         }
     }
 

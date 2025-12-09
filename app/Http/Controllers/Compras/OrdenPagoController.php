@@ -5,14 +5,21 @@ namespace App\Http\Controllers\Compras;
 use App\Http\Controllers\Controller;
 use App\Models\Compras\PlanPago;
 use App\Models\Compras\OrdenPago;
+use App\Models\Contabilidad\Asientos\Asiento;
+use App\Models\Contabilidad\Asientos\Partida;
 use App\Models\Contabilidad\MovimientoTesoreria;
+use App\Models\Contabilidad\PlanCuentas\Ejercicio;
 use App\Models\ControlAcceso\User;
+use App\Models\General\MetodoPago;
+use App\Models\Padron\Proveedor\Proveedor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class OrdenPagoController extends Controller
 {
+
     ////GUARDAR ORDEN DE PAGO
     public function store(Request $request)
     {
@@ -20,6 +27,11 @@ class OrdenPagoController extends Controller
             'tipo_pago' => 'required|in:Unico,Cuotas',
             'cantidad_cuotas' => 'nullable|integer|min:1',
             'facturasSeleccionadas' => 'required|array|min:1',
+
+            // Cada factura debe ser objeto con id + montoAPagar
+            'facturasSeleccionadas.*.id' => 'required|integer',
+            'facturasSeleccionadas.*.montoAPagar' => 'required|numeric|min:0',
+
             'pagos' => 'required|array|min:1',
             'pagos.*.metodo_pago_id' => 'required|integer',
             'pagos.*.moneda_id' => 'required|integer',
@@ -61,15 +73,20 @@ class OrdenPagoController extends Controller
             }
 
             // 🔹 Asociar facturas al plan
-            $facturaIds = collect($data['facturasSeleccionadas'])->pluck('id')->toArray();
+            $facturaIds = collect($data['facturasSeleccionadas'])
+                ->pluck('id')
+                ->toArray();
+
             $plan->comprobantesProveedores()->attach($facturaIds);
 
-            // 🔹 Distribuir proporcionalmente las facturas en cada orden
-            $totalFacturas = collect($data['facturasSeleccionadas'])->sum('montoAPagar');
+            // 🔹 Distribución proporcional de facturas en cada órden
             $facturas = collect($data['facturasSeleccionadas']);
+            $totalFacturas = $facturas->sum('montoAPagar');
 
             foreach ($ordenes as $orden) {
+
                 foreach ($facturas as $factura) {
+
                     $proporcion = $factura['montoAPagar'] / $totalFacturas;
                     $importeAplicado = round($orden->importe * $proporcion, 2);
 
@@ -93,14 +110,17 @@ class OrdenPagoController extends Controller
             ], 201);
 
         } catch (\Throwable $th) {
+
             DB::rollBack();
             Log::error('Error al guardar la orden de pago: ' . $th->getMessage());
+
             return response()->json([
                 'error' => 'Error al guardar la orden de pago',
                 'details' => $th->getMessage(),
             ], 500);
         }
     }
+
 
     ////ACTUALIZAR ORDEN DE PAGO
     public function guardarOrdenes(Request $request)
@@ -123,7 +143,7 @@ class OrdenPagoController extends Controller
         return response()->json(['message' => 'Órdenes actualizadas correctamente']);
     }
 
-    ////PROCESAR ORDEN DE PAGO
+    //// PROCESAR ORDEN DE PAGO
     public function procesarOrdenes(Request $request)
     {
         $request->validate([
@@ -132,44 +152,160 @@ class OrdenPagoController extends Controller
         ]);
 
         DB::beginTransaction();
+
         try {
+            // Ejercicio contable abierto
+            $ejercicio = Ejercicio::where('estado', 'ABIERTO')->firstOrFail();
+            $usuarioId = Auth::id() ?? User::first()->id;
+
             foreach ($request->ordenes as $ordenData) {
+
+                // --------- 1. OBTENER ORDEN ----------
                 $orden = OrdenPago::findOrFail($ordenData['id']);
 
-                // Marcar la orden como procesada
+                // --------- 2. MARCAR COMO PAGADA ----------
                 $orden->update([
-                    'estado' => 'Confirmado',
-                    'fecha_pago' => now(),
-                    'usuario_pago' => User::first()->id,
+                    'estado'      => 'Confirmado',
+                    'fecha_pago'  => now(),
+                    'usuario_pago'=> $usuarioId,
                 ]);
 
-
-
-                // Crear movimiento de tesorería
+                // --------- 3. MOVIMIENTO DE TESORERÍA ----------
                 MovimientoTesoreria::create([
-                    'fecha' => now(),
-                    'tipo_movimiento' => 'salida',
-                    'monto' => $ordenData['importe'],
-                    'metodo_pago_id' => $ordenData['metodo_pago_id'] ?? null,
-                    'tipo_moneda_id' => $ordenData['moneda_id'] ?? null,
-                    'banco_id' => $ordenData['banco_origen_id'] ?? null,
-                    'cuenta_bancaria_id' => $ordenData['cuenta_origen_id'] ?? null,
-                    'orden_pago_id' => $orden->id,
-                    'proveedor_id' => $ordenData['proveedor_id'] ?? null,
-                    'usuario_id' => User::first()->id,
-                    'descripcion' => "Pago de Orden #{$orden->id}",
+                    'fecha'               => now(),
+                    'tipo_movimiento'     => 'salida',
+                    'monto'               => $ordenData['importe'],
+                    'metodo_pago_id'      => $ordenData['metodo_pago_id'] ?? null,
+                    'tipo_moneda_id'      => $ordenData['moneda_id'] ?? null,
+                    'banco_id'            => $ordenData['banco_origen_id'] ?? null,
+                    'cuenta_bancaria_id'  => $ordenData['cuenta_origen_id'] ?? null,
+                    'orden_pago_id'       => $orden->id,
+                    'proveedor_id'        => $ordenData['proveedor_id'] ?? null,
+                    'usuario_id'          => $usuarioId,
+                    'descripcion'         => "Pago de Orden #{$orden->id}",
                     'referencia_bancaria' => $ordenData['cbu_pago'] ?? null,
                 ]);
+
+                // --------- 4. CUENTAS CONTABLES ----------
+                $proveedor = Proveedor::find($ordenData['proveedor_id']);
+                $metodo    = MetodoPago::find($ordenData['metodo_pago_id']);
+
+                $cuentaProveedor = 274; // DEBE
+                $cuentaMetodo    = $metodo->co_cuenta_id; // HABER
+
+                // --------- 5. CREAR ASIENTO ----------
+                $asiento = Asiento::create([
+                    'numero'          => Asiento::max('numero') + 1,
+                    'co_ejercicio_id' => $ejercicio->id,
+                    'fecha'           => now(),
+                    'concepto'        => "Pago Orden #{$orden->id}",
+                    'estado'          => 'Pendiente',
+                    'importe'         => $ordenData['importe'],
+                    'model_id_created'=> $usuarioId,
+                ]);
+
+                // --------- 6. PARTIDA DEBE (Proveedor) ----------
+                Partida::create([
+                    'co_asiento_id' => $asiento->id,
+                    'co_cuenta_id'  => $cuentaProveedor,
+                    'concepto'      => "Cancelación de deuda proveedor",
+                    'debe'          => $ordenData['importe'],
+                    'haber'         => 0,
+                ]);
+
+                // --------- 7. PARTIDA HABER (Método Pago) ----------
+                Partida::create([
+                    'co_asiento_id' => $asiento->id,
+                    'co_cuenta_id'  => $cuentaMetodo,
+                    'concepto'      => "Pago mediante {$metodo->nombre}",
+                    'debe'          => 0,
+                    'haber'         => $ordenData['importe'],
+                ]);
+
+
+                // ====================================================
+                // 8. IMPUESTOS ASOCIADOS A LAS FACTURAS ORIGEN
+                // ====================================================
+                $impuestosAgrupados = [];
+
+                foreach ($orden->comprobantesProveedores as $comp) {
+
+                    foreach ($comp->detalles as $detalle) {
+
+                        foreach ($detalle->impuestos as $imp) {
+
+                            $cuentaId = $imp->co_cuenta_id;
+                            if (!$cuentaId) continue;
+
+                            // Buscar si en la pivote existe un monto ya calculado
+                            $pivot = DB::table('comprobantes_proveedores_detalles_impuestos')
+                                        ->where('detalle_id', $detalle->id)
+                                        ->where('impuesto_id', $imp->id)
+                                        ->first();
+
+                            // ------------- CALCULAR IMPORTE DEL IMPUESTO ----------------
+
+                                // Si la pivote no tiene importe, calcularlo:
+                                // valor = base * porcentaje
+                                $base = collect([
+                                    $detalle->subtotal ?? null,
+                                    $detalle->importe ?? null,
+                                    $detalle->monto ?? null,
+                                    $detalle->total ?? null,
+                                    $detalle->precio_total ?? null,
+                                ])->filter()->first() ?? 0;
+                                $porcentaje = $imp->porcentaje ?? 0;
+
+                                $importeImpuesto = $base * ($porcentaje / 100);
+
+
+                            if ($importeImpuesto <= 0) continue;
+
+                            // Agrupar por cuenta contable
+                            if (!isset($impuestosAgrupados[$cuentaId])) {
+                                $impuestosAgrupados[$cuentaId] = [
+                                    'nombre'  => $imp->descripcion,
+                                    'importe' => 0
+                                ];
+                            }
+
+                            $impuestosAgrupados[$cuentaId]['importe'] += $importeImpuesto;
+                        }
+                    }
+                }
+
+
+                // ====================================================
+                // 9. GENERAR PARTIDAS DE RETENCIONES / PERCEPCIONES
+                // ====================================================
+                foreach ($impuestosAgrupados as $cuentaId => $data) {
+                    Partida::create([
+                        'co_asiento_id' => $asiento->id,
+                        'co_cuenta_id'  => $cuentaId,
+                        'concepto'      => "Percepción/Impuesto: {$data['nombre']}",
+                        'debe'          => 0,
+                        'haber'         => $data['importe'], // LAS RETENCIONES VAN AL HABER
+                    ]);
+                }
+
             }
 
             DB::commit();
 
-            return response()->json(['message' => 'Órdenes procesadas y registradas en tesorería correctamente']);
+            return response()->json(['message' => 'Órdenes procesadas correctamente']);
+
         } catch (\Throwable $e) {
+
             DB::rollBack();
             report($e);
-            return response()->json(['error' => 'Error al procesar las órdenes'], 500);
+
+            return response()->json([
+                'error'   => 'Error al procesar las órdenes',
+                'detalle' => $e->getMessage()
+            ], 500);
         }
     }
+
+
 
 }

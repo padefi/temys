@@ -8,7 +8,7 @@ export interface ComprobanteProveedor {
     fecha_factura: Date;
     fecha_vencimiento: Date;
     condicion_venta_id: number;
-    moneda_id: string;
+    moneda_id: number;
     tipo_moneda: TipoMoneda;
     punto_venta: string;
     numero_factura: string;
