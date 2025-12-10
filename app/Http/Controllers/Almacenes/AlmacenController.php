@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Almacenes;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\inventario\AlmacenResource;
+use App\Http\Resources\Inventario\AlmacenResource;
 use App\Models\Almacenes\Almacen;
 use App\Models\Inventario\InventarioStock;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class AlmacenController extends Controller
 {
