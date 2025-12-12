@@ -43,14 +43,11 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
             />
         ),
         cell: ({ row }) => (
-
             <Checkbox
                 checked={row.getIsSelected()}
                 onCheckedChange={(value) => row.toggleSelected(!!value)}
                 aria-label="Seleccionar fila"
             />
-
-
         ),
         enableSorting: false,
         enableHiding: false,
@@ -192,7 +189,7 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
 
             return (
                 <>
-                   { item.estado_orden_entrega=== "Enviado" ? (
+                   { item.estado_orden_entrega=== "Enviado" || item.tipo_recepcion == "Orden de compra" ? (
                     <div className="text-center">
                         <Button
                             variant="outline"
@@ -206,8 +203,7 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
 
                     </div>
                     ) : null}
-
-                    <Button
+                    {item.tipo_recepcion!="Orden de compra"?(   <Button
                         variant="outline"
                         size="sm"
                         className="hover:bg-accent/10 cursor-pointer"
@@ -216,7 +212,8 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
                         <Eye className="h-4 w-4" />
 
                         Seguimiento
-                    </Button>
+                    </Button>):null}
+                 
                 </>
 
             );

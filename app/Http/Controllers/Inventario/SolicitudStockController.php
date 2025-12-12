@@ -6,7 +6,7 @@ use App\Http\Requests\Inventario\AcceptStockRequest;
 use App\Http\Requests\Inventario\CancelStockRequest;
 use App\Http\Requests\Inventario\SolicitarStockRequest;
 use App\Http\Resources\Inventario\SolicitudRecibidaDetalleResource;
-use App\Http\Resources\inventario\SolicitudRecibidaStockResource;
+use App\Http\Resources\Inventario\SolicitudRecibidaStockResource;
 use App\Models\Inventario\InventarioOrdenEntrega;
 use App\Models\Inventario\InventarioOrdenEntregaDetalle;
 use App\Models\Inventario\InventarioRecepcionProducto;
