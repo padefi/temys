@@ -52,7 +52,7 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
         enableSorting: false,
         enableHiding: false,
     },
-    {
+/*     {
         accessorKey: "origen",
         header: ({ column, table }) => {
             const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
@@ -67,7 +67,7 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
             )
         },
         cell: ({ row }) => <div className="text-center">{row.getValue("origen")}</div>,
-    },
+    }, */
     {
         accessorKey: "destino",
         header: ({ column, table }) => {
@@ -75,7 +75,7 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
             return (
                 <DataTableColumnHeader
                     column={column}
-                    title="Destino"
+                    title="Origen"
                     disabled={disabled}
                     className="justify-center font-bold min-w-[90px]"
                     isVisible={true}
