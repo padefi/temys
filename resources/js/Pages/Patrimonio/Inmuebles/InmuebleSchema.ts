@@ -20,16 +20,12 @@ enum estadoInmueble{
 
 export const inmuebleSchema = z.object({
     num_partida: z.coerce.number(),
-    estado_id: z.enum(estadoInmueble),
-    nombre_completo: z.string().min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
-    nombre_fantasia: z.string().min(2, { message: "El nombre fantasia debe tener al menos 2 caracteres" }),
-    tipo_inmueble_id:z.coerce.number(),
     tipo_ocupacion_id: z.coerce.number(),
-    superficie_cubierta: z.coerce.number(),
-    tipo_contrato: z.enum(tipocontrato),
+    estado_id: z.enum(estadoInmueble),
+    nombre_fantasia: z.string().min(2, { message: "El nombre fantasia debe tener al menos 2 caracteres" }),
+    nombre_completo: z.string().min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
+    tipo_inmueble_id:z.coerce.number(),
 
-    superficie_libre: z.coerce.number(),
-    superficie_total:z.coerce.number(),
     provincia_id: z.coerce.number(),
     localidad_id: z.coerce.number(),
     calle_id: z.coerce.number(),
@@ -37,6 +33,13 @@ export const inmuebleSchema = z.object({
     codigo_postal: z.coerce.number(),
     piso: z.coerce.number(),
     departamento: z.coerce.number(),
+
+    superficie_cubierta: z.coerce.number(),
+    superficie_libre: z.coerce.number(),
+    superficie_total:z.coerce.number(),
+    
+    tipo_contrato: z.enum(tipocontrato),
+
 /* domicilio */
     fecha_inscripcion: Date(),
     fecha_escritura: Date(),

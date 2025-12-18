@@ -2,62 +2,53 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Com
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 
-import { Bath, Bed, Car, DollarSign, Ruler } from "lucide-react";
-
-function Caracteristicas(){
-    return ( 
+import { Bath, Bed, Car, DollarSign, Ruler, RulerDimensionLine } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { inmuebleSchema, InmuebleSchemaType } from "./InmuebleSchema"
+function Caracteristicas() {
+    const { register, handleSubmit, formState: { errors } } = useForm({
+        resolver: zodResolver(inmuebleSchema),
+    });
+    return (
         <>
-        {/* Precio y Características */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-primary" />
-         {/* //   {contractType === "temporal" ? "Características" : "Precio y Características"} */}
-          </CardTitle>
-          <CardDescription>
-     {/*        {contractType === "temporal"
-              ? "Características de la propiedad"
-              : "Detalles económicos y características de la propiedad"} */}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <RulerDimensionLine className="h-4 w-4" />
+                        Características de la propiedad
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                                <Ruler className="h-4 w-4" />
+                                Superficie Cubierta (m²)
+                            </Label>
+                            <Input id="areaCubierta" type="number" placeholder="0"  {...register("superficie_cubierta", { required: true })} />
+                            {errors.superficie_cubierta && <p style={{ color: 'red' }}>{errors.superficie_cubierta.message}</p>}
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                                <Ruler className="h-4 w-4" />
+                                Superficie Libre (m²)
+                            </Label>
+                            <Input id="areaLibre" type="number" placeholder="0" min="0"   {...register("superficie_libre", { required: true })} />
+                            {errors.superficie_libre && <p style={{ color: 'red' }}>{errors.superficie_libre.message}</p>}
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                                <Ruler className="h-4 w-4" />
+                                Superficie Total (m²)
+                            </Label>
+                            <Input id="areaTotal" type="number" placeholder="0" min="0"  {...register("superficie_total", { required: true })} />
+                            {errors.superficie_total && <p style={{ color: 'red' }}>{errors.superficie_total.message}</p>}
+                        </div>
 
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="space-y-2">
-              <Label htmlFor="area" className="flex items-center gap-2">
-                <Ruler className="h-4 w-4" />
-                Superficie (m²)
-              </Label>
-              <Input id="area" type="number" placeholder="0" required />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bedrooms" className="flex items-center gap-2">
-                <Bed className="h-4 w-4" />
-                Dormitorios
-              </Label>
-              <Input id="bedrooms" type="number" placeholder="0" min="0" />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bathrooms" className="flex items-center gap-2">
-                <Bath className="h-4 w-4" />
-                Baños
-              </Label>
-              <Input id="bathrooms" type="number" placeholder="0" min="0" />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="parking" className="flex items-center gap-2">
-                <Car className="h-4 w-4" />
-                Cocheras
-              </Label>
-              <Input id="parking" type="number" placeholder="0" min="0" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                    </div>
+                </CardContent>
+            </Card>
         </>
     )
 }

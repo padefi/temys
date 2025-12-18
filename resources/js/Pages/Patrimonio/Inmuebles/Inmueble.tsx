@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import InformacionBasica from './InformacionBasica';
 import Ubicacion from './Ubicacion';
 import Caracteristicas from './Caracteristicas';
-import TipoContrato from './TipoDeContrato';
+import TiposDeContratos from './Contratos';
 
 function InmueblesForm() {
     const { register, handleSubmit, formState: { errors } } = useForm({
@@ -30,12 +30,10 @@ function InmueblesForm() {
                         </p>
                     </div>
                     <form className="space-y-6">
-
                         <InformacionBasica></InformacionBasica>
                         <Ubicacion></Ubicacion>
                         <Caracteristicas></Caracteristicas>
-                        <TipoContrato></TipoContrato>
-
+                        <TiposDeContratos></TiposDeContratos>
                     </form>
                 </div>
             </div>
