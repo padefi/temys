@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
-import { DetalleProducto, EntregaItem } from "../EntregasManagement";
+import { DetalleProducto,EntregaItem  } from "@/types/Inventario/Operaciones/Entregas/Entregas";
 import { Button } from "@/Components/ui/button";
 import axios from "axios";
 import { router } from "@inertiajs/react";

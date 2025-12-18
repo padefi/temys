@@ -50,7 +50,6 @@ export default function RecepcionesManagement() {
         setData(recepcionProductos.data);
     }, [recepcionProductos]);
 
-    console.log(recepcionProductos)
 
 
     const abrirModal = (recepcion: RecepcionesItem) => {

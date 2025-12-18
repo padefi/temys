@@ -16,6 +16,7 @@ return new class extends Migration
         $table->unsignedBigInteger('seguimiento_id'); 
         $table->enum('estado', ['pendiente', 'en_transito', 'en_ruta', 'completado', 'entregado', 'cancelado', 'retenido']);
         $table->unsignedBigInteger('usuario_id')->nullable();
+        $table->string('ubicacion_actual')->nullable(); 
         $table->timestamp('fecha');
         $table->text('observacion')->nullable(); 
         

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->enum('tipo_movimiento', ['Orden de compra', 'Remito','restribuccion']);
             $table->unsignedBigInteger('movimiento_id')->nullable();
             $table->date('fecha_recepcion');
-            $table->enum('estado', ['Completa','Parcial','Pendiente']);           
+            $table->enum('estado', ['Completo','Parcial','Pendiente']);           
             $table->unsignedBigInteger('usuario_creacion');
             $table->dateTime('fecha_actualizacion')->nullable();;
             $table->unsignedBigInteger('usuario_actualizacion')->nullable();

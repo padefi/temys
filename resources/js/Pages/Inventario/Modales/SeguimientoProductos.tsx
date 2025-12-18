@@ -65,11 +65,13 @@ export function ProductTracking({
   const estadoActual = estadoConfig[stockTransito?.estado as keyof typeof estadoConfig] || estadoConfig.pendiente
   const EstadoIcon = estadoActual.icon
 
+  console.log(stockTransito)
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "No especificada"
     const date = new Date(dateString)
     return dateTimeFormat(date)
   }
+
 
   return (
     <div className="w-full space-y-6">
@@ -91,7 +93,7 @@ export function ProductTracking({
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Route Information */}
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-2 gap-4">
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-secondary">
                 <MapPin className="w-5 h-5 text-secondary-foreground" />
@@ -102,15 +104,15 @@ export function ProductTracking({
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
+{/*             <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-primary/10">
                 <Truck className="w-5 h-5 text-primary" />
               </div>
-              <div className="space-y-1">
+               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground">Ubicación Actual</p>
                 <p className="text-sm font-semibold">{stockTransito?.ubicacion_actual}</p>
-              </div>
-            </div>
+              </div> 
+            </div> */}
 
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-secondary">
@@ -186,6 +188,7 @@ export function ProductTracking({
 
                 return (
                   <div key={`${estado.transito_id}-${index}`} className="relative flex gap-4 items-start">
+                    
                     {/* Timeline dot */}
                     <div
                       className={cn(
@@ -194,6 +197,7 @@ export function ProductTracking({
                       )}
                     >
                       <Icon className="w-5 h-5" />
+                      
                     </div>
 
                     {/* Content */}
@@ -201,6 +205,7 @@ export function ProductTracking({
                       <div className="flex items-start justify-between gap-4 mb-2">
                         <div>
                           <h4 className="font-semibold text-base">{config.label}</h4>
+                          <h4 className="text-base">Ubicacion Actual: {estado.ubicacion_actual}</h4>                      
                           <p className="text-sm text-muted-foreground">{formatDate(estado.fecha)}</p>
                         </div>
                         {isLast && (
@@ -211,7 +216,8 @@ export function ProductTracking({
                       </div>
                       {estado.observacion && (
                         <p className="text-sm text-muted-foreground mt-2 bg-muted/50 p-3 rounded-md">
-                          {estado.observacion}
+                          {estado.observacion} <br />
+                         
                         </p>
                       )}
                     </div>

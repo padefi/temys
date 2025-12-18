@@ -13,6 +13,7 @@ class InventarioEstadosTracking extends Model
         'seguimiento_id',
         'estado',
         'usuario_id',
+        'ubicacion_actual',
         'fecha',
         'observacion',
     ];
