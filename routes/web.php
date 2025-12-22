@@ -34,6 +34,9 @@ Route::middleware(['auth', 'verified', 'active', 'route_user_active'])->group(fu
     /* TO-DO Modulo General */
     require __DIR__.'/general.php';
 
+    /* TO-DO Georef */
+    require __DIR__.'/georef.php';
+
     /* TO-DO Modulo contabilidad */
     require __DIR__ . '/contabilidad.php';
 
