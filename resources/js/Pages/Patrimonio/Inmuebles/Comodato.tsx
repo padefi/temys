@@ -1,16 +1,16 @@
 import { Label } from "@/Components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, useFormContext } from "react-hook-form"
 import { inmuebleSchema, InmuebleSchemaType } from "./InmuebleSchema"
 import { Input } from "@/Components/ui/input";
 import { Textarea } from "@/Components/ui/textarea";
 
 
 function Comodato() {
-    const { register, handleSubmit, formState: { errors } } = useForm({
-        resolver: zodResolver(inmuebleSchema),
-    });
-
+   const {
+    register,
+    formState: { errors },
+  } = useFormContext<InmuebleSchemaType>();
     return (
         <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
@@ -38,9 +38,9 @@ function Comodato() {
                     placeholder="WiFi, aire acondicionado, TV, ropa de cama, toallas, etc."
                     rows={3}
                     className="resize-none"
-                    {...register("superficie_cubierta", { required: true })}
+                    {...register("observacion", { required: true })}
                 />
-                 {errors.superficie_cubierta && <p style={{ color: 'red' }}>{errors.superficie_cubierta.message}</p>}
+                 {errors.observacion && <p style={{ color: 'red' }}>{errors.observacion.message}</p>}
             </div>
         </div>
     )

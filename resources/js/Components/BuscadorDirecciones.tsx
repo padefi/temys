@@ -46,6 +46,7 @@ interface BuscadorDireccionesCompactoProps {
   className?: string;
   /** Deshabilitar el componente */
   disabled?: boolean;
+  mostrarBorde?:boolean;
   /** Mostrar el mapa de resultados */
   mostrarMapa?: boolean;
 }
@@ -62,6 +63,7 @@ interface BuscadorDireccionesCompactoProps {
 export default function BuscadorDireccionesCompacto({
   onDireccionSeleccionada,
   className,
+  mostrarBorde,
   disabled = false,
   mostrarMapa = true,
 }: BuscadorDireccionesCompactoProps) {
@@ -552,7 +554,9 @@ export default function BuscadorDireccionesCompacto({
   return (
     <div className={cn("space-y-3", className)}>
       {/* Formulario de Búsqueda Compacto */}
-      <div className="rounded-lg border bg-card p-4 shadow-sm">
+      <div className={`bg-card p-4 shadow-sm ${
+    !mostrarBorde ? "rounded-lg border" : ""
+  }`}>
         <div className="space-y-4">
           {/* Filtros opcionales arriba */}
           <div className="grid gap-3 md:grid-cols-2">

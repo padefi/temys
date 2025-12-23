@@ -4,12 +4,13 @@ import { Label } from "@/Components/ui/label";
 
 import { Bath, Bed, Car, DollarSign, Ruler, RulerDimensionLine } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, useFormContext } from "react-hook-form"
 import { inmuebleSchema, InmuebleSchemaType } from "./InmuebleSchema"
 function Caracteristicas() {
-    const { register, handleSubmit, formState: { errors } } = useForm({
-        resolver: zodResolver(inmuebleSchema),
-    });
+     const {
+    register,
+    formState: { errors },
+  } = useFormContext<InmuebleSchemaType>();
     return (
         <>
             <Card>

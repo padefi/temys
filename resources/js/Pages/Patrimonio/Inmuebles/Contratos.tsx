@@ -3,7 +3,7 @@ import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { FileText } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, useFormContext } from "react-hook-form"
 import { inmuebleSchema, InmuebleSchemaType } from "./InmuebleSchema"
 import { useState } from "react";
 import Escritura from "./Escritura";
@@ -11,9 +11,10 @@ import Alquiler from "./Alquiler";
 import Comodato from "./Comodato";
 
 function TiposDeContratos() {
-    const { register, handleSubmit, formState: { errors } } = useForm({
-        resolver: zodResolver(inmuebleSchema),
-    });
+   const {
+    register,
+    formState: { errors },
+  } = useFormContext<InmuebleSchemaType>();
     const [contractType, setContractType] = useState<string>("")
     return (
         <>

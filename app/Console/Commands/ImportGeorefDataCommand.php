@@ -30,22 +30,22 @@ class ImportGeorefDataCommand extends Command
     private array $config = [
         'provincias' => [
             'table' => 'georef_provincias',
-            'file' => 'private/georef/raw/provincias.csv',
+            'file' => 'georef/raw/provincias.csv',
             'unique_key' => 'id', // Columna única para upsert
         ],
         'departamentos' => [
             'table' => 'georef_departamentos',
-            'file' => 'private/georef/raw/departamentos.csv',
+            'file' => 'georef/raw/departamentos.csv',
             'unique_key' => 'id',
         ],
         'localidades' => [
             'table' => 'georef_localidades',
-            'file' => 'private/georef/raw/localidades.csv',
+            'file' => 'georef/raw/localidades.csv',
             'unique_key' => 'id',
         ],
         'calles' => [
             'table' => 'georef_calles',
-            'file' => 'private/georef/raw/calles.csv',
+            'file' => 'georef/raw/calles.csv',
             'unique_key' => 'id',
         ],
     ];

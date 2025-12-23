@@ -2,16 +2,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Com
 import { Input } from "@/Components/ui/input"
 import { Label } from "@/Components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/Components/ui/select"
+
 import { SelectValue } from "@radix-ui/react-select"
 import { Building2 } from "lucide-react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, useFormContext } from "react-hook-form"
 import { inmuebleSchema ,InmuebleSchemaType} from "./InmuebleSchema"
 
 function InformacionBasica() {
-  const { register, handleSubmit, formState: { errors } } = useForm({
-        resolver: zodResolver(inmuebleSchema),
-    });
+   const {
+    register,
+    formState: { errors },
+  } = useFormContext<InmuebleSchemaType>();
 
     return (
         <>
@@ -28,14 +30,14 @@ function InformacionBasica() {
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                             <Label htmlFor="num_partida">Numero de Partida</Label>
-                            <Input id="num_partida" {...register("num_partida", { required: true })}  type="number" placeholder="18-1-C-123-01-002" min="1" required />
+                            <Input id="num_partida" {...register("num_partida", { required: true } )}  type="number" placeholder="18-1-C-123-01-002" min="1"  />
                             {errors.num_partida && <p style={{ color: 'red' }}>{errors.num_partida.message}</p>}
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="type">Tipo de Propiedad</Label>
                             <Select {...register("tipo_ocupacion_id", { required: true })}>
-                                <SelectTrigger id="type" className="w-full">
+                                <SelectTrigger id="tipo_ocupacion_id" className="w-full">
                                     <SelectValue placeholder="Seleccionar tipo" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -68,12 +70,12 @@ function InformacionBasica() {
 
                         <div className="space-y-2">
                             <Label htmlFor="min-nights">Nombre Fantasía</Label>
-                            <Input id="min-nights" placeholder="Nombre de fantasía"  {...register("nombre_fantasia", { required: true })} />
+                            <Input id="min-nights" placeholder="Nombre de fantasía"  {...register("nombre_fantasia", { required: true })} type="text"/>
                               {errors.nombre_fantasia && <p style={{ color: 'red' }}>{errors.nombre_fantasia.message}</p>}
                         </div>
                         <div className="space-y-2">
                             <Label>Nombre Completo</Label>
-                            <Input placeholder="Nombre Completo"  {...register("nombre_completo", { required: true })}  />
+                            <Input placeholder="Nombre Completo"  {...register("nombre_completo", { required: true })}  type="text"/>
                              {errors.nombre_completo && <p style={{ color: 'red' }}>{errors.nombre_completo.message}</p>}
                         </div>
 
