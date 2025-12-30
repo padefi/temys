@@ -26,7 +26,7 @@ export const getColumns = ({
     expandedMotivos,
     abrirModalSeguimiento
 }: GetColumnsProps): ColumnDef<EntregaItem>[] => [
-        {
+/*         {
             accessorKey: "origen",
             header: ({ column, table }) => {
                 const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
@@ -41,7 +41,7 @@ export const getColumns = ({
                 )
             },
             cell: ({ row }) => <div className="text-center">{row.getValue("origen")}</div>,
-        },
+        }, */
         {
             accessorKey: "destino",
             header: ({ column, table }) => {

@@ -5,6 +5,7 @@ export interface MovimientoEstado {
   usuario_id: number;
   fecha: string; 
   observacion: string;
+  ubicacion_actual: string;
   usuario?: {
     id: number;
     name: string;
@@ -36,7 +37,7 @@ export interface InventarioStockTransito {
   destino_id: number;
   cantidad: number;
   estado: string;
-  ubicacion_actual: string;
+ /*  ubicacion_actual: string; */
   fecha_salida: string; 
   fecha_llegada: string;
   observaciones: string;

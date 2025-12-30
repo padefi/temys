@@ -42,6 +42,7 @@ class DatabaseSeeder extends Seeder
             AlmacenSeeder::class,
             SolicitudCompraSeeder::class,
             OrdenCotizacionSeeder::class,
+            ImpuestoSeeder::class,
             OrdenCotizacionDetalleSeeder::class,
             SolicitudCompraOrdenCotizacionSeeder::class,
             OrdenCompraSeeder::class,
@@ -67,8 +68,7 @@ class DatabaseSeeder extends Seeder
             MovimientoTesoreriaSeeder::class,
             ProvinciaSeeder::class,
             LocalidadSeeder::class,
-            CalleSeeder::class,
-            OrdenCotizacionVentaSeeder::class,
+            CalleSeeder::class,OrdenCotizacionVentaSeeder::class,
             OrdenCotizacionVentaDetalleSeeder::class,
             OrdenVentaSeeder::class,
             OrdenVentaDetalleSeeder::class,
@@ -86,8 +86,6 @@ class DatabaseSeeder extends Seeder
             ComprobanteClienteSeeder::class,
             ImpuestoSeeder::class,
             ComprobanteClienteDetalleImpuestoSeeder::class,
-
-
 
 /*             InventarioMovimientoEstadosSeeder::class,
             InventarioStockTransitoSeeder::class, */

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Inventario;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\inventario\StockResource;
+use App\Http\Resources\Inventario\StockResource;
 use App\Models\Inventario\InventarioStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

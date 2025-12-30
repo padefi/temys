@@ -43,19 +43,16 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
             />
         ),
         cell: ({ row }) => (
-
             <Checkbox
                 checked={row.getIsSelected()}
                 onCheckedChange={(value) => row.toggleSelected(!!value)}
                 aria-label="Seleccionar fila"
             />
-
-
         ),
         enableSorting: false,
         enableHiding: false,
     },
-    {
+/*     {
         accessorKey: "origen",
         header: ({ column, table }) => {
             const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
@@ -70,7 +67,7 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
             )
         },
         cell: ({ row }) => <div className="text-center">{row.getValue("origen")}</div>,
-    },
+    }, */
     {
         accessorKey: "destino",
         header: ({ column, table }) => {
@@ -78,7 +75,7 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
             return (
                 <DataTableColumnHeader
                     column={column}
-                    title="Destino"
+                    title="Origen"
                     disabled={disabled}
                     className="justify-center font-bold min-w-[90px]"
                     isVisible={true}
@@ -138,9 +135,9 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
                     class: "bg-blue-100 text-blue-800",
                     label: "Parcial"
                 },
-                completa: {
+                completo: {
                     class: "bg-green-100 text-green-800",
-                    label: "Completa"
+                    label: "Completo"
                 },
                  cancelado: {
                     class: "bg-red-100 text-red-800",
@@ -192,7 +189,7 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
 
             return (
                 <>
-                   { item.estado_orden_entrega=== "Enviado" ? (
+                   { item.estado_orden_entrega=== "Enviado" || item.tipo_recepcion == "Orden de compra" ? (
                     <div className="text-center">
                         <Button
                             variant="outline"
@@ -206,8 +203,7 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
 
                     </div>
                     ) : null}
-
-                    <Button
+                    {item.tipo_recepcion!="Orden de compra"?(   <Button
                         variant="outline"
                         size="sm"
                         className="hover:bg-accent/10 cursor-pointer"
@@ -216,7 +212,8 @@ export const getColumns = ({ onAbrirModal, abrirModalSeguimiento }: GetColumnsPr
                         <Eye className="h-4 w-4" />
 
                         Seguimiento
-                    </Button>
+                    </Button>):null}
+                 
                 </>
 
             );

@@ -209,7 +209,7 @@ export default function AceptarStock({
                       }}
                       max={detalle.cantidad}
                       min="0"
-                      disabled={!stock || stock.cantidad_actual === 0 || stock.cantidad_actual <= stock.stock_minimo}
+                     /*  disabled={!stock || stock.cantidad_actual === 0 || stock.cantidad_actual <= stock.stock_minimo} */
                     />
                     {erroresPorProducto[detalle.producto_id] && (
                       <p className="text-sm text-red-500">

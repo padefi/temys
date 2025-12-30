@@ -10,15 +10,28 @@ export type Almacen = {
     id: number;
     nombre: string;
 };
-
+export type ProductoEnAlmacen = {
+  producto_id: number;
+  producto: string;
+  cantidad_actual: number;
+  stock_minimo: number;
+};
 export type AlmacenStock = {
+  almacen_id: number;
+  almacen: string;
+  productos: ProductoEnAlmacen[];
+};
+
+
+/* export type AlmacenStock = {
     id: number;
     producto_id: number;
     nombre: string;
     nombre_producto: string;
-    cantidad_actual: number
+    cantidad_actual: number;
+    stock_minimo:number;
 };
-
+ */
 export type StockItem = {
     id: number;
     producto: Producto;

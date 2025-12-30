@@ -10,10 +10,11 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
-        "inertiajs/inertia-laravel": "2.0.11",
-        "laravel/framework": "12.40.2",
+        "inertiajs/inertia-laravel": "2.0.12",
+        "laravel/framework": "12.41.1",
         "laravel/sanctum": "4.2.1",
         "laravel/tinker": "2.10.2",
+        "league/csv": "^9.27",
         "mpdf/mpdf": "^8.2.7",
         "spatie/laravel-permission": "^6.23.0",
         "spatie/laravel-query-builder": "^6.3.6",
@@ -24,10 +25,10 @@
         "laravel/breeze": "2.3.8",
         "laravel/pail": "1.2.4",
         "laravel/pint": "1.26.0",
-        "laravel/sail": "1.48.1",
+        "laravel/sail": "1.50.0",
         "mockery/mockery": "^1.6.12",
         "nunomaduro/collision": "8.8.3",
-        "phpunit/phpunit": "12.4.5"
+        "phpunit/phpunit": "12.5.2"
     },
     "autoload": {
         "psr-4": {

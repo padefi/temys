@@ -17,7 +17,6 @@ return new class extends Migration
   
             // Info del tracking
             $table->enum('estado', ['pendiente', 'en_transito', 'en_ruta', 'completado', 'entregado', 'cancelado', 'retenido']);
-            $table->string('ubicacion_actual')->nullable(); 
             $table->date('fecha_salida')->nullable();
             $table->date('fecha_llegada')->nullable();
             $table->text('observaciones')->nullable();

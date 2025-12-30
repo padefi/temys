@@ -118,12 +118,12 @@ class EntregaController extends Controller
                         'cantidad_actual' => DB::raw('cantidad_actual - ' . $detalle->cantidad_enviada),
                         'usuario_actualizacion' => Auth::id(),
                         'fecha_actualizacion' => now(),
-                    ]);
+                    ]);        
+            }
 
-                $transito = InventarioTracking::create([
+                  $transito = InventarioTracking::create([
                     'entrega_id' => $orden->id,
-                    'estado' => 'en_transito',
-                    'ubicacion_actual' => $orden->origen->nombre,
+                    'estado' => 'en_transito',                 
                     'fecha_salida' => now(),
                     'observaciones' => 'Producto en tránsito hacia ' . $orden->destino->nombre,
 
@@ -133,10 +133,10 @@ class EntregaController extends Controller
                     'seguimiento_id' => $transito->id,
                     'estado' => 'en_transito',
                     'usuario_id' => Auth::id(),
+                    'ubicacion_actual' => $orden->origen->nombre,
                     'fecha' => now(),
 
                 ]);
-            }
 
 
 
