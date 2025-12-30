@@ -8,6 +8,7 @@ use App\Models\Contabilidad\Asientos\Asiento;
 use App\Models\Contabilidad\Asientos\Partida;
 use App\Models\Contabilidad\PlanCuentas\Ejercicio;
 use App\Models\General\Impuesto;
+use App\Models\General\TipoComprobante;
 use App\Models\Padron\Proveedor\Proveedor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -249,5 +250,94 @@ class ComprobantesProveedoresController extends Controller
 
         return response()->json($comprobantes);
     }
+
+    public function getProximoNumeroAnticipo()
+    {
+        // El punto de venta fijo para los Anticipos, como se definió en el frontend
+        $puntoVentaAnticipo = '0001';
+
+        // 1. Encontrar el ID del tipo de comprobante 'Anticipo'
+        $tipoAnticipo = TipoComprobante::where('nombre', 'Anticipo')->first();
+
+        if (!$tipoAnticipo) {
+            // Si el tipo no existe, retornamos un error o forzamos el inicio en 1
+            // Retornar 1 es una solución más suave para el UX
+            return response()->json(['proximo_numero' => 1]);
+        }
+
+        $tipoComprobanteId = $tipoAnticipo->id;
+
+        // 2. Encontrar el último comprobante existente
+        $ultimoComprobante = ComprobanteProveedor::where('tipo_comprobante_id', $tipoComprobanteId)
+            ->where('punto_venta', $puntoVentaAnticipo)
+            // Importante: Ordenar por el número como si fuera un entero (SIGNED) para obtener el máximo correcto.
+            ->orderByRaw('CAST(numero_factura AS SIGNED) DESC')
+            ->first();
+
+        $proximoNumero = 1;
+
+        if ($ultimoComprobante) {
+            // Convertir a entero, sumar 1
+            $ultimoNumero = (int) $ultimoComprobante->numero_factura;
+            $proximoNumero = $ultimoNumero + 1;
+        }
+
+        // 3. Devolver el número
+        // El frontend se encargará de darle el formato con ceros a la izquierda (padding).
+        return response()->json([
+            'proximo_numero' => $proximoNumero
+        ]);
+    }
+
+    public function anticiposDisponibles($proveedorId)
+    {
+        $anticipos = ComprobanteProveedor::with([
+            'detalles',
+            'comprobantesAplicados'
+        ])
+        ->where('proveedor_id', $proveedorId)
+        ->whereHas('tipoComprobante', function ($q) {
+            $q->where('categoria', 'anticipo');
+        })
+        ->get()
+        ->map(function ($anticipo) {
+
+            // 🔹 Total real del anticipo
+            $importeAnticipo = $anticipo->detalles->sum(function ($d) {
+                return (float) $d->importe;
+            });
+
+            // 🔹 Si no tiene importe, no es usable
+            if ($importeAnticipo <= 0) {
+                return null;
+            }
+
+            // 🔹 Total aplicado (si no hay relaciones → 0)
+            $importeAplicado = $anticipo->comprobantesAplicados->sum(function ($comp) {
+                return (float) ($comp->pivot->importe_aplicado ?? 0);
+            });
+
+            // 🔹 Disponible
+            $importeDisponible = $importeAnticipo - $importeAplicado;
+
+            // 🔹 Si ya se consumió completamente
+            if ($importeDisponible <= 0) {
+                return null;
+            }
+
+            // 🔹 Datos para el frontend
+            $anticipo->importe_total = $importeAnticipo;
+            $anticipo->importe_aplicado = $importeAplicado;
+            $anticipo->importe_disponible = $importeDisponible;
+
+            return $anticipo;
+        })
+        ->filter()
+        ->values();
+
+        return response()->json($anticipos);
+    }
+
+
 
 }

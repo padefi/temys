@@ -15,7 +15,7 @@ return new class extends Migration
             $table->enum('estado_movimiento', ['pendiente', 'en_transito', 'finalizado'])
                 ->default('pendiente')
                 ->after('cantidad');
- 
+
 
 
             $table->enum('tipo_movimiento', ['recepcion', 'transferencia', 'venta', 'ajuste', 'devolucion', 'orden_compra', 'orden_entrega', 'reposicion'])

@@ -24,15 +24,22 @@ class OrdenPagoController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'tipo_pago' => 'required|in:Unico,Cuotas',
+            'tipo_pago' => 'required|in:Unico,Cuotas,Anticipos',
             'cantidad_cuotas' => 'nullable|integer|min:1',
             'facturasSeleccionadas' => 'required|array|min:1',
 
             // Cada factura debe ser objeto con id + montoAPagar
+            'facturasSeleccionadas' => 'required|array|min:1',
             'facturasSeleccionadas.*.id' => 'required|integer',
             'facturasSeleccionadas.*.montoAPagar' => 'required|numeric|min:0',
 
-            'pagos' => 'required|array|min:1',
+            'anticipos_aplicados' => 'nullable|array',
+            'anticipos_aplicados.*.factura_id' => 'required|integer',
+            'anticipos_aplicados.*.anticipo_id' => 'required|integer',
+            'anticipos_aplicados.*.importe' => 'required|numeric|min:0',
+
+            // 👇 pagos solo requeridos si NO es Anticipos
+            'pagos' => 'required_if:tipo_pago,Unico,Cuotas|array',
             'pagos.*.metodo_pago_id' => 'required|integer',
             'pagos.*.moneda_id' => 'required|integer',
             'pagos.*.importe' => 'required|numeric|min:0',
@@ -47,6 +54,35 @@ class OrdenPagoController extends Controller
         try {
             DB::beginTransaction();
 
+            // 🟢 CASO: SOLO ANTICIPOS (sin orden de pago)
+            if ($data['tipo_pago'] === 'Anticipos') {
+
+                if (!empty($data['anticipos_aplicados'])) {
+                    foreach ($data['anticipos_aplicados'] as $aplicacion) {
+
+                        if ($aplicacion['importe'] <= 0) {
+                            continue;
+                        }
+
+                        DB::table('relacion_comprobante_comprobante_proveedores')->insert([
+                            'comprobante_origen_id' => $aplicacion['anticipo_id'], // anticipo
+                            'comprobante_destino_id' => $aplicacion['factura_id'], // factura
+                            'importe_aplicado' => $aplicacion['importe'],
+                            'fecha_aplicacion' => now(),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+                }
+
+                DB::commit();
+
+                return response()->json([
+                    'message' => 'Anticipos aplicados correctamente',
+                ], 201);
+            }
+
+            // 🟢 CASO: Plan Único y Cuotas (sin orden de pago)
             // 🔹 Crear plan de pago
             $plan = PlanPago::create([
                 'tipo_pago' => $data['tipo_pago'],
@@ -83,6 +119,12 @@ class OrdenPagoController extends Controller
             $facturas = collect($data['facturasSeleccionadas']);
             $totalFacturas = $facturas->sum('montoAPagar');
 
+            $totalAnticipos = collect($data['anticipos_aplicados'])->sum('importe');
+
+            if ($data['tipo_pago'] === 'Anticipos' && round($totalFacturas - $totalAnticipos, 2) !== 0.00) {
+                throw new \Exception('Los anticipos no cubren el total de las facturas');
+            }
+
             foreach ($ordenes as $orden) {
 
                 foreach ($facturas as $factura) {
@@ -94,6 +136,27 @@ class OrdenPagoController extends Controller
                         'comprobante_id' => $factura['id'],
                         'orden_pago_id' => $orden->id,
                         'importe_aplicado' => $importeAplicado,
+                        'fecha_aplicacion' => now(),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+
+            //////ACA CARGA LOS ANTICIPOS APLICADOS A LAS FACTURAS
+            if (!empty($data['anticipos_aplicados'])) {
+
+                foreach ($data['anticipos_aplicados'] as $aplicacion) {
+
+                    // 🔹 Validaciones defensivas
+                    if ($aplicacion['importe'] <= 0) {
+                        continue;
+                    }
+
+                    DB::table('relacion_comprobante_comprobante_proveedores')->insert([
+                        'comprobante_origen_id' => $aplicacion['anticipo_id'],
+                        'comprobante_destino_id' => $aplicacion['factura_id'],
+                        'importe_aplicado' => $aplicacion['importe'],
                         'fecha_aplicacion' => now(),
                         'created_at' => now(),
                         'updated_at' => now(),

@@ -21,6 +21,7 @@ import {
   TableRow,
 } from "@/Components/ui/table";
 import { OrdenesCompraDetalle } from '@/types/OrdenCompraDetalle';
+import { CotizacionOrden } from '@/types/CotizacionOrden';
 
 
 type OrdenCompra = {
@@ -35,6 +36,7 @@ type OrdenCompra = {
         id: number; // ⚠️ Asegurate que exista un ID único del proveedor
     };
     detalles?: OrdenesCompraDetalle[]
+    ordenes_cotizacion?: CotizacionOrden[]
     fecha_creacion: Date;
     estado: string;
 }
@@ -55,7 +57,6 @@ export default function ComprasOrdenesListado({ onSelectionChange }: CotizacionO
     const [selectedOrderIds, setSelectedOrderIds] = useState<number[]>([]);
     const [selectedProveedorId, setSelectedProveedorId] = useState<number | null>(null);
     const [selectedProveedorNombre, setSelectedProveedorNombre] = useState<string | null>(null);
-
     const toggleExpand = (id: number) => {
         setExpanded(expanded === id ? null : id);
     };
@@ -158,6 +159,7 @@ export default function ComprasOrdenesListado({ onSelectionChange }: CotizacionO
         <TableRow>
           <TableHead className="w-[100px]">N° Orden</TableHead>
           <TableHead>Proveedor</TableHead>
+          <TableHead>Solicitud de Compra</TableHead>
           <TableHead>Almacen Destino</TableHead>
           <TableHead>Estado</TableHead>
           <TableHead>Fecha</TableHead>
@@ -226,6 +228,7 @@ export default function ComprasOrdenesListado({ onSelectionChange }: CotizacionO
                         </ContextMenu>
                 </TableCell>
                 <TableCell>{orden.proveedor?.razon_social}</TableCell>
+                <TableCell>{orden.ordenes_cotizacion?.[0]?.solicitud_compra?.[0] ? `${orden.ordenes_cotizacion?.[0]?.solicitud_compra?.[0]?.origen?.descripcion} - ${orden.ordenes_cotizacion?.[0]?.solicitud_compra?.[0]?.descripcion} - N° ${orden.ordenes_cotizacion?.[0]?.solicitud_compra?.[0]?.id}` : ''}</TableCell>
                 <TableCell>{orden.almacen_destino?.nombre}</TableCell>
                 <TableCell className={
                         orden.estado === 'Confirmada'

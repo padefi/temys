@@ -21,7 +21,14 @@ export interface ComprobanteProveedor {
     tipo_comprobante: TipoComprobante;
     archivos: ComprobanteProveedorArchivo[]
     ordenes_pago?: OrdenPagoProveedores[]
+    comprobantes_aplicados?: ComprobanteProveedorAplicado[]
 
+}
+export interface ComprobanteProveedorAplicado {
+    id: number;
+    comprobante_proveedor_id: number;
+    comprobante_aplicado_id: number;
+    importe_aplicado: number;
 }
 export interface ComprobanteProveedorDetalles {
     id: number;

@@ -38,6 +38,9 @@ class OrdenComprasController extends Controller
                 'detalles.producto.modelo.marca',
                 'detalles.producto.subcategoria',
                 'ordenesCotizacion',
+                'ordenesCotizacion.solicitudCompra',
+                'ordenesCotizacion.solicitudCompra.origen',
+                'almacenDestino',
                 'proveedor',
                 'ordenesCotizacion.tipoMoneda',
                 'ordenesCotizacion.ordenesCompra'

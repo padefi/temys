@@ -25,6 +25,7 @@ import {
 
 type OrdenCompra = {
   id: number;
+  estado: string;
   almacen_destino: number;
 }
 
@@ -75,7 +76,7 @@ export default function CotizacionOrdenesListado({ onSelectionChange }: Cotizaci
     const [selectedOrderIds, setSelectedOrderIds] = useState<number[]>([]);
     const [selectedProveedorId, setSelectedProveedorId] = useState<number | null>(null);
     const [selectedProveedorNombre, setSelectedProveedorNombre] = useState<string | null>(null);
-
+console.log(solicitudesComprasListado)
     const toggleExpand = (id: number) => {
         setExpanded(expanded === id ? null : id);
     };
@@ -160,6 +161,25 @@ export default function CotizacionOrdenesListado({ onSelectionChange }: Cotizaci
 
   };
 
+   const handleFinalizarSolicitud = (solicitud_id: number) => {
+        router.post(`/compras/cotizaciones-ordenes/finalizar-solicitud/${solicitud_id}`, {}, {
+        onSuccess: () => {
+
+            toast("Solicitud", {
+                description: `La solicitud ${solicitud_id} fue finalizada.`,
+                action: {
+                    label: "Cerrar",
+                    onClick: () => console.log("Undo"),
+                }
+            })
+
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        }
+        })
+    }
+
   return (
      <div className="space-y-4">
       {/* ✅ Bloque resumen arriba */}
@@ -221,11 +241,18 @@ export default function CotizacionOrdenesListado({ onSelectionChange }: Cotizaci
                                         Rechazar Solicitud
                                     </ContextMenuItem>
                                     )}
+                                    {(solicitud.estado === 'Aceptada') && (
+                                     <ContextMenuItem onClick={() => handleFinalizarSolicitud(solicitud.id)}>
+                                        Finalizar Orden
+                                    </ContextMenuItem>
+                                    )}
                                     <ContextMenuSeparator />
                                     {(solicitud.estado === 'Aceptada') ? (
+
                                     <ContextMenuItem onClick={() => handleAgregarOrden(solicitud.id)}>
                                         Agregar Orden
                                     </ContextMenuItem>
+
                                     ):(
                                     <ContextMenuItem disabled>
                                         Agregar Orden
@@ -291,7 +318,7 @@ export default function CotizacionOrdenesListado({ onSelectionChange }: Cotizaci
                                     <div
                                         className="text-red-600"
                                     >
-                                        Orden de compra N° {orden.ordenes_compra?.[0]?.id}
+                                        Orden de compra N° {orden.ordenes_compra?.[0]?.id} - {orden.ordenes_compra?.[0]?.estado}
                                     </div>
                             ):(
                                 <div className="text-red-600"></div>

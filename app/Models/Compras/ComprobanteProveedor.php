@@ -128,6 +128,36 @@ class ComprobanteProveedor extends Model
         return $this->hasMany(ComprobanteProveedorDetalleImpuesto::class, 'comprobante_proveedor_id');
     }
 
+    ////////////////RELACIONES DE COMPROBANTE CON COMPROBANTE
+    public function aplicacionesComoOrigen()
+    {
+        return $this->hasMany(
+            RelacionComprobanteComprobanteProveedor::class,
+            'comprobante_origen_id'
+        );
+    }
+
+    public function aplicacionesComoDestino()
+    {
+        return $this->hasMany(
+            RelacionComprobanteComprobanteProveedor::class,
+            'comprobante_destino_id'
+        );
+    }
+
+    ////COMPROBANTES APLICADOS A ESTE COMPROBANTE
+    public function comprobantesAplicados()
+    {
+        return $this->belongsToMany(
+            ComprobanteProveedor::class,
+            'relacion_comprobante_comprobante_proveedores',
+            'comprobante_origen_id',   // anticipoe
+            'comprobante_destino_id'  // factura / otro comprobant
+        )->withPivot(['importe_aplicado', 'fecha_aplicacion'])
+        ->withTimestamps();
+    }
+
+
 
 
 }

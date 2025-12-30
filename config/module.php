@@ -110,10 +110,11 @@ return [
                     'key' => 'clientes',
                     'name' => 'Clientes',
                     'submenus' => [
-                        ['key' => 'facturasClientes', 'name' => 'Facturas'],
+                        ['key' => 'facturasClientes', 'name' => 'Facturas Clientes'],
                         ['key' => 'notasDeCredito', 'name' => 'Notas de credito'],
                         ['key' => 'notasDeDebito', 'name' => 'Notas de debito'],
                         ['key' => 'pagosClientes', 'name' => 'Pagos'],
+                        ['key' => 'pagosMasivosClientes', 'name' => 'Pagos Masivos'],
                         ['key' => 'productosClientes', 'name' => 'Productos'],
                         ['key' => 'clientes', 'name' => 'Clientes'],
                     ]
@@ -268,13 +269,13 @@ return [
             'name' => 'Ventas',
             'menus' => [
                 [
-                    'key' => 'ordenesInventario',
+                    'key' => 'ordenesVentas',
                     'name' => 'Ordenes',
                     'submenus' => [
                         ['key' => 'cotizacionesVentas', 'name' => 'Cotizaciones'],
-                        ['key' => 'ordenesInventario', 'name' => 'Ordenes'],
+                        ['key' => 'ordenesVentas', 'name' => 'Ordenes de Ventas'],
                         ['key' => 'equiposVentas', 'name' => 'Equipos de ventas'],
-                        ['key' => 'clientes', 'name' => 'Clientes'],
+                        ['key' => 'clientesVentas', 'name' => 'Clientes'],
                     ]
                 ],
                 [

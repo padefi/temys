@@ -26,7 +26,7 @@ export interface CotizacionOrden {
     //////SOLICITUD DE COMPRA RELACIONADA
     created_at: Date;
     updated_at: Date;
-    solicitudes?: SolicitudCompra[]
+    solicitud_compra?: SolicitudCompra[]
     //////ORDEN DE COMPRA RELACIONADA
     ordenes_compra?: OrdenesCompra[]
     archivos?: Archivo[]

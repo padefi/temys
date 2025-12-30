@@ -5,10 +5,12 @@ namespace App\Models\Contabilidad\Asientos;
 use App\Models\Compras\ComprobanteProveedor;
 use App\Models\Contabilidad\PlanCuentas\Ejercicio;
 use App\Models\ControlAcceso\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Asiento extends Model
 {
+    use HasFactory;
     protected $table = 'co_asientos';
 
     protected $fillable = [

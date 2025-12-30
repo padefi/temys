@@ -6,9 +6,11 @@ use App\Models\Compras\ComprobanteProveedor;
 use App\Models\Contabilidad\PlanCuentas\Cuenta;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Partida extends Model
 {
+    use HasFactory;
     protected $table = 'co_partidas';
 
     public $timestamps = false;

@@ -1,4 +1,6 @@
 <?php
+
+use App\Http\Controllers\Compras\ComprobantesProveedores\ComprobantesProveedoresController;
 use App\Http\Controllers\Compras\OrdenPagoController;
 use App\Http\Controllers\Contabilidad\ContabilidadController;
 use App\Http\Controllers\Contabilidad\Asientos\AsientoController;
@@ -15,18 +17,25 @@ Route::middleware('module:contabilidad')->group(function () {
     })->name('contabilidad');
 
     Route::middleware(['menu:proveedores'])->group(function () {
+
+
+
+
         Route::middleware(['submenu:facturasProveedores'])->prefix('contabilidad')->group(function () {
                 /////vista principal
                 Route::get('/facturasProveedores', function () {
                     return Inertia::render('Contabilidad/ComprobantesProveedores/Index');
                 })->name('facturasProveedores');
 
+                Route::get('{proveedorId}/anticipos-disponibles', [ComprobantesProveedoresController::class, 'anticiposDisponibles']);
+
                 // Trae Proveedores con saldo
                 Route::get('proveedoresListado', [ProveedoresController::class, 'proveedoresConSaldo']);
                 Route::post('/ordenesPagos', [OrdenPagoController::class, 'store'])->name('ordenesPagos');
                 Route::get('{proveedorId}/pendientes', [ProveedoresController::class, 'facturasPendientes']);
                 Route::get('{proveedorId}/cuenta-corriente', [ProveedoresController::class, 'cuentaCorriente']);
-                });
+
+        });
 
         Route::middleware(['submenu:pagosProveedores'])->prefix('contabilidad')->group(function () {
                     // Vista principal

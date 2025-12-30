@@ -30,7 +30,7 @@ return new class extends Migration
                 ->on('co_partidas')
                 ->cascadeOnDelete();
 
-            $table->unique(['comprobante_id', 'partida_id']);
+            //$table->unique(['comprobante_id', 'partida_id']);
         });
     }
 

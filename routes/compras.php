@@ -65,6 +65,10 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
         Route::post('/rechazar-solicitud/{solicitud_id}/{orden_id?}', [OrdenCotizacionesController::class, 'rechazarSolicitud'])
             ->name('cotizacionesOrdenes.rechazarSolicitud');
 
+        ///Finalizar Solicitud de compra
+        Route::post('/finalizar-solicitud/{solicitud_id}/{orden_id?}', [OrdenCotizacionesController::class, 'finalizarSolicitud'])
+            ->name('cotizacionesOrdenes.finalizarSolicitud');
+
         ///Aceptar Solicitud de compra
         Route::post('/aceptar-solicitud/{solicitud_id}/{orden_id?}', [OrdenCotizacionesController::class, 'aceptarSolicitud'])
             ->name('cotizacionesOrdenes.aceptarSolicitud');
@@ -153,6 +157,8 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
         // Comprobantes por orden
         Route::get('/{ordenId}/comprobantes', [ComprobantesProveedoresController::class, 'comprobantesPorOrden']);
 
+        Route::get('/comprobantes-proveedores/proximo-numero-anticipo', [ComprobantesProveedoresController::class, 'getProximoNumeroAnticipo'])
+        ->name('comprobantes-proveedores.proximo-numero-anticipo');
 
         // Mostrar detalle
        /* Route::get('/{orden_pago_id}', [OrdenPagoController::class, 'show'])

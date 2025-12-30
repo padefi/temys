@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('origen_id')->nullable();
             $table->string('descripcion');
-            $table->enum('estado', ['Pendiente', 'Aceptada', 'Rechazada']);
+            $table->enum('estado', ['Pendiente', 'Aceptada', 'Rechazada', 'Finalizada']);
             $table->unsignedBigInteger('usuario_id');
             $table->unsignedBigInteger('usuario_actualizacion')->nullable();
             $table->timestamps();
