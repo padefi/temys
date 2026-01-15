@@ -2,12 +2,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Com
 import { Input } from "@/Components/ui/input"
 import { Label } from "@/Components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/Components/ui/select"
-
 import { SelectValue } from "@radix-ui/react-select"
 import { Building2 } from "lucide-react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm, useFormContext } from "react-hook-form"
-import { inmuebleSchema ,InmuebleSchemaType} from "./InmuebleSchema"
+import {useFormContext } from "react-hook-form"
+import {InmuebleSchemaType} from "./InmuebleSchema"
 
 function InformacionBasica() {
    const {

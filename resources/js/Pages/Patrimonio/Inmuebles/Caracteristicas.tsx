@@ -1,11 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
-
-import { Bath, Bed, Car, DollarSign, Ruler, RulerDimensionLine } from "lucide-react";
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm, useFormContext } from "react-hook-form"
-import { inmuebleSchema, InmuebleSchemaType } from "./InmuebleSchema"
+import { Ruler, RulerDimensionLine } from "lucide-react";
+import {  useFormContext } from "react-hook-form"
+import { InmuebleSchemaType } from "./InmuebleSchema"
 function Caracteristicas() {
      const {
     register,

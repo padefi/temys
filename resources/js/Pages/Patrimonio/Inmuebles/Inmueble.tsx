@@ -2,20 +2,50 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { inmuebleSchema, InmuebleSchemaType } from './InmuebleSchema';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-
 import InformacionBasica from './InformacionBasica';
-import Ubicacion from './Ubicacion';
 import Caracteristicas from './Caracteristicas';
 import TiposDeContratos from './Contratos';
-import BuscadorDireccionesCompacto from '@/Components/BuscadorDirecciones';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
-import { MapPin, MapPinCheck } from 'lucide-react';
+import { MapPin } from 'lucide-react';
+import { Button } from '@/Components/ui/button';
+import { tipocontrato, estadoInmueble } from './InmuebleSchema';
+import BuscadorDireccionesCompacto from '@/Components/BuscadorDirecciones';
 
 function InmueblesForm() {
     const methods = useForm<InmuebleSchemaType>({
         resolver: zodResolver(inmuebleSchema) as any,
-        mode: 'onSubmit', // podés cambiar a onBlur / onChange si querés
+        mode: 'onBlur', // Cambiado a onBlur para validar al salir del campo
+        defaultValues: {
+            num_partida: "" as any,
+            tipo_ocupacion_id: "" as any,
+            estado_id: estadoInmueble.activo,
+            tipo_contrato: tipocontrato.casa,
+            nombre_fantasia: "",
+            nombre_completo: "",
+            tipo_inmueble_id: "" as any,
+            calle_id: "",
+            numero: "" as any,
+            superficie_cubierta: "" as any,
+            superficie_libre: "" as any,
+            superficie_total: "" as any,
+            fecha_inscripcion: '',
+            fecha_escritura: '',
+            fecha_contrato: '',
+            fecha_inicio: '',
+            fecha_fin: '',
+            importe: "" as any,
+            num_escritura: "" as any,
+            folio: "" as any,
+            tomo: "" as any,
+            observacion: "",
+        }
     });
+
+    const {
+        formState: { isValid, isSubmitting },
+        setValue,
+        trigger,
+    } = methods;
 
     const onSubmit = (data: InmuebleSchemaType) => {
         console.log('DATA FORM:', data);
@@ -40,14 +70,10 @@ function InmueblesForm() {
                         </p>
                     </div>
 
-
                     <FormProvider {...methods}>
-                        <form
-                            className="space-y-6"
-                            onSubmit={methods.handleSubmit(onSubmit)}
-                            noValidate
-                        >
+                        <form className="space-y-6" onSubmit={methods.handleSubmit(onSubmit)}>
                             <InformacionBasica />
+                            {/* <Ubicacion /> */}
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
@@ -56,21 +82,34 @@ function InmueblesForm() {
                                     </CardTitle>
                                     <CardDescription>Dirección y localización de la propiedad</CardDescription>
                                 </CardHeader>
-                                <BuscadorDireccionesCompacto mostrarBorde={true} onDireccionSeleccionada={(e => { })}></BuscadorDireccionesCompacto>
+                                <BuscadorDireccionesCompacto mostrarBorde={true} onDireccionSeleccionada={(direccion) => {
+                                    setValue('calle_id', direccion.calle_id, {
+                                        shouldValidate: true,
+                                        shouldDirty: true,
+                                    });
+                                    setValue('numero', direccion.altura, {
+                                        shouldValidate: true,
+                                        shouldDirty: true,
+                                    });
+
+                                    console.log('DIRECCION SELECCIONADA EN FORM:', direccion);
+                                    // Si querés validar inmediatamente
+                                    trigger('calle_id');
+                                }}></BuscadorDireccionesCompacto>
                             </Card>
 
-                            {/*     <Ubicacion /> */}
                             <Caracteristicas />
                             <TiposDeContratos />
 
-                            <div className="pt-4">
-                                <button
-                                    type="submit"
-                                    className="rounded-md bg-primary px-4 py-2 text-white"
-                                >
-                                    Enviar
-                                </button>
-                            </div>
+
+                            <Button
+                                type="submit"
+                                className="w-full h-11 rounded-full hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                                size="lg"
+                                disabled={!isValid || isSubmitting}
+                            >
+                                {isSubmitting ? "Ingresando..." : "Ingresar"} 
+                            </Button>
                         </form>
                     </FormProvider>
                 </div>

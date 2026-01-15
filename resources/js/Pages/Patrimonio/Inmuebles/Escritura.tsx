@@ -1,7 +1,6 @@
 import { Label } from "@/Components/ui/label";
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm, useFormContext } from "react-hook-form"
-import { inmuebleSchema, InmuebleSchemaType } from "./InmuebleSchema"
+import { useFormContext } from "react-hook-form"
+import { InmuebleSchemaType } from "./InmuebleSchema"
 import { Input } from "@/Components/ui/input";
 import { Textarea } from "@/Components/ui/textarea";
 import { Separator } from "@/Components/ui/separator";
@@ -47,13 +46,13 @@ function Escritura() {
 
                 <div className="space-y-2">
                     <Label htmlFor="max-nights">Folio</Label>
-                    <Input type="date" className="pl-9" {...register("folio", { required: true })}></Input>
+                    <Input type="number" className="pl-9" {...register("folio", { required: true })}></Input>
                     {errors.folio && <p style={{ color: 'red' }}>{errors.folio.message}</p>}
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="price-per-night">Tomo</Label>
-                    <Input type="date" className="pl-9" {...register("tomo", { required: true })}></Input>
+                    <Input type="number" className="pl-9" {...register("tomo", { required: true })}></Input>
                     {errors.tomo && <p style={{ color: 'red' }}>{errors.tomo.message}</p>}
                 </div>
 
@@ -74,7 +73,7 @@ function Escritura() {
                 <span className="font-semibold"> Nomeclatura castral</span>
             </div>
 
-            {/* NOMECLATURA CASTRAL  */}
+            {/* NOMECLATURA CASTRAL           */    }
           {/*   <div className="grid gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
                     <Label htmlFor="cleaning-fee">Circunscripción</Label>

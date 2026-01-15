@@ -1,7 +1,6 @@
 import { Label } from "@/Components/ui/label";
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm, useFormContext } from "react-hook-form"
-import { inmuebleSchema, InmuebleSchemaType } from "./InmuebleSchema"
+import { useFormContext } from "react-hook-form"
+import { InmuebleSchemaType } from "./InmuebleSchema"
 import { Input } from "@/Components/ui/input";
 import { Textarea } from "@/Components/ui/textarea";
 
@@ -12,38 +11,32 @@ function Comodato() {
     formState: { errors },
   } = useFormContext<InmuebleSchemaType>();
     return (
-        <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-2">
-                <Label htmlFor="duration">Fecha de contratación</Label>
-                <Input type="date" className="pl-9" {...register("fecha_contrato", { required: true })}></Input>
-                 {errors.fecha_contrato && <p style={{ color: 'red' }}>{errors.fecha_contrato.message}</p>}
-            </div>
+    <div className="grid gap-4 sm:grid-cols-3">
+      <div className="space-y-2">
+        <Label>Fecha de contratación</Label>
+        <Input type="date" {...register("fecha_contrato")} />
+        {errors.fecha_contrato && (<p className="text-red-500 text-sm">{errors.fecha_contrato.message}</p>)}
+      </div>
 
-            <div className="space-y-2">
-                <Label htmlFor="duration">Fecha Inicio</Label>
-                <Input type="date" className="pl-9" {...register("fecha_inicio", { required: true })}></Input>
-                 {errors.fecha_inicio && <p style={{ color: 'red' }}>{errors.fecha_inicio.message}</p>}
-            </div>
+      <div className="space-y-2">
+        <Label>Fecha inicio</Label>
+        <Input type="date" {...register("fecha_inicio")} />
+        {errors.fecha_inicio && ( <p className="text-red-500 text-sm"> {errors.fecha_inicio.message} </p>)}
+      </div>
 
-            <div className="space-y-2">
-                <Label htmlFor="duration">Fecha de Finalización</Label>
-                <Input type="date" className="pl-9" {...register("superficie_cubierta", { required: true })}></Input>
-                 {errors.superficie_cubierta && <p style={{ color: 'red' }}>{errors.superficie_cubierta.message}</p>}
-            </div>
+      <div className="space-y-2">
+        <Label>Fecha de finalización</Label>
+        <Input type="date" {...register("fecha_fin")} />
+        {errors.fecha_fin && (<p className="text-red-500 text-sm">{errors.fecha_fin.message} </p> )}
+      </div>
 
-            <div className="space-y-2 sm:col-span-3">
-                <Label htmlFor="amenities">Observación</Label>
-                <Textarea
-                    id="amenities"
-                    placeholder="WiFi, aire acondicionado, TV, ropa de cama, toallas, etc."
-                    rows={3}
-                    className="resize-none"
-                    {...register("observacion", { required: true })}
-                />
-                 {errors.observacion && <p style={{ color: 'red' }}>{errors.observacion.message}</p>}
-            </div>
-        </div>
-    )
+      <div className="space-y-2 sm:col-span-3">
+        <Label>Observación</Label>
+        <Textarea rows={3} className="resize-none" {...register("observacion")} />
+        {errors.observacion && ( <p className="text-red-500 text-sm"> {errors.observacion.message} </p> )}
+      </div>
+    </div>
+  );
 
 }
 

@@ -1,8 +1,7 @@
 import { Label } from "@/Components/ui/label";
 import { DollarSign } from "lucide-react";
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm, useFormContext } from "react-hook-form"
-import { inmuebleSchema, InmuebleSchemaType } from "./InmuebleSchema"
+import { useFormContext } from "react-hook-form"
+import { InmuebleSchemaType } from "./InmuebleSchema"
 import { Input } from "@/Components/ui/input";
 import { Textarea } from "@/Components/ui/textarea";
 

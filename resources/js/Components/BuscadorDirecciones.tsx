@@ -36,6 +36,7 @@ interface DireccionCompleta {
   alturaOriginal?: number;
 }
 
+
 /**
  * Props del componente BuscadorDireccionesCompacto
  */
@@ -248,6 +249,7 @@ export default function BuscadorDireccionesCompacto({
    * Handler para seleccionar una dirección
    */
   const handleSelectDireccion = useCallback((direccion: DireccionCompleta, index: number) => {
+
     setDireccionSeleccionada(direccion);
     setSelectedIndex(index);
     onDireccionSeleccionada({
