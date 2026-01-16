@@ -1,4 +1,7 @@
 import * as z from "zod";
+
+
+
 export enum tipocontrato {
     casa = 'casa',
     departamento = 'departamento',
@@ -21,7 +24,7 @@ export enum estadoInmueble {
 export const inmuebleSchema = z.object({
     num_partida: z.coerce.number().positive({ message: "El número de partida es obligatorio" }),
     tipo_ocupacion_id: z.coerce.number(),
-    estado_id: z.enum(estadoInmueble),
+    estado_id: z.coerce.number(),
     nombre_fantasia: z.string().min(2, { message: "El nombre fantasia es obligatorio" }),
     nombre_completo: z.string().min(2, { message: "El nombre completo es obligatorio" }),
     tipo_inmueble_id: z.coerce.number(),
@@ -30,7 +33,7 @@ export const inmuebleSchema = z.object({
     superficie_cubierta: z.coerce.number().positive({ message: "La superficie cubierta es obligatoria" }),
     superficie_libre: z.coerce.number().positive({ message: "La superficie libre es obligatoria" }),
     superficie_total: z.coerce.number().positive({ message: "La superficie total es obligatoria" }),
-    tipo_contrato: z.enum(tipocontrato),
+    tipo_contrato: z.coerce.number(),
     /* domicilio */
     fecha_inscripcion: z.coerce.string(),
     fecha_escritura: z.coerce.string(),

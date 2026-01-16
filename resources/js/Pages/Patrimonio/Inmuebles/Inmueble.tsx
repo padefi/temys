@@ -10,7 +10,7 @@ import { MapPin } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
 import { tipocontrato, estadoInmueble } from './InmuebleSchema';
 import BuscadorDireccionesCompacto from '@/Components/BuscadorDirecciones';
-
+import axios from 'axios';
 function InmueblesForm() {
     const methods = useForm<InmuebleSchemaType>({
         resolver: zodResolver(inmuebleSchema) as any,
@@ -18,8 +18,8 @@ function InmueblesForm() {
         defaultValues: {
             num_partida: "" as any,
             tipo_ocupacion_id: "" as any,
-            estado_id: estadoInmueble.activo,
-            tipo_contrato: tipocontrato.casa,
+            estado_id: "" as any,
+            tipo_contrato: "" as any,
             nombre_fantasia: "",
             nombre_completo: "",
             tipo_inmueble_id: "" as any,
@@ -47,8 +47,8 @@ function InmueblesForm() {
         trigger,
     } = methods;
 
-    const onSubmit = (data: InmuebleSchemaType) => {
-        console.log('DATA FORM:', data);
+    const onSubmit = async (data: InmuebleSchemaType) => {
+        await axios.post('/patrimonio/inmuebles/create-inmueble', data)
     };
 
     return (

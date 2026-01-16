@@ -10,16 +10,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Inmueble extends Model
 {
-    
+
     public $timestamps = false;
 
-    
+
     protected $fillable = [
-    
+
         'num_partida',
         'estado_id',
         'nombre_completo',
         'nombre_fantasia',
+        'id_calle',
+        'numero',
         'tipo_inmueble_id',
         'tipo_ocupacion_id',
         'superficie_cubierta',
@@ -31,17 +33,17 @@ class Inmueble extends Model
         'usuario_actualizacion',
     ];
 
-  
+
     protected $casts = [
         'fecha_creacion' => 'datetime',
         'fecha_actualizacion' => 'datetime',
-        'superficie_cubierta'=>'float',
-        'superficie_libre'=>'float',
-        'superficie_total'=>'float',
+        'superficie_cubierta' => 'float',
+        'superficie_libre' => 'float',
+        'superficie_total' => 'float',
     ];
 
 
-       public function estado()
+    public function estado()
     {
         return $this->belongsTo(InmuebleTipoEstado::class, 'estado_id');
     }
@@ -50,7 +52,7 @@ class Inmueble extends Model
     {
         return $this->belongsTo(InmuebleTipo::class, 'tipo_inmueble_id');
     }
-  
+
     public function tipoOcupacion()
     {
         return $this->belongsTo(InmuebleTipoOcupacions::class, 'tipo_ocupacion_id');
@@ -64,7 +66,7 @@ class Inmueble extends Model
     public function actualizador()
     {
         return $this->belongsTo(User::class, 'usuario_actualizacion');
-    } 
+    }
     public function contratos()
     {
         return $this->hasMany(InmuebleContrato::class, 'inmuebles_id');
@@ -74,11 +76,11 @@ class Inmueble extends Model
     {
         return $this->hasMany(InmuebleEscritura::class, 'inmuebles_id');
     }
-    
+
     public function contactos()
     {
         return $this->hasMany(InmuebleContacto::class, 'inmuebles_id');
     }
 
-
+    
 }
