@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Com
 import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { FileText } from "lucide-react";
-import { useFormContext } from "react-hook-form"
+import { Controller, useFormContext } from "react-hook-form"
 import { InmuebleSchemaType } from "./InmuebleSchema"
 import { useEffect, useState } from "react";
 import Escritura from "./Escritura";
@@ -17,67 +17,79 @@ type tipoContratoItem = {
 };
 
 function TiposDeContratos() {
-  const {
-    formState: { errors },
-  } = useFormContext<InmuebleSchemaType>();
+    const {
+        formState: { errors, }, control,watch
+    } = useFormContext<InmuebleSchemaType>();
 
-  const [contractType, setContractType] = useState<string>("");
-  const [tipoContrato, setTipoContrato] = useState<tipoContratoItem[]>([]);
+   const contractType = watch("tipo_contrato");
 
-useEffect(() => {
-  axios.get('/patrimonio/inmuebles/tipos-contrato')
-    .then(response => {
-      const data = response.data.map(
-        (tipo: { id: number; descripcion: string }) => ({
-          value: String(tipo.id),       
-          label: tipo.descripcion,      
-        })
-      );
+    const [tipoContrato, setTipoContrato] = useState<tipoContratoItem[]>([]);
 
-      setTipoContrato(data);
-    });
-}, []);
+    useEffect(() => {
+        axios.get('/patrimonio/inmuebles/tipos-contrato')
+            .then(response => {           
+                const data = response.data.map(
+                    (tipo: { id: number; descripcion: string }) => ({
+                        value: String(tipo.id),
+                        label: tipo.descripcion,
+                    })
+                );
+                console.log(response.data);
+
+                setTipoContrato(data);
+            });
+    }, []);
 
 
-  const contratoSeleccionado = tipoContrato.find(
-    tipo => tipo.value === contractType
-  );
+   const contratoSeleccionado = tipoContrato.find(
+  tipo => Number(tipo.value) === contractType
+);
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-primary" />
-          Tipo de Contrato
-        </CardTitle>
-        <CardDescription>Seleccione el tipo de operación</CardDescription>
-      </CardHeader>
 
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="contract-type">Operación</Label>
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-primary" />
+                    Tipo de Contrato
+                </CardTitle>
+                <CardDescription>Seleccione el tipo de operación</CardDescription>
+            </CardHeader>
 
-          <Select value={contractType} onValueChange={setContractType}>
-            <SelectTrigger id="contract-type">
-              <SelectValue placeholder="Seleccionar tipo de contrato" />
-            </SelectTrigger>
+            <CardContent className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="contract-type">Operación</Label>
+                    <Controller
+                        name="tipo_contrato"
+                        control={control}
+                        rules={{ required: "Campo obligatorio" }}
+                        render={({ field }) => (
+                            <Select
+                                value={field.value ? String(field.value) : ""}
+                                onValueChange={(value) => field.onChange(Number(value))}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Seleccionar tipo" />
+                                </SelectTrigger>
 
-            <SelectContent>
-              {tipoContrato.map((tipo) => (
-                <SelectItem key={tipo.value} value={tipo.value}>
-                  {tipo.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+                                <SelectContent>
+                                    {tipoContrato.map((item) => (
+                                        <SelectItem key={item.value} value={item.value}>
+                                            {item.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        )}
+                    />
+                </div>
 
-        {contratoSeleccionado?.label === "Alquiler" && <Alquiler />}
-        {contratoSeleccionado?.label === "Escritura" && <Escritura />}
-        {contratoSeleccionado?.label === "Comodato" && <Comodato />}
-      </CardContent>
-    </Card>
-  );
+                {contratoSeleccionado?.label === "Alquiler" && <Alquiler />}
+                {contratoSeleccionado?.label === "Escritura" && <Escritura />}
+                {contratoSeleccionado?.label === "Comodato" && <Comodato />}
+            </CardContent>
+        </Card>
+    );
 }
 
 export default TiposDeContratos

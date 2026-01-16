@@ -74,7 +74,7 @@ class Inmueble extends Model
 
     public function escrituras()
     {
-        return $this->hasMany(InmuebleEscritura::class, 'inmuebles_id');
+        return $this->hasMany(InmueblesEscritura::class, 'inmuebles_id');
     }
 
     public function contactos()

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Patrimonio\Inmuebles;
 
 use App\Http\Controllers\Controller;
 use App\Models\Patrimonio\Inmuebles\Inmueble;
+use App\Models\Patrimonio\Inmuebles\InmuebleContrato;
+use App\Models\Patrimonio\Inmuebles\InmueblesEscritura;
 use App\Models\Patrimonio\Inmuebles\InmuebleTipo;
 use App\Models\Patrimonio\Inmuebles\InmuebleTipoContrato;
 use App\Models\Patrimonio\Inmuebles\InmuebleTipoEstado;
@@ -11,6 +13,7 @@ use App\Models\Patrimonio\Inmuebles\InmuebleTipoOcupacions;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class InmuebleController extends Controller
 {
@@ -44,9 +47,52 @@ class InmuebleController extends Controller
         return response()->json($tiposContrato);
     }
 
+
+    private function crearDetallePorTipo(Request $request, Inmueble $inmueble)
+    {
+        switch ($request->tipo_contrato) {
+            case 1: // Casa
+                InmuebleContrato::create([
+                    'inmuebles_id' => $inmueble->id,
+                    'inmuebles_tipo_contrato_id' => $request->tipo_contrato,
+                    'fecha_contrato' => $request->fecha_contrato,
+                    'fecha_inicio' => $request->fecha_inicio,
+                    'fecha_final' => $request->fecha_fin,
+                    'importe' => $request->importe,
+                    'observacion' => $request->observacion,
+                ]);
+                break;
+
+            case 2: // Terreno
+                InmuebleContrato::create([
+                    'inmuebles_id' => $inmueble->id,
+                    'inmuebles_tipo_contrato_id' => $request->tipo_contrato,
+                    'fecha_contrato' => $request->fecha_contrato,
+                    'fecha_inicio' => $request->fecha_inicio,
+                    'fecha_final' => $request->fecha_fin,
+                    'importe' => $request->importe,
+                    'observacion' => $request->observacion,
+                ]);
+                break;
+
+            case 3: // Departamento
+                InmueblesEscritura::create([
+                    'inmuebles_id' => $inmueble->id,
+                    'nro_escritura' => $request->num_escritura,
+                    'fecha_escritura' => $request->fecha_escritura,
+                    'fecha_inscripcion' => $request->fecha_inscripcion,
+                    'folio' => $request->folio,
+                    'tomo' => $request->tomo,
+                    'observacion' => $request->observacion,
+                ]);
+                break;
+        }
+    }
+
+
+
     public function createInmueble(Request $request)
     {
-        echo var_dump($request->all());
 
         $newInmueble = Inmueble::create([
             'num_partida' => $request->input('num_partida'),
@@ -63,7 +109,9 @@ class InmuebleController extends Controller
             'fecha_creacion' => now(),
             'usuario_creacion' => Auth::id(),
         ]);
+        $this->crearDetallePorTipo($request, $newInmueble);
 
+        DB::commit();
         return response()->json([
             'message' => 'Solicitud creada con múltiples productos.',
             'newInmueble' => $newInmueble->id,
