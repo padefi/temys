@@ -23,6 +23,7 @@ export enum estadoInmueble {
 
 export const inmuebleSchema = z.object({
     num_partida: z.coerce.number().positive({ message: "El número de partida es obligatorio" }),
+    id_seccionales: z.coerce.number(),
     tipo_ocupacion_id: z.coerce.number(),
     estado_id: z.coerce.number(),
     nombre_fantasia: z.string().min(2, { message: "El nombre fantasia es obligatorio" }),
@@ -45,6 +46,17 @@ export const inmuebleSchema = z.object({
     folio: z.coerce.number(),
     tomo: z.coerce.number(),
     observacion: z.string(),
+
+    /* nomeclatura catastral */
+    circunscripcion: z.coerce.string(),
+    seccion: z.coerce.string(),
+    manzana: z.coerce.string(),
+    parcela: z.coerce.string(),
+    subparcela: z.coerce.string(),
+    poligono: z.coerce.string(),
+    zona: z.coerce.string(),
+    partida: z.coerce.string(),
+    valuacion_fiscal: z.coerce.string(),
 })
 
 export type InmuebleSchemaType = z.infer<typeof inmuebleSchema>;

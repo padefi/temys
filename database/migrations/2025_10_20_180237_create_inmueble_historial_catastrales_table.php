@@ -13,9 +13,8 @@ return new class extends Migration
     {
         Schema::create('inmueble_historial_catastrales', function (Blueprint $table) {
             $table->id('id');
-            $table->unsignedBigInteger('inmuebles_id');
             $table->unsignedBigInteger('id_escritura');              
-            $table->unsignedBigInteger('tipo_catastro');
+          /*   $table->unsignedBigInteger('tipo_catastro'); */
             $table->string('circunscripcion')->nullable();
             $table->string('manzana')->nullable();
             $table->string('parcela')->nullable();
@@ -24,18 +23,8 @@ return new class extends Migration
             $table->string('partida')->nullable();
             $table->string('valuacion_fiscal')->nullable();
       
-
-            // Auditoría
-            $table->timestamp('fecha_creacion');
-            $table->unsignedBigInteger('usuario_creacion');
-         
-
-
             //Relaciones
-            $table->foreign('inmuebles_id')->references('id')->on('inmuebles');
             $table->foreign('id_escritura')->references('id')->on('inmuebles_escritura');
-            $table->foreign('usuario_creacion')->references('id')->on('users');
-        
 
         });
     }

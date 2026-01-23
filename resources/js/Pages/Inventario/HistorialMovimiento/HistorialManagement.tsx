@@ -5,7 +5,7 @@ import { Head, usePage } from "@inertiajs/react";
 import { PageProps as InertiaPageProps } from "@inertiajs/core";
 import ChipSearch, { Chip } from "../Existencias/Search";
 import HistorialMovimientosTable from "./HistorialMovimientosTable";
-import { MovimientosItem } from "../../../types/Inventario/Operaciones/InventarioFisico/Inventario";
+import { MovimientosItem } from "@/types/Inventario/Reportes/HistorialMovimiento"; 
 import { links } from "@/types/links";
 import { meta } from "@/types/meta";
 import { FileDown, FileText, Sheet } from "lucide-react";

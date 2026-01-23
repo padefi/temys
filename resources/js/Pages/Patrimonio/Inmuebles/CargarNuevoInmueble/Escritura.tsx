@@ -25,7 +25,8 @@ function Escritura() {
             <div className="grid gap-4 sm:grid-cols-3">
 
                 {/*  ESCRITURA */}
-                <div className="space-y-2">
+         
+                   <div className="space-y-2">
                     <Label htmlFor="min-nights">Numero de escritura</Label>
                     <Input id="min-nights" type="number" placeholder="1" min="1" {...register("num_escritura", { required: true })} />
                     {errors.num_escritura && <p style={{ color: 'red' }}>{errors.num_escritura.message}</p>}
@@ -72,59 +73,58 @@ function Escritura() {
                 <Separator className="my-4" />
                 <span className="font-semibold"> Nomeclatura castral</span>
             </div>
-
-            {/* NOMECLATURA CASTRAL           */    }
-          {/*   <div className="grid gap-4 sm:grid-cols-3">
+ {/* NOMECLATURA CASTRAL           */    }
+            <div className="grid gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
                     <Label htmlFor="cleaning-fee">Circunscripción</Label>
-                    <Input id="cleaning-fee" type="text" placeholder="0" {...register("fecha_inicio", { required: true })} />
-                    {errors.fecha_inicio && <p style={{ color: 'red' }}>{errors.fecha_inicio.message}</p>}
+                    <Input type="text" placeholder="0" {...register("circunscripcion", { required: true })} />
+                    {errors.circunscripcion && <p style={{ color: 'red' }}>{errors.circunscripcion.message}</p>}
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="cleaning-fee">Sección</Label>
-                    <Input id="cleaning-fee" type="text" placeholder="0" {...register("fecha_inicio", { required: true })} />
-                    {errors.fecha_inicio && <p style={{ color: 'red' }}>{errors.fecha_inicio.message}</p>}
+                    <Input  type="text" placeholder="0" {...register("seccion", { required: true })} />
+                    {errors.seccion && <p style={{ color: 'red' }}>{errors.seccion.message}</p>}
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="cleaning-fee">Manzana</Label>
-                    <Input id="cleaning-fee" type="text" placeholder="0" {...register("fecha_inicio", { required: true })} />
-                    {errors.fecha_inicio && <p style={{ color: 'red' }}>{errors.fecha_inicio.message}</p>}
+                    <Input  type="text" placeholder="0" {...register("manzana", { required: true })} />
+                    {errors.manzana && <p style={{ color: 'red' }}>{errors.manzana.message}</p>}
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="cleaning-fee">Parcela</Label>
-                    <Input id="cleaning-fee" type="text" placeholder="0" {...register("fecha_inicio", { required: true })} />
-                    {errors.fecha_inicio && <p style={{ color: 'red' }}>{errors.fecha_inicio.message}</p>}
+                    <Input  type="text" placeholder="0" {...register("parcela", { required: true })} />
+                    {errors.parcela && <p style={{ color: 'red' }}>{errors.parcela.message}</p>}
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="cleaning-fee">Poligono</Label>
-                    <Input id="cleaning-fee" type="text" placeholder="0" {...register("fecha_inicio", { required: true })} />
-                    {errors.fecha_inicio && <p style={{ color: 'red' }}>{errors.fecha_inicio.message}</p>}
+                    <Input  type="text" placeholder="0" {...register("poligono", { required: true })} />
+                    {errors.poligono && <p style={{ color: 'red' }}>{errors.poligono.message}</p>}
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="cleaning-fee">Zona</Label>
-                    <Input id="cleaning-fee" type="text" placeholder="0" {...register("fecha_inicio", { required: true })} />
-                    {errors.fecha_inicio && <p style={{ color: 'red' }}>{errors.fecha_inicio.message}</p>}
+                    <Input  type="text" placeholder="0" {...register("zona", { required: true })} />
+                    {errors.zona && <p style={{ color: 'red' }}>{errors.zona.message}</p>}
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="cleaning-fee">Partida</Label>
-                    <Input id="cleaning-fee" type="text" placeholder="0" {...register("fecha_inicio", { required: true })} />
-                    {errors.fecha_inicio && <p style={{ color: 'red' }}>{errors.fecha_inicio.message}</p>}
+                    <Input  type="text" placeholder="0" {...register("partida", { required: true })} />
+                    {errors.partida && <p style={{ color: 'red' }}>{errors.partida.message}</p>}
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="cleaning-fee">Valor Fiscal</Label>
-                    <Input id="cleaning-fee" type="text" placeholder="0" {...register("fecha_inicio", { required: true })} />
-                    {errors.fecha_inicio && <p style={{ color: 'red' }}>{errors.fecha_inicio.message}</p>}
+                    <Input  type="text" placeholder="0" {...register("valuacion_fiscal", { required: true })} />
+                    {errors.valuacion_fiscal && <p style={{ color: 'red' }}>{errors.valuacion_fiscal.message}</p>}
                 </div>
-            </div> */}
+            </div> 
 
-
+        
         </>
     )
 

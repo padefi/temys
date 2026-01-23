@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Patrimonio\Inmuebles;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ControlAcceso\BranchResource;
+use App\Http\Resources\Patrimonio\InmueblesResource;
+use App\Models\ControlAcceso\Branch;
 use App\Models\Patrimonio\Inmuebles\Inmueble;
 use App\Models\Patrimonio\Inmuebles\InmuebleContrato;
 use App\Models\Patrimonio\Inmuebles\InmueblesEscritura;
+use App\Models\Patrimonio\Inmuebles\InmueblesHistorialCatastrales;
 use App\Models\Patrimonio\Inmuebles\InmuebleTipo;
 use App\Models\Patrimonio\Inmuebles\InmuebleTipoContrato;
 use App\Models\Patrimonio\Inmuebles\InmuebleTipoEstado;
@@ -14,14 +18,83 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class InmuebleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Inertia::render('Patrimonio/Inmuebles/Inmueble', [
-            'modulo' => 'patrimonio',
+
+          $idProducto = $request->route('idProducto');
+        //  Tomo el branch_id activo desde la sesión      
+        $branchId = Session::get('active_branch_id') ?? null;
+
+        // Si necesitas el almacen correspondiente a ese branch
+        $almacenId = DB::table('almacenes')
+            ->where('id', $branchId)
+            ->value('id');
+
+        $inmuebles= QueryBuilder::for(
+            Inmueble::query()
+                ->select(
+                    'inmuebles.*',
+                    'u.name as usuario_creacion',
+                    'ao.name as seccional',
+                    'p.descripcion as tipo_inmueble',
+                    'o.descripcion as tipo_ocupacion',
+                    'e.descripcion as estado'
+                )
+                ->join('users as u', 'inmuebles.usuario_creacion', '=', 'u.id')
+                ->leftjoin('branches as ao', 'inmuebles.id_seccionales', '=', 'ao.id')
+                ->leftjoin('inmueble_tipos as p', 'inmuebles.tipo_inmueble_id', '=', 'p.id')
+                ->leftjoin('inmueble_tipo_ocupacions as o', 'inmuebles.tipo_ocupacion_id', '=', 'o.id')
+                ->leftjoin('inmueble_tipo_estados as e', 'inmuebles.estado_id', '=', 'e.id')
+
+
+        )
+            ->allowedFilters([
+                AllowedFilter::callback('origen', function ($query, $value) {
+                    $query->where('ao.nombre', 'LIKE', "%{$value}%");
+                }),
+                AllowedFilter::callback('destino', function ($query, $value) {
+                    $query->where('ad.nombre', 'LIKE', "%{$value}%");
+                }),
+                AllowedFilter::callback('nombreProducto', function ($query, $value) {
+                    $query->where('p.nombre', 'LIKE', "%{$value}%");
+                }),
+                AllowedFilter::partial('tipo_movimiento'),
+                AllowedFilter::callback('usuarioCreacion', function ($query, $value) {
+                    $query->whereRaw("CONCAT(u.name, ' ', u.last_name) LIKE ?", ["%{$value}%"]);
+                }),
+
+            ])
+
+            ->allowedSorts([
+                'nombreProducto',
+                'tipo_movimiento',
+                'origen',
+                'destino',
+                'usuarioCreacion',
+                'cantidad',
+            ])
+
+            ->paginate($request->input('per_page', 10))
+            ->withQueryString();
+
+/*             
+var_dump($inmuebles->toArray());
+exit; */
+        return Inertia::render('Patrimonio/Inmuebles/BuscarInmuebles', [
+            'inmuebles' => InmueblesResource::collection($inmuebles),
         ]);
+
+    }
+    
+    public function newInmuebles()
+    {
+        return Inertia::render('Patrimonio/Inmuebles/CargarNuevoInmueble/Inmueble', []);
     }
 
     public function showEstados()
@@ -47,11 +120,17 @@ class InmuebleController extends Controller
         return response()->json($tiposContrato);
     }
 
+    public function showBranch()
+    {
+        $branches = Branch::all();
+
+        return response()->json($branches);
+    }
 
     private function crearDetallePorTipo(Request $request, Inmueble $inmueble)
     {
         switch ($request->tipo_contrato) {
-            case 1: // Casa
+            case 1: // comodato
                 InmuebleContrato::create([
                     'inmuebles_id' => $inmueble->id,
                     'inmuebles_tipo_contrato_id' => $request->tipo_contrato,
@@ -63,7 +142,7 @@ class InmuebleController extends Controller
                 ]);
                 break;
 
-            case 2: // Terreno
+            case 2: // alquiler
                 InmuebleContrato::create([
                     'inmuebles_id' => $inmueble->id,
                     'inmuebles_tipo_contrato_id' => $request->tipo_contrato,
@@ -75,8 +154,8 @@ class InmuebleController extends Controller
                 ]);
                 break;
 
-            case 3: // Departamento
-                InmueblesEscritura::create([
+            case 3: // escritura
+                $escritura = InmueblesEscritura::create([
                     'inmuebles_id' => $inmueble->id,
                     'nro_escritura' => $request->num_escritura,
                     'fecha_escritura' => $request->fecha_escritura,
@@ -85,17 +164,28 @@ class InmuebleController extends Controller
                     'tomo' => $request->tomo,
                     'observacion' => $request->observacion,
                 ]);
+
+                InmueblesHistorialCatastrales::create([
+                    'id_escritura' => $escritura->id,
+                    'circunscripcion' => $request->circunscripcion,
+                    'manzana' => $request->manzana,
+                    'parcela' => $request->parcela,
+                    'poligono' => $request->poligono,
+                    'zona' => $request->zona,
+                    'partida' => $request->partida,
+                    'valuacion_fiscal' => $request->valuacion_fiscal,
+                ]);
                 break;
         }
     }
 
 
 
-    public function createInmueble(Request $request)
+    public function createInmueble(Request $request)                      
     {
-
         $newInmueble = Inmueble::create([
             'num_partida' => $request->input('num_partida'),
+            'id_seccionales' => $request->input('id_seccionales'),
             'estado_id' => $request->input('estado_id'),
             'nombre_completo' => $request->input('nombre_completo'),
             'nombre_fantasia' => $request->input('nombre_fantasia'),
@@ -116,7 +206,14 @@ class InmuebleController extends Controller
             'message' => 'Solicitud creada con múltiples productos.',
             'newInmueble' => $newInmueble->id,
             'success' => true
-
         ], 201);
     }
+
+
+   public function getInmuebles(Request $request)
+    {
+      
+    }
+
+
 }

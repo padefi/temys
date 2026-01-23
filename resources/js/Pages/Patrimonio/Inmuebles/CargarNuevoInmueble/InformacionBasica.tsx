@@ -23,6 +23,7 @@ function InformacionBasica() {
     } = useFormContext<InmuebleSchemaType>();
 
     const [tipoInmueble, setTipoInmueble] = useState<select[]>([]);
+    const [seccional, setSeccional] = useState<select[]>([]);
     const [tipoOcupacion, setTipoOcupacion] = useState<select[]>([]);
     const [tipoEstados, setTipoEstados] = useState<select[]>([]);
     useEffect(() => {
@@ -30,8 +31,9 @@ function InformacionBasica() {
             axios.get('/patrimonio/inmuebles/tipos-inmuebles'),
             axios.get('/patrimonio/inmuebles/tipos-ocupacion'),
             axios.get('/patrimonio/inmuebles/estados'),
+            axios.get('/patrimonio/inmuebles/branches'),
         ])
-            .then(([inmuebleRes, ocupacionRes, estadosRes]) => {
+            .then(([inmuebleRes, ocupacionRes, estadosRes,seccionalRes]) => {
                 setTipoInmueble(
                     inmuebleRes.data.map((item: any) => ({
                         value: String(item.id),
@@ -52,13 +54,19 @@ function InformacionBasica() {
                         label: item.descripcion,
                     }))
                 );
+                setSeccional(
+                    seccionalRes.data.map((item: any) => ({
+                        value: String(item.id),
+                        label: item.name,
+                    }))
+                );
             })
             .catch(error => {
                 console.error('Error cargando selects', error);
             });
     }, []);
 
-
+console.log(seccional)
     return (
         <>
             {/* Información Básica */}
@@ -76,6 +84,33 @@ function InformacionBasica() {
                             <Label htmlFor="num_partida">Numero de Partida</Label>
                             <Input id="num_partida" {...register("num_partida", { required: true })} type="number" placeholder="18-1-C-123-01-002" min="1" />
                             {errors.num_partida && <p style={{ color: 'red' }}>{errors.num_partida.message}</p>}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="type">Seccional</Label>
+                            <Controller
+                                name="id_seccionales"
+                                control={control}
+                                rules={{ required: "Campo obligatorio" }}
+                                render={({ field }) => (
+                                    <Select
+                                        value={field.value ? String(field.value) : ""}
+                                        onValueChange={(value) => field.onChange(Number(value))}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Seleccionar Seccional" />
+                                        </SelectTrigger>
+
+                                        <SelectContent>
+                                            {seccional.map((item) => (
+                                                <SelectItem key={item.value} value={item.value}>
+                                                    {item.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
                         </div>
 
                         <div className="space-y-2">

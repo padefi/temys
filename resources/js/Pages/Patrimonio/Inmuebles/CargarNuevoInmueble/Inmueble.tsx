@@ -17,6 +17,7 @@ function InmueblesForm() {
         mode: 'onBlur', // Cambiado a onBlur para validar al salir del campo
         defaultValues: {
             num_partida: "" as any,
+            id_seccionales:"" as any,
             tipo_ocupacion_id: "" as any,
             estado_id: "" as any,
             tipo_contrato: "" as any,
@@ -90,9 +91,7 @@ function InmueblesForm() {
                                     setValue('numero', direccion.altura, {
                                         shouldValidate: true,
                                         shouldDirty: true,
-                                    });
-
-                                    console.log('DIRECCION SELECCIONADA EN FORM:', direccion);
+                                    });                          
                                     // Si querés validar inmediatamente
                                     trigger('calle_id');
                                 }}></BuscadorDireccionesCompacto>

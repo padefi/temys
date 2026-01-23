@@ -1,11 +1,7 @@
 <?php
 
 namespace App\Models\Patrimonio\Inmuebles;
-
 use App\Models\ControlAcceso\User;
-
-
-use App\Models\InmuebleTipoContrato;
 use Illuminate\Database\Eloquent\Model;
 
 class Inmueble extends Model
@@ -17,6 +13,7 @@ class Inmueble extends Model
     protected $fillable = [
 
         'num_partida',
+        'id_seccionales',
         'estado_id',
         'nombre_completo',
         'nombre_fantasia',

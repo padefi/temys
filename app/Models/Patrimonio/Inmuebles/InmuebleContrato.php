@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class InmuebleContrato extends Model
 {
+     protected $table = 'inmueble_contratos';
     public $timestamps = false;
 
 

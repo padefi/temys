@@ -37,4 +37,8 @@ class InmueblesEscritura extends Model
         return $this->belongsTo(Inmueble::class, 'inmuebles_id');
     }
 
+    public function inmuebleHistorialCatastro()
+    {
+        return $this->hasMany(InmueblesHistorialCatastrales::class, 'inmuebles_escritura_id');
+    }
 }
