@@ -1,13 +1,13 @@
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table"
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
-import { MovimientosItem } from "@/types/Inventario/InventarioFisico/Inventario";
-import { Footer } from "@/Pages/UserModulePanel/footer";
+import { MovimientosItem } from "@/types/Inventario/Reportes/HistorialMovimiento"; 
 import { links } from "@/types/links";
 import { meta } from "@/types/meta";
 import { useDataTableParams } from "@/hooks/useDataTableParams";
 import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
 import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
+import { Footer } from "@/Pages/UserModulePanel/footer";
 
 interface MovimientosTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];

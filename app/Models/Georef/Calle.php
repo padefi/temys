@@ -2,6 +2,7 @@
 
 namespace App\Models\Georef;
 
+use App\Models\Patrimonio\Inmuebles\Inmueble;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -109,5 +110,10 @@ class Calle extends Model
             : false;
 
         return $matchDerecha || $matchIzquierda;
+    }
+
+     public function inmuebles()
+    {
+        return $this->hasMany(Inmueble::class);
     }
 }

@@ -63,7 +63,7 @@ export default function StockManagement() {
     setStock(stocks.data);
   }, [stocks]);
 
-  console.log(stocks)
+
   const handleAbrirModal = () => {
     const bajoStock: StockInventarioItem[] = [];
     const normalStock: StockInventarioItem[] = [];

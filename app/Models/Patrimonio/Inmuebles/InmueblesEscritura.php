@@ -5,8 +5,9 @@ namespace App\Models\Patrimonio\Inmuebles;
 use App\Models\Patrimonio\Inmuebles\Inmueble;
 use Illuminate\Database\Eloquent\Model;
 
-class InmuebleEscritura extends Model
+class InmueblesEscritura extends Model
 {
+     protected $table = 'inmuebles_escritura';
      public $timestamps = false;
 
 
@@ -36,4 +37,8 @@ class InmuebleEscritura extends Model
         return $this->belongsTo(Inmueble::class, 'inmuebles_id');
     }
 
+    public function inmuebleHistorialCatastro()
+    {
+        return $this->hasMany(InmueblesHistorialCatastrales::class, 'inmuebles_escritura_id');
+    }
 }

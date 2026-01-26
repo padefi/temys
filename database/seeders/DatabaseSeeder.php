@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             InmueblesTipoOcupacionSeeder::class,
             InmueblesTipoSeeder::class,
             InmueblesSeeder::class,
+            InmueblesTipoContratoSeeder::class, 
             TipoMonedaSeeder::class,
             CaracteristicaSeeder::class,
             CategoriaSeeder::class,
@@ -66,9 +67,8 @@ class DatabaseSeeder extends Seeder
             RelacionComprobanteOrdenPagoProveedorSeeder::class,
             OrdenPagoSeeder::class,
             MovimientoTesoreriaSeeder::class,
-            ProvinciaSeeder::class,
-            LocalidadSeeder::class,
-            CalleSeeder::class,
+            
+
            /*  RelacionComprobantePartidaSeeder::class, */
 /*             InventarioMovimientoEstadosSeeder::class,
             InventarioStockTransitoSeeder::class, */
