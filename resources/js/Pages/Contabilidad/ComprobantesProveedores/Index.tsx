@@ -8,7 +8,6 @@ import { ScrollArea } from '@/Components/ui/scroll-area'
 import { Separator } from '@/Components/ui/separator'
 import { cn } from '@/lib/utils'
 import { Proveedor } from '@/types/Proveedor'
-import { ComprobanteProveedor } from '@/types/ComprobanteProveedor'
 import { Checkbox } from '@/Components/ui/checkbox'
 import { Button } from '@/Components/ui/button'
 import CuentaCorrienteModal from '../CuentaCorrienteProveedores'
@@ -16,12 +15,13 @@ import GenerarOrdenPagoModal from './GenerarOrdenPagoModal'
 import { toast } from 'sonner'
 import { formatCurrency, getImporteOrdenPago } from '@/lib/money'
 import { useMoneyInput } from '@/hooks/useMoneyInput'
+import { Comprobante } from '@/types/Comprobante'
 
 export default function Index() {
   const [proveedores, setProveedores] = useState<Proveedor[]>([])
   const [filtered, setFiltered] = useState<Proveedor[]>([])
   const [selected, setSelected] = useState<Proveedor | null>(null)
-  const [facturas, setFacturas] = useState<ComprobanteProveedor[]>([])
+  const [facturas, setFacturas] = useState<Comprobante[]>([])
   const [search, setSearch] = useState('')
 
   // monto ahora es string para evitar NaN
@@ -37,12 +37,12 @@ export default function Index() {
   const endIndex = startIndex + itemsPerPage
   const paginated = filtered.slice(startIndex, endIndex)
 
+
   const puedeGenerar =
   seleccionadas.length > 0 &&
   seleccionadas.every(f => {
     const num = Number(f.monto.replace('.', '').replace(',', '.')) || 0;
     const factura = facturas.find(x => x.id === f.id);
-
     if (!factura) return false;
 
     const total = (factura.detalles ?? []).reduce((acc, d) => acc + (Number(d.importe) || 0), 0);
@@ -63,14 +63,28 @@ export default function Index() {
   });
 
 
-  useEffect(() => {
+    useEffect(() => {
     const fetchProveedores = async () => {
-      const res = await axios.get('/contabilidad/proveedoresListado')
-      setProveedores(res.data)
-      setFiltered(res.data)
+        const res = await axios.get('/contabilidad/proveedoresListado')
+        const lista = res.data
+
+        // Ordenar: saldo primero, luego alfabético
+        const ordenados = lista.sort((a: any, b: any) => {
+        // 1️⃣ Primero por saldo (los que tienen saldo > 0 van arriba)
+        if (a.saldo > 0 && b.saldo === 0) return -1
+        if (a.saldo === 0 && b.saldo > 0) return 1
+
+        // 2️⃣ Segundo criterio: orden alfabético
+        return a.razon_social.localeCompare(b.razon_social)
+        })
+
+        setProveedores(ordenados)
+        setFiltered(ordenados)
     }
+
     fetchProveedores()
-  }, [])
+    }, [])
+
 
   useEffect(() => {
     const lower = search.toLowerCase()
@@ -127,34 +141,37 @@ export default function Index() {
     )
   }
 
-  const totalPagar = seleccionadas.reduce((acc, f) => {
-    const num = Number(f.monto.replace('.', '').replace(',', '.')) || 0
-    return acc + num
-  }, 0)
+    //helper para los decimales
+    const round2 = (n: number) =>
+    Math.round((Number(n) + Number.EPSILON) * 100) / 100
 
-  const [open, setOpen] = useState(false)
-  const [modalPagoVisible, setModalPagoVisible] = useState(false)
+    const totalPagar = seleccionadas.reduce((acc, f) => {
+        const num = Number(f.monto.replace('.', '').replace(',', '.')) || 0
+        return acc + num
+    }, 0)
 
-  const handleClosePago = async (updated?: boolean) => {
-    setModalPagoVisible(false)
-    if (!updated) return
+    const [open, setOpen] = useState(false)
+    const [modalPagoVisible, setModalPagoVisible] = useState(false)
 
-    if (selected) {
-      const res = await axios.get(`/contabilidad/${selected.id}/pendientes`)
-      setFacturas(res.data)
+    const handleClosePago = async (updated?: boolean) => {
+        setModalPagoVisible(false)
+        if (!updated) return
+
+        if (selected) {
+        const res = await axios.get(`/contabilidad/${selected.id}/pendientes`)
+        setFacturas(res.data)
+        }
+
+        const resProv = await axios.get('/contabilidad/proveedoresListado')
+        setProveedores(resProv.data)
+        setFiltered(resProv.data)
+
+        toast.success('Datos actualizados')
     }
 
-    const resProv = await axios.get('/contabilidad/proveedoresListado')
-    setProveedores(resProv.data)
-    setFiltered(resProv.data)
+    const handleGenerarOrdenPago = (data: any) => {
 
-    toast.success('Datos actualizados')
-  }
-
-  const handleGenerarOrdenPago = (data: any) => {
-
-  }
-
+    }
 
   return (
     <AuthenticatedLayout
@@ -186,7 +203,7 @@ export default function Index() {
                   )}
                 >
                   <span>{p.padron?.documento} - {p.nombre_fantasia}</span>
-                  <span className="text-sm text-gray-700">${p.saldo ?? '0.00'}</span>
+                  <span className="text-sm text-gray-700">${round2(p.saldo ?? 0.00)}</span>
                 </div>
               ))}
             </ScrollArea>
@@ -215,9 +232,14 @@ export default function Index() {
                 ? `Facturas pendientes de ${selected.nombre_fantasia}`
                 : 'Seleccioná un proveedor'}
             </h3>
+            <Button variant="outline" onClick={() => setOpen(true)}>
+                Ver cuenta corriente
+            </Button>
+
           </CardHeader>
 
           <CardContent className="flex-1 overflow-auto">
+
             {!selected && <p className="text-gray-500">Seleccioná un proveedor.</p>}
 
             {selected && facturas.length === 0 && (
@@ -226,10 +248,6 @@ export default function Index() {
 
             {selected && facturas.length > 0 && (
               <>
-                <Button variant="outline" onClick={() => setOpen(true)}>
-                  Ver cuenta corriente
-                </Button>
-
                 <div className="overflow-auto mt-2 border rounded">
                   <table className="w-full text-sm border-collapse">
                     <thead className="bg-gray-100 border-b">
@@ -247,19 +265,28 @@ export default function Index() {
                     </thead>
 
                     <tbody>
-                    {facturas.map(f => {
+                   {facturas.map(f => {
+                        // ➜ SIGNO DEL TIPO DE COMPROBANTE
+                        const signo = f.tipo_comprobante?.signo === "haber" ? -1 : 1;
+
                         const total = (f.detalles ?? []).reduce(
-                        (acc, d) => acc + (Number(d.importe) || 0),
-                        0
+                            (acc, d) => acc + signo * (Number(d.importe) || 0),
+                            0
                         );
 
-                        // SOLO CONFIRMADAS
+                        // SOLO ORDENES DE PAGO CONFIRMADAS
                         const pagado = (f.ordenes_pago ?? [])
-                        .filter(op => op.estado === "Confirmado")
-                        .reduce((acc, op) => acc + getImporteOrdenPago(op), 0);
+                            .filter(op => op.estado === "Confirmado")
+                            .reduce((acc, op) => acc + getImporteOrdenPago(op), 0);
+
+                                                // SOLO ORDENES DE PAGO CONFIRMADAS
+                        const comprobantesAplicados = (f.comprobantes_aplicados ?? [])
+                            .reduce((acc, ca) => acc + (Number(ca.pivot.importe_aplicado) || 0), 0);
+
+                        // SALDO FINAL
+                        const saldo = total + pagado - comprobantesAplicados;
 
 
-                        const saldo = total - pagado;
                         const selectedFactura = seleccionadas.find(sel => sel.id === f.id);
 
                         const pendientes = (f.ordenes_pago ?? [])

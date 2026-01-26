@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Compras\OrdenCompras;
 use App\Http\Controllers\Controller;
 use App\Models\Almacenes\Almacen;
-use App\Models\Compras\ComprobanteProveedor;
-use App\Models\Compras\ComprobanteProveedorArchivo;
+use App\Models\Contabilidad\Comprobante;
+use App\Models\Contabilidad\ComprobanteArchivo;
 use App\Models\Compras\OrdenCompra;
 use App\Models\Compras\OrdenCompraArchivo;
 use App\Models\Compras\OrdenCompraDetalle;
@@ -38,6 +38,9 @@ class OrdenComprasController extends Controller
                 'detalles.producto.modelo.marca',
                 'detalles.producto.subcategoria',
                 'ordenesCotizacion',
+                'ordenesCotizacion.solicitudCompra',
+                'ordenesCotizacion.solicitudCompra.origen',
+                'almacenDestino',
                 'proveedor',
                 'ordenesCotizacion.tipoMoneda',
                 'ordenesCotizacion.ordenesCompra'
@@ -104,7 +107,7 @@ class OrdenComprasController extends Controller
             if (!empty($validated['ordenCompra'])) {
                 $orden = ordenCompra::findOrFail($validated['ordenCompra']);
                 $orden->update([
-                    'proveedor_id' => $proveedor->id,
+                    'tipo_id' => $proveedor->id,
                     'moneda_id' => $validated['moneda'],
                     'cotizacion_moneda' => $validated['cotizacion_moneda'] ?? null,
                     'entrega_esperada' => $validated['entrega_esperada'],
@@ -116,7 +119,7 @@ class OrdenComprasController extends Controller
 
             } else {
                 $orden = ordenCompra::create([
-                    'proveedor_id' => $proveedor->id,
+                    'tipo_id' => $proveedor->id,
                     'moneda_id' => $validated['moneda'],
                     'cotizacion_moneda' => $validated['cotizacion_moneda'] ?? null,
                     'entrega_esperada' => $validated['entrega_esperada'],
@@ -231,11 +234,11 @@ class OrdenComprasController extends Controller
             'detalles.producto',
             'detalles.producto.modelo',
             'detalles.producto.subCategoria',
-            'comprobantesProveedores',
-            'comprobantesProveedores.archivos',
-            'comprobantesProveedores.detalles',
-            'comprobantesProveedores.condicionVenta',
-            'comprobantesProveedores.tipoComprobante',
+            'comprobantes.proveedor',
+            'comprobantes.archivos',
+            'comprobantes.detalles',
+            'comprobantes.condicionVenta',
+            'comprobantes.tipoComprobante',
             'detalles.detallesImpuesto',
             ]);
 
@@ -309,7 +312,7 @@ class OrdenComprasController extends Controller
             if (!empty($validated['ordenCompra'])) {
                 $orden = ordenCompra::findOrFail($validated['ordenCompra']);
                 $orden->update([
-                    'proveedor_id' => $proveedor->id,
+                    'tipo_id' => $proveedor->id,
                     'moneda_id' => $validated['moneda'],
                     'cotizacion_moneda' => $validated['cotizacion_moneda'] ?? null,
                     'entrega_esperada' => $validated['entrega_esperada'],
@@ -321,7 +324,7 @@ class OrdenComprasController extends Controller
 
             } else {
                 $orden = ordenCompra::create([
-                    'proveedor_id' => $proveedor->id,
+                    'tipo_id' => $proveedor->id,
                     'moneda_id' => $validated['moneda'],
                     'cotizacion_moneda' => $validated['cotizacion_moneda'] ?? null,
                     'entrega_esperada' => $validated['entrega_esperada'],
@@ -474,10 +477,10 @@ class OrdenComprasController extends Controller
             'archivo' => 'required|file|max:10240',
         ]);
 
-        $comprobante = ComprobanteProveedor::findOrFail($id);
+        $comprobante = Comprobante::findOrFail($id);
 
         $file = $request->file('archivo');
-        $path = $file->store('comprobantes_proveedores');
+        $path = $file->store('comprobantes');
 
         $comprobante->archivos()->create([
             'nombre' => $file->getClientOriginalName(),
@@ -490,7 +493,7 @@ class OrdenComprasController extends Controller
     }
 
     ////ELIMINAR ARCHIVO DE FACTURAS
-    public function eliminarArchivoFactura(ComprobanteProveedorArchivo $archivo)
+    public function eliminarArchivoFactura(ComprobanteArchivo $archivo)
     {
         try {
             // Eliminar el archivo físico
@@ -508,9 +511,9 @@ class OrdenComprasController extends Controller
     }
 
     ////VISUALIZAR ARCHIVO DE FACTURAS
-    public function visualizarArchivoFactura(ComprobanteProveedorArchivo $archivo)
+    public function visualizarArchivoFactura(ComprobanteArchivo $archivo)
     {
-        // Esto asume que los archivos están en storage/app/private/comprobantes-proveedores
+        // Esto asume que los archivos están en storage/app/private/comprobantes
         return response()->file(storage_path('app/private/' . $archivo->path));
     }
 

@@ -101,6 +101,13 @@ export default function Index() {
     const [estadoOrden, setEstadoOrden] = useState(ordenCotizacion?.[0]?.estado || '');
     const estaBloqueada = estadoOrden === "Confirmada" || estadoOrden === "Finalizada"
 
+    // 🔹 Calcular total cada vez que cambien los productos
+    const totalOrden = useMemo(() => {
+            return productos.reduce((acc, p) => acc + (p.importe || 0), 0)
+    }, [productos])
+
+    const monedaSeleccionada = tipoMonedas.find(m => m.id === monedaId) || null;
+
 
     useEffect(() => {
 
@@ -523,6 +530,17 @@ export default function Index() {
                 ordenCotizacion={ordenCotizacion?.[0]}
                 estadoOrden={ordenCotizacion?.[0]?.estado}
             />
+            <div className="flex justify-end mt-2">
+                        {/* 🔹 Mostrar el total */}
+                        <Typography variant="h2" className="mt-2">
+                        Total: {monedaSeleccionada?.simbolo || "$"}{" "}
+                        {totalOrden.toLocaleString("es-AR", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                            style: "decimal", // 🔹 no currency
+                        })}
+                        </Typography>
+            </div>
             <Textarea placeholder="Observaciones." value={observaciones} onChange={e => setObservaciones(e.target.value)} />
           </div>
 

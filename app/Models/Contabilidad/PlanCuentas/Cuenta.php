@@ -2,13 +2,14 @@
 
 namespace App\Models\Contabilidad\PlanCuentas;
 
-use App\Models\Compras\ComprobanteProveedorDetalle;
+use App\Models\Contabilidad\ComprobanteDetalle;
 use App\Models\ControlAcceso\User;
 use App\Models\General\Impuesto;
 use Illuminate\Database\Eloquent\Model;
 
 class Cuenta extends Model
 {
+
     protected $table = 'co_cuentas';
 
     protected $fillable = [
@@ -48,8 +49,8 @@ class Cuenta extends Model
         return $this->belongsTo(User::class, 'model_id_updated');
     }
 
-    public function comprobantesProveedorDetalle() {
-        return $this->belongsTo(ComprobanteProveedorDetalle::class, 'id');
+    public function comprobantesDetalle() {
+        return $this->belongsTo(ComprobanteDetalle::class, 'id');
     }
 
     public function impuestos()

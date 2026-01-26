@@ -28,6 +28,7 @@ interface ComboboxProps {
   onValueChange: (value: string) => void
   options: Option[]
   placeholder?: string
+  disabled?: boolean
 }
 
 export function Combobox({ value, onValueChange, options, placeholder }: ComboboxProps) {

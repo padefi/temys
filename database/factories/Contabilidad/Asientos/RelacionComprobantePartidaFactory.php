@@ -2,7 +2,7 @@
 
 namespace Database\Factories\Contabilidad\Asientos;
 
-use App\Models\Compras\ComprobanteProveedor;
+use App\Models\Contabilidad\Comprobante;
 use App\Models\Contabilidad\Asientos\Partida;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -11,8 +11,8 @@ class RelacionComprobantePartidaFactory extends Factory
     public function definition()
     {
         return [
-            'comprobante_id' => ComprobanteProveedor::inRandomOrder()->value('id')
-                                ?? ComprobanteProveedor::factory()->create()->id,
+            'comprobante_id' => Comprobante::inRandomOrder()->value('id')
+                                ?? Comprobante::factory()->create()->id,
 
             'partida_id' => Partida::inRandomOrder()->value('id')
                             ?? Partida::create([

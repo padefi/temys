@@ -423,6 +423,16 @@ class OrdenCotizacionesController extends Controller
         return redirect()->back()->with('success', 'Solicitud rechazada.');
     }
 
+    ////FINALIZAR COTIZACION
+    public function finalizarSolicitud($solicitud_id, $orden_id = null)
+    {
+        $solicitudCompra = SolicitudCompra::findOrFail($solicitud_id);
+        $solicitudCompra->estado = 'Finalizada';
+        $solicitudCompra->save();
+
+        return redirect()->back()->with('success', 'Solicitud finalizada.');
+    }
+
     ////ACEPTAR COTIZACION
     public function aceptarSolicitud($solicitud_id, $orden_id = null)
     {

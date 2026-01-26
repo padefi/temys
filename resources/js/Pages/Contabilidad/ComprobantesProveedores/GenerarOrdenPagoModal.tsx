@@ -7,16 +7,17 @@ import { Label } from "@/Components/ui/label"
 import { TipoMoneda } from '@/types/TipoMoneda'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs"
 import CampoBancoTarjeta from "./CampoBancoTarjeta"
-import { ComprobanteProveedor } from "@/types/ComprobanteProveedor"
+import { Comprobante } from "@/types/Comprobante"
 import axios from "axios"
 import { toast } from "sonner"
 
 type Pago = {
-  metodo_pago_id: number
+  metodo_id: number
   metodo: string
   moneda: number
   importe: number
   fecha: string
+  fechaCheque?: string
   banco?: string
   cuentaBancaria?: number
   tarjeta?: string
@@ -28,15 +29,24 @@ type Pago = {
 
 type Cbu = {
   id: number;
-  cbu: string;
+  tipo: string;
+  tipo_clave: string;
+  clave: string;
   alias: string;
+  predeterminado: number;
 };
 
-type MetodoPago = {
+type MetodoTesoreria = {
   id: number;
   nombre: string;
   descripcion: string;
   co_cuenta_id: number;
+}
+
+type AnticipoAplicado = {
+  anticipo_id: number
+  factura_id: number
+  importe: number
 }
 
 type Props = {
@@ -44,7 +54,7 @@ type Props = {
   onClose: (updated?: boolean) => void
   proveedorId: number
   facturasSeleccionadas: { id: number; monedaOrden: number; total: number; montoAPagar: number }[]
-  facturasDetalle: ComprobanteProveedor[]
+  facturasDetalle: Comprobante[]
   onSubmit: (data: any) => void
 }
 
@@ -57,11 +67,11 @@ export default function GenerarOrdenPagoModal({
 }: Props) {
     const [step, setStep] = useState(1)
     const [plan, setPlan] = useState("unico")
-    const [cuotas, setCuotas] = useState(1)
+    const [cuotas, setCuotas] = useState(2)
     const [activeTab, setActiveTab] = useState("0")
     const tabsRef = useRef<HTMLDivElement>(null)
     const [pagosUnicos, setPagosUnicos] = useState<Pago[]>([
-        { metodo_pago_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[0]?.monedaOrden || 0), importe: 0, fecha: "" }
+        { metodo_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[0]?.monedaOrden || 0), importe: 0, fecha: "" }
     ])
 
     const [pagosCuotas, setPagosCuotas] = useState<Pago[][]>([])
@@ -69,13 +79,27 @@ export default function GenerarOrdenPagoModal({
     const [intentoSubmit, setIntentoSubmit] = useState(false)
     const [cbus, setCbus] = useState<Cbu[]>([]);
     const [tipoMonedas, setTipoMonedas] = useState<TipoMoneda[]>([]);
-    const [metodoPagos, setMetodoPagos] = useState<MetodoPago[]>([]);
+    const [metodoPagos, setMetodoPagos] = useState<MetodoTesoreria[]>([]);
+
+    const [anticipos, setAnticipos] = useState<Comprobante[]>([])
+    const [anticiposAplicados, setAnticiposAplicados] = useState<AnticipoAplicado[]>([])
 
 
-    const toNumber = (value: any): number => {
-        const n = Number(value)
-        return isNaN(n) ? 0 : n
-    }
+
+    /* =======================
+     USEEFFECTS
+    ======================= */
+
+    useEffect(() => {
+    if (!open || !proveedorId) return
+
+    axios
+        .get(`/contabilidad/${proveedorId}/anticipos-disponibles`)
+        .then(res => setAnticipos(res.data))
+        .catch(() => setAnticipos([]))
+
+    }, [open, proveedorId])
+
 
     useEffect(() => {
 
@@ -124,33 +148,78 @@ export default function GenerarOrdenPagoModal({
         const newCuotas: Pago[][] = Array.from({ length: cuotas }, (_, i) =>
             pagosCuotas[i] && pagosCuotas[i].length
             ? pagosCuotas[i]
-            : [{ metodo_pago_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[i]?.monedaOrden || 0), importe: 0, fecha: "" }]
+            : [{ metodo_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[i]?.monedaOrden || 0), importe: 0, fecha: "" }]
         )
         setPagosCuotas(newCuotas)
         }
     }, [cuotas, plan])
 
 
-  const handleUpdatePagoCuota = useCallback(
-    (cuotaIdx: number, updater: Pago[] | ((prev: Pago[]) => Pago[])) => {
-      setPagosCuotas((prevCuotas) => {
-        const updated = [...prevCuotas];
-        const currentList = prevCuotas[cuotaIdx] || [];
-        const newList = typeof updater === "function" ? updater(currentList) : updater;
-        updated[cuotaIdx] = newList;
-        return updated;
-      });
-    },
-    []
-  );
 
-    const calcTotal = (pagos: Pago[]) =>
-    pagos.reduce((acc, p) => acc + toNumber(p.importe), 0)
+
+    /* =======================
+     HELPERS
+    ======================= */
+    const toNumber = (value: any): number => {
+        const n = Number(value)
+        return isNaN(n) ? 0 : n
+    }
+
+    const getImporteComprobante = (c: any) =>
+    Number(c.importe_disponible ?? 0)
+
+    //helper para los decimales
+    const round2 = (n: number) =>
+    Math.round((Number(n) + Number.EPSILON) * 100) / 100
+
+
+
+    const totalAnticipos = anticiposAplicados.reduce(
+        (acc, a) => acc + toNumber(a.importe),
+        0
+    )
 
     const totalFacturas = facturasSeleccionadas.reduce(
         (acc, f) => acc + toNumber(f.montoAPagar),
         0
     )
+
+    const totalAPagarNeto = round2(Math.max(totalFacturas - totalAnticipos, 0))
+    const esSoloAnticipos = totalAPagarNeto === 0
+
+    const toggleAnticipo = (
+    facturaId: number,
+    anticipo: Comprobante
+    ) => {
+    const existe = anticiposAplicados.find(
+        a => a.factura_id === facturaId && a.anticipo_id === anticipo.id
+    )
+
+    // ❌ Si existe → lo saco
+    if (existe) {
+        setAnticiposAplicados(prev =>
+        prev.filter(
+            a => !(a.factura_id === facturaId && a.anticipo_id === anticipo.id)
+        )
+        )
+        return
+    }
+
+    const disponible = getDisponibleAnticipo(anticipo)
+    if (disponible <= 0) return
+
+    setAnticiposAplicados(prev => [
+        ...prev,
+        {
+        factura_id: facturaId,
+        anticipo_id: anticipo.id,
+        importe: 0
+        }
+    ])
+    }
+
+    const calcTotal = (pagos: Pago[]) =>
+    pagos.reduce((acc, p) => acc + toNumber(p.importe), 0)
 
     const totalPagosUnicos = calcTotal(pagosUnicos)
     const totalPagosCuotas = calcTotal(pagosCuotas.flat())
@@ -161,12 +230,58 @@ export default function GenerarOrdenPagoModal({
         return faltante > 0 ? faltante : 0
     }
 
+    const getTotalFactura = (f: Comprobante) => {
+        return f.detalles.reduce(
+            (acc, d) => acc + Number(d.importe || 0),
+            0
+        )
+    }
+
+    const getTotalUsadoAnticipo = (anticipoId: number) =>
+    anticiposAplicados
+        .filter(a => a.anticipo_id === anticipoId)
+        .reduce((acc, a) => acc + Number(a.importe), 0)
+
+    const getDisponibleAnticipo = (anticipo: Comprobante) => {
+    const total = Number(anticipo.importe_disponible ?? 0)
+    const usado = getTotalUsadoAnticipo(anticipo.id)
+    return Math.max(total - usado, 0)
+    }
+
+    const getAnticiposFactura = (facturaId: number) =>
+    anticiposAplicados.filter(a => a.factura_id === facturaId)
+
+    const totalAnticiposFactura = (facturaId: number) =>
+    getAnticiposFactura(facturaId)
+        .reduce((acc, a) => acc + Number(a.importe), 0)
+
+
+
+
+    /* =======================
+        SUBMIT
+    ======================= */
+    const handleUpdatePagoCuota = useCallback(
+        (cuotaIdx: number, updater: Pago[] | ((prev: Pago[]) => Pago[])) => {
+        setPagosCuotas((prevCuotas) => {
+            const updated = [...prevCuotas];
+            const currentList = prevCuotas[cuotaIdx] || [];
+            const newList = typeof updater === "function" ? updater(currentList) : updater;
+            updated[cuotaIdx] = newList;
+            return updated;
+        });
+        },
+        []
+    );
+
+
+
     // 🔹 Agregar fila y completar con faltante
     const handleAddPagoUnico = () => {
         const faltante = getImporteFaltante(totalPagosUnicos)
         setPagosUnicos([
         ...pagosUnicos,
-        { metodo_pago_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[0]?.monedaOrden || 0), importe: faltante, fecha: "" },
+        { metodo_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[0]?.monedaOrden || 0), importe: faltante, fecha: "" },
         ])
     }
 
@@ -178,7 +293,7 @@ export default function GenerarOrdenPagoModal({
         const updated = [...pagosCuotas]
         updated[cuotaIdx] = [
         ...pagosDeEstaCuota,
-        { metodo_pago_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[0]?.monedaOrden || 0), importe: faltante, fecha: "" },
+        { metodo_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[0]?.monedaOrden || 0), importe: faltante, fecha: "" },
         ]
         setPagosCuotas(updated)
     }
@@ -193,7 +308,7 @@ export default function GenerarOrdenPagoModal({
     const handlePlanSubmit = () => {
         if (plan === "pagos") {
         const initialCuotas = Array.from({ length: cuotas }, () => [
-            { metodo_pago_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[0]?.monedaOrden || 0), importe: 0, fecha: "" }
+            { metodo_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[0]?.monedaOrden || 0), importe: 0, fecha: "" }
         ]);
         setPagosCuotas(initialCuotas);
         setActiveTab("0");
@@ -209,62 +324,111 @@ export default function GenerarOrdenPagoModal({
     })
     }
 
+
+
   const handleFinalSubmit = async () => {
 
-
-
     setIntentoSubmit(true)
-    const totalPagos = plan === "unico" ? totalPagosUnicos : totalPagosCuotas
+    const totalPagos = plan === "unico" ? round2(totalPagosUnicos) : round2(totalPagosCuotas)
     const faltante = getImporteFaltante(totalPagos)
 
-    if (faltante > 0) {
+    /*if (faltante > 0) {
       toast.error("Falta completar el monto total a pagar.")
       return
     }
     if (faltante < 0) {
       toast.error("El total de pagos supera el total a pagar.")
       return
+    }*/
+
+    if (totalPagos < totalAPagarNeto) {
+      toast.error("Falta completar el monto a pagar")
+      return
     }
+
+    if (totalPagos > totalAPagarNeto) {
+      toast.error("El total supera el monto a pagar")
+      return
+    }
+
+// 🟢 CASO: solo anticipos
+if (esSoloAnticipos) {
+    try {
+      const dataToSend = {
+        tipo: "Anticipos",
+        cantidad_cuotas: null,
+        facturasSeleccionadas,
+        anticipos_aplicados: anticiposAplicados,
+        pagos: [], // 👈 vacío
+      }
+
+      const res = await axios.post(
+        "/contabilidad/ordenesTesoreria",
+        dataToSend
+      )
+
+      if (res.status === 201) {
+        toast.success("Anticipos aplicados correctamente")
+        onClose(true)
+      }
+    } catch (error: any) {
+      const backendMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Error al aplicar anticipos"
+
+      toast.error(backendMessage)
+    }
+
+    return // ⛔ salimos acá
+}
+
+
+if (!esSoloAnticipos) {
 try{
     const dataToSend =
         plan === "unico"
         ? {
-            tipo_pago: "Unico",
+            tipo: "Unico",
             cantidad_cuotas: null,
             facturasSeleccionadas: facturasSeleccionadas,
+            anticipos_aplicados: anticiposAplicados,
             pagos: pagosUnicos.map((p) => ({
-                metodo_pago_id: p.metodo_pago_id,
+                metodo_id: p.metodo_id,
                 moneda_id: p.moneda, // ✅ número
                 importe: p.importe,
-                fecha_pago: p.fecha,
+                fecha: p.fecha,
+                fecha_cheque: p.fechaCheque,
                 banco_origen_id: p.bancoId ? Number(p.bancoId) : null, // ✅ entero o null
                 cuenta_origen_id: p.cuentaBancaria ? Number(p.cuentaBancaria) : null,
                 tarjeta_origen_id: p.tarjetaId ? Number(p.tarjetaId) : null,
-                cbu_pago: p.cbuProveedorId ? p.cbuProveedorId : null,
+                cbu_id: p.cbuProveedorId ? p.cbuProveedorId : null,
                 usuario_id: 1,
             })),
             }
         : {
-            tipo_pago: "Cuotas",
+            tipo: "Cuotas",
             cantidad_cuotas: cuotas,
             facturasSeleccionadas: facturasSeleccionadas,
+            anticipos_aplicados: anticiposAplicados,
             pagos: pagosCuotas.flat().map((p) => ({
-                metodo_pago_id: p.metodo_pago_id,
+                metodo_id: p.metodo_id,
                 moneda_id: p.moneda, // ✅ número
                 importe: p.importe,
-                fecha_pago: p.fecha,
+                fecha: p.fecha,
+                fecha_cheque: p.fechaCheque,
                 banco_origen_id: p.bancoId ? Number(p.bancoId) : null, // ✅ entero o null
                 cuenta_origen_id: p.cuentaBancaria ? Number(p.cuentaBancaria) : null,
                 tarjeta_origen_id: p.tarjetaId ? Number(p.tarjetaId) : null,
-                cbu_pago: p.cbuProveedorId ? p.cbuProveedorId : null,
+                cbu_id: p.cbuProveedorId ? p.cbuProveedorId : null,
                 usuario_id: 1,
             })),
             };
 
 
-    const res = await axios.post("/contabilidad/ordenesPagos", dataToSend)
+    const res = await axios.post("/contabilidad/ordenesTesoreriaProveedores", dataToSend)
     if (res.status === 201) {
-        toast.success("Orden de pago generada exitosamente")
+        toast.success("Orden de tesoreria generada exitosamente")
 
         onClose(true);
     }
@@ -276,8 +440,9 @@ try{
                 "Error al guardar la factura.";
 
             toast.error(backendMessage);
-        }
-    };
+    }
+}
+};
 
 
 
@@ -301,6 +466,7 @@ try{
         return newList;
       });
     };
+
 
 
 
@@ -329,7 +495,7 @@ try{
                 onChange={(e) => updateMultipleFields({ cbuProveedorId: e.target.value })}
               >
                 <option value="">Seleccioná un CBU</option>
-                {cbus.map((c) => <option key={c.id} value={c.cbu}>{c.cbu} ({c.alias})</option>)}
+                {cbus.map((c) => <option key={c.id} value={c.id}>{c.clave} ({c.alias})</option>)}
               </select>
               {showError && !p.cbuProveedorId && <p className="text-sm text-red-600 mt-1">Seleccioná un CBU</p>}
             </div>
@@ -338,7 +504,21 @@ try{
 
         {p.metodo === "Cheque" && (
           <div className="col-span-6">
-            <CampoBancoTarjeta tipo="banco" value={p.bancoId} onChange={(val) => updateMultipleFields({ bancoId: val })} />
+            <CampoBancoTarjeta
+            tipo="cheque"
+            value={{
+                bancoId: p.bancoId,
+                cuentaId: p.cuentaBancaria,
+                importeOrden: p.importe
+            }}
+            onChange={(val) =>
+                updateMultipleFields({
+                bancoId: val.bancoId,
+                cuentaBancaria: val.cuentaId,
+                fechaCheque: val.fechaCheque
+                })
+            }
+            />
             {showError && !p.bancoId && <p className="text-sm text-red-600 mt-1">Seleccioná un banco</p>}
           </div>
         )}
@@ -353,105 +533,282 @@ try{
     );
   };
 
-const isPagoCompleto = (p: Pago) => {
-    const camposBasicos = p.metodo_pago_id > 0 && p.moneda > 0 && p.importe > 0 && !!p.fecha
-    if (!camposBasicos) return false
+    const isPagoCompleto = (p: Pago) => {
+        const camposBasicos = p.metodo_id > 0 && p.moneda > 0 && p.importe > 0 && !!p.fecha
+            if (!camposBasicos) return false
 
-    if (p.metodo === "Cheque") return !!p.bancoId
-    if (p.metodo === "Tarjeta") return !!p.tarjetaId
-    if (p.metodo === "Transferencia") return !!p.bancoId && !!p.cuentaBancaria && !!p.cbuProveedorId
+            if (p.metodo === "Cheque") return !!p.bancoId && !!p.fechaCheque
+            if (p.metodo === "Tarjeta") return !!p.tarjetaId
+            if (p.metodo === "Transferencia") return !!p.bancoId && !!p.cuentaBancaria && !!p.cbuProveedorId
 
-    return true
-}
+            return true
+    }
 
-const isFormValid = plan === "unico"
-  ? pagosUnicos.length > 0 && pagosUnicos.every(isPagoCompleto)
-  : // plan === "pagos"
-    pagosCuotas.length > 0 &&
-    pagosCuotas.every((cuota) => cuota.length > 0 && cuota.every(isPagoCompleto));
+    const totalPagosActual =
+        plan === "unico"
+            ? round2(totalPagosUnicos)
+            : round2(totalPagosCuotas)
+
+    const coincideTotal =
+        round2(totalPagosActual) === round2(totalAPagarNeto)
+
+    const saldoRestante = round2(totalAPagarNeto - totalPagosActual)
+
+    const pagosCompletos =
+        plan === "unico"
+            ? pagosUnicos.length > 0 && pagosUnicos.every(isPagoCompleto)
+            : pagosCuotas.length > 0 &&
+            pagosCuotas.every(
+                (cuota) => cuota.length > 0 && cuota.every(isPagoCompleto)
+            )
+
+    const isFormValid = pagosCompletos && coincideTotal
 
   return (
-    <Dialog.Root open={open} onOpenChange={onClose}>
-      <Dialog.Overlay className="fixed inset-0 bg-black/50" />
-      <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg w-full max-w-6xl shadow-lg max-h-[90vh] overflow-auto">
-        <Dialog.Title className="text-lg font-bold">Generar Orden de Pago</Dialog.Title>
-        <Dialog.Close asChild>
-          <button className="absolute top-3 right-3 p-1 rounded hover:bg-gray-200"><X size={20} /></button>
-        </Dialog.Close>
-        {/* 🧾 Facturas seleccionadas */}
-        {facturasSeleccionadas.length > 0 && (
-        <div className="mt-4 border rounded-lg p-3 bg-gray-50">
-            <h4 className="font-semibold mb-2"><div>Facturas seleccionadas</div><div className="text-right">A pagar</div></h4>
-            <h4 className="font-semibold mb-2 text-right"></h4>
-            <ul className="space-y-1 text-sm">
-            {facturasDetalle
-                .filter((f) => facturasSeleccionadas.some((fs) => fs.id === f.id))
-                .map((f) => {
-                    const seleccion = facturasSeleccionadas.find((fs) => fs.id === f.id);
-                    const totalFactura = Number(
-                    f.detalles.reduce((acc, d) => acc + Number(d.importe || 0), 0) || 0
-                    );
+  <Dialog.Root open={open} onOpenChange={onClose}>
+    <Dialog.Overlay className="fixed inset-0 bg-black/50" />
 
-                    return (
-                    <li key={f.id} className="flex justify-between border-b last:border-0 pb-1">
-                        <div className="flex flex-col">
-                        <span>
-                            <strong>{f.tipo_comprobante?.nombre || "Factura"}</strong>{" "}
-                            {f.id} - Nº {f.punto_venta}-{f.numero_factura}
-                        </span>
-                        <span className="text-sm text-gray-500 italic">
+    <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg w-full max-w-6xl shadow-lg max-h-[90vh] overflow-auto">
+      <Dialog.Title className="text-lg font-bold">
+        Generar Orden de Pago
+      </Dialog.Title>
+
+      <Dialog.Close asChild>
+        <button className="absolute top-3 right-3 p-1 rounded hover:bg-gray-200">
+          <X size={20} />
+        </button>
+      </Dialog.Close>
+
+      {/* 🧾 FACTURAS SELECCIONADAS */}
+      {facturasSeleccionadas.length > 0 && (
+        <div className="mt-4 border rounded-lg p-4 bg-gray-50 space-y-4">
+
+            <div className="grid grid-cols-2 font-semibold">
+                <div>Facturas seleccionadas</div>
+                <div className="text-right">A pagar</div>
+            </div>
+
+            {facturasDetalle
+                .filter(f => facturasSeleccionadas.some(fs => fs.id === f.id))
+                .map(f => {
+                const seleccion = facturasSeleccionadas.find(fs => fs.id === f.id)
+
+                return (
+                    <div key={f.id} className="border rounded p-3 bg-white space-y-2">
+
+                    {/* DATOS FACTURA */}
+                    <div className="flex justify-between">
+                        <div>
+                        <strong>
+                            {f.tipo_comprobante?.nombre || "Factura"}
+                        </strong>{" "}
+                        {f.id} – Nº {f.punto_venta}-{f.numero_factura}
+                        <div className="text-sm text-gray-500 italic">
                             Total factura:{" "}
-                            {formatCurrency(Number(totalFactura), f.tipo_moneda?.codigo)}
-                        </span>
+                            {formatCurrency(getTotalFactura(f), f.tipo_moneda?.codigo)}
+                        </div>
                         </div>
 
-                        <div className="text-right">
-                        <div>
-                            <span className="text-gray-700 font-semibold">
-                                {formatCurrency(Number(seleccion?.montoAPagar || 0), f.tipo_moneda?.codigo)}
+                        {/* A PAGAR */}
+                        <div className="font-semibold">
+                        {formatCurrency(
+                            seleccion?.montoAPagar ?? 0,
+                            f.tipo_moneda?.codigo
+                        )}
+                        </div>
+                    </div>
+
+                    {/* ANTICIPOS */}
+
+                    {anticipos.length > 0 && (
+                        <div className="border rounded p-3 bg-blue-50">
+                        <h4 className="font-semibold mb-2">
+                            Anticipos disponibles
+                        </h4>
+
+                        {anticipos
+                        .filter(a => {
+                            // ❌ No permitir usar el mismo anticipo para pagarse
+                            if (
+                            f.tipo_comprobante?.categoria === "anticipo" &&
+                            a.id === f.id
+                            ) {
+                            return false
+                            }
+
+                            return true
+                        })
+                        .map(a => {
+                            const aplicado = anticiposAplicados.find(
+                            x =>
+                                x.factura_id === f.id &&
+                                x.anticipo_id === a.id
+                            )
+
+                            const disponible = getDisponibleAnticipo(a)
+
+                            return (
+                            <div
+                                key={a.id}
+                                className="flex items-center gap-3 mb-2"
+                            >
+                                <input
+                                type="checkbox"
+                                checked={!!aplicado}
+                                onChange={() => toggleAnticipo(f.id, a)}
+                                />
+
+                                <span className="flex-1">
+                                {a.tipo_comprobante?.nombre} Nº{" "}
+                                {a.punto_venta}-{a.numero_factura}
+                                </span>
+
+                                <span className="text-blue-700 text-sm">
+                                Disponible:{" "}
+                                {formatCurrency(
+                                    disponible,
+                                    a.tipo_moneda?.codigo
+                                )}
+                                </span>
+
+                                {aplicado && (
+                                <Input
+                                    type="number"
+                                    min={0}
+                                    max={disponible + aplicado.importe}
+                                    className="w-28"
+                                    value={aplicado.importe}
+                                    onChange={e => {
+                                    const nuevo = Number(e.target.value)
+                                    const max =
+                                        disponible + aplicado.importe
+                                    if (nuevo > max) return
+
+                                    setAnticiposAplicados(prev =>
+                                        prev.map(x =>
+                                        x.factura_id === f.id &&
+                                        x.anticipo_id === a.id
+                                            ? { ...x, importe: nuevo }
+                                            : x
+                                        )
+                                    )
+                                    }}
+                                />
+                                )}
+                            </div>
+                            )
+                        })}
+
+                        <div className="flex justify-between font-semibold border-t pt-2 mt-2">
+                            <span>Total anticipos factura</span>
+                            <span>
+                            {formatCurrency(
+                                totalAnticiposFactura(f.id),
+                                f.tipo_moneda?.codigo
+                            )}
                             </span>
                         </div>
                         </div>
-                    </li>
-                    );
+                    )}
+                    </div>
+                )
                 })}
 
+            {/* TOTAL A PAGAR GLOBAL */}
+            <div className="border-t pt-3 space-y-1">
 
-            {/* Total general */}
-            <li className="flex justify-between font-semibold pt-2 border-t">
-                <span>Total a pagar</span>
+            <div className="flex justify-between font-semibold">
+                <span>Total Neto a Pagar</span>
                 <span>
-                    {formatCurrency(facturasSeleccionadas
-                    .reduce((acc, f) => acc + Number(f.montoAPagar || 0), 0), facturasDetalle[0]?.tipo_moneda?.codigo)}
+                {formatCurrency(
+                    totalAPagarNeto,
+                    facturasDetalle[0]?.tipo_moneda?.codigo
+                )}
                 </span>
-            </li>
-            </ul>
+            </div>
+
+            <div className="flex justify-between">
+                <span>Pagos Cargados</span>
+                <span>
+                {formatCurrency(
+                    totalPagosActual,
+                    facturasDetalle[0]?.tipo_moneda?.codigo
+                )}
+                </span>
+            </div>
+
+            <div
+                className={`flex justify-between font-bold ${
+                saldoRestante === 0
+                    ? "text-green-600"
+                    : saldoRestante > 0
+                    ? "text-red-600"
+                    : "text-orange-600"
+                }`}
+            >
+                <span>
+                {saldoRestante === 0
+                    ? "Saldo"
+                    : saldoRestante > 0
+                    ? "Falta Saldar"
+                    : "Excedente"}
+                </span>
+                <span>
+                {formatCurrency(
+                    Math.abs(saldoRestante),
+                    facturasDetalle[0]?.tipo_moneda?.codigo
+                )}
+                </span>
+            </div>
+            </div>
+            </div>
+        )}
+
+
+        {esSoloAnticipos && (
+        <div className="mt-6 flex justify-end">
+            <Button onClick={handleFinalSubmit}>
+            Confirmar
+            </Button>
         </div>
         )}
 
-        {/* Paso 1 */}
-        {step === 1 && (
-          <div className="space-y-4 mt-4">
+
+        {/* PASO 1 */}
+        {step === 1 && !esSoloAnticipos && (
+            <div className="space-y-4 mt-6">
             <div>
-              <Label>Plan</Label>
-              <select className="border p-2 rounded w-full" value={plan} onChange={(e) => setPlan(e.target.value)}>
+                <Label>Plan</Label>
+                <select
+                className="border p-2 rounded w-full"
+                value={plan}
+                onChange={e => setPlan(e.target.value)}
+                >
                 <option value="unico">Plan Único</option>
                 <option value="pagos">Plan de Pagos</option>
-              </select>
+                </select>
             </div>
 
             {plan === "pagos" && (
-              <div>
+                <div>
                 <Label>Cantidad de Cuotas</Label>
-                <Input type="number" min={1} value={cuotas} onChange={(e) => setCuotas(Number(e.target.value))} />
-              </div>
+                <Input
+                    type="number"
+                    min={2}
+                    value={cuotas}
+                    onChange={e => setCuotas(Number(e.target.value))}
+                />
+                </div>
             )}
 
             <div className="flex justify-end gap-2">
-              <Button onClick={handlePlanSubmit}>Siguiente</Button>
+                <Button onClick={handlePlanSubmit}>
+                Siguiente
+                </Button>
             </div>
-          </div>
+            </div>
         )}
+
 
         {/* Paso 2 */}
         {step === 2 && (
@@ -469,12 +826,12 @@ const isFormValid = plan === "unico"
                 {pagosUnicos.map((p, idx) => (
                   <div key={idx} className="grid grid-cols-6 gap-2 mb-2 items-center">
                     <select
-                    value={p.metodo_pago_id}
+                    value={p.metodo_id}
                     onChange={(e) => {
                         const selectedId = Number(e.target.value);
                         const selectedMetodo = metodoPagos.find((m) => m.id === selectedId);
                         const updated = [...pagosUnicos];
-                        updated[idx].metodo_pago_id = selectedId;
+                        updated[idx].metodo_id = selectedId;
                         updated[idx].metodo = selectedMetodo ? selectedMetodo.nombre : "";
                         setPagosUnicos(updated);
                     }}
@@ -489,16 +846,17 @@ const isFormValid = plan === "unico"
 
 
                     <select
-                    value={p.moneda  || ""}
+                    value={p.moneda}
                     onChange={(e) => {
                         const updated = [...pagosUnicos];
                         updated[idx].moneda = Number(e.target.value); // 🔹 convertir a número
                         setPagosUnicos(updated);
                     }}
                     >
+                    <option value="">Seleccioná una moneda</option>
                     {tipoMonedas.map((m) => (
                         <option key={m.codigo} value={m.id}> {/* 🔹 usar id, no simbolo */}
-                        {m.descripcion} ({m.simbolo})
+                            {m.descripcion} ({m.simbolo})
                         </option>
                     ))}
                     </select>
@@ -522,7 +880,7 @@ const isFormValid = plan === "unico"
                   <button type="button" onClick={() => scrollTabs(-150)} className="px-2 py-1 bg-gray-200 rounded">&lt;</button>
                   <div className="flex-1 overflow-x-auto no-scrollbar" ref={tabsRef}>
                     <TabsList className="flex gap-1 w-max min-w-full">
-                      {Array.from({ length: cuotas }).map((_, i) => <TabsTrigger key={i} value={String(i)} className="flex-shrink-0 whitespace-nowrap px-3 py-1 border rounded text-sm">Cuota {i + 1}</TabsTrigger>)}
+                      {Array.from({ length: cuotas }).map((_, i) => <TabsTrigger key={i} value={String(i)} className="shrink-0 whitespace-nowrap px-3 py-1 border rounded text-sm">Cuota {i + 1}</TabsTrigger>)}
                     </TabsList>
                   </div>
                   <button type="button" onClick={() => scrollTabs(150)} className="px-2 py-1 bg-gray-200 rounded">&gt;</button>
@@ -535,12 +893,12 @@ const isFormValid = plan === "unico"
                     {Array.isArray(pagoList) ? pagoList.map((p, idx) => (
                       <div key={idx} className="grid grid-cols-6 gap-2 mb-2 items-center">
                         <select
-                        value={p.metodo_pago_id}
+                        value={p.metodo_id}
                         onChange={(e) => {
                             const selectedId = Number(e.target.value);
                             const selectedMetodo = metodoPagos.find((m) => m.id === selectedId);
                             const updated = [...pagosCuotas];
-                            updated[cuotaIdx][idx].metodo_pago_id = selectedId;
+                            updated[cuotaIdx][idx].metodo_id = selectedId;
                             updated[cuotaIdx][idx].metodo = selectedMetodo ? selectedMetodo.nombre : "";
                             setPagosCuotas(updated);
                         }}
@@ -562,6 +920,7 @@ const isFormValid = plan === "unico"
                             setPagosCuotas(updated);
                         }}
                         >
+                        <option value="">Seleccioná una moneda</option>
                         {tipoMonedas.map((m) => (
                             <option key={m.codigo} value={m.id}> {/* 🔹 usar id */}
                             {m.descripcion} ({m.simbolo})

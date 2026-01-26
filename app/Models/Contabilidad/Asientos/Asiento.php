@@ -2,13 +2,15 @@
 
 namespace App\Models\Contabilidad\Asientos;
 
-use App\Models\Compras\ComprobanteProveedor;
+use App\Models\Contabilidad\Comprobante;
 use App\Models\Contabilidad\PlanCuentas\Ejercicio;
 use App\Models\ControlAcceso\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Asiento extends Model
 {
+    use HasFactory;
     protected $table = 'co_asientos';
 
     protected $fillable = [
@@ -58,10 +60,10 @@ class Asiento extends Model
         return $this->belongsTo(User::class, 'model_id_voided');
     }
 
-    public function comprobantesProveedores()
+    public function comprobantes()
     {
         return $this->hasManyThrough(
-            ComprobanteProveedor::class,
+            Comprobante::class,
             Partida::class,
             'co_asiento_id',   // FK en partidas
             'id',              // FK en comprobantes

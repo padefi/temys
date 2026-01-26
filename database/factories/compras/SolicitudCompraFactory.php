@@ -15,7 +15,7 @@ class SolicitudCompraFactory extends Factory
         return [
             'origen_id' => Origen::inRandomOrder()->first()?->id ?? Origen::factory()->create()->id,
             'descripcion' => $this->faker->sentence,
-            'estado' => $this->faker->randomElement(['Pendiente', 'Aceptada', 'Rechazada']),
+            'estado' => $this->faker->randomElement(['Pendiente', 'Aceptada', 'Rechazada','Finalizada']),
             'usuario_id' => $user->id,
             'usuario_actualizacion' => $user->id,
         ];

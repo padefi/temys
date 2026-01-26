@@ -22,6 +22,17 @@ export const getImporteOrdenPago = (op: any): number => {
     return toNumber(op?.importe);
 };
 
+// Devuelve el importe correcto: aplicado → importe → 0
+export const getImporteOrdenCobro = (op: any): number => {
+    const aplicado = op?.pivot?.importe_aplicado;
+
+    if (aplicado !== null && aplicado !== undefined && aplicado !== "") {
+        return toNumber(aplicado);
+    }
+
+    return toNumber(op?.importe);
+};
+
 // Formato consistente de moneda
 export const formatCurrency = (
     value: any,

@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Compras\ComprobantesProveedores;
 use App\Http\Controllers\Controller;
-use App\Models\Compras\ComprobanteProveedor;
+use App\Models\Contabilidad\Comprobante;
 use App\Models\Compras\OrdenCompra;
 use App\Models\Contabilidad\Asientos\Asiento;
 use App\Models\Contabilidad\Asientos\Partida;
 use App\Models\Contabilidad\PlanCuentas\Ejercicio;
 use App\Models\General\Impuesto;
+use App\Models\General\TipoComprobante;
 use App\Models\Padron\Proveedor\Proveedor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ class ComprobantesProveedoresController extends Controller
     ////LISTAR COMPROBANTES PROVEEDORES PENDIENTES
     public function index()
     {
-        $comprobantesProveedorListado = ComprobanteProveedor::with(
+        $comprobantesProveedorListado = Comprobante::with(
             [
                 'detalles',
                 'detalles.producto',
@@ -48,16 +49,17 @@ class ComprobantesProveedoresController extends Controller
         try {
             // ---------------- VALIDACIÓN ----------------
             $request->validate([
-                'proveedor_id' => 'required|exists:proveedores,id',
+                'tipo_id' => 'required|exists:proveedores,id',
                 'punto_venta' => 'required|string|max:10',
                 'numero_factura' => 'required|string|max:20',
                 'tipo_comprobante_id' => 'required|exists:tipo_comprobantes,id',
                 'detalles' => 'required|array|min:1',
+                'moneda_id' => 'required|exists:tipo_monedas,id',
                 'totalOrden' => 'required|numeric|min:0',
             ]);
 
             // ---------------- DUPLICADOS ----------------
-            $existe = ComprobanteProveedor::where('proveedor_id', $request->proveedor_id)
+            $existe = Comprobante::where('tipo_id', $request->tipo_id)
                 ->where('punto_venta', $request->punto_venta)
                 ->where('numero_factura', $request->numero_factura)
                 ->where('tipo_comprobante_id', $request->tipo_comprobante_id)
@@ -70,12 +72,13 @@ class ComprobantesProveedoresController extends Controller
             }
 
             // ---------------- CREAR COMPROBANTE ----------------
-            $comprobante = ComprobanteProveedor::create([
-                'proveedor_id' => $request->proveedor_id,
+            $comprobante = Comprobante::create([
+                'tipo_id' => $request->tipo_id,
                 'fecha_factura' => $request->fecha_factura,
                 'fecha_vencimiento' => $request->fecha_vencimiento,
                 'condicion_venta_id' => $request->condicion_venta_id,
                 'punto_venta' => $request->punto_venta,
+                'moneda_id' => $request->moneda_id,
                 'numero_factura' => $request->numero_factura,
                 'tipo_comprobante_id' => $request->tipo_comprobante_id,
                 'estado' => $request->estado,
@@ -200,7 +203,7 @@ class ComprobantesProveedoresController extends Controller
 
 
             // ---------------- PARTIDA DE PROVEEDOR (HABER) ----------------
-            $proveedor = Proveedor::find($request->proveedor_id);
+            $proveedor = Proveedor::find($request->tipo_id);
 
             Partida::create([
                 'co_asiento_id' => $asiento->id,
@@ -235,7 +238,7 @@ class ComprobantesProveedoresController extends Controller
         // Trae la orden de compra con sus comprobantes relacionados
         $orden = OrdenCompra::with([
             'comprobantesProveedores.detalles' => function ($q) {
-                $q->select('id', 'comprobante_proveedor_id', 'producto_id', 'cantidad');
+                $q->select('id', 'comprobante_tipo_id', 'producto_id', 'cantidad');
             },
             'comprobantesProveedores.detalles.producto:id,nombre,modelo_id',
         ])->find($ordenId);
@@ -249,5 +252,94 @@ class ComprobantesProveedoresController extends Controller
 
         return response()->json($comprobantes);
     }
+
+    public function getProximoNumeroAnticipo()
+    {
+        // El punto de venta fijo para los Anticipos, como se definió en el frontend
+        $puntoVentaAnticipo = '0001';
+
+        // 1. Encontrar el ID del tipo de comprobante 'Anticipo'
+        $tipoAnticipo = TipoComprobante::where('nombre', 'Anticipo')->first();
+
+        if (!$tipoAnticipo) {
+            // Si el tipo no existe, retornamos un error o forzamos el inicio en 1
+            // Retornar 1 es una solución más suave para el UX
+            return response()->json(['proximo_numero' => 1]);
+        }
+
+        $tipoComprobanteId = $tipoAnticipo->id;
+
+        // 2. Encontrar el último comprobante existente
+        $ultimoComprobante = Comprobante::where('tipo_comprobante_id', $tipoComprobanteId)
+            ->where('punto_venta', $puntoVentaAnticipo)
+            // Importante: Ordenar por el número como si fuera un entero (SIGNED) para obtener el máximo correcto.
+            ->orderByRaw('CAST(numero_factura AS SIGNED) DESC')
+            ->first();
+
+        $proximoNumero = 1;
+
+        if ($ultimoComprobante) {
+            // Convertir a entero, sumar 1
+            $ultimoNumero = (int) $ultimoComprobante->numero_factura;
+            $proximoNumero = $ultimoNumero + 1;
+        }
+
+        // 3. Devolver el número
+        // El frontend se encargará de darle el formato con ceros a la izquierda (padding).
+        return response()->json([
+            'proximo_numero' => $proximoNumero
+        ]);
+    }
+
+    public function anticiposDisponibles($proveedorId)
+    {
+        $anticipos = Comprobante::with([
+            'detalles',
+            'comprobantesAplicados'
+        ])
+        ->where('tipo_id', $proveedorId)
+        ->whereHas('tipoComprobante', function ($q) {
+            $q->where('categoria', 'anticipo');
+        })
+        ->get()
+        ->map(function ($anticipo) {
+
+            // 🔹 Total real del anticipo
+            $importeAnticipo = $anticipo->detalles->sum(function ($d) {
+                return (float) $d->importe;
+            });
+
+            // 🔹 Si no tiene importe, no es usable
+            if ($importeAnticipo <= 0) {
+                return null;
+            }
+
+            // 🔹 Total aplicado (si no hay relaciones → 0)
+            $importeAplicado = $anticipo->comprobantesAplicados->sum(function ($comp) {
+                return (float) ($comp->pivot->importe_aplicado ?? 0);
+            });
+
+            // 🔹 Disponible
+            $importeDisponible = $importeAnticipo - $importeAplicado;
+
+            // 🔹 Si ya se consumió completamente
+            if ($importeDisponible <= 0) {
+                return null;
+            }
+
+            // 🔹 Datos para el frontend
+            $anticipo->importe_total = $importeAnticipo;
+            $anticipo->importe_aplicado = $importeAplicado;
+            $anticipo->importe_disponible = $importeDisponible;
+
+            return $anticipo;
+        })
+        ->filter()
+        ->values();
+
+        return response()->json($anticipos);
+    }
+
+
 
 }

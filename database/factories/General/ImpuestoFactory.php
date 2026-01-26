@@ -15,7 +15,8 @@ class ImpuestoFactory extends Factory
         return [
             'descripcion' => $this->faker->word(),
             'porcentaje' => $this->faker->randomFloat(2, 0.01, 25),
-            'co_cuenta_id' => Cuenta::factory(),
+            'co_cuenta_id' => Cuenta::query()->inRandomOrder()->value('id')
+            ?? Cuenta::factory()->create()->id,
             'habilitado' => $this->faker->boolean(90),
         ];
     }

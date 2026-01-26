@@ -3,7 +3,7 @@ import { Archivo } from "./Archivos";
 import { CotizacionOrden } from "./CotizacionOrden";
 import { OrdenesCompraDetalle } from "./OrdenCompraDetalle";
 import { TipoMoneda } from "./TipoMoneda";
-import { ComprobanteProveedor } from "./ComprobanteProveedor";
+import { Comprobante } from "./Comprobante";
 
 export interface OrdenesCompra {
     id: number
@@ -23,7 +23,7 @@ export interface OrdenesCompra {
     ordenes_cotizacion: CotizacionOrden[]
     detalles?: OrdenesCompraDetalle[]  // usa el tipo correcto si tienes uno
     archivos?: Archivo[]
-    comprobantes_proveedores?: ComprobanteProveedor[]
+    comprobantes?: Comprobante[]
     created_at: Date;
     updated_at: Date;
     estado: string

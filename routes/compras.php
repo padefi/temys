@@ -5,7 +5,12 @@ use App\Http\Controllers\Compras\Proveedores\ProveedoresController;
 use App\Http\Controllers\Compras\OrdenCotizaciones\OrdenCotizacionesController;
 use App\Http\Controllers\Compras\OrdenCompras\OrdenComprasController;
 use App\Http\Controllers\Compras\OrdenPagoController;
+use App\Http\Controllers\Compras\OrdenTesoreriaController;
+
 use App\Http\Controllers\Compras\ComprobantesProveedores\ComprobantesProveedoresController;
+
+
+
 use App\Http\Controllers\Inventario\Productos\ProductoController;
 use App\Http\Controllers\UserModulePanel\UserModuleController;
 use Illuminate\Support\Facades\Route;
@@ -64,6 +69,10 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
         ///Rechazar Solicitud de compra
         Route::post('/rechazar-solicitud/{solicitud_id}/{orden_id?}', [OrdenCotizacionesController::class, 'rechazarSolicitud'])
             ->name('cotizacionesOrdenes.rechazarSolicitud');
+
+        ///Finalizar Solicitud de compra
+        Route::post('/finalizar-solicitud/{solicitud_id}/{orden_id?}', [OrdenCotizacionesController::class, 'finalizarSolicitud'])
+            ->name('cotizacionesOrdenes.finalizarSolicitud');
 
         ///Aceptar Solicitud de compra
         Route::post('/aceptar-solicitud/{solicitud_id}/{orden_id?}', [OrdenCotizacionesController::class, 'aceptarSolicitud'])
@@ -153,6 +162,8 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
         // Comprobantes por orden
         Route::get('/{ordenId}/comprobantes', [ComprobantesProveedoresController::class, 'comprobantesPorOrden']);
 
+        Route::get('/comprobantes-proveedores/proximo-numero-anticipo', [ComprobantesProveedoresController::class, 'getProximoNumeroAnticipo'])
+        ->name('comprobantes-proveedores.proximo-numero-anticipo');
 
         // Mostrar detalle
        /* Route::get('/{orden_pago_id}', [OrdenPagoController::class, 'show'])
@@ -160,7 +171,7 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
     });
 
 
-/////////////////////verrrrrrrrrrrrrr
+
         Route::middleware(['submenu:facturasProveedoresCompras'])
         ->group(function () {
             // Vista principal

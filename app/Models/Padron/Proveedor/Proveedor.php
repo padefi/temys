@@ -1,13 +1,14 @@
 <?php
 namespace App\Models\Padron\Proveedor;
 
-use App\Models\Compras\ComprobanteProveedor;
+use App\Models\Contabilidad\Comprobante;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Compras\OrdenCotizacion\OrdenCotizacion;
 use App\Models\Padron\Cliente\Cliente;
 use App\Models\Padron\CondicionIva;
 use App\Models\Padron\Padron;
+use App\Models\Padron\PadronCbu;
 
 class Proveedor extends Model
 {
@@ -52,12 +53,12 @@ class Proveedor extends Model
     ////CUENTAS BANCARIAS RELACIONADAS
     public function cbu()
     {
-        return $this->hasMany(ProveedorCbu::class, 'proveedor_id');
+        return $this->morphMany(PadronCbu::class, 'titular', 'tipo', 'tipo_id');
     }
     // Relación con ComprobantesProveedores
-    public function comprobantesProveedores()
+    public function comprobantes()
     {
-        return $this->hasMany(ComprobanteProveedor::class, 'proveedor_id', 'id');
+        return $this->hasMany(Comprobante::class, 'tipo_id', 'id');
     }
 
 

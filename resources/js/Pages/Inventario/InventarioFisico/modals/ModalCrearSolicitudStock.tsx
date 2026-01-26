@@ -126,7 +126,7 @@ export const SolicitarStock: React.FC<SolicitarStockProps> = ({
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="!w-[1000px] !max-w-none">
+            <DialogContent className="w-[1000px]! max-w-none!">
                 <DialogHeader>
                     <DialogTitle>Solicitar Stock a Otro Almacén</DialogTitle>
                     <DialogDescription>

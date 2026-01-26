@@ -22,7 +22,7 @@ return new class extends Migration
 
             $table->foreign('comprobante_id')
                 ->references('id')
-                ->on('comprobantes_proveedores')
+                ->on('comprobantes')
                 ->cascadeOnDelete();
 
             $table->foreign('partida_id')
@@ -30,7 +30,7 @@ return new class extends Migration
                 ->on('co_partidas')
                 ->cascadeOnDelete();
 
-            $table->unique(['comprobante_id', 'partida_id']);
+            //$table->unique(['comprobante_id', 'partida_id']);
         });
     }
 
