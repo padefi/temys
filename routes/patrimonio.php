@@ -17,6 +17,19 @@ Route::middleware('module:patrimonio')->group(function () {
             Route::middleware('submenu_permission:read inmuebles')->group(function () {
                 Route::get('patrimonio/inmuebles',  [InmuebleController::class, 'index'])->name('inmuebles');
             });
+
+            Route::middleware('submenu_permission:create inmuebles')->group(function () {
+                Route::post('patrimonio/inmuebles/create-inmueble',  [InmuebleController::class, 'createInmueble'])->name('create.inmueble');
+                Route::get('patrimonio/inmuebles/new-inmueble',  [InmuebleController::class, 'newInmuebles'])->name('new.inmueble');
+            });
+
+            Route::middleware('submenu_permission:read inmuebles')->group(function () {
+                Route::get('patrimonio/inmuebles/estados',  [InmuebleController::class, 'showEstados'])->name('inmuebles.estados');
+                Route::get('patrimonio/inmuebles/tipos-inmuebles',  [InmuebleController::class, 'showTiposInmuebles'])->name('inmuebles.tipos.inmuebles');
+                Route::get('patrimonio/inmuebles/tipos-ocupacion',  [InmuebleController::class, 'showTiposOcupacion'])->name('inmuebles.tipos.ocupacion');
+                Route::get('patrimonio/inmuebles/tipos-contrato',  [InmuebleController::class, 'showTipoContrato'])->name('inmuebles.tipos.contrato');
+                Route::get('patrimonio/inmuebles/branches',  [InmuebleController::class, 'showBranch'])->name('inmuebles.branches');
+            });
         });
     });
 

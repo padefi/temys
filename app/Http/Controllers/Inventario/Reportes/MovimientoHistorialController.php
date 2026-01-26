@@ -65,8 +65,6 @@ class MovimientoHistorialController extends Controller
                 'destino',
                 'usuarioCreacion',
                 'cantidad',
-
-
             ])
 
             ->paginate($request->input('per_page', 10))

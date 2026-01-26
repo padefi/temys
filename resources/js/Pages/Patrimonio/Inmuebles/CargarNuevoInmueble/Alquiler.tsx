@@ -1,18 +1,17 @@
 import { Label } from "@/Components/ui/label";
 import { DollarSign } from "lucide-react";
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { inmuebleSchema, InmuebleSchemaType } from "./InmuebleSchema"
+import { useFormContext } from "react-hook-form"
+import { InmuebleSchemaType } from "./InmuebleSchema"
 import { Input } from "@/Components/ui/input";
 import { Textarea } from "@/Components/ui/textarea";
 
 
 
 function Alquiler() {
-    const { register, handleSubmit, formState: { errors } } = useForm({
-        resolver: zodResolver(inmuebleSchema),
-    });
-
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext<InmuebleSchemaType>();
     return (
         <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
