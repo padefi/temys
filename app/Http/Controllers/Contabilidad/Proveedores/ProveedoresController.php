@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Contabilidad\Proveedores;
 use App\Http\Controllers\Controller;
-use App\Models\Compras\ComprobanteProveedor;
-use App\Models\Compras\OrdenPago;
+use App\Models\Contabilidad\OrdenTesoreria;
+use App\Models\Contabilidad\Comprobante;
 use App\Models\General\Banco;
 use App\Models\General\CuentaBancaria;
-use App\Models\General\MetodoPago;
+use App\Models\General\MetodoTesoreria;
 use App\Models\General\Tarjeta;
 use App\Models\General\TipoComprobante;
 use App\Models\General\TipoMoneda;
@@ -21,10 +21,10 @@ class ProveedoresController extends Controller
     {
         $proveedores = Proveedor::with([
             'padron',
-            'comprobantesProveedores.detalles',
-            'comprobantesProveedores.tipoComprobante',
-            'comprobantesProveedores.ordenesPago',
-            'comprobantesProveedores.comprobantesAplicados',
+            'comprobantes.detalles',
+            'comprobantes.tipoComprobante',
+            'comprobantes.ordenesTesoreria',
+            'comprobantes.comprobantesAplicados',
         ])->get();
 
         $proveedores = $proveedores->map(function ($p) {
@@ -32,7 +32,7 @@ class ProveedoresController extends Controller
             $totalHaber = 0;
             $pagosConfirmados = 0;
 
-            foreach ($p->comprobantesProveedores as $comp) {
+            foreach ($p->comprobantes as $comp) {
 
                 // Signo según tipo de comprobante
                 $signo = $comp->tipoComprobante->signo ?? 1; // 'debe' = 1 / 'haber' = -1
@@ -64,7 +64,7 @@ class ProveedoresController extends Controller
                 }
 
                 // Ordenes de pago (siempre cuentan si están confirmadas)
-                foreach ($comp->ordenesPago as $op) {
+                foreach ($comp->ordenesTesoreria as $op) {
                     if ($op->estado === 'Confirmado') {
                         $pagosConfirmados += (float) ($op->pivot->importe_aplicado ?? 0);
                     }
@@ -91,26 +91,26 @@ class ProveedoresController extends Controller
     ////LISTAR FACTURAS PENDIENTES DE PAGO DE UN PROVEEDOR
     public function facturasPendientes($proveedorId)
     {
-        $comprobantes = ComprobanteProveedor::with([
+        $comprobantes = Comprobante::with([
             'tipoComprobante',
             'detalles',
             'tipoMoneda',
             'comprobantesAplicados' => function ($q) {
                 $q->withPivot(['importe_aplicado']);
                 },
-            'ordenesPago' => function ($q) {
+            'ordenesTesoreria' => function ($q) {
                 $q->withPivot(['importe_aplicado']);
                 //->where('estado',  ['Pendiente', 'Confirmado']);
                 //si quiero solo las pendientes
                 //->where('estado', 'pendiente');
                 }
             ])
-            ->where('proveedor_id', $proveedorId)
+            ->where('tipo_id', $proveedorId)
             ->where('estado', '!=', 'Anulado')
             ->get()
             ->filter(function ($comp) {
                 $totalFactura = (float) $comp->detalles->sum('importe');
-                $totalPagado = (float) $comp->ordenesPago->sum(fn($op) => $op->pivot->importe_aplicado ?? 0);
+                $totalPagado = (float) $comp->ordenesTesoreria->sum(fn($op) => $op->pivot->importe_aplicado ?? 0);
                 $totalComprobantesAplicados = (float) $comp->comprobantesAplicados->sum(fn($compAplicado) => $compAplicado->pivot->importe_aplicado ?? 0);
                 return $totalFactura > $totalPagado + $totalComprobantesAplicados;
             })
@@ -122,17 +122,17 @@ class ProveedoresController extends Controller
     ////LISTAR CUENTA CORRIENTE DE UN PROVEEDOR
     public function cuentaCorriente($proveedorId)
     {
-        $comprobantes = ComprobanteProveedor::with([
+        $comprobantes = Comprobante::with([
             'comprobantesAplicados',
             'tipoComprobante',
             'detalles',
-            'ordenesPago' => function ($q) {
+            'ordenesTesoreria' => function ($q) {
             $q->with([
                 'metodoPago',
             ])->withPivot(['importe_aplicado', 'fecha_aplicacion']);
             },
             ])
-            ->where('proveedor_id', $proveedorId)
+            ->where('tipo_id', $proveedorId)
             ->where('estado', '!=', 'Anulado')
             ->orderBy('fecha_factura', 'asc')
             ->get();
@@ -162,8 +162,8 @@ class ProveedoresController extends Controller
                 'afecta_saldo' => $afectaSaldo,
             ]);
 
-            // === ÓRDENES DE PAGO (debajo del comprobante)
-            foreach ($comp->ordenesPago as $pago) {
+            // === ÓRDENES DE TESORERIA (debajo del comprobante)
+            foreach ($comp->ordenesTesoreria as $pago) {
                 $estadoPago = strtolower($pago->estado ?? '');
                 $importeAplicado = (float) ($pago->pivot->importe_aplicado ?? 0);
 
@@ -255,8 +255,8 @@ class ProveedoresController extends Controller
     ////LISTAR ÓRDENES DE PAGO DE UN PROVEEDOR
     public function pagosProveedores()
     {
-        $ordenesPago = OrdenPago::with([
-            'planPago',
+        $ordenesTesoreria = OrdenTesoreria::with([
+            'plan',
             'moneda',
             'metodoPago',
             'bancoOrigen',
@@ -264,15 +264,15 @@ class ProveedoresController extends Controller
             'tarjetaOrigen',
             'tarjetaOrigen.cuentaBancaria',
             'tarjetaOrigen.cuentaBancaria.banco',
-            'comprobantesProveedores',
-            'comprobantesProveedores.tipoComprobante',
-            'comprobantesProveedores.tipoMoneda',
-            'comprobantesProveedores.proveedor',
+            'comprobantes',
+            'comprobantes.tipoComprobante',
+            'comprobantes.tipoMoneda',
+            'comprobantes.proveedor',
         ])->get();
         return Inertia::render('Contabilidad/Pagos/Index', [
-            'ordenesPago' => $ordenesPago,
+            'ordenesTesoreria' => $ordenesTesoreria,
             'proveedores' => Proveedor::select('id', 'nombre_fantasia', 'razon_social')->orderBy('nombre_fantasia')->get(),
-            'metodosPago' => MetodoPago::select('id', 'nombre')->get(),
+            'metodosPago' => MetodoTesoreria::select('id', 'nombre')->get(),
             'monedas' => TipoMoneda::select('id', 'descripcion')->get(),
             'tiposComprobante' => TipoComprobante::select('id', 'nombre')->get(),
             'bancos' => Banco::select('id', 'banco')->get(),

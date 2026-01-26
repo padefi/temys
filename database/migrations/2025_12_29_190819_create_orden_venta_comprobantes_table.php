@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::create('orden_venta_comprobante', function (Blueprint $table) {
+         Schema::create('orden_venta_comprobantes', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('orden_venta_id');
             $table->unsignedBigInteger('comprobante_id');
@@ -24,7 +24,7 @@ return new class extends Migration
 
             $table->foreign('comprobante_id')
                 ->references('id')
-                ->on('comprobantes_clientes')
+                ->on('comprobantes')
                 ->onDelete('cascade');
 
             $table->unique(['orden_venta_id', 'comprobante_id']);
@@ -36,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('orden_venta_comprobante');
+        Schema::dropIfExists('orden_venta_comprobantes');
     }
 };

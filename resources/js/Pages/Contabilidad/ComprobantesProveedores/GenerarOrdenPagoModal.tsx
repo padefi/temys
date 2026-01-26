@@ -7,16 +7,17 @@ import { Label } from "@/Components/ui/label"
 import { TipoMoneda } from '@/types/TipoMoneda'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs"
 import CampoBancoTarjeta from "./CampoBancoTarjeta"
-import { ComprobanteProveedor } from "@/types/ComprobanteProveedor"
+import { Comprobante } from "@/types/Comprobante"
 import axios from "axios"
 import { toast } from "sonner"
 
 type Pago = {
-  metodo_pago_id: number
+  metodo_id: number
   metodo: string
   moneda: number
   importe: number
   fecha: string
+  fechaCheque?: string
   banco?: string
   cuentaBancaria?: number
   tarjeta?: string
@@ -28,11 +29,14 @@ type Pago = {
 
 type Cbu = {
   id: number;
-  cbu: string;
+  tipo: string;
+  tipo_clave: string;
+  clave: string;
   alias: string;
+  predeterminado: number;
 };
 
-type MetodoPago = {
+type MetodoTesoreria = {
   id: number;
   nombre: string;
   descripcion: string;
@@ -50,7 +54,7 @@ type Props = {
   onClose: (updated?: boolean) => void
   proveedorId: number
   facturasSeleccionadas: { id: number; monedaOrden: number; total: number; montoAPagar: number }[]
-  facturasDetalle: ComprobanteProveedor[]
+  facturasDetalle: Comprobante[]
   onSubmit: (data: any) => void
 }
 
@@ -63,11 +67,11 @@ export default function GenerarOrdenPagoModal({
 }: Props) {
     const [step, setStep] = useState(1)
     const [plan, setPlan] = useState("unico")
-    const [cuotas, setCuotas] = useState(1)
+    const [cuotas, setCuotas] = useState(2)
     const [activeTab, setActiveTab] = useState("0")
     const tabsRef = useRef<HTMLDivElement>(null)
     const [pagosUnicos, setPagosUnicos] = useState<Pago[]>([
-        { metodo_pago_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[0]?.monedaOrden || 0), importe: 0, fecha: "" }
+        { metodo_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[0]?.monedaOrden || 0), importe: 0, fecha: "" }
     ])
 
     const [pagosCuotas, setPagosCuotas] = useState<Pago[][]>([])
@@ -75,9 +79,9 @@ export default function GenerarOrdenPagoModal({
     const [intentoSubmit, setIntentoSubmit] = useState(false)
     const [cbus, setCbus] = useState<Cbu[]>([]);
     const [tipoMonedas, setTipoMonedas] = useState<TipoMoneda[]>([]);
-    const [metodoPagos, setMetodoPagos] = useState<MetodoPago[]>([]);
+    const [metodoPagos, setMetodoPagos] = useState<MetodoTesoreria[]>([]);
 
-    const [anticipos, setAnticipos] = useState<ComprobanteProveedor[]>([])
+    const [anticipos, setAnticipos] = useState<Comprobante[]>([])
     const [anticiposAplicados, setAnticiposAplicados] = useState<AnticipoAplicado[]>([])
 
 
@@ -144,7 +148,7 @@ export default function GenerarOrdenPagoModal({
         const newCuotas: Pago[][] = Array.from({ length: cuotas }, (_, i) =>
             pagosCuotas[i] && pagosCuotas[i].length
             ? pagosCuotas[i]
-            : [{ metodo_pago_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[i]?.monedaOrden || 0), importe: 0, fecha: "" }]
+            : [{ metodo_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[i]?.monedaOrden || 0), importe: 0, fecha: "" }]
         )
         setPagosCuotas(newCuotas)
         }
@@ -185,7 +189,7 @@ export default function GenerarOrdenPagoModal({
 
     const toggleAnticipo = (
     facturaId: number,
-    anticipo: ComprobanteProveedor
+    anticipo: Comprobante
     ) => {
     const existe = anticiposAplicados.find(
         a => a.factura_id === facturaId && a.anticipo_id === anticipo.id
@@ -226,7 +230,7 @@ export default function GenerarOrdenPagoModal({
         return faltante > 0 ? faltante : 0
     }
 
-    const getTotalFactura = (f: ComprobanteProveedor) => {
+    const getTotalFactura = (f: Comprobante) => {
         return f.detalles.reduce(
             (acc, d) => acc + Number(d.importe || 0),
             0
@@ -238,7 +242,7 @@ export default function GenerarOrdenPagoModal({
         .filter(a => a.anticipo_id === anticipoId)
         .reduce((acc, a) => acc + Number(a.importe), 0)
 
-    const getDisponibleAnticipo = (anticipo: ComprobanteProveedor) => {
+    const getDisponibleAnticipo = (anticipo: Comprobante) => {
     const total = Number(anticipo.importe_disponible ?? 0)
     const usado = getTotalUsadoAnticipo(anticipo.id)
     return Math.max(total - usado, 0)
@@ -277,7 +281,7 @@ export default function GenerarOrdenPagoModal({
         const faltante = getImporteFaltante(totalPagosUnicos)
         setPagosUnicos([
         ...pagosUnicos,
-        { metodo_pago_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[0]?.monedaOrden || 0), importe: faltante, fecha: "" },
+        { metodo_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[0]?.monedaOrden || 0), importe: faltante, fecha: "" },
         ])
     }
 
@@ -289,7 +293,7 @@ export default function GenerarOrdenPagoModal({
         const updated = [...pagosCuotas]
         updated[cuotaIdx] = [
         ...pagosDeEstaCuota,
-        { metodo_pago_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[0]?.monedaOrden || 0), importe: faltante, fecha: "" },
+        { metodo_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[0]?.monedaOrden || 0), importe: faltante, fecha: "" },
         ]
         setPagosCuotas(updated)
     }
@@ -304,7 +308,7 @@ export default function GenerarOrdenPagoModal({
     const handlePlanSubmit = () => {
         if (plan === "pagos") {
         const initialCuotas = Array.from({ length: cuotas }, () => [
-            { metodo_pago_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[0]?.monedaOrden || 0), importe: 0, fecha: "" }
+            { metodo_id: 0, metodo: "", moneda: Number(facturasSeleccionadas[0]?.monedaOrden || 0), importe: 0, fecha: "" }
         ]);
         setPagosCuotas(initialCuotas);
         setActiveTab("0");
@@ -351,7 +355,7 @@ export default function GenerarOrdenPagoModal({
 if (esSoloAnticipos) {
     try {
       const dataToSend = {
-        tipo_pago: "Anticipos",
+        tipo: "Anticipos",
         cantidad_cuotas: null,
         facturasSeleccionadas,
         anticipos_aplicados: anticiposAplicados,
@@ -359,7 +363,7 @@ if (esSoloAnticipos) {
       }
 
       const res = await axios.post(
-        "/contabilidad/ordenesPagos",
+        "/contabilidad/ordenesTesoreria",
         dataToSend
       )
 
@@ -385,44 +389,46 @@ try{
     const dataToSend =
         plan === "unico"
         ? {
-            tipo_pago: "Unico",
+            tipo: "Unico",
             cantidad_cuotas: null,
             facturasSeleccionadas: facturasSeleccionadas,
             anticipos_aplicados: anticiposAplicados,
             pagos: pagosUnicos.map((p) => ({
-                metodo_pago_id: p.metodo_pago_id,
+                metodo_id: p.metodo_id,
                 moneda_id: p.moneda, // ✅ número
                 importe: p.importe,
-                fecha_pago: p.fecha,
+                fecha: p.fecha,
+                fecha_cheque: p.fechaCheque,
                 banco_origen_id: p.bancoId ? Number(p.bancoId) : null, // ✅ entero o null
                 cuenta_origen_id: p.cuentaBancaria ? Number(p.cuentaBancaria) : null,
                 tarjeta_origen_id: p.tarjetaId ? Number(p.tarjetaId) : null,
-                cbu_pago: p.cbuProveedorId ? p.cbuProveedorId : null,
+                cbu_id: p.cbuProveedorId ? p.cbuProveedorId : null,
                 usuario_id: 1,
             })),
             }
         : {
-            tipo_pago: "Cuotas",
+            tipo: "Cuotas",
             cantidad_cuotas: cuotas,
             facturasSeleccionadas: facturasSeleccionadas,
             anticipos_aplicados: anticiposAplicados,
             pagos: pagosCuotas.flat().map((p) => ({
-                metodo_pago_id: p.metodo_pago_id,
+                metodo_id: p.metodo_id,
                 moneda_id: p.moneda, // ✅ número
                 importe: p.importe,
-                fecha_pago: p.fecha,
+                fecha: p.fecha,
+                fecha_cheque: p.fechaCheque,
                 banco_origen_id: p.bancoId ? Number(p.bancoId) : null, // ✅ entero o null
                 cuenta_origen_id: p.cuentaBancaria ? Number(p.cuentaBancaria) : null,
                 tarjeta_origen_id: p.tarjetaId ? Number(p.tarjetaId) : null,
-                cbu_pago: p.cbuProveedorId ? p.cbuProveedorId : null,
+                cbu_id: p.cbuProveedorId ? p.cbuProveedorId : null,
                 usuario_id: 1,
             })),
             };
 
 
-    const res = await axios.post("/contabilidad/ordenesPagos", dataToSend)
+    const res = await axios.post("/contabilidad/ordenesTesoreriaProveedores", dataToSend)
     if (res.status === 201) {
-        toast.success("Orden de pago generada exitosamente")
+        toast.success("Orden de tesoreria generada exitosamente")
 
         onClose(true);
     }
@@ -489,7 +495,7 @@ try{
                 onChange={(e) => updateMultipleFields({ cbuProveedorId: e.target.value })}
               >
                 <option value="">Seleccioná un CBU</option>
-                {cbus.map((c) => <option key={c.id} value={c.cbu}>{c.cbu} ({c.alias})</option>)}
+                {cbus.map((c) => <option key={c.id} value={c.id}>{c.clave} ({c.alias})</option>)}
               </select>
               {showError && !p.cbuProveedorId && <p className="text-sm text-red-600 mt-1">Seleccioná un CBU</p>}
             </div>
@@ -498,7 +504,21 @@ try{
 
         {p.metodo === "Cheque" && (
           <div className="col-span-6">
-            <CampoBancoTarjeta tipo="banco" value={p.bancoId} onChange={(val) => updateMultipleFields({ bancoId: val })} />
+            <CampoBancoTarjeta
+            tipo="cheque"
+            value={{
+                bancoId: p.bancoId,
+                cuentaId: p.cuentaBancaria,
+                importeOrden: p.importe
+            }}
+            onChange={(val) =>
+                updateMultipleFields({
+                bancoId: val.bancoId,
+                cuentaBancaria: val.cuentaId,
+                fechaCheque: val.fechaCheque
+                })
+            }
+            />
             {showError && !p.bancoId && <p className="text-sm text-red-600 mt-1">Seleccioná un banco</p>}
           </div>
         )}
@@ -514,10 +534,10 @@ try{
   };
 
     const isPagoCompleto = (p: Pago) => {
-        const camposBasicos = p.metodo_pago_id > 0 && p.moneda > 0 && p.importe > 0 && !!p.fecha
+        const camposBasicos = p.metodo_id > 0 && p.moneda > 0 && p.importe > 0 && !!p.fecha
             if (!camposBasicos) return false
 
-            if (p.metodo === "Cheque") return !!p.bancoId
+            if (p.metodo === "Cheque") return !!p.bancoId && !!p.fechaCheque
             if (p.metodo === "Tarjeta") return !!p.tarjetaId
             if (p.metodo === "Transferencia") return !!p.bancoId && !!p.cuentaBancaria && !!p.cbuProveedorId
 
@@ -774,7 +794,7 @@ try{
                 <Label>Cantidad de Cuotas</Label>
                 <Input
                     type="number"
-                    min={1}
+                    min={2}
                     value={cuotas}
                     onChange={e => setCuotas(Number(e.target.value))}
                 />
@@ -806,12 +826,12 @@ try{
                 {pagosUnicos.map((p, idx) => (
                   <div key={idx} className="grid grid-cols-6 gap-2 mb-2 items-center">
                     <select
-                    value={p.metodo_pago_id}
+                    value={p.metodo_id}
                     onChange={(e) => {
                         const selectedId = Number(e.target.value);
                         const selectedMetodo = metodoPagos.find((m) => m.id === selectedId);
                         const updated = [...pagosUnicos];
-                        updated[idx].metodo_pago_id = selectedId;
+                        updated[idx].metodo_id = selectedId;
                         updated[idx].metodo = selectedMetodo ? selectedMetodo.nombre : "";
                         setPagosUnicos(updated);
                     }}
@@ -860,7 +880,7 @@ try{
                   <button type="button" onClick={() => scrollTabs(-150)} className="px-2 py-1 bg-gray-200 rounded">&lt;</button>
                   <div className="flex-1 overflow-x-auto no-scrollbar" ref={tabsRef}>
                     <TabsList className="flex gap-1 w-max min-w-full">
-                      {Array.from({ length: cuotas }).map((_, i) => <TabsTrigger key={i} value={String(i)} className="flex-shrink-0 whitespace-nowrap px-3 py-1 border rounded text-sm">Cuota {i + 1}</TabsTrigger>)}
+                      {Array.from({ length: cuotas }).map((_, i) => <TabsTrigger key={i} value={String(i)} className="shrink-0 whitespace-nowrap px-3 py-1 border rounded text-sm">Cuota {i + 1}</TabsTrigger>)}
                     </TabsList>
                   </div>
                   <button type="button" onClick={() => scrollTabs(150)} className="px-2 py-1 bg-gray-200 rounded">&gt;</button>
@@ -873,12 +893,12 @@ try{
                     {Array.isArray(pagoList) ? pagoList.map((p, idx) => (
                       <div key={idx} className="grid grid-cols-6 gap-2 mb-2 items-center">
                         <select
-                        value={p.metodo_pago_id}
+                        value={p.metodo_id}
                         onChange={(e) => {
                             const selectedId = Number(e.target.value);
                             const selectedMetodo = metodoPagos.find((m) => m.id === selectedId);
                             const updated = [...pagosCuotas];
-                            updated[cuotaIdx][idx].metodo_pago_id = selectedId;
+                            updated[cuotaIdx][idx].metodo_id = selectedId;
                             updated[cuotaIdx][idx].metodo = selectedMetodo ? selectedMetodo.nombre : "";
                             setPagosCuotas(updated);
                         }}

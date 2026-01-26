@@ -10,15 +10,17 @@ return new class extends Migration
     {
         Schema::create('movimientos_tesoreria', function (Blueprint $table) {
             $table->id();
-            $table->date('fecha');
+            $table->date('fecha_movimiento');
+            $table->date('fecha_aplicacion'); //fecha que le asigna tesorería
             $table->enum('tipo_movimiento', ['entrada', 'salida']);
             $table->decimal('monto', 15, 2);
 
-            $table->unsignedBigInteger('metodo_pago_id');
-            $table->foreign('metodo_pago_id')
-                ->references('id')
-                ->on('metodo_pagos')
-                ->onDelete('cascade');
+            $table->enum('tipo', ['cliente', 'proveedor']);
+
+            $table->unsignedBigInteger('tipo_id');
+
+            $table->unsignedBigInteger('metodo_id');
+            $table->foreign('metodo_id')->references('id')->on('metodo_tesoreria');
 
             $table->unsignedBigInteger('tipo_moneda_id');
             $table->foreign('tipo_moneda_id')
@@ -38,17 +40,12 @@ return new class extends Migration
                 ->on('cuenta_bancarias')
                 ->onDelete('cascade');
 
-            $table->unsignedBigInteger('orden_pago_id')->nullable();
-            $table->foreign('orden_pago_id')
+            $table->unsignedBigInteger('orden_id')->nullable();
+            $table->foreign('orden_id')
                 ->references('id')
-                ->on('orden_pago_proveedores')
+                ->on('orden_tesoreria')
                 ->onDelete('cascade');
 
-            $table->unsignedBigInteger('proveedor_id')->nullable();
-            $table->foreign('proveedor_id')
-                ->references('id')
-                ->on('proveedores')
-                ->onDelete('cascade');
 
 
             $table->unsignedBigInteger('usuario_id');

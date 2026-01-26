@@ -113,8 +113,8 @@ return [
                         ['key' => 'facturasClientes', 'name' => 'Facturas Clientes'],
                         ['key' => 'notasDeCredito', 'name' => 'Notas de credito'],
                         ['key' => 'notasDeDebito', 'name' => 'Notas de debito'],
-                        ['key' => 'pagosClientes', 'name' => 'Pagos'],
-                        ['key' => 'pagosMasivosClientes', 'name' => 'Pagos Masivos'],
+                        ['key' => 'cobrosClientes', 'name' => 'Cobros'],
+                        ['key' => 'cobrosMasivosClientes', 'name' => 'Cobros Masivos'],
                         ['key' => 'productosClientes', 'name' => 'Productos'],
                         ['key' => 'clientes', 'name' => 'Clientes'],
                     ]

@@ -21,20 +21,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/Components/ui/table";
-import { ComprobanteProveedor } from '@/types/ComprobanteProveedor';
+
+import { Comprobante } from '@/types/Comprobante';
 
 
 type PageProps = {
-  comprobantesProveedorListado: ComprobanteProveedor[];
+  comprobantesListado: Comprobante[];
 };
 
-type ComprobantesProveedoresListadoProps = {
+type ComprobantesListadoProps = {
   onSelectionChange: (ids: number[]) => void;
 };
 
-export default function ComprobantesProveedoresListado({ onSelectionChange }: ComprobantesProveedoresListadoProps) {
+export default function ComprobantesListado({ onSelectionChange }: ComprobantesListadoProps) {
 
-    const { props: { comprobantesProveedorListado } } = usePage<PageProps & { auth: any }>();
+    const { props: { comprobantesListado } } = usePage<PageProps & { auth: any }>();
     const [expanded, setExpanded] = useState<number | null>(null);
     const [selectedOrderIds, setSelectedOrderIds] = useState<number[]>([]);
     const [selectedProveedorId, setSelectedProveedorId] = useState<number | null>(null);
@@ -90,17 +91,18 @@ export default function ComprobantesProveedoresListado({ onSelectionChange }: Co
         })
     }*/
 
-    const toggleSelectOrder = (comprobanteProveedor: ComprobanteProveedor) => {
-        const proveedorId = comprobanteProveedor.proveedor_id;
-        const proveedorNombre = comprobanteProveedor.proveedor?.razon_social + ' ' + comprobanteProveedor.proveedor?.nombre_fantasia;
+    const toggleSelectOrder = (comprobante: Comprobante) => {
+        const proveedorId = comprobante.tipo_id;
+
+        const proveedorNombre = comprobante.proveedor?.razon_social + ' ' + comprobante.proveedor?.nombre_fantasia;
 
             if (!proveedorId) {
             toast.error("Esta orden no tiene proveedor asignado.");
             return;
             }
 
-            if (selectedOrderIds.includes(comprobanteProveedor.id)) {
-            const updated = selectedOrderIds.filter(id => id !== comprobanteProveedor.id);
+            if (selectedOrderIds.includes(comprobante.id)) {
+            const updated = selectedOrderIds.filter(id => id !== comprobante.id);
             if (updated.length === 0) {
                 setSelectedProveedorId(null);
                 setSelectedProveedorNombre(null); // 👈 limpia también el nombre
@@ -118,7 +120,7 @@ export default function ComprobantesProveedoresListado({ onSelectionChange }: Co
                 return;
             }
 
-        const updated = [...selectedOrderIds, comprobanteProveedor.id];
+        const updated = [...selectedOrderIds, comprobante.id];
         setSelectedOrderIds(updated);
         onSelectionChange(updated);
         }
@@ -153,58 +155,58 @@ export default function ComprobantesProveedoresListado({ onSelectionChange }: Co
       </TableHeader>
 
       <TableBody>
-        {comprobantesProveedorListado.map((comprobanteProveedor) => (
+        {comprobantesListado.map((comprobante) => (
           <>
             <TableRow
-              key={comprobanteProveedor.id}
+              key={comprobante.id}
               className="cursor-pointer hover:bg-gray-50"
               onClick={() => {
-                if (comprobanteProveedor.detalles?.length) {
-                  toggleExpand(comprobanteProveedor.id);
+                if (comprobante.detalles?.length) {
+                  toggleExpand(comprobante.id);
                 }
               }}
             >
               <TableCell>
                 <ContextMenu>
                             <ContextMenuTrigger className="w-full p-2 border rounded text-center">
-                                C{comprobanteProveedor.id}
+                                C{comprobante.id}
                             </ContextMenuTrigger>
 
                                 <ContextMenuContent>
                                     <ContextMenuItem onClick={() => {
-                                        router.visit(`/compras/comprobantes-proveedores/${comprobanteProveedor.id}`);
+                                        router.visit(`/compras/comprobantes-proveedores/${comprobante.id}`);
                                     }}>
                                         Ver Comprobante
                                     </ContextMenuItem>
                                 </ContextMenuContent>
                         </ContextMenu>
                 </TableCell>
-                <TableCell>{comprobanteProveedor.tipo_comprobante?.nombre}</TableCell>
-                <TableCell>{comprobanteProveedor.punto_venta + '-' + comprobanteProveedor.numero_factura}</TableCell>
-                <TableCell>{comprobanteProveedor.proveedor?.razon_social}</TableCell>
-                <TableCell>{comprobanteProveedor.descripcion}</TableCell>
+                <TableCell>{comprobante.tipo_comprobante?.nombre}</TableCell>
+                <TableCell>{comprobante.punto_venta + '-' + comprobante.numero_factura}</TableCell>
+                <TableCell>{comprobante.proveedor?.razon_social}</TableCell>
+                <TableCell>{comprobante.descripcion}</TableCell>
                 <TableCell className={
-                        comprobanteProveedor.estado === 'Confirmada'
+                        comprobante.estado === 'Confirmada'
                             ? 'text-green-600'
-                            : comprobanteProveedor.estado === 'Pendiente'
+                            : comprobante.estado === 'Pendiente'
                             ? 'text-yellow-600'
-                            : comprobanteProveedor.estado === 'Cancelada'
+                            : comprobante.estado === 'Cancelada'
                             ? 'text-red-600'
-                            : comprobanteProveedor.estado === 'Finalizada'
+                            : comprobante.estado === 'Finalizada'
                             ? 'text-blue-600'
                             : ''
-                        }>{comprobanteProveedor.estado}
+                        }>{comprobante.estado}
 
 
 
                 </TableCell>
                 <TableCell>
-                    {new Date(comprobanteProveedor.fecha_factura).toLocaleDateString('es-AR')}
+                    {new Date(comprobante.fecha_factura).toLocaleDateString('es-AR')}
                 </TableCell>
 
             </TableRow>
 
-            {expanded === comprobanteProveedor.id && (
+            {expanded === comprobante.id && (
               <TableRow className="bg-gray-50">
                 <TableCell colSpan={6}>
                   <Table className="w-full border border-gray-200 rounded-md mt-2">
@@ -224,8 +226,8 @@ export default function ComprobantesProveedoresListado({ onSelectionChange }: Co
                     </TableHeader>
 
                     <TableBody>
-                      {comprobanteProveedor.detalles?.length ? (
-                        comprobanteProveedor.detalles.map((detalle) => (
+                      {comprobante.detalles?.length ? (
+                        comprobante.detalles.map((detalle) => (
 
                           <TableRow key={detalle.id}>
 

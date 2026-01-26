@@ -22,7 +22,7 @@ return new class extends Migration
 
             $table->foreign('comprobante_id')
                 ->references('id')
-                ->on('comprobantes_proveedores')
+                ->on('comprobantes')
                 ->cascadeOnDelete();
 
             $table->foreign('partida_id')

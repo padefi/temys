@@ -235,7 +235,7 @@ export default function GenerarFacturaModal({
         }
         try {
             const payload = {
-                proveedor_id: proveedorId,
+                tipo_id: proveedorId,
                 fecha_factura: fechaFactura,
                 fecha_vencimiento: fechaVencimiento,
                 punto_venta: puntoVenta,

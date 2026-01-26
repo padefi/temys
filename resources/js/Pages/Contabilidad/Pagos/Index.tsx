@@ -13,18 +13,18 @@ import { FilterCombobox } from "@/Components/ui/FilterCombobox";
 
 
 export default function Index() {
-  const { ordenesPago, proveedores, metodosPago, monedas, tiposComprobante, bancos, cuentasBancarias, tarjetas } = usePage().props as any;
+  const { ordenesTesoreria, proveedores, metodosPago, monedas, tiposComprobante, bancos, cuentasBancarias, tarjetas } = usePage().props as any;
 
   const [filter, setFilter] = useState({
     id: '',
     proveedor_id: '',
-    metodo_pago_id: '',
+    metodo_id: '',
     banco_origen_id: '',
     cuenta_bancaria_id: '',
     tarjeta_id: '',
     moneda_id: '',
     estado: 'Pendiente',
-    fecha_pago: '',
+    fecha: '',
     tipo_comprobante_id: '',
   });
 
@@ -32,7 +32,7 @@ export default function Index() {
   const [seleccionadas, setSeleccionadas] = useState<number[]>([]);
   const [ediciones, setEdiciones] = useState<Record<number, any>>({});
   const [loading, setLoading] = useState(false);
-  const [ordenesActualizadas, setOrdenesActualizadas] = useState(ordenesPago);
+  const [ordenesActualizadas, setOrdenesActualizadas] = useState(ordenesTesoreria);
   const [guardadasRecientes, setGuardadasRecientes] = useState<number[]>([]);
 
   const handleChange = (key: string, value: any) => {
@@ -52,16 +52,16 @@ export default function Index() {
   // 🔍 Filtrado
   const ordenesFiltradas = useMemo(() => {
     return ordenesActualizadas.filter((o: any) => {
-      const comprobantes = o.comprobantes_proveedores || [];
+      const comprobantes = o.comprobantes || [];
       if (filter.id && !String(o.id).includes(filter.id)) return false;
-      if (filter.proveedor_id && comprobantes[0]?.proveedor_id != filter.proveedor_id) return false;
-      if (filter.metodo_pago_id && o.metodo_pago_id != filter.metodo_pago_id) return false;
+      if (filter.proveedor_id && comprobantes[0]?.tipo_id != filter.proveedor_id) return false;
+      if (filter.metodo_id && o.metodo_id != filter.metodo_id) return false;
       if (filter.banco_origen_id && o.banco_origen_id != filter.banco_origen_id) return false;
       if (filter.cuenta_bancaria_id && o.cuenta_origen_id != filter.cuenta_bancaria_id) return false;
       if (filter.tarjeta_id && o.tarjeta_origen_id != filter.tarjeta_id) return false;
       if (filter.moneda_id && o.moneda_id != filter.moneda_id) return false;
       if (filter.estado && o.estado != filter.estado) return false;
-      if (filter.fecha_pago && !String(o.fecha_pago).includes(filter.fecha_pago)) return false;
+      if (filter.fecha && !String(o.fecha).includes(filter.fecha)) return false;
       return true;
     });
   }, [ordenesActualizadas, filter]);
@@ -83,7 +83,7 @@ export default function Index() {
 
     try {
       setLoading(true);
-      await axios.post('/contabilidad/ordenesPagos/guardarOrdenes', { ordenes: datos });
+      await axios.post('/contabilidad/ordenesTesoreria/guardarOrdenes', { ordenes: datos });
       toast.success("Cambios guardados correctamente");
 
       setOrdenesActualizadas(prev => prev.map(o => {
@@ -109,18 +109,18 @@ export default function Index() {
 
     try {
         setLoading(true);
-        await axios.post('/contabilidad/ordenesPagos/procesarOrdenes', {
+        await axios.post('/contabilidad/ordenesTesoreria/procesarOrdenes', {
         ordenes: seleccionadas.map(id => {
             const orden = ordenesActualizadas.find((o: any) => o.id === id);
             return {
             id,
-            metodo_pago_id: orden.metodo_pago_id,
+            metodo_id: orden.metodo_id,
             banco_origen_id: orden.banco_origen_id,
             cuenta_origen_id: orden.cuenta_origen_id,
             tarjeta_origen_id: orden.tarjeta_origen_id,
             cbu_pago: orden.cbu_pago,
             importe: orden.importe,
-            proveedor_id: orden.comprobantes_proveedores?.[0]?.proveedor_id ?? null,
+            proveedor_id: orden.comprobantes?.[0]?.tipo_id ?? null,
             moneda_id: orden.moneda_id,
             };
         })
@@ -170,8 +170,8 @@ export default function Index() {
               <TableHead>
                 <FilterCombobox
                   items={metodosPago.map((m: any) => ({ value: String(m.id), label: m.nombre }))}
-                  value={filter.metodo_pago_id}
-                  onChange={v => handleChange('metodo_pago_id', v)}
+                  value={filter.metodo_id}
+                  onChange={v => handleChange('metodo_id', v)}
                   placeholder="Método Pago"
                   emptyLabel="Sin resultados"
                 />
@@ -228,7 +228,7 @@ export default function Index() {
                 />
               </TableHead>
               <TableHead>
-                <Input type="date" className="mt-1" value={filter.fecha_pago} onChange={e => handleChange('fecha_pago', e.target.value)} />
+                <Input type="date" className="mt-1" value={filter.fecha} onChange={e => handleChange('fecha', e.target.value)} />
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -236,7 +236,7 @@ export default function Index() {
           <TableBody>
             {ordenesFiltradas.map((o: any) => {
               const isExpanded = expanded === o.id;
-              const comprobantes = o.comprobantes_proveedores || [];
+              const comprobantes = o.comprobantes || [];
               const cambios = ediciones[o.id] || {};
 
               return (
@@ -268,13 +268,13 @@ export default function Index() {
 
                         // Condiciones base: mismo proveedor y método de pago
                         const mismoProveedor =
-                            o.comprobantes_proveedores?.[0]?.proveedor_id ===
-                            primera.comprobantes_proveedores?.[0]?.proveedor_id;
+                            o.comprobantes?.[0]?.tipo_id ===
+                            primera.comprobantes?.[0]?.tipo_id;
 
-                        const mismoMetodo = o.metodo_pago_id === primera.metodo_pago_id;
+                        const mismoMetodo = o.metodo_id === primera.metodo_id;
 
                         // Verificamos según el tipo de método
-                        const metodo = metodosPago.find((m: any) => m.id === o.metodo_pago_id);
+                        const metodo = metodosPago.find((m: any) => m.id === o.metodo_id);
                         const esTransferencia = metodo?.requiere_banco || metodo?.nombre?.toLowerCase().includes("transferencia");
                         const esTarjeta = metodo?.nombre?.toLowerCase().includes("tarjeta");
 
@@ -318,7 +318,7 @@ export default function Index() {
 
                     {/* Método editable */}
                     <TableCell>
-                      <Select value={String(cambios.metodo_pago_id ?? o.metodo_pago_id)} onValueChange={v => handleEdit(o.id, "metodo_pago_id", Number(v))}>
+                      <Select value={String(cambios.metodo_id ?? o.metodo_id)} onValueChange={v => handleEdit(o.id, "metodo_id", Number(v))}>
                         <SelectTrigger><SelectValue placeholder="Método" /></SelectTrigger>
                         <SelectContent>
                           {metodosPago.map((m: any) => (
@@ -329,7 +329,7 @@ export default function Index() {
                     </TableCell>
 
                     <TableCell className="w-44">
-                    {requiereBanco(cambios.metodo_pago_id ?? o.metodo_pago_id) && (
+                    {requiereBanco(cambios.metodo_id ?? o.metodo_id) && (
                         <>
                         <Select
                             value={String(cambios.banco_origen_id ?? o.banco_origen_id ?? '')}
@@ -375,7 +375,7 @@ export default function Index() {
                     </TableCell>
 
                     <TableCell>
-                      {requiereTarjeta(cambios.metodo_pago_id ?? o.metodo_pago_id) && (
+                      {requiereTarjeta(cambios.metodo_id ?? o.metodo_id) && (
                         <Select value={String(cambios.tarjeta_origen_id ?? o.tarjeta_origen_id ?? '')} onValueChange={v => handleEdit(o.id, 'tarjeta_origen_id', Number(v))}>
                           <SelectTrigger><SelectValue placeholder="Tarjeta" /></SelectTrigger>
                           <SelectContent>
@@ -399,7 +399,7 @@ export default function Index() {
                     <TableCell>{o.moneda?.descripcion}</TableCell>
                     <TableCell>${o.importe}</TableCell>
                     <TableCell>{o.estado}</TableCell>
-                    <TableCell>{o.fecha_pago}</TableCell>
+                    <TableCell>{o.fecha}</TableCell>
                   </TableRow>
 
                   {isExpanded && comprobantes.length > 0 && (

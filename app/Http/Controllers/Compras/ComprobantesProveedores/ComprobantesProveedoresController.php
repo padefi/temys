@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Compras\ComprobantesProveedores;
 use App\Http\Controllers\Controller;
-use App\Models\Compras\ComprobanteProveedor;
+use App\Models\Contabilidad\Comprobante;
 use App\Models\Compras\OrdenCompra;
 use App\Models\Contabilidad\Asientos\Asiento;
 use App\Models\Contabilidad\Asientos\Partida;
@@ -19,7 +19,7 @@ class ComprobantesProveedoresController extends Controller
     ////LISTAR COMPROBANTES PROVEEDORES PENDIENTES
     public function index()
     {
-        $comprobantesProveedorListado = ComprobanteProveedor::with(
+        $comprobantesProveedorListado = Comprobante::with(
             [
                 'detalles',
                 'detalles.producto',
@@ -49,16 +49,17 @@ class ComprobantesProveedoresController extends Controller
         try {
             // ---------------- VALIDACIÓN ----------------
             $request->validate([
-                'proveedor_id' => 'required|exists:proveedores,id',
+                'tipo_id' => 'required|exists:proveedores,id',
                 'punto_venta' => 'required|string|max:10',
                 'numero_factura' => 'required|string|max:20',
                 'tipo_comprobante_id' => 'required|exists:tipo_comprobantes,id',
                 'detalles' => 'required|array|min:1',
+                'moneda_id' => 'required|exists:tipo_monedas,id',
                 'totalOrden' => 'required|numeric|min:0',
             ]);
 
             // ---------------- DUPLICADOS ----------------
-            $existe = ComprobanteProveedor::where('proveedor_id', $request->proveedor_id)
+            $existe = Comprobante::where('tipo_id', $request->tipo_id)
                 ->where('punto_venta', $request->punto_venta)
                 ->where('numero_factura', $request->numero_factura)
                 ->where('tipo_comprobante_id', $request->tipo_comprobante_id)
@@ -71,12 +72,13 @@ class ComprobantesProveedoresController extends Controller
             }
 
             // ---------------- CREAR COMPROBANTE ----------------
-            $comprobante = ComprobanteProveedor::create([
-                'proveedor_id' => $request->proveedor_id,
+            $comprobante = Comprobante::create([
+                'tipo_id' => $request->tipo_id,
                 'fecha_factura' => $request->fecha_factura,
                 'fecha_vencimiento' => $request->fecha_vencimiento,
                 'condicion_venta_id' => $request->condicion_venta_id,
                 'punto_venta' => $request->punto_venta,
+                'moneda_id' => $request->moneda_id,
                 'numero_factura' => $request->numero_factura,
                 'tipo_comprobante_id' => $request->tipo_comprobante_id,
                 'estado' => $request->estado,
@@ -201,7 +203,7 @@ class ComprobantesProveedoresController extends Controller
 
 
             // ---------------- PARTIDA DE PROVEEDOR (HABER) ----------------
-            $proveedor = Proveedor::find($request->proveedor_id);
+            $proveedor = Proveedor::find($request->tipo_id);
 
             Partida::create([
                 'co_asiento_id' => $asiento->id,
@@ -236,7 +238,7 @@ class ComprobantesProveedoresController extends Controller
         // Trae la orden de compra con sus comprobantes relacionados
         $orden = OrdenCompra::with([
             'comprobantesProveedores.detalles' => function ($q) {
-                $q->select('id', 'comprobante_proveedor_id', 'producto_id', 'cantidad');
+                $q->select('id', 'comprobante_tipo_id', 'producto_id', 'cantidad');
             },
             'comprobantesProveedores.detalles.producto:id,nombre,modelo_id',
         ])->find($ordenId);
@@ -268,7 +270,7 @@ class ComprobantesProveedoresController extends Controller
         $tipoComprobanteId = $tipoAnticipo->id;
 
         // 2. Encontrar el último comprobante existente
-        $ultimoComprobante = ComprobanteProveedor::where('tipo_comprobante_id', $tipoComprobanteId)
+        $ultimoComprobante = Comprobante::where('tipo_comprobante_id', $tipoComprobanteId)
             ->where('punto_venta', $puntoVentaAnticipo)
             // Importante: Ordenar por el número como si fuera un entero (SIGNED) para obtener el máximo correcto.
             ->orderByRaw('CAST(numero_factura AS SIGNED) DESC')
@@ -291,11 +293,11 @@ class ComprobantesProveedoresController extends Controller
 
     public function anticiposDisponibles($proveedorId)
     {
-        $anticipos = ComprobanteProveedor::with([
+        $anticipos = Comprobante::with([
             'detalles',
             'comprobantesAplicados'
         ])
-        ->where('proveedor_id', $proveedorId)
+        ->where('tipo_id', $proveedorId)
         ->whereHas('tipoComprobante', function ($q) {
             $q->where('categoria', 'anticipo');
         })

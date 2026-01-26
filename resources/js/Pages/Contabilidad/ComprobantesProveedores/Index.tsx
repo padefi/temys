@@ -8,7 +8,6 @@ import { ScrollArea } from '@/Components/ui/scroll-area'
 import { Separator } from '@/Components/ui/separator'
 import { cn } from '@/lib/utils'
 import { Proveedor } from '@/types/Proveedor'
-import { ComprobanteProveedor } from '@/types/ComprobanteProveedor'
 import { Checkbox } from '@/Components/ui/checkbox'
 import { Button } from '@/Components/ui/button'
 import CuentaCorrienteModal from '../CuentaCorrienteProveedores'
@@ -16,12 +15,13 @@ import GenerarOrdenPagoModal from './GenerarOrdenPagoModal'
 import { toast } from 'sonner'
 import { formatCurrency, getImporteOrdenPago } from '@/lib/money'
 import { useMoneyInput } from '@/hooks/useMoneyInput'
+import { Comprobante } from '@/types/Comprobante'
 
 export default function Index() {
   const [proveedores, setProveedores] = useState<Proveedor[]>([])
   const [filtered, setFiltered] = useState<Proveedor[]>([])
   const [selected, setSelected] = useState<Proveedor | null>(null)
-  const [facturas, setFacturas] = useState<ComprobanteProveedor[]>([])
+  const [facturas, setFacturas] = useState<Comprobante[]>([])
   const [search, setSearch] = useState('')
 
   // monto ahora es string para evitar NaN

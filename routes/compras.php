@@ -5,7 +5,12 @@ use App\Http\Controllers\Compras\Proveedores\ProveedoresController;
 use App\Http\Controllers\Compras\OrdenCotizaciones\OrdenCotizacionesController;
 use App\Http\Controllers\Compras\OrdenCompras\OrdenComprasController;
 use App\Http\Controllers\Compras\OrdenPagoController;
+use App\Http\Controllers\Compras\OrdenTesoreriaController;
+
 use App\Http\Controllers\Compras\ComprobantesProveedores\ComprobantesProveedoresController;
+
+
+
 use App\Http\Controllers\Inventario\Productos\ProductoController;
 use App\Http\Controllers\UserModulePanel\UserModuleController;
 use Illuminate\Support\Facades\Route;
@@ -166,7 +171,7 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
     });
 
 
-/////////////////////verrrrrrrrrrrrrr
+
         Route::middleware(['submenu:facturasProveedoresCompras'])
         ->group(function () {
             // Vista principal

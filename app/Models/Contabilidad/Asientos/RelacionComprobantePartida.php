@@ -2,8 +2,8 @@
 
 namespace App\Models\Contabilidad\Asientos;
 
-use App\Models\Compras\ComprobanteProveedor;
 use App\Models\Contabilidad\Asientos\Partida;
+use App\Models\Contabilidad\Comprobante;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -21,7 +21,7 @@ class RelacionComprobantePartida extends Model
 
     public function comprobante()
     {
-        return $this->belongsTo(ComprobanteProveedor::class, 'comprobante_id');
+        return $this->belongsTo(Comprobante::class, 'comprobante_id');
     }
 
     public function partida()

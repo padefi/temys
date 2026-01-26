@@ -3,6 +3,7 @@
 namespace App\Models\Ventas;
 
 use App\Models\Almacenes\Almacen;
+use App\Models\Contabilidad\Comprobante;
 use App\Models\Ventas\OrdenCotizacionVenta;
 use App\Models\Ventas\OrdenCotizacionArchivo;
 use App\Models\General\TipoMoneda;
@@ -91,11 +92,11 @@ class OrdenVenta extends Model
         );
     }
     ////COMPROBANTE CLIENTE RELACIONADO
-    public function comprobantesClientes()
+    public function comprobantes()
     {
         return $this->belongsToMany(
-            ComprobanteCliente::class,
-            'orden_venta_comprobante',
+            Comprobante::class,
+            'orden_venta_comprobantes',
             'orden_venta_id',
             'comprobante_id'
         )->withTimestamps();

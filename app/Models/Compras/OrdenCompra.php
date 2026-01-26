@@ -5,6 +5,7 @@ namespace App\Models\Compras;
 use App\Models\Almacenes\Almacen;
 use App\Models\Compras\OrdenCotizacion\OrdenCotizacion;
 use App\Models\Compras\OrdenCotizacion\OrdenCotizacionArchivo;
+use App\Models\Contabilidad\Comprobante;
 use App\Models\General\TipoMoneda;
 use App\Models\Inventario\Productos\Producto;
 use App\Models\Padron\Proveedor\Proveedor;
@@ -19,7 +20,7 @@ class OrdenCompra extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'proveedor_id',
+        'tipo_id',
         'moneda_id',
         'cotizacion_moneda',
         'almacen_destino_id',
@@ -90,12 +91,12 @@ class OrdenCompra extends Model
             $this->ordenesCotizacion()->pluck('orden_cotizaciones.id')
         );
     }
-    ////COMPROBANTE PROVEEDOR RELACIONADO
-    public function comprobantesProveedores()
+    ////COMPROBANTE RELACIONADO
+    public function comprobantes()
     {
         return $this->belongsToMany(
-            ComprobanteProveedor::class,
-            'orden_compra_comprobante',
+            Comprobante::class,
+            'orden_compra_comprobantes',
             'orden_compra_id',
             'comprobante_id'
         )->withTimestamps();

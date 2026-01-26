@@ -52,12 +52,16 @@ class ProveedoresController extends Controller
         }
     }
 
-    ////LISTAR CBU DE PROVEEDOR
+    //// LISTAR CBU DE PROVEEDOR
     public function cbus($proveedorId)
     {
-        $proveedor = \App\Models\Padron\Proveedor\Proveedor::findOrFail($proveedorId);
-        $cbus = $proveedor->cbu()->select('id', 'cbu', 'alias')->get();
-        return response()->json($cbus);
+        $proveedor = Proveedor::findOrFail($proveedorId);
+       return response()->json(
+            $proveedor->cbu()
+            ->select('id', 'tipo_clave', 'clave', 'alias', 'predeterminado')
+            ->orderByDesc('predeterminado')
+            ->get()
+        );
     }
 
 }

@@ -50,7 +50,7 @@ export default function GenerarOrdenPagoModal({
 }: Props) {
   const [step, setStep] = useState(1)
   const [plan, setPlan] = useState("unico")
-  const [cuotas, setCuotas] = useState(1)
+  const [cuotas, setCuotas] = useState(2)
   const [activeTab, setActiveTab] = useState("0")
   const tabsRef = useRef<HTMLDivElement>(null)
 
@@ -178,7 +178,7 @@ export default function GenerarOrdenPagoModal({
     const dataToSend =
         plan === "unico"
         ? {
-            tipo_pago: "Unico",
+            tipo: "Unico",
             cantidad_cuotas: null,
             pagos: pagosUnicos.map((p) => ({
                 metodo_pago: p.metodo,
@@ -192,7 +192,7 @@ export default function GenerarOrdenPagoModal({
             })),
             }
         : {
-            tipo_pago: "Cuotas",
+            tipo: "Cuotas",
             cantidad_cuotas: cuotas,
             pagos: pagosCuotas.flat().map((p) => ({
                 metodo_pago: p.metodo,
@@ -319,7 +319,7 @@ export default function GenerarOrdenPagoModal({
             {plan === "pagos" && (
               <div>
                 <Label>Cantidad de Cuotas</Label>
-                <Input type="number" min={1} value={cuotas} onChange={(e) => setCuotas(Number(e.target.value))} />
+                <Input type="number" min={2} value={cuotas} onChange={(e) => setCuotas(Number(e.target.value))} />
               </div>
             )}
 
@@ -384,7 +384,7 @@ export default function GenerarOrdenPagoModal({
                   <button type="button" onClick={() => scrollTabs(-150)} className="px-2 py-1 bg-gray-200 rounded">&lt;</button>
                   <div className="flex-1 overflow-x-auto no-scrollbar" ref={tabsRef}>
                     <TabsList className="flex gap-1 w-max min-w-full">
-                      {Array.from({ length: cuotas }).map((_, i) => <TabsTrigger key={i} value={String(i)} className="flex-shrink-0 whitespace-nowrap px-3 py-1 border rounded text-sm">Cuota {i + 1}</TabsTrigger>)}
+                      {Array.from({ length: cuotas }).map((_, i) => <TabsTrigger key={i} value={String(i)} className="shrink-0 whitespace-nowrap px-3 py-1 border rounded text-sm">Cuota {i + 1}</TabsTrigger>)}
                     </TabsList>
                   </div>
                   <button type="button" onClick={() => scrollTabs(150)} className="px-2 py-1 bg-gray-200 rounded">&gt;</button>

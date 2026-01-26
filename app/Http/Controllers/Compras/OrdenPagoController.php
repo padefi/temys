@@ -4,13 +4,20 @@ namespace App\Http\Controllers\Compras;
 
 use App\Http\Controllers\Controller;
 use App\Models\Compras\PlanPago;
-use App\Models\Compras\OrdenPago;
+use App\Models\Contabilidad\OrdenTesoreria;
 use App\Models\Contabilidad\Asientos\Asiento;
 use App\Models\Contabilidad\Asientos\Partida;
 use App\Models\Contabilidad\MovimientoTesoreria;
+use App\Models\Contabilidad\OrdenTesoreriaPagoCheque;
+use App\Models\Contabilidad\OrdenTesoreriaPagoEfectivo;
+use App\Models\Contabilidad\OrdenTesoreriaPagoTarjeta;
+use App\Models\Contabilidad\OrdenTesoreriaPagoTransferencia;
+use App\Models\Contabilidad\Plan;
 use App\Models\Contabilidad\PlanCuentas\Ejercicio;
 use App\Models\ControlAcceso\User;
+use App\Models\General\Cheque;
 use App\Models\General\MetodoPago;
+use App\Models\General\MetodoTesoreria;
 use App\Models\Padron\Proveedor\Proveedor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,11 +31,9 @@ class OrdenPagoController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'tipo_pago' => 'required|in:Unico,Cuotas,Anticipos',
+            'tipo' => 'required|in:Unico,Cuotas,Anticipos',
             'cantidad_cuotas' => 'nullable|integer|min:1',
-            'facturasSeleccionadas' => 'required|array|min:1',
 
-            // Cada factura debe ser objeto con id + montoAPagar
             'facturasSeleccionadas' => 'required|array|min:1',
             'facturasSeleccionadas.*.id' => 'required|integer',
             'facturasSeleccionadas.*.montoAPagar' => 'required|numeric|min:0',
@@ -38,166 +43,232 @@ class OrdenPagoController extends Controller
             'anticipos_aplicados.*.anticipo_id' => 'required|integer',
             'anticipos_aplicados.*.importe' => 'required|numeric|min:0',
 
-            // 👇 pagos solo requeridos si NO es Anticipos
-            'pagos' => 'required_if:tipo_pago,Unico,Cuotas|array',
-            'pagos.*.metodo_pago_id' => 'required|integer',
+            'pagos' => 'required_if:tipo,Unico,Cuotas|array',
+            'pagos.*.metodo_id' => 'required|integer',
             'pagos.*.moneda_id' => 'required|integer',
             'pagos.*.importe' => 'required|numeric|min:0',
-            'pagos.*.fecha_pago' => 'required|date',
-            'pagos.*.banco_origen_id' => 'nullable|integer',
+            'pagos.*.fecha' => 'required|date',
+            'pagos.*.usuario_id' => 'required|integer',
+
+            // Campos opcionales según método
             'pagos.*.cuenta_origen_id' => 'nullable|integer',
             'pagos.*.tarjeta_origen_id' => 'nullable|integer',
-            'pagos.*.cbu_pago' => 'nullable|string',
-            'pagos.*.usuario_id' => 'required|integer',
+            'pagos.*.cheque_id' => 'nullable|integer',
+            'pagos.*.numero_cheque' => 'nullable|string',
+            'pagos.*.fecha_cheque' => 'nullable|date',
+            'pagos.*.cbu_id' => 'nullable|integer',
+            'pagos.*.numero_operacion' => 'nullable|string',
         ]);
 
+        DB::beginTransaction();
+
         try {
-            DB::beginTransaction();
 
-            // 🟢 CASO: SOLO ANTICIPOS (sin orden de pago)
-            if ($data['tipo_pago'] === 'Anticipos') {
+            // =========================
+            // 🟢 SOLO ANTICIPOS
+            // =========================
+            if ($data['tipo'] === 'Anticipos') {
 
-                if (!empty($data['anticipos_aplicados'])) {
-                    foreach ($data['anticipos_aplicados'] as $aplicacion) {
+                foreach ($data['anticipos_aplicados'] ?? [] as $aplicacion) {
 
-                        if ($aplicacion['importe'] <= 0) {
-                            continue;
-                        }
+                    if ($aplicacion['importe'] <= 0) continue;
 
-                        DB::table('relacion_comprobante_comprobante_proveedores')->insert([
-                            'comprobante_origen_id' => $aplicacion['anticipo_id'], // anticipo
-                            'comprobante_destino_id' => $aplicacion['factura_id'], // factura
-                            'importe_aplicado' => $aplicacion['importe'],
-                            'fecha_aplicacion' => now(),
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-                    }
+                    DB::table('relacion_comprobante_comprobante')->insert([
+                        'comprobante_origen_id'  => $aplicacion['anticipo_id'],
+                        'comprobante_destino_id' => $aplicacion['factura_id'],
+                        'importe_aplicado'       => $aplicacion['importe'],
+                        'fecha_aplicacion'       => now(),
+                        'created_at'             => now(),
+                        'updated_at'             => now(),
+                    ]);
                 }
 
                 DB::commit();
-
-                return response()->json([
-                    'message' => 'Anticipos aplicados correctamente',
-                ], 201);
+                return response()->json(['message' => 'Anticipos aplicados correctamente'], 201);
             }
 
-            // 🟢 CASO: Plan Único y Cuotas (sin orden de pago)
-            // 🔹 Crear plan de pago
-            $plan = PlanPago::create([
-                'tipo_pago' => $data['tipo_pago'],
-                'cantidad_cuotas' => $data['tipo_pago'] === 'Cuotas'
+            // =========================
+            // 🟢 PLAN DE PAGO
+            // =========================
+            $plan = Plan::create([
+                'tipo' => $data['tipo'],
+                'cantidad_cuotas' => $data['tipo'] === 'Cuotas'
                     ? $data['cantidad_cuotas']
                     : null,
             ]);
 
-            // 🔹 Crear cada orden de pago asociada al plan
+            // =========================
+            // 🟢 ÓRDENES DE TESORERÍA
+            // =========================
             $ordenes = [];
+
             foreach ($data['pagos'] as $pagoData) {
-                $ordenes[] = OrdenPago::create([
-                    'plan_pago_id' => $plan->id,
-                    'metodo_pago_id' => $pagoData['metodo_pago_id'],
-                    'moneda_id' => $pagoData['moneda_id'],
-                    'importe' => $pagoData['importe'],
-                    'fecha_pago' => $pagoData['fecha_pago'],
-                    'banco_origen_id' => $pagoData['banco_origen_id'] ?? null,
-                    'cuenta_origen_id' => $pagoData['cuenta_origen_id'] ?? null,
-                    'tarjeta_origen_id' => $pagoData['tarjeta_origen_id'] ?? null,
-                    'cbu_pago' => $pagoData['cbu_pago'] ?? null,
+
+                $orden = OrdenTesoreria::create([
+                    'plan_id'          => $plan->id,
+                    'metodo_id'        => $pagoData['metodo_id'],
+                    'moneda_id'        => $pagoData['moneda_id'],
+                    'importe'          => $pagoData['importe'],
+                    'fecha'            => $pagoData['fecha'],
+                    'estado'           => 'Pendiente',
                     'usuario_creacion' => $pagoData['usuario_id'],
                 ]);
+
+                // 👇 Detalle según medio de pago
+                $this->crearDetallePago($orden, $pagoData);
+
+                $ordenes[] = $orden;
             }
 
-            // 🔹 Asociar facturas al plan
-            $facturaIds = collect($data['facturasSeleccionadas'])
-                ->pluck('id')
-                ->toArray();
-
-            $plan->comprobantesProveedores()->attach($facturaIds);
-
-            // 🔹 Distribución proporcional de facturas en cada órden
+            // =========================
+            // 🟢 ASOCIAR FACTURAS
+            // =========================
             $facturas = collect($data['facturasSeleccionadas']);
             $totalFacturas = $facturas->sum('montoAPagar');
 
-            $totalAnticipos = collect($data['anticipos_aplicados'])->sum('importe');
-
-            if ($data['tipo_pago'] === 'Anticipos' && round($totalFacturas - $totalAnticipos, 2) !== 0.00) {
-                throw new \Exception('Los anticipos no cubren el total de las facturas');
-            }
-
             foreach ($ordenes as $orden) {
-
                 foreach ($facturas as $factura) {
 
                     $proporcion = $factura['montoAPagar'] / $totalFacturas;
                     $importeAplicado = round($orden->importe * $proporcion, 2);
 
-                    DB::table('relacion_comprobante_orden_pago_proveedores')->insert([
-                        'comprobante_id' => $factura['id'],
-                        'orden_pago_id' => $orden->id,
-                        'importe_aplicado' => $importeAplicado,
-                        'fecha_aplicacion' => now(),
-                        'created_at' => now(),
-                        'updated_at' => now(),
+                    DB::table('relacion_comprobante_orden_tesoreria')->insert([
+                        'orden_tesoreria_id' => $orden->id,
+                        'comprobante_id'     => $factura['id'],
+                        'importe_aplicado'   => $importeAplicado,
+                        'fecha_aplicacion'   => now(),
+                        'created_at'         => now(),
+                        'updated_at'         => now(),
                     ]);
                 }
             }
 
-            //////ACA CARGA LOS ANTICIPOS APLICADOS A LAS FACTURAS
-            if (!empty($data['anticipos_aplicados'])) {
+            // =========================
+            // 🟢 ANTICIPOS A FACTURAS
+            // =========================
+            foreach ($data['anticipos_aplicados'] ?? [] as $aplicacion) {
 
-                foreach ($data['anticipos_aplicados'] as $aplicacion) {
+                if ($aplicacion['importe'] <= 0) continue;
 
-                    // 🔹 Validaciones defensivas
-                    if ($aplicacion['importe'] <= 0) {
-                        continue;
-                    }
-
-                    DB::table('relacion_comprobante_comprobante_proveedores')->insert([
-                        'comprobante_origen_id' => $aplicacion['anticipo_id'],
-                        'comprobante_destino_id' => $aplicacion['factura_id'],
-                        'importe_aplicado' => $aplicacion['importe'],
-                        'fecha_aplicacion' => now(),
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
+                DB::table('relacion_comprobante_comprobante')->insert([
+                    'comprobante_origen_id'  => $aplicacion['anticipo_id'],
+                    'comprobante_destino_id' => $aplicacion['factura_id'],
+                    'importe_aplicado'       => $aplicacion['importe'],
+                    'fecha_aplicacion'       => now(),
+                    'created_at'             => now(),
+                    'updated_at'             => now(),
+                ]);
             }
 
             DB::commit();
 
             return response()->json([
-                'message' => 'Plan de pago y órdenes creadas correctamente con distribución proporcional',
-                'plan_pago' => $plan,
-                'ordenes_pago' => $ordenes,
+                'message' => 'Plan y órdenes creadas correctamente',
+                'plan'    => $plan,
+                'ordenes' => $ordenes,
             ], 201);
 
-        } catch (\Throwable $th) {
+        } catch (\Throwable $e) {
 
             DB::rollBack();
-            Log::error('Error al guardar la orden de pago: ' . $th->getMessage());
+            Log::error($e);
 
             return response()->json([
-                'error' => 'Error al guardar la orden de pago',
-                'details' => $th->getMessage(),
+                'error' => 'Error al crear la orden',
+                'detail'=> $e->getMessage(),
             ], 500);
         }
     }
+
+    ////CREA EL DETALLE DE LA ORDEN DE TESORERIA
+    private function crearDetallePago(OrdenTesoreria $orden, array $pagoData): void
+    {
+        $metodo = MetodoTesoreria::findOrFail($orden->metodo_id);
+
+        switch ($metodo->nombre) {
+
+            case 'Efectivo':
+                OrdenTesoreriaPagoEfectivo::create([
+                    'orden_tesoreria_id' => $orden->id,
+                    'numero_operacion'   => $pagoData['numero_operacion'] ?? null,
+                    'usuario_creacion'   => $pagoData['usuario_id'],
+                ]);
+                break;
+
+            case 'Transferencia':
+                OrdenTesoreriaPagoTransferencia::create([
+                    'orden_tesoreria_id'        => $orden->id,
+                    'cuenta_bancaria_origen_id' => $pagoData['cuenta_origen_id'],
+                    'cbu_id'                    => $pagoData['cbu_id'],
+                    'numero_operacion'          => $pagoData['numero_operacion'] ?? null,
+                    'usuario_creacion'          => $pagoData['usuario_id'],
+                ]);
+                break;
+
+            case 'Tarjeta':
+                OrdenTesoreriaPagoTarjeta::create([
+                    'orden_tesoreria_id' => $orden->id,
+                    'tarjeta_origen_id'  => $pagoData['tarjeta_origen_id'],
+                    'numero_operacion'   => $pagoData['numero_operacion'] ?? null,
+                    'usuario_creacion'   => $pagoData['usuario_id'],
+                ]);
+                break;
+
+            case 'Cheque':
+
+            if (empty($pagoData['cuenta_origen_id'])) {
+                throw new \Exception('La cuenta bancaria es obligatoria para pagos con cheque');
+            }
+
+            DB::transaction(function () use ($orden, $pagoData) {
+
+                // 🔹 Bloquear últimos cheques de la cuenta para evitar duplicados
+                $ultimoNumero = Cheque::where('cuenta_bancaria_id', $pagoData['cuenta_origen_id'])
+                    ->lockForUpdate()
+                    ->max('numero');
+
+                $nuevoNumero = ($ultimoNumero ?? 0) + 1;
+
+                // 🔹 Crear cheque
+                $cheque = Cheque::create([
+                    'cuenta_bancaria_id' => $pagoData['cuenta_origen_id'],
+                    'numero'             => $nuevoNumero,
+                ]);
+
+                // 🔹 Asociar a la orden
+                OrdenTesoreriaPagoCheque::create([
+                    'orden_tesoreria_id' => $orden->id,
+                    'cheque_id'          => $cheque->id,
+                    'numero_cheque'      => $nuevoNumero,
+                    'fecha_cheque'       => $pagoData['fecha_cheque'] ?? null,
+                    'numero_operacion'   => $pagoData['numero_operacion'] ?? null,
+                    'usuario_creacion'   => $pagoData['usuario_id'],
+                ]);
+            });
+
+            break;
+
+            default:
+                throw new \Exception("Método de pago no soportado: {$metodo->codigo}");
+        }
+    }
+
+
 
 
     ////ACTUALIZAR ORDEN DE PAGO
     public function guardarOrdenes(Request $request)
     {
         foreach ($request->ordenes as $ordenData) {
-            $orden = OrdenPago::find($ordenData['id']);
+            $orden = OrdenTesoreria::find($ordenData['id']);
             if (!$orden) continue;
 
             $orden->update([
-                'metodo_pago_id' => $ordenData['metodo_pago_id'] ?? $orden->metodo_pago_id,
+                'metodo_id' => $ordenData['metodo_id'] ?? $orden->metodo_id,
                 'banco_origen_id' => $ordenData['banco_origen_id'] ?? $orden->banco_origen_id,
                 'cuenta_origen_id' => $ordenData['cuenta_origen_id'] ?? $orden->cuenta_origen_id,
                 'tarjeta_origen_id' => $ordenData['tarjeta_origen_id'] ?? $orden->tarjeta_origen_id,
-                'cbu_pago' => $ordenData['cbu_pago'] ?? $orden->cbu_pago,
+                'cbu_id' => $ordenData['cbu_id'] ?? $orden->cbu_id,
             ]);
         }
 
@@ -211,7 +282,7 @@ class OrdenPagoController extends Controller
     {
         $request->validate([
             'ordenes' => 'required|array|min:1',
-            'ordenes.*.id' => 'required|integer|exists:orden_pago_proveedores,id',
+            'ordenes.*.id' => 'required|integer|exists:orden_tesoreria,id',
         ]);
 
         DB::beginTransaction();
@@ -224,13 +295,13 @@ class OrdenPagoController extends Controller
             foreach ($request->ordenes as $ordenData) {
 
                 // --------- 1. OBTENER ORDEN ----------
-                $orden = OrdenPago::findOrFail($ordenData['id']);
+                $orden = OrdenTesoreria::findOrFail($ordenData['id']);
 
                 // --------- 2. MARCAR COMO PAGADA ----------
                 $orden->update([
                     'estado'      => 'Confirmado',
-                    'fecha_pago'  => now(),
-                    'usuario_pago'=> $usuarioId,
+                    'fecha'  => now(),
+                    'usuario_aprobacion'=> $usuarioId,
                 ]);
 
                 // --------- 3. MOVIMIENTO DE TESORERÍA ----------
@@ -238,20 +309,38 @@ class OrdenPagoController extends Controller
                     'fecha'               => now(),
                     'tipo_movimiento'     => 'salida',
                     'monto'               => $ordenData['importe'],
-                    'metodo_pago_id'      => $ordenData['metodo_pago_id'] ?? null,
+                    'tipo'                => $ordenData['tipo'],
+                    'tipo_id'             => $ordenData['tipo_id'],
+                    'metodo_id'           => $ordenData['metodo_id'] ?? null,
                     'tipo_moneda_id'      => $ordenData['moneda_id'] ?? null,
                     'banco_id'            => $ordenData['banco_origen_id'] ?? null,
                     'cuenta_bancaria_id'  => $ordenData['cuenta_origen_id'] ?? null,
-                    'orden_pago_id'       => $orden->id,
-                    'proveedor_id'        => $ordenData['proveedor_id'] ?? null,
+                    'orden_id'       => $orden->id,
                     'usuario_id'          => $usuarioId,
                     'descripcion'         => "Pago de Orden #{$orden->id}",
-                    'referencia_bancaria' => $ordenData['cbu_pago'] ?? null,
+                    'referencia_bancaria' => $ordenData['cbu_id'] ?? null,
                 ]);
 
+                $tipo    = $ordenData['tipo'];      // proveedor | cliente
+                $tipoId  = $ordenData['tipo_id'];   // id del proveedor o cliente
+
+
                 // --------- 4. CUENTAS CONTABLES ----------
-                $proveedor = Proveedor::find($ordenData['proveedor_id']);
-                $metodo    = MetodoPago::find($ordenData['metodo_pago_id']);
+                ////////////////////VER PARA AJUSTAR CUENTA CONTABLE
+                if ($tipo === 'proveedor') {
+
+                    $sujeto = Proveedor::findOrFail($tipoId);
+
+                } elseif ($tipo === 'cliente') {
+
+                    $sujeto = \App\Models\Padron\Cliente\Cliente::findOrFail($tipoId);
+
+                } else {
+                    throw new \Exception("Tipo no válido para orden de pago: {$tipo}");
+                }
+
+                ///////////////////////////////////////////////////////////
+                $metodo    = MetodoTesoreria::find($ordenData['metodo_id']);
 
                 $cuentaProveedor = 274; // DEBE
                 $cuentaMetodo    = $metodo->co_cuenta_id; // HABER
@@ -291,7 +380,7 @@ class OrdenPagoController extends Controller
                 // ====================================================
                 $impuestosAgrupados = [];
 
-                foreach ($orden->comprobantesProveedores as $comp) {
+                foreach ($orden->comprobantes as $comp) {
 
                     foreach ($comp->detalles as $detalle) {
 
@@ -301,7 +390,7 @@ class OrdenPagoController extends Controller
                             if (!$cuentaId) continue;
 
                             // Buscar si en la pivote existe un monto ya calculado
-                            $pivot = DB::table('comprobantes_proveedores_detalles_impuestos')
+                            $pivot = DB::table('comprobantes_detalles_impuestos')
                                         ->where('detalle_id', $detalle->id)
                                         ->where('impuesto_id', $imp->id)
                                         ->first();

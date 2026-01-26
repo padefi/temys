@@ -2,16 +2,13 @@
 
 namespace App\Http\Controllers\Contabilidad;
 use App\Http\Controllers\Controller;
-use App\Models\Compras\ComprobanteProveedor;
-use App\Models\Compras\OrdenPago;
-use App\Models\Compras\PlanPago;
 use App\Models\Contabilidad\Asientos\Asiento;
 use App\Models\Contabilidad\MovimientoTesoreria;
 use App\Models\Contabilidad\PlanCuentas\Cuenta;
 use App\Models\Contabilidad\PlanCuentas\Ejercicio;
 use App\Models\General\Banco;
 use App\Models\General\CuentaBancaria;
-use App\Models\General\MetodoPago;
+use App\Models\General\MetodoTesoreria;
 use App\Models\General\Tarjeta;
 use App\Models\General\TipoComprobante;
 use App\Models\General\TipoMoneda;
@@ -30,14 +27,14 @@ class ContabilidadController extends Controller
             'cuentaBancaria',
             'metodoPago',
             'tipoMoneda',
-            'ordenPago',
+            'OrdenTesoreria',
             'proveedor',
         ])->get();
 
        return Inertia::render('Contabilidad/Conciliar/Index', [
             'movimientosTesoreria' => $movimientosTesoreria,
             'proveedores' => Proveedor::select('id', 'nombre_fantasia', 'razon_social')->orderBy('nombre_fantasia')->get(),
-            'metodosPago' => MetodoPago::select('id', 'nombre')->get(),
+            'metodosPago' => MetodoTesoreria::select('id', 'nombre')->get(),
             'monedas' => TipoMoneda::select('id', 'descripcion')->get(),
             'tiposComprobante' => TipoComprobante::select('id', 'nombre')->get(),
             'bancos' => Banco::select('id', 'banco')->get(),
@@ -138,7 +135,7 @@ class ContabilidadController extends Controller
             'ejercicio_id' => 'required|integer',
             'desde' => 'required|date',
             'hasta' => 'required|date',
-            'proveedor_id' => 'required|integer',
+            'tipo_id' => 'required|integer',
         ]);
 
         $ejercicios = Ejercicio::all();
@@ -153,9 +150,9 @@ class ContabilidadController extends Controller
         ->where('co_ejercicio_id', $request->ejercicio_id)
         ->whereDate('fecha', '>=', $request->desde)
         ->whereDate('fecha', '<=', $request->hasta)
-        ->when($request->proveedor_id, function ($q) use ($request) {
+        ->when($request->tipo_id, function ($q) use ($request) {
             $q->whereHas('partidas.comprobantes', function ($q2) use ($request) {
-                $q2->where('proveedor_id', $request->proveedor_id);
+                $q2->where('tipo_id', $request->tipo_id);
             });
         })
         ->get();
@@ -167,7 +164,7 @@ class ContabilidadController extends Controller
             'ejercicio_id' => $request->ejercicio_id,
             'desde'   => $request->desde,
             'hasta'   => $request->hasta,
-            'proveedor_id' => $request->proveedor_id,
+            'tipo_id' => $request->tipo_id,
 
         ]);
 

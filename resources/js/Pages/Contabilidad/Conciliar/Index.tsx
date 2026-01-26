@@ -17,14 +17,14 @@ export default function Index() {
 
   const [filter, setFilter] = useState({
     id: '',
-    proveedor_id: '',
-    metodo_pago_id: '',
+    tipo_id: '',
+    metodo_id: '',
     banco_id: '',
     cuenta_bancaria_id: '',
     tarjeta_id: '',
     tipo_moneda_id: '',
     estado: 'Pendiente',
-    fecha_pago: '',
+    fecha_conciliacion: '',
     tipo_comprobante_id: '',
   });
 
@@ -45,17 +45,17 @@ export default function Index() {
     const movimientosFiltrados = useMemo(() => {
     let filtrados = movimientosActualizados.filter((o: any) => {
         if (filter.id && !String(o.id).includes(filter.id)) return false;
-        if (filter.proveedor_id && o.proveedor_id != filter.proveedor_id) return false;
-        if (filter.metodo_pago_id && o.metodo_pago_id != filter.metodo_pago_id) return false;
+        if (filter.tipo_id && o.tipo_id != filter.tipo_id) return false;
+        if (filter.metodo_id && o.metodo_id != filter.metodo_id) return false;
         if (filter.banco_id && o.banco_id != filter.banco_id) return false;
         if (filter.tipo_moneda_id && o.tipo_moneda_id != filter.tipo_moneda_id) return false;
         if (filter.estado) {
         if (filter.estado === "Pendiente" && o.conciliado !== 0) return false;
         if (filter.estado === "Conciliado" && o.conciliado !== 1) return false;
         }
-        if (filter.fecha_pago) {
-        const fechaFiltro = new Date(filter.fecha_pago).toISOString().slice(0, 10);
-        const fechaMovimiento = new Date(o.fecha_pago || o.fecha).toISOString().slice(0, 10);
+        if (filter.fecha_conciliacion) {
+        const fechaFiltro = new Date(filter.fecha_conciliacion).toISOString().slice(0, 10);
+        const fechaMovimiento = new Date(o.fecha_conciliacion || o.fecha).toISOString().slice(0, 10);
         if (fechaMovimiento !== fechaFiltro) return false;
         }
         return true;
@@ -157,8 +157,8 @@ export default function Index() {
                         value: String(p.id),
                         label: p.nombre_fantasia,
                     }))}
-                    value={String(filter.proveedor_id)}
-                    onChange={(v) => handleChange("proveedor_id", Number(v))}
+                    value={String(filter.tipo_id)}
+                    onChange={(v) => handleChange("tipo_id", Number(v))}
                     placeholder="Proveedores"
                     emptyText="Sin resultados"
                     loading={proveedores.length === 0}
@@ -167,8 +167,8 @@ export default function Index() {
                 <TableHead>
                     <FilterCombobox
                     items={metodosPago.map((m: any) => ({ value: String(m.id), label: m.nombre }))}
-                    value={filter.metodo_pago_id}
-                    onChange={v => handleChange('metodo_pago_id', v)}
+                    value={filter.metodo_id}
+                    onChange={v => handleChange('metodo_id', v)}
                     placeholder="Método Pago"
                     emptyLabel="Sin resultados"
                     />
@@ -230,7 +230,7 @@ export default function Index() {
                 />
               </TableHead>
               <TableHead>
-                <Input type="date" className="mt-1" value={filter.fecha_pago} onChange={e => handleChange('fecha_pago', e.target.value)} />
+                <Input type="date" className="mt-1" value={filter.fecha_conciliacion} onChange={e => handleChange('fecha_conciliacion', e.target.value)} />
               </TableHead>
             </TableRow>
           </TableHeader>

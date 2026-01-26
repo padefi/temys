@@ -4,6 +4,8 @@ use App\Http\Controllers\Ventas\Clientes\ClientesController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Ventas\OrdenCotizacionesVentas\OrdenCotizacionesVentasController;
+use App\Http\Controllers\Ventas\ComprobantesClientes\ComprobantesClientesController;
+use App\Http\Controllers\Ventas\OrdenCobroController;
 use App\Http\Controllers\Ventas\OrdenVentas\OrdenVentasController;
 
 Route::middleware('module:ventas')->group(function () {
@@ -145,20 +147,31 @@ Route::middleware(['menu:ordenesVentas'])->group(function () {
             ->name('ordenesPagosCompras.nueva');*/
 
         // Guardar orden de pago
-        Route::post('/ordenes-pagos', [OrdenPagoController::class, 'store'])
-            ->name('ordenesPagosCompras.store');
-        // Guardar comprobantes de proveedores
-        Route::post('/comprobantes-proveedores', [ComprobantesProveedoresController::class, 'store']);
+        Route::post('/ordenes-cobros', [OrdenCobroController::class, 'store'])
+            ->name('ordenesCobrosVentas.store');
+        // Guardar comprobantes de clientes
+        Route::post('/comprobantes-clientes', [ComprobantesClientesController::class, 'store'])
+            ->name('comprobantesClientes.store');
         // Comprobantes por orden
-        Route::get('/{ordenId}/comprobantes', [ComprobantesProveedoresController::class, 'comprobantesPorOrden']);
+        Route::get('/{ordenId}/comprobantes', [ComprobantesClientesController::class, 'comprobantesPorOrden']);
 
-        Route::get('/comprobantes-proveedores/proximo-numero-anticipo', [ComprobantesProveedoresController::class, 'getProximoNumeroAnticipo'])
-        ->name('comprobantes-proveedores.proximo-numero-anticipo');
+        Route::get('/comprobantes-clientes/proximo-numero-anticipo', [ComprobantesClientesController::class, 'getProximoNumeroAnticipo'])
+        ->name('comprobantes-clientes.proximo-numero-anticipo');
 
         // Mostrar detalle
        /* Route::get('/{orden_pago_id}', [OrdenPagoController::class, 'show'])
             ->name('ordenesPagosCompras.show');*/
     });
+
+        Route::middleware(['submenu:facturasClientes'])
+        ->group(function () {
+            // Vista principal
+            Route::get('ventas/comprobantes-clientes', [ComprobantesClientesController::class, 'index'])
+                ->name('facturasClientes');
+
+
+
+        });
 });
 
 

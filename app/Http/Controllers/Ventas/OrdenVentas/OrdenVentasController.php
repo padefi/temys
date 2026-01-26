@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Ventas\OrdenVentas;
 use App\Http\Controllers\Controller;
 use App\Models\Almacenes\Almacen;
-use App\Models\Ventas\ComprobanteCliente;
-use App\Models\Ventas\ComprobanteClienteArchivo;
+use App\Models\Contabilidad\Comprobante;
+use App\Models\Contabilidad\ComprobanteArchivo;
 use App\Models\Ventas\OrdenVenta;
 use App\Models\Ventas\OrdenVentaArchivo;
 use App\Models\Ventas\OrdenVentaDetalle;
@@ -235,11 +235,11 @@ class OrdenVentasController extends Controller
             'detalles.producto',
             'detalles.producto.modelo',
             'detalles.producto.subCategoria',
-            'comprobantesClientes',
-            'comprobantesClientes.archivos',
-            'comprobantesClientes.detalles',
-            'comprobantesClientes.condicionVenta',
-            'comprobantesClientes.tipoComprobante',
+            'comprobantes',
+            'comprobantes.archivos',
+            'comprobantes.detalles',
+            'comprobantes.condicionVenta',
+            'comprobantes.tipoComprobante',
             'detalles.detallesImpuesto',
             ]);
 
@@ -465,7 +465,7 @@ class OrdenVentasController extends Controller
             'archivo' => 'required|file|max:10240',
         ]);
 
-        $comprobante = ComprobanteCliente::findOrFail($id);
+        $comprobante = Comprobante::findOrFail($id);
 
         $file = $request->file('archivo');
         $path = $file->store('comprobantes_clientes');
@@ -481,7 +481,7 @@ class OrdenVentasController extends Controller
     }
 
     ////ELIMINAR ARCHIVO DE FACTURAS
-    public function eliminarArchivoFactura(ComprobanteClienteArchivo $archivo)
+    public function eliminarArchivoFactura(ComprobanteArchivo $archivo)
     {
         try {
             // Eliminar el archivo físico
@@ -499,7 +499,7 @@ class OrdenVentasController extends Controller
     }
 
     ////VISUALIZAR ARCHIVO DE FACTURAS
-    public function visualizarArchivoFactura(ComprobanteClienteArchivo $archivo)
+    public function visualizarArchivoFactura(ComprobanteArchivo $archivo)
     {
         // Esto asume que los archivos están en storage/app/private/comprobantes-clientes
         return response()->file(storage_path('app/private/' . $archivo->path));

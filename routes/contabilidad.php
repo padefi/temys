@@ -8,6 +8,9 @@ use App\Http\Controllers\Contabilidad\Asientos\PartidaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Contabilidad\Proveedores\ProveedoresController;
+use App\Http\Controllers\Contabilidad\Clientes\ClientesController;
+use App\Http\Controllers\Ventas\ComprobantesClientes\ComprobantesClientesController;
+use App\Http\Controllers\Ventas\OrdenCobroController;
 
 Route::middleware('module:contabilidad')->group(function () {
     Route::get('/contabilidad', function () {
@@ -31,7 +34,7 @@ Route::middleware('module:contabilidad')->group(function () {
 
                 // Trae Proveedores con saldo
                 Route::get('proveedoresListado', [ProveedoresController::class, 'proveedoresConSaldo']);
-                Route::post('/ordenesPagos', [OrdenPagoController::class, 'store'])->name('ordenesPagos');
+                Route::post('/ordenesTesoreriaProveedores', [OrdenPagoController::class, 'store'])->name('ordenesTesoreria');
                 Route::get('{proveedorId}/pendientes', [ProveedoresController::class, 'facturasPendientes']);
                 Route::get('{proveedorId}/cuenta-corriente', [ProveedoresController::class, 'cuentaCorriente']);
 
@@ -41,9 +44,9 @@ Route::middleware('module:contabilidad')->group(function () {
                     // Vista principal
                     Route::get('/pagosProveedores', [ProveedoresController::class, 'pagosProveedores'])->name('pagosProveedores');
                     // Guardar cambios
-                    Route::post('ordenesPagos/guardarOrdenes', [OrdenPagoController::class, 'guardarOrdenes'])->name('guardarOrdenes');
+                    Route::post('ordenesTesoreria/guardarOrdenes', [OrdenPagoController::class, 'guardarOrdenes'])->name('guardarOrdenes');
                     // Procesar ordenes
-                    Route::post('ordenesPagos/procesarOrdenes', [OrdenPagoController::class, 'procesarOrdenes'])->name('procesarOrdenes');
+                    Route::post('ordenesTesoreria/procesarOrdenes', [OrdenPagoController::class, 'procesarOrdenes'])->name('procesarOrdenes');
         });
 
         Route::middleware(['submenu:proveedores'])->group(function () {
@@ -107,6 +110,43 @@ Route::middleware('module:contabilidad')->group(function () {
                 // Listar Balance General
                 Route::get('/balanceGeneralListar', [ContabilidadController::class, 'balanceGeneralListar'])->name('balanceGeneralListar');
 
+            });
+    });
+
+
+    Route::middleware(['menu:clientes'])->group(function () {
+
+
+
+
+        Route::middleware(['submenu:facturasClientes'])->prefix('contabilidad')->group(function () {
+                /////vista principal
+                Route::get('/facturasClientes', function () {
+                    return Inertia::render('Contabilidad/ComprobantesClientes/Index');
+                })->name('facturasClientes');
+
+                Route::get('{clienteId}/anticipos-disponibles', [ComprobantesClientesController::class, 'anticiposDisponibles']);
+
+                // Trae Clientes con saldo
+                Route::get('clientesListado', [ClientesController::class, 'clientesConSaldo']);
+                Route::post('/ordenesTesoreriaClientes', [OrdenCobroController::class, 'store'])->name('ordenesTesoreria');
+                Route::get('/clientes/{clienteId}/pendientes', [ClientesController::class, 'facturasPendientes']);
+                Route::get('/clientes/{clienteId}/cuenta-corriente', [ClientesController::class, 'cuentaCorriente']);
+
+        });
+
+        Route::middleware(['submenu:cobrosClientes'])->prefix('contabilidad')->group(function () {
+                    // Vista principal
+                    Route::get('/cobrosClientes', [ClientesController::class, 'cobrosClientes'])->name('cobrosClientes');
+                    // Guardar cambios
+                    Route::post('ordenesTesoreria/guardarOrdenes', [OrdenCobroController::class, 'guardarOrdenes'])->name('guardarOrdenes');
+                    // Procesar ordenes
+                    Route::post('ordenesTesoreria/procesarOrdenes', [OrdenCobroController::class, 'procesarOrdenes'])->name('procesarOrdenes');
+        });
+
+        Route::middleware(['submenu:clientes'])->group(function () {
+                // Vista principal
+                Route::get('Busquedaclientes', [ClientesController::class, 'index'])->name('clientesCompras');
             });
     });
 });
