@@ -11,78 +11,101 @@ interface DatosGeneralesTabProps {
 export function DatosGeneralesTab({ inmueble }: DatosGeneralesTabProps) {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t">
+        <h1 className="col-span-3 text-start font-bold">CONTACTOS</h1>
+        {inmueble.contactos.map((contacto) => (
+          <div key={contacto.id} className="contents">
+            <div className="space-y-2">
+              <Label className="text-xs  uppercase tracking-wide">
+                Tipo de contacto
+              </Label>
+              <Input
+                value={contacto.tipo_contacto.descripcion ?? ''}
+                readOnly
+                className="bg-background"
+                disabled
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs  uppercase tracking-wide">
+                Contacto
+              </Label>
+              <Input
+                value={contacto.contacto ?? ''}
+                readOnly
+                className="bg-background"
+                disabled
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs  uppercase tracking-wide">
+                Descripción
+              </Label>
+              <Input
+                value={contacto.descripcion ?? ''}
+                readOnly
+                className="bg-background"
+                disabled
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t">
+        <h1 className="col-span-3 text-start font-bold">DOMICILIO</h1>
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground uppercase tracking-wide">
-            Nombre del Inmueble
+          <Label className="text-xs  uppercase tracking-wide">
+            Provincia
           </Label>
           <Input
             value={inmueble.nombres_inmueble.nombre_completo}
             readOnly
             className="bg-background"
+            disabled
           />
         </div>
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground uppercase tracking-wide">
-            Partida Inmobiliaria
+          <Label className="text-xs  uppercase tracking-wide">
+            Localidad
           </Label>
           <Input
             value={inmueble.num_partida}
             readOnly
             className="bg-background"
+            disabled
           />
         </div>
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground uppercase tracking-wide">
-            Tipo de Propiedad
-          </Label>
-          <Select value={inmueble.tipo_inmueble_nombre} disabled>
-            <SelectTrigger className="bg-background">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={inmueble.tipo_inmueble_nombre}>
-                {inmueble.tipo_inmueble_nombre}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground uppercase tracking-wide">
-            Superficie Cubierta (M²)
+          <Label className="text-xs uppercase tracking-wide">
+            Calle
           </Label>
           <Input
-            value={inmueble.superficie.cubierta.toString()}
+            value={inmueble.num_partida}
             readOnly
             className="bg-background"
+            disabled
           />
         </div>
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground uppercase tracking-wide">
-            Superficie Libre (M²)
+          <Label className="text-xs  uppercase tracking-wide">
+            Altura
           </Label>
           <Input
-            value={inmueble.superficie.libre.toString()}
+            value={inmueble.num_partida}
             readOnly
             className="bg-background"
+            disabled
           />
         </div>
-        <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground uppercase tracking-wide">
-            Estado Administrativo
-          </Label>
-          <Select value={inmueble.estado} disabled>
-            <SelectTrigger className="bg-background">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={inmueble.estado}>{inmueble.estado}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+
+
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t">
+      {/*   <div className="flex items-center justify-between pt-4 border-t">
         <p className="text-sm text-muted-foreground">
           Última modificación: {new Date(inmueble.creacion.fecha).toLocaleDateString("es-ES", {
             day: "2-digit",
@@ -98,7 +121,7 @@ export function DatosGeneralesTab({ inmueble }: DatosGeneralesTabProps) {
             Actualizar Información
           </Button>
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }

@@ -15,8 +15,6 @@ class InmuebleContacto extends Model
         'contacto',
         'descripcion',    
     ];
-
-
      public function tipoContacto()
     {
         return $this->belongsTo(InmuebleTipoContacto::class, 'inmuebles_tipo_contacto_id');

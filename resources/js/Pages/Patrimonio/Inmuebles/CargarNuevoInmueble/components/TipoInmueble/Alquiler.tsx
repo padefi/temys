@@ -1,7 +1,7 @@
 import { Label } from "@/Components/ui/label";
 import { DollarSign } from "lucide-react";
 import { useFormContext } from "react-hook-form"
-import { InmuebleSchemaType } from "./InmuebleSchema"
+import { InmuebleSchemaType } from "../../Schema/InmuebleSchema"; 
 import { Input } from "@/Components/ui/input";
 import { Textarea } from "@/Components/ui/textarea";
 

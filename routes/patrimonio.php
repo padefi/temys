@@ -28,6 +28,7 @@ Route::middleware('module:patrimonio')->group(function () {
                 Route::get('patrimonio/inmuebles/tipos-inmuebles',  [InmuebleController::class, 'showTiposInmuebles'])->name('inmuebles.tipos.inmuebles');
                 Route::get('patrimonio/inmuebles/tipos-ocupacion',  [InmuebleController::class, 'showTiposOcupacion'])->name('inmuebles.tipos.ocupacion');
                 Route::get('patrimonio/inmuebles/tipos-contrato',  [InmuebleController::class, 'showTipoContrato'])->name('inmuebles.tipos.contrato');
+                Route::get('patrimonio/inmuebles/tipos-contacto',  [InmuebleController::class, 'showTipoContacto'])->name('inmuebles.tipos.contacto');
                 Route::get('patrimonio/inmuebles/branches',  [InmuebleController::class, 'showBranch'])->name('inmuebles.branches');
             });
         });

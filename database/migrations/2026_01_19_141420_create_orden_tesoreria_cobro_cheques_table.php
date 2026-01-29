@@ -39,7 +39,7 @@ return new class extends Migration
             $table->unsignedBigInteger('cuenta_destino_id')->nullable();
             $table->foreign('cuenta_destino_id')
                 ->references('id')
-                ->on('cuentas_bancarias')
+                ->on('cuenta_bancarias')
                 ->onDelete('cascade');
 
             $table->string('numero_operacion')->nullable();

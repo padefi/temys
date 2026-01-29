@@ -7,10 +7,12 @@ use App\Http\Resources\ControlAcceso\BranchResource;
 use App\Http\Resources\Patrimonio\InmueblesResource;
 use App\Models\ControlAcceso\Branch;
 use App\Models\Patrimonio\Inmuebles\Inmueble;
+use App\Models\Patrimonio\Inmuebles\InmuebleContacto;
 use App\Models\Patrimonio\Inmuebles\InmuebleContrato;
 use App\Models\Patrimonio\Inmuebles\InmueblesEscritura;
 use App\Models\Patrimonio\Inmuebles\InmueblesHistorialCatastrales;
 use App\Models\Patrimonio\Inmuebles\InmuebleTipo;
+use App\Models\Patrimonio\Inmuebles\InmuebleTipoContacto;
 use App\Models\Patrimonio\Inmuebles\InmuebleTipoContrato;
 use App\Models\Patrimonio\Inmuebles\InmuebleTipoEstado;
 use App\Models\Patrimonio\Inmuebles\InmuebleTipoOcupacions;
@@ -26,17 +28,10 @@ class InmuebleController extends Controller
 {
     public function index(Request $request)
     {
-
-          $idProducto = $request->route('idProducto');
         //  Tomo el branch_id activo desde la sesión      
         $branchId = Session::get('active_branch_id') ?? null;
 
-        // Si necesitas el almacen correspondiente a ese branch
-        $almacenId = DB::table('almacenes')
-            ->where('id', $branchId)
-            ->value('id');
-
-        $inmuebles= QueryBuilder::for(
+        $inmuebles = QueryBuilder::for(
             Inmueble::query()
                 ->select(
                     'inmuebles.*',
@@ -47,51 +42,28 @@ class InmuebleController extends Controller
                     'e.descripcion as estado'
                 )
                 ->join('users as u', 'inmuebles.usuario_creacion', '=', 'u.id')
-                ->leftjoin('branches as ao', 'inmuebles.id_seccionales', '=', 'ao.id')
-                ->leftjoin('inmueble_tipos as p', 'inmuebles.tipo_inmueble_id', '=', 'p.id')
-                ->leftjoin('inmueble_tipo_ocupacions as o', 'inmuebles.tipo_ocupacion_id', '=', 'o.id')
-                ->leftjoin('inmueble_tipo_estados as e', 'inmuebles.estado_id', '=', 'e.id')
-
-
+                ->leftJoin('branches as ao', 'inmuebles.id_seccionales', '=', 'ao.id')
+                ->leftJoin('inmueble_tipos as p', 'inmuebles.tipo_inmueble_id', '=', 'p.id')
+                ->leftJoin('inmueble_tipo_ocupacions as o', 'inmuebles.tipo_ocupacion_id', '=', 'o.id')
+                ->leftJoin('inmueble_tipo_estados as e', 'inmuebles.estado_id', '=', 'e.id')
         )
+            ->with([
+                'contactos.tipoContacto' 
+            ])
             ->allowedFilters([
-                AllowedFilter::callback('origen', function ($query, $value) {
+                AllowedFilter::callback('nombres_inmueble', function ($query, $value) {
                     $query->where('ao.nombre', 'LIKE', "%{$value}%");
                 }),
-                AllowedFilter::callback('destino', function ($query, $value) {
-                    $query->where('ad.nombre', 'LIKE', "%{$value}%");
-                }),
-                AllowedFilter::callback('nombreProducto', function ($query, $value) {
-                    $query->where('p.nombre', 'LIKE', "%{$value}%");
-                }),
-                AllowedFilter::partial('tipo_movimiento'),
-                AllowedFilter::callback('usuarioCreacion', function ($query, $value) {
-                    $query->whereRaw("CONCAT(u.name, ' ', u.last_name) LIKE ?", ["%{$value}%"]);
-                }),
-
             ])
-
-            ->allowedSorts([
-                'nombreProducto',
-                'tipo_movimiento',
-                'origen',
-                'destino',
-                'usuarioCreacion',
-                'cantidad',
-            ])
-
             ->paginate($request->input('per_page', 10))
             ->withQueryString();
 
-/*             
-var_dump($inmuebles->toArray());
-exit; */
-        return Inertia::render('Patrimonio/Inmuebles/BuscarInmuebles', [
+
+        return Inertia::render('Patrimonio/Inmuebles/InmueblesManagement', [
             'inmuebles' => InmueblesResource::collection($inmuebles),
         ]);
-
     }
-    
+
     public function newInmuebles()
     {
         return Inertia::render('Patrimonio/Inmuebles/CargarNuevoInmueble/Inmueble', []);
@@ -119,6 +91,13 @@ exit; */
         $tiposContrato = InmuebleTipoContrato::all();
         return response()->json($tiposContrato);
     }
+
+    public function showTipoContacto()
+    {
+        $tiposContacto = InmuebleTipoContacto::all();
+        return response()->json($tiposContacto);
+    }
+
 
     public function showBranch()
     {
@@ -180,40 +159,63 @@ exit; */
     }
 
 
-
-    public function createInmueble(Request $request)                      
+    public function createInmueble(Request $request)
     {
-        $newInmueble = Inmueble::create([
-            'num_partida' => $request->input('num_partida'),
-            'id_seccionales' => $request->input('id_seccionales'),
-            'estado_id' => $request->input('estado_id'),
-            'nombre_completo' => $request->input('nombre_completo'),
-            'nombre_fantasia' => $request->input('nombre_fantasia'),
-            'id_calle' => $request->input('calle_id'),
-            'numero' => $request->input('numero'),
-            'tipo_inmueble_id' => $request->input('tipo_inmueble_id'),
-            'tipo_ocupacion_id' => $request->input('tipo_ocupacion_id'),
-            'superficie_cubierta' => $request->input('superficie_cubierta'),
-            'superficie_libre' => $request->input('superficie_libre'),
-            'superficie_total' => $request->input('superficie_total'),
-            'fecha_creacion' => now(),
-            'usuario_creacion' => Auth::id(),
-        ]);
-        $this->crearDetallePorTipo($request, $newInmueble);
+        DB::beginTransaction();
 
-        DB::commit();
-        return response()->json([
-            'message' => 'Solicitud creada con múltiples productos.',
-            'newInmueble' => $newInmueble->id,
-            'success' => true
-        ], 201);
+        try {
+            $newInmueble = Inmueble::create([
+                'num_partida' => $request->input('num_partida'),
+                'id_seccionales' => $request->input('id_seccionales'),
+                'estado_id' => $request->input('estado_id'),
+                'nombre_completo' => $request->input('nombre_completo'),
+                'nombre_fantasia' => $request->input('nombre_fantasia'),
+                'id_calle' => $request->input('calle_id'),
+                'numero' => $request->input('numero'),
+                'tipo_inmueble_id' => $request->input('tipo_inmueble_id'),
+                'tipo_ocupacion_id' => $request->input('tipo_ocupacion_id'),
+                'superficie_cubierta' => $request->input('superficie_cubierta'),
+                'superficie_libre' => $request->input('superficie_libre'),
+                'superficie_total' => $request->input('superficie_total'),
+                'fecha_creacion' => now(),
+                'usuario_creacion' => Auth::id(),
+            ]);
+
+            // Guardar contactos usando la relación
+            $this->guardarContactos($newInmueble, $request->input('contactos', []));
+
+            $this->crearDetallePorTipo($request, $newInmueble);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Inmueble creado con éxito.',
+                'newInmueble' => $newInmueble->id,
+                'success' => true
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Error al crear el inmueble.',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
     }
 
-
-   public function getInmuebles(Request $request)
+    /**
+     * Guardar contactos del inmueble
+     */
+    private function guardarContactos(Inmueble $inmueble, array $contactos)
     {
-      
+        foreach ($contactos as $contacto) {
+            InmuebleContacto::create([
+                'inmuebles_id' => $inmueble->id,
+                'inmuebles_tipo_contacto_id' => $contacto['idType'],
+                'contacto' => $contacto['value'],
+                'descripcion' => $contacto['description'] ?? null,
+            ]);
+        }
     }
-
-
 }

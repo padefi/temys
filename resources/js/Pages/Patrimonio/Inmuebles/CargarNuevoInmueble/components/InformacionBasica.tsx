@@ -5,15 +5,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/Components/u
 import { SelectValue } from "@radix-ui/react-select"
 import { Building2 } from "lucide-react"
 import { Controller, useFormContext } from "react-hook-form"
-import { InmuebleSchemaType } from "./InmuebleSchema"
+import { InmuebleSchemaType } from "../Schema/InmuebleSchema" 
 import { useEffect, useState } from "react"
 import axios from "axios"
-
-
-type select = {
-    value: string;
-    label: string;
-};
+import { SelectOption } from "@/types/Patrimonio/Inmuebles"
 
 function InformacionBasica() {
     const {
@@ -22,10 +17,10 @@ function InformacionBasica() {
         formState: { errors },
     } = useFormContext<InmuebleSchemaType>();
 
-    const [tipoInmueble, setTipoInmueble] = useState<select[]>([]);
-    const [seccional, setSeccional] = useState<select[]>([]);
-    const [tipoOcupacion, setTipoOcupacion] = useState<select[]>([]);
-    const [tipoEstados, setTipoEstados] = useState<select[]>([]);
+    const [tipoInmueble, setTipoInmueble] = useState<SelectOption[]>([]);
+    const [seccional, setSeccional] = useState<SelectOption[]>([]);
+    const [tipoOcupacion, setTipoOcupacion] = useState<SelectOption[]>([]);
+    const [tipoEstados, setTipoEstados] = useState<SelectOption[]>([]);
     useEffect(() => {
         Promise.all([
             axios.get('/patrimonio/inmuebles/tipos-inmuebles'),
@@ -66,7 +61,7 @@ function InformacionBasica() {
             });
     }, []);
 
-console.log(seccional)
+
     return (
         <>
             {/* Información Básica */}

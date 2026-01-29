@@ -6,6 +6,8 @@ export interface Inmueble {
   tipo_inmueble_nombre: string
   tipo_ocupacion_nombre: string
 
+ contactos: InmuebleContacto[] 
+ 
   nombres_inmueble: {
     nombre_completo: string
     nombre_fantasia: string
@@ -28,6 +30,19 @@ export interface Inmueble {
   }
 }
 
+export interface InmuebleContacto {
+  id: number
+  contacto: string | null
+  descripcion: string | null
+
+  tipo_contacto: {
+    id: number | null
+    descripcion: string | null
+  }
+}
+
+
+
 
 export interface Impuesto {
   id: string
@@ -45,3 +60,17 @@ export interface Documento {
   fecha: string
   tamaño: string
 }
+
+
+
+export interface Contact{
+  id?: string
+  idType: number
+  value: string
+  description?: string
+}
+
+export type SelectOption = {
+    value: string;
+    label: string;
+};

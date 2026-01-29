@@ -21,7 +21,7 @@ interface Props extends PageProps {
 
 export default function BuscarInmuebles({ inmuebles }: Props) {
     const memoizedColumns = useMemo(() => columns, [])
-
+console.log(inmuebles.data)
     return (
         <AuthenticatedLayout
             header={

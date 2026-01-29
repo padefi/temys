@@ -3,7 +3,7 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Ruler, RulerDimensionLine } from "lucide-react";
 import {  useFormContext } from "react-hook-form"
-import { InmuebleSchemaType } from "./InmuebleSchema"
+import { InmuebleSchemaType } from "../Schema/InmuebleSchema"; 
 function Caracteristicas() {
      const {
     register,

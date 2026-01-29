@@ -35,12 +35,12 @@ export function ImpuestoRow({ impuesto, isSelected, onToggle }: ImpuestoRowProps
       }}
       onClick={() => onToggle(impuesto.id)}
     >
-      <TableCell onClick={(e) => e.stopPropagation()}>
+ {/*      <TableCell onClick={(e) => e.stopPropagation()}>
         <Checkbox 
           checked={isSelected}
           onCheckedChange={() => onToggle(impuesto.id)}
         />
-      </TableCell>
+      </TableCell> */}
       <TableCell className={cn(
         "font-medium",
         impuesto.estado === "Pagado" && "text-muted-foreground"
