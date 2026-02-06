@@ -4,12 +4,6 @@ import { Asiento } from "@/types/Contabilidad/Asientos/Index";
 import { currencyNumber, dateFormat } from "@/utils/formatterFunctions";
 import BadgeEstadoAsiento from "@/Components/Contabilidad/ApuntesContables/BadgeEstadoAsiento";
 
-declare module "@tanstack/react-table" {
-    interface ColumnMeta<TData, TValue> {
-        label: string;
-    }
-}
-
 export const columns: ColumnDef<Asiento>[] = [
     {
         id: "fecha",

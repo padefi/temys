@@ -1,19 +1,19 @@
 import { Badge } from "@/Components/ui/badge";
-import { EstadoAsiento as Estado } from "@/types/Contabilidad/Asientos/Asiento";
+import { EstadoAsiento } from "@/types/Contabilidad/Asientos/EstadoAsientos";
 
-function getVariant(state: Estado): "default" | "success" | "warning" | "destructive" {
+function getVariant(state: EstadoAsiento): "default" | "success" | "warning" | "destructive" {
     switch (state) {
-        case Estado.PENDIENTE:
+        case EstadoAsiento.PENDIENTE:
             return 'warning';
-        case Estado.CONTROLADO:
+        case EstadoAsiento.CONTROLADO:
             return 'success';
-        case Estado.ANULADO:
+        case EstadoAsiento.ANULADO:
             return 'destructive';
         default:
             return "default";
     }
 }
 
-export default function BadgeEstadoAsiento({ state }: { state: Estado }) {
+export default function BadgeEstadoAsiento({ state }: { state: EstadoAsiento }) {
     return <Badge variant={getVariant(state)}>{state}</Badge>
 }

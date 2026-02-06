@@ -1,3 +1,4 @@
+import { EstadoAsiento } from "./EstadoAsientos";
 import { Partida } from "./Partida";
 
 export interface Asiento {
@@ -5,14 +6,8 @@ export interface Asiento {
     ejercicio: number;
     numero: number;
     estado: EstadoAsiento;
-    fecha: string | Date;
+    fecha: string;
     concepto: string;
     importe: number;
     partidas?: Partida[];
-}
-
-export enum EstadoAsiento {
-    PENDIENTE = "PENDIENTE",
-    CONTROLADO = "CONTROLADO",
-    ANULADO = "ANULADO",
 }

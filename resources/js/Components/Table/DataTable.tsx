@@ -1,0 +1,45 @@
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
+import { flexRender, RowData, Table as TanstackTable } from '@tanstack/react-table';
+
+type DataTableProps<TData extends RowData> = {
+    table: TanstackTable<TData>;
+};
+
+export function DataTable<TData extends RowData>({ table }: DataTableProps<TData>) {
+    return (
+        <Table>
+            <TableHeader className="sticky-header">
+                {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => {
+                            return (
+                                <TableHead key={header.id} >
+                                    {header.isPlaceholder
+                                        ? null
+                                        : flexRender(
+                                            header.column.columnDef.header,
+                                            header.getContext()
+                                        )}
+                                </TableHead>
+                            );
+                        })}
+                    </TableRow>
+                ))}
+            </TableHeader>
+            <TableBody>
+                {table.getRowModel().rows.map((row) => (
+                    <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && "selected"}
+                    >
+                        {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id}>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </TableCell>
+                        ))}
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    );
+}
