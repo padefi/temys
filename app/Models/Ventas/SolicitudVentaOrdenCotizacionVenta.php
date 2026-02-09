@@ -12,7 +12,7 @@ class SolicitudVentaOrdenCotizacionVenta extends Model
 
     protected $fillable = [
         'solicitud_venta_id',
-        'orden_cotizaciones_ventas_id',
+        'orden_cotizaciones_id',
     ];
     ////SOLICITUD DE VENTA RELACIONADA
     public function solicitudVenta()
@@ -23,6 +23,6 @@ class SolicitudVentaOrdenCotizacionVenta extends Model
     ////ORDEN DE COTIZACION RELACIONADA
     public function ordenCotizacionVenta()
     {
-        return $this->belongsTo(OrdenCotizacionVenta::class, 'orden_cotizaciones_ventas_id');
+        return $this->belongsTo(OrdenCotizacionVenta::class, 'orden_cotizaciones_id');
     }
 }

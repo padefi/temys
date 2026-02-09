@@ -93,7 +93,7 @@ class OrdenCotizacionesVentasController extends Controller
             'productos.*.impuestos_seleccionados' => 'sometimes|array|exists:impuestos,id',
         ]);
 
-        $cliente = Cliente::where('nombre_fantasia', $validated['cliente'])->firstOrFail();
+        $cliente = Cliente::where('nombre', $validated['cliente'])->firstOrFail();
 
         DB::beginTransaction();
 
@@ -153,7 +153,7 @@ class OrdenCotizacionesVentasController extends Controller
                 if (!empty($producto['id'])) {
                     // 🔄 Actualiza detalle existente
                     $detalle = ordenCotizacionVentaDetalle::where('id', $producto['id'])
-                        ->where('orden_cotizaciones_ventas_id', $orden->id)
+                        ->where('orden_cotizacioness_id', $orden->id)
                         ->first();
 
                     if ($detalle) {
@@ -207,8 +207,8 @@ class OrdenCotizacionesVentasController extends Controller
 
 
 
-                    return redirect()->route('cotizacionesOrdenesVenta.show', [
-                        'solicitud_id' => $validated['solicitudCompra'],
+                    return redirect()->route('cotizacionesVentas.show', [
+                        'solicitud_id' => $validated['solicitudVenta'],
                         'orden_id' => $orden->id
                     ])->with('success', 'Orden de cotización enviada correctamente.');
 
@@ -248,7 +248,7 @@ class OrdenCotizacionesVentasController extends Controller
             'productos.*.impuestos_seleccionados' => 'sometimes|array|exists:impuestos,id',
         ]);
 
-        $cliente = Cliente::where('nombre_fantasia', $validated['cliente'])->firstOrFail();
+        $cliente = Cliente::where('nombre', $validated['cliente'])->firstOrFail();
 
         DB::beginTransaction();
 
@@ -301,7 +301,7 @@ class OrdenCotizacionesVentasController extends Controller
             if (!empty($validated['solicitudVenta'])) {
                 SolicitudVentaOrdenCotizacionVenta::firstOrCreate([
                     'solicitud_venta_id'    => $validated['solicitudVenta'],
-                    'orden_cotizaciones_ventas_id'  => $orden->id,
+                    'orden_cotizaciones_id'  => $orden->id,
                 ]);
             }
 
@@ -312,7 +312,7 @@ class OrdenCotizacionesVentasController extends Controller
                 if (!empty($producto['id'])) {
                     // 🔄 Actualiza detalle existente
                     $detalle = ordenCotizacionVentaDetalle::where('id', $producto['id'])
-                        ->where('orden_cotizaciones_id', $orden->id)
+                        ->where('orden_cotizaciones_ventas_id', $orden->id)
                         ->first();
 
                     if ($detalle) {
@@ -366,7 +366,7 @@ class OrdenCotizacionesVentasController extends Controller
 
 
 
-                    return redirect()->route('cotizacionesOrdenesVenta.show', [
+                    return redirect()->route('cotizacionesVentas.show', [
                         'solicitud_id' => $validated['solicitudVenta'],
                         'orden_id' => $orden->id
                     ])->with('success');
@@ -386,8 +386,8 @@ class OrdenCotizacionesVentasController extends Controller
 
         if ($orden_id) {
             $solicitudVentaQuery->with([
-                'ordenesCotizacion' => function ($q) use ($orden_id) {
-                    $q->where('orden_cotizaciones.id', $orden_id);
+                'ordenCotizacionVenta' => function ($q) use ($orden_id) {
+                    $q->where('orden_cotizaciones_ventas.id', $orden_id);
                 },
                 'ordenCotizacionVenta.cliente',
                 'ordenCotizacionVenta.tipoMoneda',
@@ -398,7 +398,7 @@ class OrdenCotizacionesVentasController extends Controller
                 'ordenCotizacionVenta.detalles.producto',
                 'ordenCotizacionVenta.detalles.producto.modelo',
                 'ordenCotizacionVenta.detalles.producto.subCategoria',
-                'ordenCotizacionVenta.ordenesCompra',
+                'ordenCotizacionVenta.ordenesVenta',
                 'ordenCotizacionVenta.archivos',
             ]);
         }
@@ -488,7 +488,7 @@ class OrdenCotizacionesVentasController extends Controller
                 ]);
 
                 // Relacionar la orden de venta con la orden de cotización
-                $ordenVenta->ordenesCotizacion()->attach($oc->id);
+                $ordenVenta->ordenesCotizacionVentas()->attach($oc->id);
 
                 // Copiar los detalles
                 foreach ($oc->detalles as $detalle) {
@@ -496,7 +496,7 @@ class OrdenCotizacionesVentasController extends Controller
                     // Crear el detalle de Orden de Venta
                     $detalleOV = OrdenVentaDetalle::create([
                         'orden_ventas_id' => $ordenVenta->id,
-                        'orden_cotizaciones_id' => $oc->id,
+                        'orden_cotizaciones_ventas_id' => $oc->id,
                         'entrega_esperada' => $detalle->entrega_esperada,
                         'producto_id' => $detalle->producto_id,
                         'descripcion' => $detalle->descripcion ?? '',
@@ -563,7 +563,7 @@ class OrdenCotizacionesVentasController extends Controller
             'productos.*.impuestos_seleccionados' => 'sometimes|array|exists:impuestos,id',
         ]);
 
-        $cliente = Cliente::where('nombre_fantasia', $validated['cliente'])->firstOrFail();
+        $cliente = Cliente::where('nombre', $validated['cliente'])->firstOrFail();
 
         DB::beginTransaction();
 
@@ -598,7 +598,7 @@ class OrdenCotizacionesVentasController extends Controller
             if (!empty($validated['solicitudVenta'])) {
                 SolicitudVentaOrdenCotizacionVenta::firstOrCreate([
                     'solicitud_venta_id'    => $validated['solicitudVenta'],
-                    'orden_cotizaciones_venta_id'  => $orden->id,
+                    'orden_cotizaciones_id'  => $orden->id,
                 ]);
             }
 
@@ -612,7 +612,7 @@ class OrdenCotizacionesVentasController extends Controller
 
                 if (!empty($producto['id'])) {
                     $detalle = ordenCotizacionVentaDetalle::where('id', $producto['id'])
-                        ->where('orden_cotizaciones_venta_id', $orden->id)
+                        ->where('orden_cotizaciones_ventas_id', $orden->id)
                         ->first();
                 }
 
@@ -631,7 +631,7 @@ class OrdenCotizacionesVentasController extends Controller
                     ]);
                 } else {
                     $detalle = ordenCotizacionVentaDetalle::create([
-                        'orden_cotizaciones_venta_id' => $orden->id,
+                        'orden_cotizaciones_ventas_id' => $orden->id,
                         'producto_id'           => $producto['producto_id'],
                         'entrega_esperada'      => $producto['entrega_esperada'],
                         'descripcion'           => $producto['descripcion'] ?? '',
@@ -666,7 +666,7 @@ class OrdenCotizacionesVentasController extends Controller
 
 
 
-            return redirect()->route('cotizacionesOrdenesVentas.show', [
+            return redirect()->route('cotizacionesVentas.show', [
                 'solicitud_id' => $validated['solicitudVenta'],
                 'orden_id' => $orden->id
             ])->with('success',' Cotización creada correctamente');

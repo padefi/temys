@@ -36,7 +36,7 @@ type OrdenVenta = {
         id: number; // ⚠️ Asegurate que exista un ID único del cliente
     };
     detalles?: OrdenesVentaDetalle[]
-    ordenes_cotizacion?: CotizacionOrdenVenta[]
+    ordenes_cotizacion_ventas?: CotizacionOrdenVenta[]
     fecha_creacion: Date;
     estado: string;
 }
@@ -186,7 +186,7 @@ export default function VentasOrdenesListado({ onSelectionChange }: CotizacionOr
                             </ContextMenuTrigger>
 
                                 <ContextMenuContent>
-                                    {orden.estado === 'Pendiente' ? (
+                                  { /*  {orden.estado === 'Pendiente' ? (
                                     <ContextMenuItem onClick={() => handleAceptarSolicitud(orden.id)}>
                                         Aceptar Solicitud
                                     </ContextMenuItem>
@@ -214,7 +214,7 @@ export default function VentasOrdenesListado({ onSelectionChange }: CotizacionOr
                                         Agregar Orden
                                     </ContextMenuItem>
                                     )}
-                                    <ContextMenuSeparator />
+                                    <ContextMenuSeparator />*/}
                                     {(orden.detalles?.length ?? 0) > 0 ? (
                                     <ContextMenuItem >
                                         {expanded === orden.id ? 'Cerrar' : 'Ver Órdenes'}
@@ -228,7 +228,7 @@ export default function VentasOrdenesListado({ onSelectionChange }: CotizacionOr
                         </ContextMenu>
                 </TableCell>
                 <TableCell>{orden.cliente?.nombre }</TableCell>
-                <TableCell>{orden.ordenes_cotizacion?.[0]?.solicitud_venta?.[0] ? `${orden.ordenes_cotizacion?.[0]?.solicitud_venta?.[0]?.origen?.descripcion} - ${orden.ordenes_cotizacion?.[0]?.solicitud_venta?.[0]?.descripcion} - N° ${orden.ordenes_cotizacion?.[0]?.solicitud_venta?.[0]?.id}` : ''}</TableCell>
+                <TableCell>{orden.ordenes_cotizacion_ventas?.[0]?.solicitud_venta?.[0] ? `${orden.ordenes_cotizacion_ventas?.[0]?.solicitud_venta?.[0]?.origen?.descripcion} - ${orden.ordenes_cotizacion_ventas?.[0]?.solicitud_venta?.[0]?.descripcion} - N° ${orden.ordenes_cotizacion_ventas?.[0]?.solicitud_venta?.[0]?.id}` : ''}</TableCell>
                 <TableCell>{orden.almacen_destino?.nombre}</TableCell>
                 <TableCell className={
                         orden.estado === 'Confirmada'

@@ -51,7 +51,7 @@ type ProductoEditable = {
 type Props = {
   setProductosValidos: (valid: boolean) => void
   setProductos: (productos: ProductoEditable[]) => void
-  estadoOrden: string;  // 👈 estado de la orden de compra
+  estadoOrden: string;  // 👈 estado de la orden de venta
   detalles?: any[]
 }
 
@@ -263,7 +263,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
         </div>
 
         <Table>
-          <TableCaption>Productos seleccionados para la orden de compra.</TableCaption>
+          <TableCaption>Productos seleccionados para la orden de venta.</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead>Producto</TableHead>

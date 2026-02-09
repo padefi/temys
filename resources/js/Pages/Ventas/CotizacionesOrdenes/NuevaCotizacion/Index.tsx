@@ -59,7 +59,7 @@ export default function Index() {
     }, [flash]);
 
     const solicitudVenta = solicitudVentaElegida
-    const ordenCotizacionVenta = solicitudVenta?.ordenes_cotizacion_venta
+    const ordenCotizacionVenta = solicitudVenta?.orden_cotizacion_venta
     const [busqueda, setBusqueda] = useState( ordenCotizacionVenta?.[0]?.cliente?.nombre || '')
     const [mostrarLista, setMostrarLista] = useState(false)
     const [monedaId, setMonedaId] = useState<number | null>(
@@ -110,9 +110,9 @@ export default function Index() {
 
     useEffect(() => {
 
-    if (solicitudVenta?.ordenes_cotizacion_venta?.[0]?.archivos?.length) {
+    if (solicitudVenta?.orden_cotizacion_venta?.[0]?.archivos?.length) {
         setArchivos(
-        solicitudVenta.ordenes_cotizacion_venta?.[0]?.archivos.map((a: any) => ({
+        solicitudVenta.orden_cotizacion_venta?.[0]?.archivos.map((a: any) => ({
             id: a.id,
             nombre: a.nombre,
             url: `/ventas/cotizaciones-ordenes/archivo/${a.id}`,
@@ -121,7 +121,7 @@ export default function Index() {
         }))
         )
     }
-    }, [solicitudVenta?.ordenes_cotizacion_venta])
+    }, [solicitudVenta?.orden_cotizacion_venta])
 
     //////////Filtro de Clientes
     const clientesFiltrados = useMemo(() =>
@@ -188,8 +188,8 @@ export default function Index() {
   const enviarCotizacion = () => {
     router.post('/ventas/cotizaciones-ordenes/', {
       solicitudVenta: solicitudVenta?.id,
-      ordenCotizacion: ordenCotizacionVenta?.[0]?.id,
-      proveedor: busqueda,
+      ordenCotizacionVenta: ordenCotizacionVenta?.[0]?.id,
+      cliente: busqueda,
       moneda: monedaId,
       cotizar_antes_de: cotizar_antes_de,
       entrega_esperada: entrega_esperada,
@@ -219,8 +219,8 @@ export default function Index() {
     const confirmarOrdenCotizacion= () => {
     router.post('/ventas/cotizaciones-ordenes/confirmar', {
       solicitudVenta: solicitudVenta?.id,
-      ordenCotizacion: ordenCotizacionVenta?.[0]?.id,
-      proveedor: busqueda,
+      ordenCotizacionVenta: ordenCotizacionVenta?.[0]?.id,
+      cliente: busqueda,
       moneda: monedaId,
       cotizar_antes_de: cotizar_antes_de,
       entrega_esperada: entrega_esperada,
@@ -249,8 +249,8 @@ export default function Index() {
     const guardar = () => {
       router.post('/ventas/cotizaciones-ordenes/guardar', {
         solicitudVenta: solicitudVenta?.id,
-        ordenCotizacion: ordenCotizacionVenta?.[0]?.id,
-        proveedor: busqueda,
+        ordenCotizacionVenta: ordenCotizacionVenta?.[0]?.id,
+        cliente: busqueda,
         moneda: monedaId,
         cotizar_antes_de: cotizar_antes_de,
         entrega_esperada: entrega_esperada,
@@ -277,8 +277,8 @@ export default function Index() {
     const handleGenerarOrdenVenta = () => {
     router.post('/ventas/cotizaciones-ordenes/guardar', {
         solicitudVenta: solicitudVenta?.id,
-        ordenCotizacion: ordenCotizacionVenta?.[0]?.id,
-        proveedor: busqueda,
+        ordenCotizacionVenta: ordenCotizacionVenta?.[0]?.id,
+        cliente: busqueda,
         moneda: monedaId,
         cotizar_antes_de: cotizar_antes_de,
         entrega_esperada: entrega_esperada,
@@ -298,7 +298,7 @@ export default function Index() {
             select.push(ordenCotizacionVenta?.[0]?.id);
 
 
-            router.post('/compras/cotizaciones-ordenes/generar-orden-compra', { ordenes: select, usuario_id: auth.user.id }, {
+            router.post('/ventas/cotizaciones-ordenes/generar-orden-venta', { ordenes: select, usuario_id: auth.user.id }, {
             onSuccess: () => {
 
                 //toast.success(`Orden de Venta Generada.`);
@@ -321,7 +321,7 @@ export default function Index() {
         const formData = new FormData()
         formData.append("archivo", archivo)
 
-        router.post(`/compras/cotizaciones-ordenes/${ordenId}/archivo`, formData, {
+        router.post(`/ventas/cotizaciones-ordenes/${ordenId}/archivo`, formData, {
         forceFormData: true,
         onSuccess: () => console.log('subido'),
         onError: () => toast.error(`Error al subir ${archivo.name}`),
@@ -330,7 +330,7 @@ export default function Index() {
 
     ////////////Manejo de archivos adjuntos
     const handleArchivosChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length || !solicitudVenta?.ordenes_cotizacion_venta?.[0].id) return;
+    if (!e.target.files?.length || !solicitudVenta?.orden_cotizacion_venta?.[0].id) return;
 
     const nuevosArchivos: Archivo[] = Array.from(e.target.files).map(f => ({
         nombre: f.name,
@@ -341,7 +341,7 @@ export default function Index() {
 
     setArchivos(prev => [...prev, ...nuevosArchivos]);
 
-    nuevosArchivos.forEach(a => handleUploadFile(solicitudVenta?.ordenes_cotizacion_venta?.[0].id!, a.file!));
+    nuevosArchivos.forEach(a => handleUploadFile(solicitudVenta?.orden_cotizacion_venta?.[0].id!, a.file!));
     }
 
     const abrirModal = (archivo: Archivo) => {
@@ -367,7 +367,7 @@ export default function Index() {
         <Button
             variant="outline"
             size="lg"
-            onClick={() => router.visit('/compras/cotizaciones-ordenes')}
+            onClick={() => router.visit('/ventas/cotizaciones-ordenes')}
         >
             Volver
         </Button>
@@ -525,7 +525,7 @@ export default function Index() {
                 setProductosValidos={setProductosValidos}
                 setProductos={setProductos}
                 detalles={ordenCotizacionVenta?.[0]?.detalles}
-                ordenCotizacion={ordenCotizacionVenta?.[0]}
+                ordenCotizacionVenta={ordenCotizacionVenta?.[0]}
                 estadoOrden={ordenCotizacionVenta?.[0]?.estado}
             />
             <div className="flex justify-end mt-2">
@@ -581,7 +581,7 @@ export default function Index() {
                         setArchivos(prev => prev.filter(f => f !== file));
 
                         if (file.id) {
-                        router.post(`/compras/cotizaciones-ordenes/archivo/${file.id}/eliminar`, {}, {
+                        router.post(`/ventas/cotizaciones-ordenes/archivo/${file.id}/eliminar`, {}, {
                             onSuccess: () => console.log('eliminado'),
                             onError: () => toast.error('Error al eliminar el archivo')
                         });

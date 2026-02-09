@@ -70,8 +70,8 @@ Route::middleware(['menu:ordenesVentas'])->group(function () {
             ->name('cotizacionesVentas.aceptarSolicitud');
 
         ///Generar Orden de venta
-        Route::post('/generar-orden-venta', [OrdenCotizacionesVentasController::class, 'generarOrdenCompra'])
-            ->name('cotizacionesVentas.generarOrdenCompra');
+        Route::post('/generar-orden-venta', [OrdenCotizacionesVentasController::class, 'generarOrdenVenta'])
+            ->name('cotizacionesVentas.generarOrdenVenta');
 
         // Guardar
         Route::post('/guardar', [OrdenCotizacionesVentasController::class, 'guardar'])

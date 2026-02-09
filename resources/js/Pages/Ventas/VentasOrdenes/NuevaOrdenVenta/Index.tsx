@@ -129,7 +129,7 @@ export default function Index() {
     useEffect(() => {
     if (!ordenVenta) return;
 
-    const archivosCotizacion: Archivo[] = (ordenVenta.ordenes_cotizacion ?? []).flatMap(oc =>
+    const archivosCotizacion: Archivo[] = (ordenVenta.ordenes_cotizacion_venta ?? []).flatMap(oc =>
     (oc.archivos ?? []).map(a => ({
         id: a.id,
         nombre: a.nombre, // <--- corregido
@@ -640,11 +640,11 @@ return (
 
           </div>
             {/* 📄 Facturas asociadas con selección */}
-            {ordenVenta?.comprobantes_clientes && ordenVenta?.comprobantes_clientes.length > 0 && (
+            {ordenVenta?.comprobantes && ordenVenta?.comprobantes.length > 0 && (
             <div className="mt-6">
                 <h3 className="text-lg font-semibold mb-2">Comprobantes asociados</h3>
                 <ul className="border rounded p-3 bg-gray-50">
-                {ordenVenta.comprobantes_clientes.map((f) => (
+                {ordenVenta.comprobantes.map((f) => (
                     <li
                     key={f.id}
                     className="py-2 border-b last:border-0 flex items-center justify-between"

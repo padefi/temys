@@ -21,9 +21,7 @@ Route::middleware('module:contabilidad')->group(function () {
 
     Route::middleware(['menu:proveedores'])->group(function () {
 
-
-
-
+        ////////////COMPROBANTES PROVEEDORES
         Route::middleware(['submenu:facturasProveedores'])->prefix('contabilidad')->group(function () {
                 /////vista principal
                 Route::get('/facturasProveedores', function () {
@@ -39,7 +37,7 @@ Route::middleware('module:contabilidad')->group(function () {
                 Route::get('{proveedorId}/cuenta-corriente', [ProveedoresController::class, 'cuentaCorriente']);
 
         });
-
+        ///////////////PAGOS PROVEEDORES
         Route::middleware(['submenu:pagosProveedores'])->prefix('contabilidad')->group(function () {
                     // Vista principal
                     Route::get('/pagosProveedores', [ProveedoresController::class, 'pagosProveedores'])->name('pagosProveedores');
@@ -48,11 +46,21 @@ Route::middleware('module:contabilidad')->group(function () {
                     // Procesar ordenes
                     Route::post('ordenesTesoreria/procesarOrdenes', [OrdenPagoController::class, 'procesarOrdenes'])->name('procesarOrdenes');
         });
-
+        ///////////////PROVEEDORES
         Route::middleware(['submenu:proveedores'])->group(function () {
                 // Vista principal
                 Route::get('Busquedaproveedores', [ProveedoresController::class, 'index'])->name('proveedoresCompras');
-            });
+        });
+
+        ////////REEMBOLSO
+        Route::middleware(['submenu:reembolsos'])->prefix('contabilidad')->group(function () {
+                // Vista principal
+                Route::get('reembolsos', [ProveedoresController::class, 'reembolsos'])->name('reembolsos');
+                Route::get('/proveedores/{proveedorId}/facturas', [ProveedoresController::class, 'facturasTotales']);
+                Route::get('/motivos-reembolso', [ContabilidadController::class, 'motivosReembolso']);
+                Route::post('/reembolsos', [ContabilidadController::class, 'emitirReembolso']);
+        });
+
     });
 
     Route::middleware(['menu:Contabilidad'])->group(function () {
@@ -117,8 +125,7 @@ Route::middleware('module:contabilidad')->group(function () {
     Route::middleware(['menu:clientes'])->group(function () {
 
 
-
-
+        ///////COMPROBANTES CLIENTES
         Route::middleware(['submenu:facturasClientes'])->prefix('contabilidad')->group(function () {
                 /////vista principal
                 Route::get('/facturasClientes', function () {
@@ -134,7 +141,7 @@ Route::middleware('module:contabilidad')->group(function () {
                 Route::get('/clientes/{clienteId}/cuenta-corriente', [ClientesController::class, 'cuentaCorriente']);
 
         });
-
+        //////////CLIENTES/COBROS
         Route::middleware(['submenu:cobrosClientes'])->prefix('contabilidad')->group(function () {
                     // Vista principal
                     Route::get('/cobrosClientes', [ClientesController::class, 'cobrosClientes'])->name('cobrosClientes');
@@ -143,11 +150,31 @@ Route::middleware('module:contabilidad')->group(function () {
                     // Procesar ordenes
                     Route::post('ordenesTesoreria/procesarOrdenes', [OrdenCobroController::class, 'procesarOrdenes'])->name('procesarOrdenes');
         });
-
+        /////////CLIENTES
         Route::middleware(['submenu:clientes'])->group(function () {
                 // Vista principal
                 Route::get('Busquedaclientes', [ClientesController::class, 'index'])->name('clientesCompras');
-            });
+        });
+        ////////NOTAS DE CREDITO
+        Route::middleware(['submenu:notasDeCredito'])->prefix('contabilidad')->group(function () {
+                // Vista principal
+                Route::get('notasDeCredito', [ClientesController::class, 'notasDeCredito'])->name('notasDeCredito');
+                Route::get('/clientes/{clienteId}/facturas', [ClientesController::class, 'facturasTotales']);
+                Route::get('/motivos-nota-credito', [ContabilidadController::class, 'motivosNotaCredito']);
+                Route::post('/notas-credito', [ContabilidadController::class, 'emitirNotaCredito']);
+        });////////NOTAS DE DÉBITO
+        Route::middleware(['submenu:notasDeDebito'])->prefix('contabilidad')->group(function () {
+                // Vista principal
+                Route::get('notasDeDebito', [ClientesController::class, 'notasDeDebito'])->name('notasDeDebito');
+                Route::get('/clientes/{clienteId}/facturas', [ClientesController::class, 'facturasTotales']);
+                Route::get('/motivos-nota-debito', [ContabilidadController::class, 'motivosNotaDebito']);
+                Route::post('/notas-debito', [ContabilidadController::class, 'emitirNotaDebito']);
+        });
+
+
+
+
+
     });
 });
 

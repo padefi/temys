@@ -5,6 +5,7 @@ namespace App\Models\Contabilidad;
 use App\Models\Contabilidad\PlanCuentas\Cuenta;
 use App\Models\ControlAcceso\User;
 use App\Models\General\Impuesto;
+use App\Models\General\UnidadMedida;
 use App\Models\Inventario\Productos\Producto;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -40,6 +41,10 @@ class ComprobanteDetalle extends Model
             'detalle_id',
             'impuesto_id'
         );
+    }
+    ////IMPUESTOS RELACIONADOS
+    public function unidadMedida() {
+        return $this->belongsTo(UnidadMedida::class, 'unidad_medida_id');
     }
     ////PRODUCTO RELACIONADO
     public function producto()
