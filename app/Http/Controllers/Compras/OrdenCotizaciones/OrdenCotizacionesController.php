@@ -56,6 +56,7 @@ class OrdenCotizacionesController extends Controller
             'tipoMonedas' => TipoMoneda::all(),
             'productos' => Producto::with('modelo', 'subCategoria')->get(),
             'impuestos' => Impuesto::all(),
+            'almacenDestino' => Almacen::all(),
             //'module' => '3',
 
         ]);

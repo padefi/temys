@@ -186,7 +186,7 @@ export default function ComprasOrdenesListado({ onSelectionChange }: CotizacionO
                             </ContextMenuTrigger>
 
                                 <ContextMenuContent>
-                                    {orden.estado === 'Pendiente' ? (
+                                    {/*{orden.estado === 'Pendiente' ? (
                                     <ContextMenuItem onClick={() => handleAceptarSolicitud(orden.id)}>
                                         Aceptar Solicitud
                                     </ContextMenuItem>
@@ -214,7 +214,7 @@ export default function ComprasOrdenesListado({ onSelectionChange }: CotizacionO
                                         Agregar Orden
                                     </ContextMenuItem>
                                     )}
-                                    <ContextMenuSeparator />
+                                    <ContextMenuSeparator />*/}
                                     {(orden.detalles?.length ?? 0) > 0 ? (
                                     <ContextMenuItem >
                                         {expanded === orden.id ? 'Cerrar' : 'Ver Órdenes'}

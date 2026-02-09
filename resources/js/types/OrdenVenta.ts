@@ -1,9 +1,9 @@
 import { Almacen } from "./Almacen";
 import { Archivo } from "./Archivos";
-import { CotizacionOrden } from "./CotizacionOrden";
 import { OrdenesVentaDetalle } from "./OrdenVentaDetalle";
 import { TipoMoneda } from "./TipoMoneda";
 import { Comprobante } from "./Comprobante";
+import { CotizacionOrdenVenta } from "./CotizacionOrdenVenta";
 
 export interface OrdenesVenta {
     id: number
@@ -20,7 +20,7 @@ export interface OrdenesVenta {
     observaciones: string;
     almacen_destino: number
     almacen: Almacen;
-    ordenes_cotizacion: CotizacionOrden[]
+    ordenes_cotizacion_venta?: CotizacionOrdenVenta[]
     detalles?: OrdenesVentaDetalle[]  // usa el tipo correcto si tienes uno
     archivos?: Archivo[]
     comprobantes?: Comprobante[]

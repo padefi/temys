@@ -30,7 +30,7 @@ type OrdenVenta = {
 }
 
 
-type OrdenCotizacion = {
+type OrdenCotizacionVenta = {
   id: number;
   estado: string;
   ordenes_venta?: OrdenVenta[]
@@ -57,7 +57,7 @@ type SolicitudVenta = {
   estado: string;
   created_at: string;
   updated_at: string;
-  ordenes_cotizacion?: OrdenCotizacion[];
+  orden_cotizacion_venta?: OrdenCotizacionVenta[];
 };
 
 type PageProps = {
@@ -210,7 +210,7 @@ console.log(solicitudesVentasListado)
               key={solicitud.id}
               className="cursor-pointer hover:bg-gray-50"
               onClick={() => {
-                if (solicitud.ordenes_cotizacion?.length) {
+                if (solicitud.orden_cotizacion_venta?.length) {
                   toggleExpand(solicitud.id);
                 }
               }}
@@ -258,7 +258,7 @@ console.log(solicitudesVentasListado)
                                     </ContextMenuItem>
                                     )}
                                     <ContextMenuSeparator />
-                                    {(solicitud.ordenes_cotizacion?.length ?? 0) > 0 ? (
+                                    {(solicitud.orden_cotizacion_venta?.length ?? 0) > 0 ? (
                                     <ContextMenuItem >
                                         {expanded === solicitud.id ? 'Cerrar' : 'Ver Órdenes'}
                                     </ContextMenuItem>
@@ -303,8 +303,8 @@ console.log(solicitudesVentasListado)
                     </TableHeader>
 
                     <TableBody>
-                      {solicitud.ordenes_cotizacion?.length ? (
-                        solicitud.ordenes_cotizacion.map((orden) => (
+                      {solicitud.orden_cotizacion_venta?.length ? (
+                        solicitud.orden_cotizacion_venta.map((orden) => (
 
                           <TableRow key={orden.id}>
                             <TableCell>

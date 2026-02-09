@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('cliente_id');
             $table->unsignedBigInteger('moneda_id');
+            $table->decimal('cotizacion_moneda', 15, 2)->nullable();
             $table->date('entrega_esperada');
             $table->string('observaciones')->nullable();
             $table->unsignedBigInteger('almacen_destino_id')->nullable();

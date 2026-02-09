@@ -17,6 +17,7 @@ import {
 } from '@/Components/ui/dropdown-menu'
 
 import { ProductosDisponibles } from '@/types/Producto'
+import { CotizacionOrdenVenta } from '@/types/CotizacionOrdenVenta'
 
 type PageProps = {
     auth: {
@@ -55,10 +56,10 @@ type Props = {
   setProductos: (productos: ProductoEditable[]) => void
   estadoOrden: string;  // 👈 estado de la orden de compra
   detalles?: any[]  // o tipa mejor si tienes tipo
-  ordenCotizacion?: any
+  ordenCotizacionVenta?: CotizacionOrdenVenta[]
 }
 
-export default function CargaProductos({ setProductosValidos, setProductos, detalles, ordenCotizacion,estadoOrden }: Props) {
+export default function CargaProductos({ setProductosValidos, setProductos, detalles, ordenCotizacionVenta,estadoOrden }: Props) {
 
     const [productos, setLocalProductos] = useState<ProductoEditable[]>([])
     const { impuestos, auth, productos: productosDisponibles = [], } = usePage<PageProps>().props
@@ -237,7 +238,7 @@ export default function CargaProductos({ setProductosValidos, setProductos, deta
         <div className="flex justify-between items-center mb-4">
           <Button
             onClick={agregarLinea}
-            disabled={(ordenCotizacion?.estado === 'Confirmada' || ordenCotizacion?.estado === 'Cancelada')}
+            disabled={(ordenCotizacionVenta?.[0]?.estado === 'Confirmada' || ordenCotizacionVenta?.[0]?.estado === 'Cancelada')}
           >Agregar línea</Button>
 
           <DropdownMenu>

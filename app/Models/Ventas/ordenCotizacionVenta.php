@@ -71,13 +71,13 @@ class ordenCotizacionVenta extends Model
     {
         return $this->belongsTo(Almacen::class, 'almacen_destino_id');
     }
-    /////SOLICITUD DE COMPRA RELACIONADA
-    public function solicitudCompra()
+    /////SOLICITUD DE VENTA RELACIONADA
+    public function solicitudVenta()
     {
         return $this->belongsToMany(
             SolicitudVenta::class,
             'solicitud_venta_orden_cotizaciones',
-            'orden_cotizaciones_ventas_id',
+            'orden_cotizaciones_id',
             'solicitud_venta_id'
         );
     }
@@ -94,6 +94,6 @@ class ordenCotizacionVenta extends Model
     ////ARCHIVOS ADJUNTOS A LA ORDEN DE COTIZACIÓN
     public function archivos()
     {
-        return $this->hasMany(ordenCotizacionVentaArchivo::class, 'orden_cotizaciones_ventas_id');
+        return $this->hasMany(ordenCotizacionVentaArchivo::class, 'orden_cotizacion_ventas_id');
     }
 }

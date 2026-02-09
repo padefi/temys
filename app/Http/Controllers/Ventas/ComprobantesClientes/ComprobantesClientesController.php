@@ -56,10 +56,11 @@ class ComprobantesClientesController extends Controller
                 'tipo_comprobante_id' => 'required|exists:tipo_comprobantes,id',
                 'detalles' => 'required|array|min:1',
                 'totalOrden' => 'required|numeric|min:0',
+                'moneda_id' => 'required|exists:tipo_monedas,id',
             ]);
 
             // ---------------- DUPLICADOS ----------------
-            $existe = Comprobante::where('tipo_id', $request->cliente_id)
+            $existe = Comprobante::where('tipo_id', $request->tipo_id)
                 ->where('punto_venta', $request->punto_venta)
                 ->where('numero_factura', $request->numero_factura)
                 ->where('tipo_comprobante_id', $request->tipo_comprobante_id)
@@ -73,12 +74,13 @@ class ComprobantesClientesController extends Controller
 
             // ---------------- CREAR COMPROBANTE ----------------
             $comprobante = Comprobante::create([
-                'tipo_id' => $request->cliente_id,
+                'tipo_id' => $request->tipo_id,
                 'fecha_factura' => $request->fecha_factura,
                 'fecha_vencimiento' => $request->fecha_vencimiento,
                 'condicion_venta_id' => $request->condicion_venta_id,
                 'punto_venta' => $request->punto_venta,
                 'numero_factura' => $request->numero_factura,
+                'moneda_id' => $request->moneda_id,
                 'tipo_comprobante_id' => $request->tipo_comprobante_id,
                 'estado' => $request->estado,
                 'descripcion' => $request->descripcion,
@@ -135,7 +137,7 @@ class ComprobantesClientesController extends Controller
                         $importeImpuesto = ($detalle['importe'] * $imp->porcentaje) / 100;
 
                         // Guardar pivote
-                        DB::table('comprobantes_proveedores_detalles_impuestos')->insert([
+                        DB::table('comprobantes_detalles_impuestos')->insert([
                             'detalle_id' => $detalleComprobante->id,
                             'impuesto_id' => $imp->id
                         ]);
@@ -155,9 +157,9 @@ class ComprobantesClientesController extends Controller
             }
 
             // --------------------------------------------------------
-            // 2️⃣ ASOCIAR ORDENES DE COMPRA (si corresponde)
+            // 2️⃣ ASOCIAR ORDENES DE VENTA (si corresponde)
             // --------------------------------------------------------
-            $ordenes = array_filter(array_unique($request->orden_compra_id ?? []));
+            $ordenes = array_filter(array_unique($request->orden_venta_id ?? []));
             if (!empty($ordenes)) {
                 $comprobante->ordenesVenta()->syncWithoutDetaching($ordenes);
             }
@@ -202,7 +204,7 @@ class ComprobantesClientesController extends Controller
 
 
             // ---------------- PARTIDA DE CLIENTE (HABER) ----------------
-            $cliente = Cliente::find($request->cliente_id);
+            $cliente = Cliente::find($request->tipo_id);
 
             Partida::create([
                 'co_asiento_id' => $asiento->id,

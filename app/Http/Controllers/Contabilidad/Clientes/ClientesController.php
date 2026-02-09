@@ -6,6 +6,7 @@ use App\Models\Contabilidad\Comprobante;
 use App\Models\Contabilidad\OrdenTesoreria;
 use App\Models\General\Banco;
 use App\Models\General\CuentaBancaria;
+use App\Models\General\Impuesto;
 use App\Models\General\MetodoTesoreria;
 use App\Models\General\Tarjeta;
 use App\Models\General\TipoComprobante;
@@ -293,6 +294,74 @@ class ClientesController extends Controller
             ->orderByDesc('predeterminado')
             ->get()
         );
+    }
+
+    //// LISTAR NOTAS DE CREDITO
+    public function notasDeCredito()
+    {
+
+        $clientes = Cliente::with([
+            'padron',
+            'comprobantes.detalles',
+            'comprobantes.tipoComprobante',
+            'comprobantes.ordenesVenta',
+            'comprobantes.comprobantesAplicados',
+            'comprobantes.detalles.impuestos',
+            'comprobantes.archivos'
+        ])->get();
+
+        return Inertia::render('Contabilidad/Clientes/NotasCredito/Index', [
+            'clientes' => $clientes,
+            'impuestos' => Impuesto::all(),
+
+        ]);
+    }
+
+    //// LISTAR NOTAS DE DÉBITO
+    public function notasDeDebito()
+    {
+
+        $clientes = Cliente::with([
+            'padron',
+            'comprobantes.detalles',
+            'comprobantes.tipoComprobante',
+            'comprobantes.ordenesVenta',
+            'comprobantes.comprobantesAplicados',
+            'comprobantes.detalles.impuestos',
+            'comprobantes.archivos'
+        ])->get();
+
+        return Inertia::render('Contabilidad/Clientes/NotasDebito/Index', [
+            'clientes' => $clientes,
+            'impuestos' => Impuesto::all(),
+
+        ]);
+    }
+
+    ////LISTAR TODAS LAS FACTURAS DE UN CLIENTE
+    public function facturasTotales($clienteId)
+    {
+        $comprobantes = Comprobante::with([
+            'tipoComprobante',
+            'detalles',
+            'detalles.unidadMedida',
+            'tipoMoneda',
+            'comprobantesAplicados' => function ($q) {
+                $q->withPivot(['importe_aplicado']);
+                },
+            'ordenesTesoreria' => function ($q) {
+                $q->withPivot(['importe_aplicado']);
+                //->where('estado',  ['Pendiente', 'Confirmado']);
+                //si quiero solo las pendientes
+                //->where('estado', 'pendiente');
+                }
+            ])
+            ->where('tipo_id', $clienteId)
+            ->where('estado', '!=', 'Anulado')
+            ->get()
+            ->values();
+
+        return response()->json($comprobantes);
     }
 
 

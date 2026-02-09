@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 class ordenVentaDetalleImpuesto extends Model
 {
     use HasFactory;
-    protected $table = 'orden_ventas_detalles_impuestos';
+    protected $table = 'orden_venta_detalle_impuestos';
 
     public $timestamps = false;
 

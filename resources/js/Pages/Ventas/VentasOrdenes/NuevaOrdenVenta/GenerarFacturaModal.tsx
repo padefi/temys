@@ -14,7 +14,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/Components/ui/popover
 import { Command, CommandInput, CommandList, CommandEmpty, CommandItem } from "@/Components/ui/command"
 import { router, usePage } from "@inertiajs/react"
 import { ProductosDisponibles } from "@/types/Producto"
-import { OrdenesCompra } from "@/types/OrdenCompra"
+import { OrdenesVenta } from "@/types/OrdenVenta"
 import axios from "axios"
 import { toast } from "sonner"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle, AlertDialogTrigger } from "@radix-ui/react-alert-dialog"
@@ -54,11 +54,11 @@ type Props = {
     totalOrden: number
     monedaOrden: number | null
     tipoMonedas: TipoMoneda[]
-    proveedorId: number
+    clienteId: number
     onSubmit: (data: any) => void
     co_cuentas: Cuenta[]
     productos: ProductoEditable[]
-    ordenCompra?: OrdenesCompra
+    ordenVenta?: OrdenesVenta
     estadoOrden: number | string
     setProductosValidosFactura: (valid: boolean) => void
     setProductos: (productos: ProductoEditable[]) => void
@@ -70,12 +70,12 @@ export default function GenerarFacturaModal({
     onSubmit,
     totalOrden,
     monedaOrden,
-    proveedorId,
+    clienteId,
     tipoMonedas,
     estadoOrden,
     detalles,
     productos,
-    ordenCompra,
+    ordenVenta,
     setProductos,
     setProductosValidosFactura,
 }: Props) {
@@ -104,7 +104,7 @@ export default function GenerarFacturaModal({
             if (anticipo) {
                 // ASUMO UN ENDPOINT DE BACKEND para obtener el próximo número secuencial.
                 // Reemplaza '/api/proximo-numero-anticipo' con tu endpoint real.
-                axios.get(`/compras/ordenes-compras/comprobantes-proveedores/proximo-numero-anticipo`)
+                axios.get(`/ventas/ordenes-ventas/comprobantes-clientes/proximo-numero-anticipo`)
                     .then(res => {
                         // Asumo que res.data.proximo_numero contiene el número (ej: 5)
                         setProximoNumeroAnticipo(res.data.proximo_numero)
@@ -235,7 +235,7 @@ export default function GenerarFacturaModal({
         }
         try {
             const payload = {
-                tipo_id: proveedorId,
+                tipo_id: clienteId,
                 fecha_factura: fechaFactura,
                 fecha_vencimiento: fechaVencimiento,
                 punto_venta: puntoVenta,
@@ -246,7 +246,7 @@ export default function GenerarFacturaModal({
                 estado: "Pendiente",
                 moneda_id: monedaOrden,
                 usuario_creacion: auth.user.id,
-                orden_compra_id: [ordenCompra?.id],
+                orden_venta_id: [ordenVenta?.id],
                 detalles: productosLocal.map(p => ({
                     descripcion: p.descripcion,
                     modelo: p.modelo_descripcion,
@@ -262,7 +262,7 @@ export default function GenerarFacturaModal({
                 })),
                 totalOrden: totalOrden,
             }
-            const res = await axios.post("/compras/ordenes-compras/comprobantes-proveedores", payload)
+            const res = await axios.post("/ventas/ordenes-ventas/comprobantes-clientes", payload)
             if (res.status === 201) {
                 toast.success("Factura generada exitosamente")
                 onSubmit(res.data)
@@ -368,7 +368,7 @@ export default function GenerarFacturaModal({
     const handleUploadFile = async (ordenId: number, archivo: File) => {
         const formData = new FormData()
         formData.append("archivo", archivo)
-        router.post(`/compras/ordenes-compras/${ordenId}/archivoFactura`, formData, {
+        router.post(`/ventas/ordenes-ventas/${ordenId}/archivoFactura`, formData, {
             forceFormData: true,
             onSuccess: () => toast.success(`Archivo ${archivo.name} subido con éxito`),
             onError: () => toast.error(`Error al subir ${archivo.name}`),
@@ -377,7 +377,7 @@ export default function GenerarFacturaModal({
 
     ////////////Manejo de archivos adjuntos
     const handleArchivosChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files?.length || !ordenCompra?.id) return;
+        if (!e.target.files?.length || !ordenVenta?.id) return;
         const nuevosArchivos: Archivo[] = Array.from(e.target.files).map(f => ({
             nombre: f.name,
             file: f,
@@ -385,7 +385,7 @@ export default function GenerarFacturaModal({
             size: f.size,
         }));
         setArchivos(prev => [...prev, ...nuevosArchivos]);
-        nuevosArchivos.forEach(a => handleUploadFile(ordenCompra.id!, a.file!));
+        nuevosArchivos.forEach(a => handleUploadFile(ordenVenta.id!, a.file!));
     }
 
     const abrirModal = (archivo: Archivo) => {
@@ -414,10 +414,10 @@ export default function GenerarFacturaModal({
                     {/* FORMULARIO PRINCIPAL */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div>
-                            <Label>Proveedor <Typography>{ordenCompra?.proveedor?.razon_social || ""}</Typography></Label>
+                            <Label>Cliente <Typography>{ordenVenta?.cliente?.nombre + " " + ordenVenta?.cliente?.apellido || ""}</Typography></Label>
                         </div>
                         <div>
-                            <Label>Orden Compra N° <Typography>{ordenCompra?.id || ""}</Typography></Label>
+                            <Label>Orden Venta N° <Typography>{ordenVenta?.id || ""}</Typography></Label>
                         </div>
                         <div>
                             <Label>Fecha de Factura</Label>
@@ -754,7 +754,7 @@ export default function GenerarFacturaModal({
                                                         onClick={() => {
                                                             setArchivos(prev => prev.filter(f => f !== file));
                                                             if (file.id) {
-                                                                router.post(`/compras/ordenes-compras/archivoFactura/${file.id}/eliminarFactura`, {}, {
+                                                                router.post(`/ventas/ordenes-ventas/archivoFactura/${file.id}/eliminarFactura`, {}, {
                                                                     onSuccess: () => toast.success('Archivo eliminado correctamente'),
                                                                     onError: () => toast.error('Error al eliminar el archivo')
                                                                 });

@@ -11,6 +11,6 @@ export interface SolicitudVenta {
     usuario_actualizacion: number
     created_at: Date
     updated_at: Date
-    ordenes_cotizacion_venta?: CotizacionOrdenVenta[]
+    orden_cotizacion_venta?: CotizacionOrdenVenta[]
 
 }

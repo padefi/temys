@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
             InmueblesTipoOcupacionSeeder::class,
             InmueblesTipoSeeder::class,
             InmueblesSeeder::class,
-            InmueblesTipoContratoSeeder::class, 
+            InmueblesTipoContratoSeeder::class,
             TipoMonedaSeeder::class,
             CaracteristicaSeeder::class,
             CategoriaSeeder::class,
@@ -67,9 +67,10 @@ class DatabaseSeeder extends Seeder
             OrdenPagoSeeder::class,
             MetodoTesoreriaSeeder::class,
             MovimientoTesoreriaSeeder::class,
-            ProvinciaSeeder::class,
+            /*ProvinciaSeeder::class,
             LocalidadSeeder::class,
-            CalleSeeder::class,OrdenCotizacionVentaSeeder::class,
+            CalleSeeder::class,*/
+            OrdenCotizacionVentaSeeder::class,
             OrdenCotizacionVentaDetalleSeeder::class,
             OrdenVentaSeeder::class,
             OrdenVentaDetalleSeeder::class,
@@ -95,6 +96,11 @@ class DatabaseSeeder extends Seeder
             OrdenTesoreriaPagoEfectivoSeeder::class,
             OrdenTesoreriaPagoChequeSeeder::class,
             OrdenTesoreriaPagoTarjetaSeeder::class,
+            MotivoNotaCreditoSeeder::class,
+            MotivoReembolsoSeeder::class,
+            MotivoNotaDebitoSeeder::class,
+
+
 
             /* InventarioMovimientoEstadosSeeder::class,
             InventarioStockTransitoSeeder::class, */

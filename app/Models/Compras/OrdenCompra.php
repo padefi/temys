@@ -20,7 +20,7 @@ class OrdenCompra extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'tipo_id',
+        'proveedor_id',
         'moneda_id',
         'cotizacion_moneda',
         'almacen_destino_id',

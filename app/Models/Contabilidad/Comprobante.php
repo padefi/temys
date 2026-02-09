@@ -14,6 +14,7 @@ use App\Models\Padron\Cliente\Cliente;
 use App\Models\Ventas\OrdenVenta;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Comprobante extends Model
 {
@@ -149,10 +150,10 @@ class Comprobante extends Model
     }
 
     ////IMPUESTOS ASOCIADOS A LA FACTURA ORIGEN
-    public function impuestos()
+    /*public function impuestos()
     {
         return $this->hasMany(ComprobanteDetalleImpuesto::class, 'comprobante_id');
-    }
+    }*/
 
     ////////////////RELACIONES DE COMPROBANTE CON COMPROBANTE
     public function aplicacionesComoOrigen()
@@ -181,6 +182,37 @@ class Comprobante extends Model
             'comprobante_destino_id'  // factura / otro comprobant
         )->withPivot(['importe_aplicado', 'fecha_aplicacion'])
         ->withTimestamps();
+    }
+
+
+
+
+    public function motivoNotaCredito()
+    {
+        return $this->hasOneThrough(
+            MotivoNotaCredito::class,
+            RelacionComprobanteMotivoNotaCredito::class,
+            'comprobante_id',          // FK en pivote
+            'id',                      // FK en motivo
+            'id',                      // local key comprobante
+            'motivo_nota_credito_id'   // local key pivote
+        );
+    }
+
+     /**
+     * Obtiene el siguiente número de comprobante
+     */
+    public static function siguienteNumero(
+        string $puntoVenta,
+        int $tipoComprobanteId,
+        string $tipo = 'Cliente'
+    ): int {
+        $ultimoNumero = self::where('punto_venta', $puntoVenta)
+            ->where('tipo_comprobante_id', $tipoComprobanteId)
+            ->where('tipo', $tipo)
+            ->max(DB::raw('CAST(numero_factura AS UNSIGNED)'));
+
+        return $ultimoNumero ? $ultimoNumero + 1 : 1;
     }
 
 
