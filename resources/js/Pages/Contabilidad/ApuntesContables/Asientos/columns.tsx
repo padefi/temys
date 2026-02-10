@@ -1,6 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "./column-header";
-import { Asiento } from "@/types/Contabilidad/Asientos/Index";
+import { Asiento } from "@/types/Contabilidad/Asientos";
 import { currencyNumber, dateFormat } from "@/utils/formatterFunctions";
 import BadgeEstadoAsiento from "@/Components/Contabilidad/ApuntesContables/BadgeEstadoAsiento";
 

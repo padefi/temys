@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Asiento } from '@/types/Contabilidad/Asientos/Index';
+import { Asiento } from '@/types/Contabilidad/Asientos';
 import { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';

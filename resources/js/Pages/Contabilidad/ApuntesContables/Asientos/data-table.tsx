@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo } from "react";
 import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
 import { useDataTableParams } from "@/hooks/useDataTableParams";
 import { AnimatePresence, motion } from "framer-motion";
-import { Asiento } from "@/types/Contabilidad/Asientos/Index";
+import { Asiento } from "@/types/Contabilidad/Asientos";
 import { router } from "@inertiajs/react";
 
 interface DataTableProps<TData, TValue> {

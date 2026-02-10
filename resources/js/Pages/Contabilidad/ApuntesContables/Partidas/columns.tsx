@@ -1,8 +1,8 @@
-import { Partida } from "@/types/Contabilidad/Asientos/Partida";
-import { ColumnDef, RowData } from '@tanstack/react-table'
+import { ColumnDef } from '@tanstack/react-table'
 import { currencyNumber } from "@/utils/formatterFunctions";
 import { RowActions } from "./row-actions";
 import { EditableCell } from "@/Components/Table";
+import { Partida } from '@/types/Contabilidad/Asientos';
 
 type ColumnsProps = {
     editingRowId: number | null;
@@ -53,8 +53,10 @@ export const getColumns = ({
             header: () => <span>Debe</span>,
             meta: {
                 inputType: 'number',
-                format: (value: unknown) =>
-                    currencyNumber(value as number),
+                format: (value: unknown) => currencyNumber(value as number),
+                rules: [
+                    (v) => (v as number) >= 0 || "No puede ser negativo",
+                ],
             },
             cell: props => (
                 <EditableCell
@@ -69,8 +71,10 @@ export const getColumns = ({
             header: () => <span>Haber</span>,
             meta: {
                 inputType: 'number',
-                format: (value: unknown) =>
-                    currencyNumber(value as number),
+                format: (value: unknown) => currencyNumber(value as number),
+                rules: [
+                    (v) => (v as number) >= 0 || "No puede ser negativo",
+                ],
             },
             cell: props => (
                 <EditableCell
