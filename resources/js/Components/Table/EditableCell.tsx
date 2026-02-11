@@ -2,6 +2,8 @@ import { Column, Row, Table } from "@tanstack/react-table";
 import { useEffect, useState } from "react";
 import { EditableColumnMeta } from "./editableTypes";
 import { runValidation } from "@/utils/validateFunctions";
+import { AnimatedError } from "../AnimatedMotion/AnimatedError";
+import { FloatingLabelInput } from "../ui/floating-label-input";
 
 type EditableCellProps<TData> = {
     getValue: () => unknown;
@@ -30,45 +32,41 @@ export function EditableCell<TData>({
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        setValue(initialValue)
+        setValue(initialValue);
     }, [initialValue]);
 
     if (!isEditing) {
-        return <span>{meta?.format ? meta.format(initialValue) : String(initialValue ?? "")}</span>;
+        return (
+            <span>
+                {meta?.format
+                    ? meta.format(initialValue)
+                    : String(initialValue ?? "")}
+            </span>
+        );
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
         const finalValue = inputType === "number" ? Number(newValue) : newValue;
         const validationError = runValidation(finalValue, rules);
-        console.log(newValue);
 
         setError(validationError);
         setValue(newValue);
     };
 
-    const handleBlur = () => {
-        if (error) return;
-
-        const finalValue = inputType === "number" ? Number(value) : value;
-        updateData(row.index, column.id, finalValue);
-    };
-
     return (
-        <div className="flex flex-col gap-1">
-            <input
+        <div className="grid items-center">
+            <FloatingLabelInput
+                id={column.id.toString()}
+                label={column.id}
                 type={inputType}
+                className="text-sm"
+                autoComplete="off"
+                variant={error ? "error" : "underline"}
                 value={value as any}
                 onChange={handleChange}
-                onBlur={handleBlur}
-                className={`border px-2 py-1 rounded w-full ${error ? "border-red-500" : ""}`}
             />
-
-            {error && (
-                <span className="text-xs text-red-500">
-                    {error}
-                </span>
-            )}
+            <AnimatedError error={error} />
         </div>
     );
 }

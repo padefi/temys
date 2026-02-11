@@ -8,6 +8,7 @@ declare module "@tanstack/react-table" {
             columnId: string,
             value: unknown,
         ) => void;
+        editingRowId?: number | null;
     }
 
     interface ColumnMeta<
