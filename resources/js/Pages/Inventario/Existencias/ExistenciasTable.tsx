@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
 import { useDataTableParams } from "@/hooks/useDataTableParams";
 import { useReactTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, flexRender } from "@tanstack/react-table";
-import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
+import { DataTableSkeleton } from "@/Components/Table/AnimatedRows/DataTableSkeleton";
 import { Footer } from "@/Pages/UserModulePanel/footer";
 import { ExistenciaModal } from "./modals/ModalAjusteExistencia";
 import { useState, useMemo } from "react";

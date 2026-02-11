@@ -2,7 +2,7 @@ import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getPaginat
 import { EntregaItem } from "@/types/Inventario/Operaciones/Entregas/Entregas";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
 import { useDataTableParams } from "@/hooks/useDataTableParams";
-import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
+import { DataTableSkeleton } from "@/Components/Table/AnimatedRows/DataTableSkeleton";
 import React from "react";
 import { DetalleProductos } from "./DetallesProductos";
 import { motion, AnimatePresence } from 'framer-motion';
