@@ -8,6 +8,20 @@ export const validateEmail = (value: string) =>
     /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value);
 // export const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
+export const required =
+    (message = "Campo obligatorio") =>
+    (value: unknown): true | string => {
+        if (typeof value === "string") {
+            return value.trim().length > 0 || message;
+        }
+
+        if (typeof value === "number") {
+            return Number.isFinite(value) || message;
+        }
+
+        return message;
+    };
+
 /* CBU validation */
 export const validateCBU = (value: string): boolean => {
     if (!/^[0-9]{22}$/.test(value)) {
