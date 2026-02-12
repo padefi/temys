@@ -11,30 +11,41 @@ class CondicionIva extends Model
 
     protected $table = 'condicion_iva';
 
+    public $timestamps = false;
+
     protected $fillable = [
-        'descripcion'
+        'descripcion',
+        'fecha_creacion',
+        'usuario_creacion',
+        'fecha_actualizacion',
+        'usuario_actualizacion',
     ];
 
-    // Relación con clientes (opcional, si necesitas esta relación)
+    protected $casts = [
+        'fecha_creacion' => 'datetime',
+        'fecha_actualizacion' => 'datetime',
+    ];
+
+    //Relación con clientes (opcional, si necesitas esta relación)
     public function clientes()
     {
         return $this->hasMany(\App\Models\Padron\Cliente\Cliente::class, 'condicion_iva_id');
     }
 
-    // Relación con proveedores (opcional, si necesitas esta relación)
+    //Relación con proveedores (opcional, si necesitas esta relación)
     public function proveedores()
     {
         return $this->hasMany(\App\Models\Padron\Proveedor\Proveedor::class, 'condicion_iva_id');
     }
 
-    // Agrega esta relación al modelo CondicionIva
+    //Agrega esta relación al modelo CondicionIva
     public function clientesCondicion()
     {
         return $this->belongsToMany(\App\Models\Padron\Cliente\Cliente::class, 'relacion_cliente_condicion', 'id_iva', 'id_cliente')
                     ->withTimestamps();
     }
 
-    // Agrega esta relación al modelo CondicionIva
+    //Agrega esta relación al modelo CondicionIva
     public function proveedoresCondicion()
     {
         return $this->belongsToMany(\App\Models\Padron\Proveedor\Proveedor::class, 'relacion_proveedor_condicion', 'id_iva', 'id_proveedor')

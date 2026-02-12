@@ -1,21 +1,42 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage } from '@inertiajs/react';
+import { useState } from "react";
 import { PageProps as InertiaPageProps } from '@inertiajs/core';
-import {  columns } from "./ProveedoresColumns"
+import { columns } from "./ProveedoresColumns"
 import { DataTable } from "./ProveedoresDataTable"
-import { Proveedor } from '@/types/Proveedor'; // Cambia la ruta según tu estructura
+import { Proveedor } from '@/types/Proveedor';
+import { Nacionalidad } from '@/types/Nacionalidad';
+import { CondicionIva } from "@/types/CondicionIva";
+import { ActividadEconomica } from "@/types/ActividadEconomica";
+import { EntidadFinanciera } from "@/types/EntidadFinanciera";
+import { TipoMoneda } from "@/types/TipoMoneda";
+import { Button } from "@/Components/ui/button"
+import ProveedoresCrear from "./ProveedoresCrear";
 
 type PageProps = InertiaPageProps & {
     proveedores: {
         data: Array<Proveedor>;
     };
-
+    nacionalidades: Nacionalidad[];
+    condicionesIva: CondicionIva[];
+    actividades: ActividadEconomica[];
+    entidadesFinancieras: EntidadFinanciera[];
+    tiposMoneda: TipoMoneda[];
     module: number;
 };
 
 export default function Index() {
 
-    const { proveedores: { data: proveedores }, module } = usePage<PageProps>().props;
+    const {
+        proveedores: { data: proveedores }, 
+        nacionalidades, 
+        condicionesIva, 
+        actividades, 
+        entidadesFinancieras, 
+        tiposMoneda, 
+        module
+    } = usePage<PageProps>().props;
+    const [openCrear, setOpenCrear] = useState(false);
 
     return (
         <AuthenticatedLayout
@@ -30,12 +51,27 @@ export default function Index() {
                 <div className="mx-auto max-w sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white shadow-xs sm:rounded-lg">
                         <div className="p-6 text-gray-900">
-                            <h1 className="text-2xl my-3 font-bold">Proveedores</h1>
+                            <div className="flex justify-between items-center mb-4">
+                                <h1 className="text-2xl my-3 font-bold">Proveedores</h1>
+                                <Button onClick={() => setOpenCrear(true)}>
+                                    Nuevo Proveedor
+                                </Button>
+                            </div>
+
                             <DataTable columns={columns} data={proveedores} module={module} />
                         </div>
                     </div>
                 </div>
             </div>
+            <ProveedoresCrear 
+                open={openCrear} 
+                setOpen={setOpenCrear} 
+                nacionalidades={nacionalidades} 
+                condicionesIva={condicionesIva} 
+                actividades={actividades}  
+                entidadesFinancieras={entidadesFinancieras}
+                tiposMoneda={tiposMoneda}
+            />
         </AuthenticatedLayout>
     );
 }

@@ -11,9 +11,17 @@ class RelacionClienteProveedor extends Model
 
     protected $table = 'relacion_cliente_proveedor';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'id_cliente',
-        'id_proveedor'
+        'id_proveedor',
+        'fecha_creacion',
+        'usuario_creacion',
+    ];
+
+    protected $casts = [
+        'fecha_creacion' => 'datetime',
     ];
 
     // Relación con Cliente

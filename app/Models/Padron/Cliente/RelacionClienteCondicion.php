@@ -11,9 +11,17 @@ class RelacionClienteCondicion extends Model
 
     protected $table = 'relacion_cliente_condicion';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'id_iva',
-        'id_cliente'
+        'id_cliente',
+        'fecha_creacion',
+        'usuario_creacion',
+    ];
+
+    protected $casts = [
+        'fecha_creacion' => 'datetime',
     ];
 
     // Relación con CondicionIva
