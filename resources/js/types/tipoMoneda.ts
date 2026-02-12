@@ -4,4 +4,5 @@ export interface TipoMoneda {
     descripcion: string;
     simbolo: string;
     pais_origen: string;
+    habilitado: boolean | number;
 }

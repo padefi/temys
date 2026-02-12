@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             SubmenuSeeder::class,
             RolePermissionSeeder::class,
             RoleModulePermissionSeeder::class,
+            NacionalidadesSeeder::class,
             UserSeeder::class,
             PadronSeeder::class,
             ClienteSeeder::class,
@@ -57,6 +58,11 @@ class DatabaseSeeder extends Seeder
             TarjetaSeeder::class,
             ChequeSeeder::class,
             PadronCbuSeeder::class,
+            //MetodoPagoSeeder::class,
+            EntidadFinancieraSeeder::class,
+            ProveedorDatoBancarioSeeder::class,
+            ActividadEconomicaProveedorSeeder::class,
+            CondicionIvaSeeder::class,
             CondicionVentaSeeder::class,
             TipoComprobanteSeeder::class,
             UnidadMedidaSeeder::class,
@@ -64,6 +70,8 @@ class DatabaseSeeder extends Seeder
             ComprobanteDetalleSeeder::class,
             ComprobanteDetalleImpuestoSeeder::class,
             RelacionComprobanteOrdenPagoProveedorSeeder::class,
+            RelacionProveedorActividadSeeder::class,
+            RelacionProveedorCondicionSeeder::class,
             OrdenPagoSeeder::class,
             MetodoTesoreriaSeeder::class,
             MovimientoTesoreriaSeeder::class,
@@ -82,7 +90,7 @@ class DatabaseSeeder extends Seeder
             RelacionComprobantePartidaSeeder::class,
             RelacionComprobanteComprobanteSeeder::class,
             SolicitudVentaSeeder::class,
-            SolicitudVentaOrdenCotizacionVentaSeeder::class,
+            //SolicitudVentaOrdenCotizacionVentaSeeder::class,
             OrdenVentaSeeder::class,
             OrdenVentaDetalleSeeder::class,
             ComprobanteSeeder::class,
@@ -99,12 +107,8 @@ class DatabaseSeeder extends Seeder
             MotivoNotaCreditoSeeder::class,
             MotivoReembolsoSeeder::class,
             MotivoNotaDebitoSeeder::class,
-
-
-
             /* InventarioMovimientoEstadosSeeder::class,
             InventarioStockTransitoSeeder::class, */
-
         ]);
     }
 }

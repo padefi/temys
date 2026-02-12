@@ -9,10 +9,17 @@ return new class extends Migration
     public function up()
     {
         Schema::create('condicion_iva', function (Blueprint $table) {
-            $table->id(); // id bigint autoincremental
+            $table->id();
             $table->string('descripcion', 100)->unique();
             $table->boolean('habilitado')->default(true);
-            $table->timestamps();
+            $table->timestamp('fecha_creacion');
+            $table->unsignedBigInteger('usuario_creacion');
+            $table->dateTime('fecha_actualizacion')->nullable();
+            $table->unsignedBigInteger('usuario_actualizacion')->nullable();
+
+            //Relaciones
+            $table->foreign('usuario_creacion')->references('id')->on('users');
+            $table->foreign('usuario_actualizacion')->references('id')->on('users');
         });
     }
 

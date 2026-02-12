@@ -15,10 +15,21 @@ class Cliente extends Model
 
     protected $table = 'clientes';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'id_padron',
         'apellido',
-        'nombre'
+        'nombre',
+        'fecha_creacion',
+        'usuario_creacion',
+        'fecha_actualizacion',
+        'usuario_actualizacion',
+    ];
+
+    protected $casts = [
+        'fecha_creacion' => 'datetime',
+        'fecha_actualizacion' => 'datetime',
     ];
 
     // Relación con el padrón

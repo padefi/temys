@@ -4,17 +4,18 @@ namespace App\Models\Padron\Proveedor;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+/* use App\Models\ControlAcceso\User; */
 
-class RelacionProveedorCondicion extends Model
+class RelacionProveedorActividad extends Model
 {
     use HasFactory;
 
-    protected $table = 'relacion_proveedor_condicion';
+    protected $table = 'relacion_proveedor_actividad';
 
     public $timestamps = false;
 
     protected $fillable = [
-        'id_iva',
+        'id_actividad',
         'id_proveedor',
         'fecha_creacion',
         'usuario_creacion',
@@ -24,15 +25,21 @@ class RelacionProveedorCondicion extends Model
         'fecha_creacion' => 'datetime',
     ];
 
-    // Relación con CondicionIva
-    public function condicionIva()
+    //Actividad económica
+    public function actividadEconomica()
     {
-        return $this->belongsTo(\App\Models\Padron\CondicionIva::class, 'id_iva');
+        return $this->belongsTo(ActividadEconomicaProveedor::class, 'id_actividad');
     }
 
-    // Relación con Proveedor
+    //Proveedor
     public function proveedor()
     {
         return $this->belongsTo(Proveedor::class, 'id_proveedor');
     }
+
+    //Usuario creador
+    /* public function usuarioCreacion()
+    {
+        return $this->belongsTo(User::class, 'usuario_creacion');
+    } */
 }

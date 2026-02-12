@@ -19,7 +19,9 @@ class CondicionIvaSeeder extends Seeder
         ];
 
         foreach ($condiciones as $condicion) {
-            CondicionIva::create($condicion);
+            CondicionIva::factory()->create([
+                'descripcion' => $condicion['descripcion'],
+            ]);
         }
     }
 }

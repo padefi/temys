@@ -34,6 +34,16 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
             Route::get('compras/proveedores', [ProveedoresController::class, 'index'])
                 ->name('proveedoresCompras');
 
+            // Ruta para crear
+            Route::middleware(['submenu_permission:create proveedoresCompras'])->group(function () {
+                Route::post('proveedores', [ProveedoresController::class, 'store'])
+                    ->name('proveedores.store');
+
+                // Ruta para verificación en padrón (AJAX)
+                Route::get('compras/proveedores/verificar-padron', [ProveedoresController::class, 'verifyPadron'])
+                ->name('proveedores.verify-padron');    
+            });
+
             // Ruta para actualización
             Route::middleware('submenu_permission:update proveedoresCompras')->group(function () {
                 Route::put('proveedores/{proveedor}', [ProveedoresController::class, 'update'])
