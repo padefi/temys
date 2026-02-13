@@ -8,7 +8,7 @@ use App\Models\Compras\OrdenCotizacion\OrdenCotizacion;
 use App\Models\Padron\Cliente\Cliente;
 use App\Models\Padron\CondicionIva;
 use App\Models\Padron\Padron;
-//use App\Models\Padron\PadronCbu;
+//use App\Models\Padron\PadronDatoBancario;
 use App\Models\Padron\Proveedor\ProveedorDatoBancario;
 use App\Models\Padron\Proveedor\ActividadEconomicaProveedor;
 
@@ -73,7 +73,7 @@ class Proveedor extends Model
     ////CUENTAS BANCARIAS RELACIONADAS
     public function datosBancarios()
     {
-        //return $this->morphMany(PadronCbu::class, 'titular', 'tipo', 'tipo_id');
+        //return $this->morphMany(PadronDatoBancario::class, 'titular', 'tipo', 'tipo_id');
         return $this->hasMany(ProveedorDatoBancario::class, 'proveedor_id');
     }
     // Relación con ComprobantesProveedores

@@ -5,7 +5,7 @@ namespace App\Models\Contabilidad;
 use App\Models\Contabilidad\OrdenTesoreria;
 use App\Models\ControlAcceso\User;
 use App\Models\General\CuentaBancaria;
-use App\Models\Padron\PadronCbu;
+use App\Models\Padron\PadronDatoBancario;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -38,7 +38,7 @@ class OrdenTesoreriaPagoTransferencia extends Model
 
     public function cbuDestino()
     {
-        return $this->belongsTo(PadronCbu::class, 'cbu_id');
+        return $this->belongsTo(PadronDatoBancario::class, 'cbu_id');
     }
 
     public function usuarioCreacion()

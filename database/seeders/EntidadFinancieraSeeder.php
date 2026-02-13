@@ -82,22 +82,22 @@ class EntidadFinancieraSeeder extends Seeder
             ['codigo' => '515', 'descripcion' => 'BANK OF CHINA LIMITED', 'tipo' => 'Banco'],
 
             //BILLETERAS / PSP (CVU)
-            ['codigo' => '00000031', 'descripcion' => 'Mercado Pago', 'tipo' => 'Billetera Virtual'],
-            ['codigo' => '00000079', 'descripcion' => 'Ualá', 'tipo' => 'Billetera Virtual'],
-            ['codigo' => '00000045', 'descripcion' => 'Naranja X', 'tipo' => 'Billetera Virtual'],
-            ['codigo' => '00000063', 'descripcion' => 'Personal Pay', 'tipo' => 'Billetera Virtual'],
-            ['codigo' => '00000130', 'descripcion' => 'Prex', 'tipo' => 'Billetera Virtual'],
-            ['codigo' => '00000291', 'descripcion' => 'Nubi', 'tipo' => 'Billetera Virtual'],
-            ['codigo' => '00000216', 'descripcion' => 'Belo', 'tipo' => 'Billetera Virtual'],
-            ['codigo' => '00000234', 'descripcion' => 'Lemon Cash', 'tipo' => 'Billetera Virtual'],
-            ['codigo' => '00000062', 'descripcion' => 'Pluspagos', 'tipo' => 'Billetera Virtual'],
-            ['codigo' => '00000277', 'descripcion' => 'Paymovil', 'tipo' => 'Billetera Virtual'],
+            ['codigo' => '00000031', 'descripcion' => 'MERCADO PAGO', 'tipo' => 'Billetera Virtual'],
+            ['codigo' => '00000079', 'descripcion' => 'UALÁ', 'tipo' => 'Billetera Virtual'],
+            ['codigo' => '00000045', 'descripcion' => 'NARANJA X', 'tipo' => 'Billetera Virtual'],
+            ['codigo' => '00000063', 'descripcion' => 'PERSONAL PAY', 'tipo' => 'Billetera Virtual'],
+            ['codigo' => '00000130', 'descripcion' => 'PREX', 'tipo' => 'Billetera Virtual'],
+            ['codigo' => '00000291', 'descripcion' => 'NUBI', 'tipo' => 'Billetera Virtual'],
+            ['codigo' => '00000216', 'descripcion' => 'BELO', 'tipo' => 'Billetera Virtual'],
+            ['codigo' => '00000234', 'descripcion' => 'LEMON CASH', 'tipo' => 'Billetera Virtual'],
+            ['codigo' => '00000062', 'descripcion' => 'PLUSPAGOS', 'tipo' => 'Billetera Virtual'],
+            ['codigo' => '00000277', 'descripcion' => 'PAYMOVIL', 'tipo' => 'Billetera Virtual'],
 
             //FINANCIERAS DIGITALES (CBU)
-            ['codigo' => '00000128', 'descripcion' => 'Brubank', 'tipo' => 'Financiera'],
-            ['codigo' => '00000344', 'descripcion' => 'Openbank', 'tipo' => 'Financiera'],
-            ['codigo' => '00000310', 'descripcion' => 'Banco del Sol', 'tipo' => 'Financiera'],
-            ['codigo' => '00000322', 'descripcion' => 'Reba (Transatlántica)', 'tipo' => 'Financiera'],
+            ['codigo' => '00000128', 'descripcion' => 'BRUBANK', 'tipo' => 'Financiera'],
+            ['codigo' => '00000344', 'descripcion' => 'OPENBANK', 'tipo' => 'Financiera'],
+            ['codigo' => '00000310', 'descripcion' => 'BANCO DEL SOL', 'tipo' => 'Financiera'],
+            ['codigo' => '00000322', 'descripcion' => 'REBA (TRANSATLÁNTICA)', 'tipo' => 'Financiera'],
         ];
 
         foreach ($entidades as $entidad) {
