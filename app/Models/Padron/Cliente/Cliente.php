@@ -3,7 +3,7 @@
 namespace App\Models\Padron\Cliente;
 
 use App\Models\Contabilidad\Comprobante;
-use App\Models\Padron\PadronCbu;
+use App\Models\Padron\PadronDatoBancario;
 use App\Models\Ventas\ordenCotizacionVenta;
 use App\Models\Ventas\OrdenVenta;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -65,7 +65,7 @@ class Cliente extends Model
     ////CUENTAS BANCARIAS RELACIONADAS
     public function cbu()
     {
-        return $this->morphMany(PadronCbu::class, 'titular', 'tipo', 'tipo_id');
+        return $this->morphMany(PadronDatoBancario::class, 'titular', 'tipo', 'tipo_id');
     }
     // Relación con Comprobantes
     public function comprobantes()
