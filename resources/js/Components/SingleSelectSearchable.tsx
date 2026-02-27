@@ -4,7 +4,7 @@ import { Command, CommandList, CommandEmpty, CommandItem } from "@/Components/ui
 import { Check, Search } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
-type Option = {
+export type Option = {
   id: number | string;
   label: string;
   keywords?: string[];
@@ -64,7 +64,7 @@ export default function SearchableSelect({
       }}
       value={value ? String(value) : ""}
     >
-      <SelectTrigger className="min-h-[42px] rounded-lg" disabled={disabled}>
+      <SelectTrigger className="min-h-10.5 rounded-lg" disabled={disabled}>
         <span className="truncate text-sm">{selectedLabel ?? placeholder}</span>
       </SelectTrigger>
 
@@ -125,7 +125,7 @@ export default function SearchableSelect({
                 No hay resultados
               </CommandEmpty>
 
-              <div ref={parentRef} className="max-h-[240px] overflow-y-auto px-1 pb-1">
+              <div ref={parentRef} className="max-h-60 overflow-y-auto px-1 pb-1">
                 <div
                   style={{
                     height: virtualizer.getTotalSize(),
