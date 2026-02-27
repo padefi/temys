@@ -24,7 +24,7 @@ export const DataTableSkeleton = React.memo(({ colCount, rowCount = 10, showHead
         skeletonRows.map((_, rowIndex) => (
             <TableRow key={rowIndex}>
                 {skeletonColumns.map((_, colIndex) => (
-                    <TableCell key={`skeleton-row-${colIndex}`} className="px-6 py-3 h-[52px]">
+                    <TableCell key={`skeleton-row-${colIndex}`} className="px-6 py-3 h-13">
                         <Skeleton className="h-4 w-full" />
                     </TableCell>
                 ))}

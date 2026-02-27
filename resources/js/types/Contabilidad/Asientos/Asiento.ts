@@ -5,7 +5,7 @@ export interface Asiento {
     id: number;
     ejercicio: number;
     numero: number;
-    estado: EstadoAsiento;
+    estado?: EstadoAsiento;
     fecha: string;
     concepto: string;
     importe: number;

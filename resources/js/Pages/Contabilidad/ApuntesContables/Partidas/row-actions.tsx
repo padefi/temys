@@ -7,18 +7,22 @@ type RowActionsProps = {
     optionPermission: string;
     isDisabled: boolean;
     isEditing: boolean;
+    hasErrors: boolean;
     onEdit: () => void;
     onSave: () => void;
     onCancel: () => void;
+    onDelete: () => void;
 };
 
 export function RowActions({
     optionPermission,
     isDisabled,
     isEditing,
+    hasErrors,
     onEdit,
     onSave,
     onCancel,
+    onDelete,
 }: RowActionsProps) {
     const { hasSubmenuPermission } = usePermissions();
 
@@ -39,6 +43,7 @@ export function RowActions({
             action: "disable",
             color: "text-red-500",
             shadowColor: "rgba(199,0,54,0.5)",
+            onClick: onDelete,
             disabled: isEditing || isDisabled,
             show: hasSubmenuPermission(optionPermission, 'avoid') && !isEditing,
         },
@@ -49,7 +54,7 @@ export function RowActions({
             color: "text-green-500",
             shadowColor: "rgba(34,197,94,0.5)",
             onClick: onSave,
-            disabled: !isEditing,
+            disabled: !isEditing || hasErrors,
             show: hasSubmenuPermission(optionPermission, 'update') && isEditing,
         },
         {

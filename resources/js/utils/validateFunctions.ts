@@ -125,9 +125,9 @@ export const compareDates = (
     }
 };
 
-export const runValidation = (
-    value: unknown,
-    rules?: ValidationRule[],
+export const runValidation = <T>(
+    value: T,
+    rules?: ValidationRule<T>[],
 ): string | null => {
     if (!rules || rules.length === 0) return null;
 
