@@ -75,9 +75,6 @@ class DatabaseSeeder extends Seeder
             OrdenPagoSeeder::class,
             MetodoTesoreriaSeeder::class,
             MovimientoTesoreriaSeeder::class,
-            /*ProvinciaSeeder::class,
-            LocalidadSeeder::class,
-            CalleSeeder::class,*/
             OrdenCotizacionVentaSeeder::class,
             OrdenCotizacionVentaDetalleSeeder::class,
             OrdenVentaSeeder::class,

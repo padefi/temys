@@ -39,7 +39,24 @@ class InmueblesResource extends JsonResource
                 'fecha' => $this->fecha_actualizacion,
                 'usuario' => $this->usuario_actualizacion,
             ],
+
+            // 👇 CONTACTOS (NUEVO)
+            'contactos' => $this->whenLoaded('contactos', function () {
+                return $this->contactos->map(function ($contacto) {
+                    return [
+                        'id' => $contacto->id,
+                        'contacto' => $contacto->contacto,
+                        'descripcion' => $contacto->descripcion,
+                        'tipo_contacto' => [
+                            'id' => $contacto->tipoContacto->id ?? null,
+                            'descripcion' => $contacto->tipoContacto->descripcion ?? null,
+                        ],
+                    ];
+                });
+            }),
         ];
     }
+        
+    
 }
 

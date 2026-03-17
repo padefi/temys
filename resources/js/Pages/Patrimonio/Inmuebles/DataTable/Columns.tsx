@@ -2,42 +2,68 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { CalendarDays, Eye, FileText, Pencil } from "lucide-react"
-import { Button } from "@/Components/ui/button" 
-import { Badge } from "@/Components/ui/badge" 
-import type { Inmueble } from "@/types/Patrimonio/Inmuebles" 
+import { Button } from "@/Components/ui/button"
+import { Badge } from "@/Components/ui/badge"
+import type { Inmueble } from "@/types/Patrimonio/Inmuebles"
+import { DataTableColumnHeader } from "./column-header"
 
 export const columns: ColumnDef<Inmueble>[] = [
   {
     accessorKey: "num_inmueble",
-    header: "Número",
+    header: "N° inmueble",
     cell: ({ row }) => (
       <div className="font-medium">{row.getValue("num_inmueble")}</div>
     ),
   },
   {
     accessorKey: "nombre_seccional",
-    header: "Sección",
+    header: "Seccional",
     cell: ({ row }) => (
-      <div className="text-center">{row.getValue("nombre_seccional")}</div>
+      row.getValue("nombre_seccional")
     ),
   },
   {
     accessorKey: "num_partida",
-    header: "Partida",
+    header: ({ column, table }) => {
+      const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
+      return (
+        <DataTableColumnHeader
+          column={column}
+          title="Partida"
+          disabled={disabled}
+          className="justify-center font-bold min-w-[90px]"
+          isVisible={true}
+        />
+      )
+    },
+
     cell: ({ row }) => (
-      <div className="text-center">{row.getValue("num_partida")}</div>
+      row.getValue("num_partida")
     ),
   },
   {
     id: "nombres_inmueble",
-    header: "Nombre",
+    header: ({ column, table }) => {
+      const disabled = (table.options.meta as { disabled: boolean })?.disabled || false;
+      return (
+        <DataTableColumnHeader
+          column={column}
+          title="Nombre"
+          disabled={disabled}
+          className="justify-center font-bold min-w-[90px]"
+          isVisible={true}
+        />
+      )
+    },
+
     cell: ({ row }) => {
       const nombres = row.original.nombres_inmueble
 
       return (
-        <div className="text-left">
-          <div className="font-medium">{nombres.nombre_completo}</div>
+        <div>
+          <div className="font-medium"><span>Completo: </span>{nombres.nombre_completo}</div>
           <div className="text-xs text-muted-foreground">
+            <span>Fantasia: </span>
             {nombres.nombre_fantasia}
           </div>
         </div>
@@ -72,16 +98,33 @@ export const columns: ColumnDef<Inmueble>[] = [
     ),
   },
   {
+    accessorKey: "tipo_ocupacion_nombre",
+    header: "Ocupación",
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("tipo_ocupacion_nombre")}</div>
+    ),
+  },
+  {
     id: "superficie",
     header: "Superficie",
     cell: ({ row }) => {
       const superficie = row.original.superficie
 
       return (
-        <div className="text-center text-sm">
-          <span className="font-semibold">{superficie.total}</span>
-          <span className="text-muted-foreground"> m²</span>
-        </div>
+        <>
+          <div className="text-center text-sm">
+            <span className="font-semibold">C: {superficie.cubierta}</span>
+            <span className="text-muted-foreground"> m²</span>
+          </div>
+          <div className="text-center text-sm">
+            <span className="font-semibold">L: {superficie.libre}</span>
+            <span className="text-muted-foreground"> m²</span>
+          </div>
+          <div className="text-center text-sm">
+            <span className="font-semibold">T: {superficie.total}</span>
+            <span className="text-muted-foreground"> m²</span>
+          </div>
+        </>
       )
     },
   },
@@ -91,15 +134,15 @@ export const columns: ColumnDef<Inmueble>[] = [
     cell: ({ row }) => {
       return (
         <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            style={{ color: "#0d9488" }}
-            title="Ver más info"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
+          {/*      <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              style={{ color: "#0d9488" }}
+              title="Ver más info"
+            >
+              <Eye className="h-4 w-4" />
+            </Button> */}
           <Button
             variant="ghost"
             size="icon"
@@ -109,24 +152,24 @@ export const columns: ColumnDef<Inmueble>[] = [
           >
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            style={{ color: "#dc2626" }}
-            title="Documentación"
-          >
-            <FileText className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            style={{ color: "#0284c7" }}
-            title="Impuestos/Servicios"
-          >
-            <CalendarDays className="h-4 w-4" />
-          </Button>
+          {/*  <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              style={{ color: "#dc2626" }}
+              title="Documentación"
+            >
+              <FileText className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              style={{ color: "#0284c7" }}
+              title="Impuestos/Servicios"
+            >
+              <CalendarDays className="h-4 w-4" />
+            </Button> */}
         </div>
       )
     },

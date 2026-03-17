@@ -13,7 +13,7 @@ export function ImpuestosTab() {
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className="w-12"></TableHead>
+            {/* <TableHead className="w-12"></TableHead> */}
             <TableHead className="text-xs text-muted-foreground uppercase tracking-wide">Impuesto</TableHead>
             <TableHead className="text-xs text-muted-foreground uppercase tracking-wide">Periodo</TableHead>
             <TableHead className="text-xs text-muted-foreground uppercase tracking-wide">Vencimiento</TableHead>
@@ -33,7 +33,7 @@ export function ImpuestosTab() {
         </TableBody>
       </Table>
 
-      <div className="flex items-center justify-between p-4 bg-muted/50 rounded-b-lg border-t">
+{/*       <div className="flex items-center justify-between p-4 bg-muted/50 rounded-b-lg border-t">
         <div className="flex items-center gap-8">
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Seleccionado</p>
@@ -56,7 +56,7 @@ export function ImpuestosTab() {
             Pagar Seleccionados
           </Button>
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }

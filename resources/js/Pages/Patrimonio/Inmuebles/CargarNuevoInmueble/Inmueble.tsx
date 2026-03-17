@@ -1,24 +1,27 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { inmuebleSchema, InmuebleSchemaType } from './InmuebleSchema';
+import { inmuebleSchema, InmuebleSchemaType } from './Schema/InmuebleSchema';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import InformacionBasica from './InformacionBasica';
-import Caracteristicas from './Caracteristicas';
-import TiposDeContratos from './Contratos';
+import InformacionBasica from './components/InformacionBasica'; 
+import Caracteristicas from './components/Caracteristicas'; 
+import TiposDeContratos from './components/Contratos';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { MapPin } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
-import { tipocontrato, estadoInmueble } from './InmuebleSchema';
+import { tipocontrato, estadoInmueble } from './Schema/InmuebleSchema';
 import BuscadorDireccionesCompacto from '@/Components/BuscadorDirecciones';
 import axios from 'axios';
+import { Contacto } from './components/Contacto';
+import { useEffect } from 'react';
 function InmueblesForm() {
     const methods = useForm<InmuebleSchemaType>({
         resolver: zodResolver(inmuebleSchema) as any,
-        mode: 'onBlur', // Cambiado a onBlur para validar al salir del campo
+        mode: 'onChange', // Cambiado a onBlur para validar al salir del campo
         defaultValues: {
             num_partida: "" as any,
             id_seccionales:"" as any,
             tipo_ocupacion_id: "" as any,
+            contactos:[],
             estado_id: "" as any,
             tipo_contrato: "" as any,
             nombre_fantasia: "",
@@ -51,7 +54,11 @@ function InmueblesForm() {
     const onSubmit = async (data: InmuebleSchemaType) => {
         await axios.post('/patrimonio/inmuebles/create-inmueble', data)
     };
-
+/* useEffect(() => {
+    console.log("isValid:", methods.formState.isValid);
+    console.log("errors:", methods.formState.errors);
+    console.log("values:", methods.getValues());
+}, [methods.formState]) */
     return (
         <AuthenticatedLayout
             header={
@@ -74,6 +81,7 @@ function InmueblesForm() {
                     <FormProvider {...methods}>
                         <form className="space-y-6" onSubmit={methods.handleSubmit(onSubmit)}>
                             <InformacionBasica />
+                            <Contacto/>
                             {/* <Ubicacion /> */}
                             <Card>
                                 <CardHeader>
@@ -96,10 +104,9 @@ function InmueblesForm() {
                                     trigger('calle_id');
                                 }}></BuscadorDireccionesCompacto>
                             </Card>
-
+                            
                             <Caracteristicas />
                             <TiposDeContratos />
-
 
                             <Button
                                 type="submit"

@@ -3,11 +3,11 @@ import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { FileText } from "lucide-react";
 import { Controller, useFormContext } from "react-hook-form"
-import { InmuebleSchemaType } from "./InmuebleSchema"
+import { InmuebleSchemaType } from "../Schema/InmuebleSchema"
 import { useEffect, useState } from "react";
-import Escritura from "./Escritura";
-import Alquiler from "./Alquiler";
-import Comodato from "./Comodato";
+import Escritura from "./TipoInmueble/Escritura";
+import Alquiler from "./TipoInmueble/Alquiler";
+import Comodato from "./TipoInmueble/Comodato";
 import axios from "axios";
 
 
@@ -18,32 +18,29 @@ type tipoContratoItem = {
 
 function TiposDeContratos() {
     const {
-        formState: { errors, }, control,watch
+        formState: { errors}, control, watch
     } = useFormContext<InmuebleSchemaType>();
 
-   const contractType = watch("tipo_contrato");
-
+    const contractType = watch("tipo_contrato");
     const [tipoContrato, setTipoContrato] = useState<tipoContratoItem[]>([]);
 
     useEffect(() => {
         axios.get('/patrimonio/inmuebles/tipos-contrato')
-            .then(response => {           
+            .then(response => {
                 const data = response.data.map(
                     (tipo: { id: number; descripcion: string }) => ({
                         value: String(tipo.id),
                         label: tipo.descripcion,
                     })
                 );
-                console.log(response.data);
-
                 setTipoContrato(data);
             });
     }, []);
 
 
-   const contratoSeleccionado = tipoContrato.find(
-  tipo => Number(tipo.value) === contractType
-);
+    const contratoSeleccionado = tipoContrato.find(
+        tipo => Number(tipo.value) === contractType
+    );
 
 
     return (
