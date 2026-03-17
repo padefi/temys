@@ -6,6 +6,7 @@ use App\Models\Contabilidad\OrdenTesoreria;
 use App\Models\Contabilidad\Comprobante;
 use App\Models\General\Banco;
 use App\Models\General\CuentaBancaria;
+use App\Models\General\Impuesto;
 use App\Models\General\MetodoTesoreria;
 use App\Models\General\Tarjeta;
 use App\Models\General\TipoComprobante;
@@ -282,8 +283,52 @@ class ProveedoresController extends Controller
         ]);
     }
 
+    //// LISTAR REEMBOLSOS
+    public function reembolsos()
+    {
 
+        $proveedores = Proveedor::with([
+            'padron',
+            'comprobantes.detalles',
+            'comprobantes.tipoComprobante',
+            'comprobantes.ordenesVenta',
+            'comprobantes.comprobantesAplicados',
+            'comprobantes.detalles.impuestos',
+            'comprobantes.archivos'
+        ])->get();
 
+        return Inertia::render('Contabilidad/Proveedores/Reembolso/Index', [
+            'proveedores' => $proveedores,
+            'impuestos' => Impuesto::all(),
+
+        ]);
+    }
+
+    ////LISTAR TODAS LAS FACTURAS DE UN PROVEEDOR
+    public function facturasTotales($proveedorId)
+    {
+        $comprobantes = Comprobante::with([
+            'tipoComprobante',
+            'detalles',
+            'detalles.unidadMedida',
+            'tipoMoneda',
+            'comprobantesAplicados' => function ($q) {
+                $q->withPivot(['importe_aplicado']);
+                },
+            'ordenesTesoreria' => function ($q) {
+                $q->withPivot(['importe_aplicado']);
+                //->where('estado',  ['Pendiente', 'Confirmado']);
+                //si quiero solo las pendientes
+                //->where('estado', 'pendiente');
+                }
+            ])
+            ->where('tipo_id', $proveedorId)
+            ->where('estado', '!=', 'Anulado')
+            ->get()
+            ->values();
+
+        return response()->json($comprobantes);
+    }
 
 
 

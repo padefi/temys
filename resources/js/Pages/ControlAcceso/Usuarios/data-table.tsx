@@ -1,9 +1,9 @@
 "use client";
 
-import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, useReactTable, CellContext } from "@tanstack/react-table";
+import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, useReactTable, CellContext, RowData, TableMeta } from "@tanstack/react-table";
 import { Table, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
+import { DataTableSkeleton } from "@/Components/Table/AnimatedRows/DataTableSkeleton";
 import { useDataTableParams } from "@/hooks/useDataTableParams";
 import { RowActions } from "./row-actions";
 import { Role, User } from "./page";
@@ -30,6 +30,11 @@ interface DataTableProps<TData, TValue> {
     setEditingUserIndex: (idx: number | null) => void;
 }
 
+interface UserMeta<TData extends RowData> extends TableMeta<TData> {
+    roles: Array<{ id: number; name: string }>;
+    disabled: boolean;
+}
+
 export function DataTable<TData extends User, TValue>({
     columns: initialColumns,
     data: initialData,
@@ -51,7 +56,7 @@ export function DataTable<TData extends User, TValue>({
     const validationErrors = useRef(false);
     const footerRef = useRef<{ goToPage: (pageLink: string | null) => void }>(null);
 
-        
+
     useEffect(() => {
         setTableData(initialData);
         setEditingUserIndex(null);
@@ -264,7 +269,7 @@ export function DataTable<TData extends User, TValue>({
         meta: {
             roles: roles,
             disabled: newUser || editingUserIndex !== null,
-        },
+        } as UserMeta<TData>,
     });
 
     return (
@@ -277,7 +282,7 @@ export function DataTable<TData extends User, TValue>({
                                 {headerGroup.headers.map((header) => {
                                     return (
                                         <TableHead key={header.id}
-                                            className={header.column.columnDef.id === 'actions' ? 'w-[100px] whitespace-nowrap' : ''}
+                                            className={header.column.columnDef.id === 'actions' ? 'w-25 whitespace-nowrap' : ''}
                                         >
                                             {header.isPlaceholder
                                                 ? null
@@ -300,7 +305,7 @@ export function DataTable<TData extends User, TValue>({
                                 exit={{ opacity: 0, y: 20 }}
                                 transition={{ duration: 0.35, ease: "easeInOut" }}
                             >
-                                <DataTableSkeleton columnCount={columns.length} rowCount={tableData.length || 10} showHeaders={false} />
+                                <DataTableSkeleton colCount={columns.length} rowCount={tableData.length || 10} showHeaders={false} />
                             </motion.tbody>
                         ) : (
                             <motion.tbody
@@ -317,7 +322,7 @@ export function DataTable<TData extends User, TValue>({
                                             data-state={row.getIsSelected() && "selected"}
                                         >
                                             {row.getVisibleCells().map((cell) => (
-                                                <TableCell key={cell.id} className="p-2 h-[52px]">
+                                                <TableCell key={cell.id} className="p-2 h-13">
                                                     <AnimatePresence mode="wait" initial={false}>
                                                         <motion.div
                                                             key={cell.id + (editingUserIndex === row.index ? '_editing' : '_view')}
@@ -325,7 +330,7 @@ export function DataTable<TData extends User, TValue>({
                                                             animate={{ rotateX: 0 }}
                                                             exit={{ rotateX: 90 }}
                                                             transition={{ duration: 0.2 }}
-                                                            className={cell.column.columnDef.id === 'actions' ? 'w-[135px] whitespace-nowrap' : ''}
+                                                            className={cell.column.columnDef.id === 'actions' ? 'w-33.75 whitespace-nowrap' : ''}
                                                         >
                                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                                         </motion.div>

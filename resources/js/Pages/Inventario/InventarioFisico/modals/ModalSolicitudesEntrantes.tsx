@@ -9,7 +9,7 @@ import { Pagination } from "../components/PaginationSolicitud";
 import { Solicitudes } from "@/types/Inventario/Operaciones/InventarioFisico/SolicitudesStock"; 
 import { Calendar, ChevronDown, ChevronRight, MapPin, Package } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
+import { DataTableSkeleton } from "@/Components/Table/AnimatedRows/DataTableSkeleton";
 import { Button } from "@/Components/ui/button";
 interface SolicitudesModalProps {
     isOpen: boolean;

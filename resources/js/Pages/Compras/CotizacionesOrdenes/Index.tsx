@@ -62,12 +62,13 @@ export default function Index() {
           <div className="overflow-hidden bg-white shadow-xs sm:rounded-lg">
             <div className="p-6 text-gray-900">
               <div className="flex gap-4 mt-6 justify-end">
-                <Button
+                {/////////////VER SI SE PODRÍA GENERAR COTIZACIONES SIN ATARLAS A SOLICITUDES DE COMPRA
+                /*<Button
                   variant="outline"
                   onClick={() => router.visit('/compras/cotizaciones-ordenes/nueva')}
                 >
                   Nueva Cotización
-                </Button>
+                </Button>*/}
 
                 {selectedOrders.length > 0 && (
                   <Button

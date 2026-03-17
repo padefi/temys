@@ -107,7 +107,7 @@ class OrdenComprasController extends Controller
             if (!empty($validated['ordenCompra'])) {
                 $orden = ordenCompra::findOrFail($validated['ordenCompra']);
                 $orden->update([
-                    'tipo_id' => $proveedor->id,
+                    'proveedor_id' => $proveedor->id,
                     'moneda_id' => $validated['moneda'],
                     'cotizacion_moneda' => $validated['cotizacion_moneda'] ?? null,
                     'entrega_esperada' => $validated['entrega_esperada'],
@@ -119,13 +119,14 @@ class OrdenComprasController extends Controller
 
             } else {
                 $orden = ordenCompra::create([
-                    'tipo_id' => $proveedor->id,
+                    'proveedor_id' => $proveedor->id,
                     'moneda_id' => $validated['moneda'],
                     'cotizacion_moneda' => $validated['cotizacion_moneda'] ?? null,
                     'entrega_esperada' => $validated['entrega_esperada'],
                     'almacen_destino_id' => $validated['almacen'],
                     'observaciones' => $validated['observaciones'] ?? '',
                     'usuario_creacion' => $validated['usuario_id'],
+                    'fecha_creacion' => now(),
                     'usuario_actualizacion' => null,
                     'estado' => 'Confirmada',
                 ]);
@@ -158,7 +159,7 @@ class OrdenComprasController extends Controller
                     $detalle = OrdenCompraDetalle::create([
                         'orden_compras_id' => $orden->id,
                         'producto_id' => $producto['producto_id'],
-                        'orden_cotizaciones_id' => $orden->orden_cotizaciones_id,
+                        'orden_cotizaciones_id' => $orden->orden_cotizaciones_id ?? null,
                         'entrega_esperada' => $producto['entrega_esperada'],
                         'descripcion' => $producto['descripcion'] ?? '',
                         'codigo_barras' => $producto['codigo_barras'] ?? '',
@@ -312,25 +313,27 @@ class OrdenComprasController extends Controller
             if (!empty($validated['ordenCompra'])) {
                 $orden = ordenCompra::findOrFail($validated['ordenCompra']);
                 $orden->update([
-                    'tipo_id' => $proveedor->id,
+                    'proveedor_id' => $proveedor->id,
                     'moneda_id' => $validated['moneda'],
                     'cotizacion_moneda' => $validated['cotizacion_moneda'] ?? null,
                     'entrega_esperada' => $validated['entrega_esperada'],
                     'almacen_destino_id' => $validated['almacen'],
                     'observaciones' => $validated['observaciones'] ?? '',
+                    'fecha_creacion' => now(),
                     'usuario_actualizacion' => $validated['usuario_id'],
                 ]);
 
 
             } else {
                 $orden = ordenCompra::create([
-                    'tipo_id' => $proveedor->id,
+                    'proveedor_id' => $proveedor->id,
                     'moneda_id' => $validated['moneda'],
                     'cotizacion_moneda' => $validated['cotizacion_moneda'] ?? null,
                     'entrega_esperada' => $validated['entrega_esperada'],
                     'almacen_destino_id' => $validated['almacen'],
                     'observaciones' => $validated['observaciones'] ?? '',
                     'usuario_creacion' => $validated['usuario_id'],
+                    'fecha_creacion' => now(),
                     'usuario_actualizacion' => null,
                     'estado' => 'Pendiente',
                 ]);
@@ -363,7 +366,7 @@ class OrdenComprasController extends Controller
                 $detalle = OrdenCompraDetalle::create([
                     'orden_compras_id' => $orden->id,
                     'producto_id' => $producto['producto_id'],
-                    'orden_cotizaciones_id' => $orden->orden_cotizaciones_id,
+                    'orden_cotizaciones_id' => $orden->orden_cotizaciones_id  ?? null,
                     'entrega_esperada' => $producto['entrega_esperada'],
                     'descripcion' => $producto['descripcion'] ?? '',
                     'codigo_barras' => $producto['codigo_barras'] ?? '',
@@ -395,11 +398,11 @@ class OrdenComprasController extends Controller
 
 
         return redirect()->back()->with('success', 'Orden de Compra guardada correctamente.');
-        } catch (\Exception $e) {
-            DB::rollBack();
+       } catch (\Exception $e) {
+    DB::rollBack();
 
-            return redirect()->back()->with('danger', 'Error al guardar la orden de Compra.');
-        }
+    return redirect()->back()->with('danger', $e->getMessage());
+}
     }
 
     ///////CANCELAR ORDEN DE COMPRA

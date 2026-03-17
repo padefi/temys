@@ -31,7 +31,7 @@ return new class extends Migration
             $table->unsignedBigInteger('cbu_id');
             $table->foreign('cbu_id')
                 ->references('id')
-                ->on('padron_cbus')
+                ->on('padron_datos_bancarios')
                 ->onDelete('cascade');
 
 

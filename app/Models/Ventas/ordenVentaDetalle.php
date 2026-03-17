@@ -57,7 +57,7 @@ class OrdenVentaDetalle extends Model
     {
         return $this->belongsToMany(
             Impuesto::class,
-            'orden_ventas_detalles_impuestos',   // nombre de la tabla pivot
+            'orden_venta_detalle_impuestos',   // nombre de la tabla pivot
             'orden_ventas_detalles_id',         // FK al detalle
             'impuesto_id'                        // FK al impuesto
         );

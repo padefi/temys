@@ -5,7 +5,7 @@ import { MovimientosItem } from "@/types/Inventario/Reportes/HistorialMovimiento
 import { links } from "@/types/links";
 import { meta } from "@/types/meta";
 import { useDataTableParams } from "@/hooks/useDataTableParams";
-import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
+import { DataTableSkeleton } from "@/Components/Table/AnimatedRows/DataTableSkeleton";
 import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 import { Footer } from "@/Pages/UserModulePanel/footer";
 

@@ -3,7 +3,7 @@
 namespace App\Models\Padron\Cliente;
 
 use App\Models\Contabilidad\Comprobante;
-use App\Models\Padron\PadronCbu;
+use App\Models\Padron\PadronDatoBancario;
 use App\Models\Ventas\ordenCotizacionVenta;
 use App\Models\Ventas\OrdenVenta;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,10 +15,21 @@ class Cliente extends Model
 
     protected $table = 'clientes';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'id_padron',
         'apellido',
-        'nombre'
+        'nombre',
+        'fecha_creacion',
+        'usuario_creacion',
+        'fecha_actualizacion',
+        'usuario_actualizacion',
+    ];
+
+    protected $casts = [
+        'fecha_creacion' => 'datetime',
+        'fecha_actualizacion' => 'datetime',
     ];
 
     // Relación con el padrón
@@ -54,7 +65,7 @@ class Cliente extends Model
     ////CUENTAS BANCARIAS RELACIONADAS
     public function cbu()
     {
-        return $this->morphMany(PadronCbu::class, 'titular', 'tipo', 'tipo_id');
+        return $this->morphMany(PadronDatoBancario::class, 'titular', 'tipo', 'tipo_id');
     }
     // Relación con Comprobantes
     public function comprobantes()

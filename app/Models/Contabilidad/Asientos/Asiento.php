@@ -7,6 +7,7 @@ use App\Models\Contabilidad\PlanCuentas\Ejercicio;
 use App\Models\ControlAcceso\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Asiento extends Model
 {
@@ -29,6 +30,44 @@ class Asiento extends Model
         'model_id_voided',
         'voided_at',
     ];
+
+    protected $casts = [
+        'fecha' => 'date',
+        'confirmed_at' => 'datetime',
+        'voided_at' => 'datetime',
+        'importe' => 'decimal:2',
+    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model)
+        {
+            $model->model_id_created = Auth::id();
+            $model->estado = 'PENDIENTE';
+        });
+
+        static::updating(function ($model)
+        {
+            $model->model_id_updated = Auth::id();
+        });
+    }
+
+    public function scopePendientes($query)
+    {
+        return $query->where('estado', 'PENDIENTE');
+    }
+
+    public function scopeAnulados($query)
+    {
+        return $query->where('estado', 'ANULADO');
+    }
+
+    public function isEditable(): bool
+    {
+        return $this->estado === 'PENDIENTE';
+    }
 
     public function ejercicio()
     {
@@ -65,10 +104,10 @@ class Asiento extends Model
         return $this->hasManyThrough(
             Comprobante::class,
             Partida::class,
-            'co_asiento_id',   // FK en partidas
-            'id',              // FK en comprobantes
-            'id',              // PK en asiento
-            'id'               // PK en partidas
+            'co_asiento_id',
+            'id',
+            'id',
+            'id'
         );
     }
 }

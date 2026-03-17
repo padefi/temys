@@ -73,6 +73,7 @@ class ComprobantesProveedoresController extends Controller
 
             // ---------------- CREAR COMPROBANTE ----------------
             $comprobante = Comprobante::create([
+                'tipo' => 'Proveedor',
                 'tipo_id' => $request->tipo_id,
                 'fecha_factura' => $request->fecha_factura,
                 'fecha_vencimiento' => $request->fecha_vencimiento,
@@ -136,7 +137,7 @@ class ComprobantesProveedoresController extends Controller
                         $importeImpuesto = ($detalle['importe'] * $imp->porcentaje) / 100;
 
                         // Guardar pivote
-                        DB::table('comprobantes_proveedores_detalles_impuestos')->insert([
+                        DB::table('comprobantes_detalles_impuestos')->insert([
                             'detalle_id' => $detalleComprobante->id,
                             'impuesto_id' => $imp->id
                         ]);

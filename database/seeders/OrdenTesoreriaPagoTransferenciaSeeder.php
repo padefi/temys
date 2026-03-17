@@ -6,7 +6,7 @@ use App\Models\Contabilidad\OrdenTesoreria;
 use App\Models\Contabilidad\OrdenTesoreriaPagoTransferencia;
 use App\Models\ControlAcceso\User;
 use App\Models\General\CuentaBancaria;
-use App\Models\Padron\PadronCbu;
+use App\Models\Padron\PadronDatoBancario;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -23,7 +23,7 @@ class OrdenTesoreriaPagoTransferenciaSeeder extends Seeder
 
         $ordenes = OrdenTesoreria::where('tipo', 'pago')->get();
         $cuentas = CuentaBancaria::all();
-        $cbus = PadronCbu::all();
+        $cbus = PadronDatoBancario::all();
 
         if ($cuentas->isEmpty() || $cbus->isEmpty()) {
             $this->command->warn('Faltan cuentas bancarias o CBUs');

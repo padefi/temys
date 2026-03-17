@@ -18,12 +18,7 @@ import { Button } from "@/Components/ui/button"
 import { toast } from "sonner";
 
 const tiposDocumento: { value: TipoDocumento; label: string }[] = [
-    { value: 'DNI', label: 'DNI' },
-    { value: 'Pasaporte', label: 'Pasaporte' },
     { value: 'CUIT', label: 'CUIT' },
-    { value: 'CUIL', label: 'CUIL' },
-    { value: 'LE', label: 'Libreta de Enrolamiento' },
-    { value: 'LC', label: 'Libreta Cívica' },
 ];
 
 export function ProveedoresEditar({ open, setOpen, proveedor }: PropsWithChildren<ProveedoresEditarProps>) {

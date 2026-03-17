@@ -6,7 +6,7 @@ use App\Models\Contabilidad\OrdenTesoreria;
 use App\Models\Contabilidad\OrdenTesoreriaPagoTransferencia;
 use App\Models\ControlAcceso\User;
 use App\Models\General\CuentaBancaria;
-use App\Models\Padron\PadronCbu;
+use App\Models\Padron\PadronDatoBancario;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -29,9 +29,9 @@ class OrdenTesoreriaPagoTransferenciaFactory extends Factory
 
             'tipo' => $this->faker->randomElement(['cliente', 'proveedor']),
 
-            'cbu_id' => PadronCbu::query()
+            'cbu_id' => PadronDatoBancario::query()
                 ->inRandomOrder()
-                ->value('id') ?? PadronCbu::factory(),
+                ->value('id') ?? PadronDatoBancario::factory(),
 
             'numero_operacion' => $this->faker->optional()
                 ->numerify('TR-########'),

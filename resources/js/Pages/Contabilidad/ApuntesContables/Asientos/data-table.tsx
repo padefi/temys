@@ -3,10 +3,10 @@
 import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, useReactTable, CellContext } from "@tanstack/react-table";
 import { Table, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
 import { useState, useEffect, useMemo } from "react";
-import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
+import { DataTableSkeleton } from "@/Components/Table/AnimatedRows/DataTableSkeleton";
 import { useDataTableParams } from "@/hooks/useDataTableParams";
 import { AnimatePresence, motion } from "framer-motion";
-import { Asiento } from "@/types/Contabilidad/Asientos/Index";
+import { Asiento } from "@/types/Contabilidad/Asientos";
 import { router } from "@inertiajs/react";
 
 interface DataTableProps<TData, TValue> {
@@ -82,7 +82,7 @@ export function DataTable<TData extends Asiento, TValue>({
                                 exit={{ opacity: 0, y: 20 }}
                                 transition={{ duration: 0.35, ease: "easeInOut" }}
                             >
-                                <DataTableSkeleton columnCount={columns.length} rowCount={tableData.length || 10} showHeaders={false} />
+                                <DataTableSkeleton colCount={columns.length} rowCount={tableData.length || 10} showHeaders={false} />
                             </motion.tbody>
                         ) : (
                             <motion.tbody

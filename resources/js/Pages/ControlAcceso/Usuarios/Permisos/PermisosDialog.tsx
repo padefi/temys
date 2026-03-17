@@ -28,6 +28,7 @@ const PermisosDialog = ({ open, setOpen, user }: PropsWithChildren<PermisosDialo
     const [moduleSelectedRoleModule, setModuleSelectedRoleModule] = useState('');
     const [menuSelected, setMenuSelected] = useState(0);
     const [menuSelectedIsAssigned, setMenuSelectedIsAssigned] = useState(false);
+console.log(open);
 
     useEffect(() => {
         setBranchSelected(0);
@@ -41,7 +42,7 @@ const PermisosDialog = ({ open, setOpen, user }: PropsWithChildren<PermisosDialo
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className="min-w-[calc(100vw-3rem)] min-h-[calc(100vh-5rem)] md:min-w-[calc(100vw-10rem)] md:min-h-[calc(100vh-10rem)] lg:min-w-[calc(100vw-19rem)] lg:min-h-[calc(100vh-19rem)] xl:min-w-[calc(100vw-25rem)] xl:min-h-[calc(100vh-10rem)] 2xl:min-w-[calc(100vw-55rem)] 2xl:min-h-[calc(100vh-30rem)] [&_a]:text-wrap">
+            <DialogContent onInteractOutside={(e) => e.preventDefault()} className="min-w-[calc(100vw-3rem)] min-h-[calc(100vh-5rem)] md:min-w-[calc(100vw-10rem)] md:min-h-[calc(100vh-10rem)] lg:min-w-[calc(100vw-19rem)] lg:min-h-[calc(100vh-19rem)] xl:min-w-[calc(100vw-25rem)] xl:min-h-[calc(100vh-10rem)] 2xl:min-w-[calc(100vw-55rem)] 2xl:min-h-[calc(100vh-30rem)] [&_a]:text-wrap">
                 <DialogHeader>
                     <DialogTitle>
                         Permisos del usuario
@@ -52,11 +53,11 @@ const PermisosDialog = ({ open, setOpen, user }: PropsWithChildren<PermisosDialo
                     </DialogDescription>
                 </DialogHeader>
                 <ResizablePanelGroup
-                    direction="horizontal"
+                    orientation="horizontal"
                     className="min-h-[calc(100vh-10rem)] max-h-[calc(100vh-10rem)] md:min-h-[calc(100vh-15rem)] md:max-h-[calc(100vh-15rem)] lg:min-h-[calc(100vh-20rem)] lg:max-h-[calc(100vh-20rem)] xl:min-h-[calc(100vh-20rem)] xl:max-h-[calc(100vh-25rem)] 2xl:min-h-[calc(100vh-35rem)] 2xl:max-h-[calc(100vh-35rem)] rounded-lg border"
                 >
                     <ResizablePanel defaultSize={25}>
-                        <div className="flex h-[52px] items-center justify-center">
+                        <div className="flex h-13 items-center justify-center">
                             <span className="font-semibold">Sucursales</span>
                         </div>
                         <Separator />
@@ -70,7 +71,7 @@ const PermisosDialog = ({ open, setOpen, user }: PropsWithChildren<PermisosDialo
                     </ResizablePanel>
                     <ResizableHandle withHandle />
                     <ResizablePanel defaultSize={25}>
-                        <div className="flex h-[52px] items-center justify-center">
+                        <div className="flex h-13 items-center justify-center">
                             <span className="font-semibold">Modulos</span>
                         </div>
                         <Separator />
@@ -87,7 +88,7 @@ const PermisosDialog = ({ open, setOpen, user }: PropsWithChildren<PermisosDialo
                     </ResizablePanel>
                     <ResizableHandle withHandle />
                     <ResizablePanel defaultSize={25}>
-                        <div className="flex h-[52px] items-center justify-center">
+                        <div className="flex h-13 items-center justify-center">
                             <span className="font-semibold">Menus</span>
                         </div>
                         <Separator />
@@ -104,7 +105,7 @@ const PermisosDialog = ({ open, setOpen, user }: PropsWithChildren<PermisosDialo
                     </ResizablePanel>
                     <ResizableHandle withHandle />
                     <ResizablePanel defaultSize={25}>
-                        <div className="flex h-[52px] items-center justify-center">
+                        <div className="flex h-13 items-center justify-center">
                             <span className="font-semibold">Submenus</span>
                         </div>
                         <Separator />

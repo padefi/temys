@@ -22,7 +22,7 @@ export function DataTable<TData, TValue>({ columns, data, module }: DataTablePag
     const table = useReactTable({
         data,
         columns,
-        meta: { module },
+        meta: { },
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         onSortingChange: setSorting,

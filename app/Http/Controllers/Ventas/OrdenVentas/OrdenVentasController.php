@@ -159,7 +159,7 @@ class OrdenVentasController extends Controller
                     $detalle = OrdenVentaDetalle::create([
                         'orden_ventas_id' => $orden->id,
                         'producto_id' => $producto['producto_id'],
-                        'orden_cotizaciones_id' => $orden->orden_cotizaciones_id,
+                        'orden_cotizaciones_ventas_id' => $orden->orden_cotizaciones_ventas_id,
                         'entrega_esperada' => $producto['entrega_esperada'],
                         'descripcion' => $producto['descripcion'] ?? '',
                         'codigo_barras' => $producto['codigo_barras'] ?? '',
@@ -351,7 +351,7 @@ class OrdenVentasController extends Controller
                 $detalle = OrdenVentaDetalle::create([
                     'orden_ventas_id' => $orden->id,
                     'producto_id' => $producto['producto_id'],
-                    'orden_cotizaciones_id' => $orden->orden_cotizaciones_id,
+                    'orden_cotizaciones_ventas_id' => $orden->orden_cotizaciones_ventas_id,
                     'entrega_esperada' => $producto['entrega_esperada'],
                     'descripcion' => $producto['descripcion'] ?? '',
                     'codigo_barras' => $producto['codigo_barras'] ?? '',

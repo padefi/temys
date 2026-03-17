@@ -1,11 +1,13 @@
-import { createInertiaApp } from '@inertiajs/react';
 import createServer from '@inertiajs/react/server';
-import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import ReactDOMServer from 'react-dom/server';
+import { createInertiaApp } from '@inertiajs/react';
+import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { route } from '../../vendor/tightenco/ziggy/src/js';
 import { ActiveBranchProvider } from './contexts/active-branch';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Temys';
+const queryClient = new QueryClient();
 
 createServer((page) =>
     createInertiaApp({
@@ -29,9 +31,11 @@ createServer((page) =>
                 });
 
             return (
-                <ActiveBranchProvider>
-                    <App {...props} />
-                </ActiveBranchProvider>
+                <QueryClientProvider client={queryClient}>
+                    <ActiveBranchProvider>
+                        <App {...props} />
+                    </ActiveBranchProvider>
+                </QueryClientProvider>
             );
         },
     }),

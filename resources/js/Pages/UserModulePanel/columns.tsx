@@ -4,7 +4,7 @@ import { Role, User } from "./page";
 
 declare module "@tanstack/react-table" {
     interface ColumnMeta<TData, TValue> {
-        label: string;
+        label?: string;
         type?: "text" | "email" | "select" | "number" | "date" | "boolean";
     }
 }

@@ -5,7 +5,7 @@ import { useDataTableParams } from "@/hooks/useDataTableParams";
 import { useState } from "react";
 import { ColumnDef, ExpandedState, flexRender, getCoreRowModel, getExpandedRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, Row, useReactTable } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
-import { DataTableSkeleton } from "@/Components/DataTableSkeleton";
+import { DataTableSkeleton } from "@/Components/Table/AnimatedRows/DataTableSkeleton";
 import { DetallesSubtabla } from "./DetalleSubtabla";
 import React from "react";
 import { Footer } from "@/Pages/UserModulePanel/footer";

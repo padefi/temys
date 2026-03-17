@@ -202,7 +202,7 @@ export default function Index() {
                     selected?.id === p.id && 'bg-gray-200 font-semibold'
                   )}
                 >
-                  <span>{p.padron?.documento} - {p.nombre_fantasia}</span>
+                  <span>{p.padron?.documento} - {p.razon_social} - {p.nombre_fantasia}</span>
                   <span className="text-sm text-gray-700">${round2(p.saldo ?? 0.00)}</span>
                 </div>
               ))}

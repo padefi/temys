@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             SubmenuSeeder::class,
             RolePermissionSeeder::class,
             RoleModulePermissionSeeder::class,
+            NacionalidadesSeeder::class,
             UserSeeder::class,
             PadronSeeder::class,
             ClienteSeeder::class,
@@ -32,7 +33,7 @@ class DatabaseSeeder extends Seeder
             InmueblesTipoOcupacionSeeder::class,
             InmueblesTipoSeeder::class,
             InmueblesSeeder::class,
-            InmueblesTipoContratoSeeder::class, 
+            InmueblesTipoContratoSeeder::class,
             TipoMonedaSeeder::class,
             CaracteristicaSeeder::class,
             CategoriaSeeder::class,
@@ -56,7 +57,12 @@ class DatabaseSeeder extends Seeder
             CuentaBancariaSeeder::class,
             TarjetaSeeder::class,
             ChequeSeeder::class,
-            PadronCbuSeeder::class,
+            //MetodoPagoSeeder::class,
+            EntidadFinancieraSeeder::class,
+            PadronDatoBancarioSeeder::class,
+            ProveedorDatoBancarioSeeder::class,
+            ActividadEconomicaProveedorSeeder::class,
+            CondicionIvaSeeder::class,
             CondicionVentaSeeder::class,
             TipoComprobanteSeeder::class,
             UnidadMedidaSeeder::class,
@@ -64,6 +70,8 @@ class DatabaseSeeder extends Seeder
             ComprobanteDetalleSeeder::class,
             ComprobanteDetalleImpuestoSeeder::class,
             RelacionComprobanteOrdenPagoProveedorSeeder::class,
+            RelacionProveedorActividadSeeder::class,
+            RelacionProveedorCondicionSeeder::class,
             OrdenPagoSeeder::class,
             MetodoTesoreriaSeeder::class,
             MovimientoTesoreriaSeeder::class,
@@ -79,7 +87,7 @@ class DatabaseSeeder extends Seeder
             RelacionComprobantePartidaSeeder::class,
             RelacionComprobanteComprobanteSeeder::class,
             SolicitudVentaSeeder::class,
-            SolicitudVentaOrdenCotizacionVentaSeeder::class,
+            //SolicitudVentaOrdenCotizacionVentaSeeder::class,
             OrdenVentaSeeder::class,
             OrdenVentaDetalleSeeder::class,
             ComprobanteSeeder::class,
@@ -93,10 +101,11 @@ class DatabaseSeeder extends Seeder
             OrdenTesoreriaPagoEfectivoSeeder::class,
             OrdenTesoreriaPagoChequeSeeder::class,
             OrdenTesoreriaPagoTarjetaSeeder::class,
-
+            MotivoNotaCreditoSeeder::class,
+            MotivoReembolsoSeeder::class,
+            MotivoNotaDebitoSeeder::class,
             /* InventarioMovimientoEstadosSeeder::class,
             InventarioStockTransitoSeeder::class, */
-
         ]);
     }
 }

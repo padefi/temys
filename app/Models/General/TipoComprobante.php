@@ -19,4 +19,9 @@ class TipoComprobante extends Model
         'afecta_saldo',
         'habilitado',
     ];
+
+    public function esFactura(): bool
+    {
+        return in_array($this->codigo_arca, ['001', '006', '011']);
+    }
 }

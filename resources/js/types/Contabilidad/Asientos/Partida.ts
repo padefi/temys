@@ -1,7 +1,8 @@
 import { Cuenta } from "../PlanCuentas/Cuenta";
-import { Asiento } from "./Asiento";
 
 export interface Partida {
+    id: number;
+    asientoId?: number;
     cuenta: Cuenta;
     concepto: string;
     debe: number;

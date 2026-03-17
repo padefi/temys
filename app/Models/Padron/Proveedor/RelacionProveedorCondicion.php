@@ -11,9 +11,17 @@ class RelacionProveedorCondicion extends Model
 
     protected $table = 'relacion_proveedor_condicion';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'id_iva',
-        'id_proveedor'
+        'id_proveedor',
+        'fecha_creacion',
+        'usuario_creacion',
+    ];
+
+    protected $casts = [
+        'fecha_creacion' => 'datetime',
     ];
 
     // Relación con CondicionIva

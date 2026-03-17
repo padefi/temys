@@ -16,7 +16,7 @@ import { Footer } from '@/Pages/UserModulePanel/footer';
 import { links } from '@/types/links';
 import { meta } from '@/types/meta';
 import { useDataTableParams } from '@/hooks/useDataTableParams';
-import { DataTableSkeleton } from '@/Components/DataTableSkeleton';
+import { DataTableSkeleton } from '@/Components/Table/AnimatedRows/DataTableSkeleton';
 
 interface Props {
   data: StockInventarioItem[];

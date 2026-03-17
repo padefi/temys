@@ -1,14 +1,8 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "./column-header";
-import { Asiento } from "@/types/Contabilidad/Asientos/Index";
+import { Asiento } from "@/types/Contabilidad/Asientos";
 import { currencyNumber, dateFormat } from "@/utils/formatterFunctions";
 import BadgeEstadoAsiento from "@/Components/Contabilidad/ApuntesContables/BadgeEstadoAsiento";
-
-declare module "@tanstack/react-table" {
-    interface ColumnMeta<TData, TValue> {
-        label: string;
-    }
-}
 
 export const columns: ColumnDef<Asiento>[] = [
     {
