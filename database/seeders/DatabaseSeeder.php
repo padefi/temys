@@ -60,7 +60,6 @@ class DatabaseSeeder extends Seeder
             //MetodoPagoSeeder::class,
             EntidadFinancieraSeeder::class,
             PadronDatoBancarioSeeder::class,
-            ProveedorDatoBancarioSeeder::class,
             ActividadEconomicaProveedorSeeder::class,
             CondicionIvaSeeder::class,
             CondicionVentaSeeder::class,
@@ -106,6 +105,7 @@ class DatabaseSeeder extends Seeder
             MotivoNotaDebitoSeeder::class,
             /* InventarioMovimientoEstadosSeeder::class,
             InventarioStockTransitoSeeder::class, */
+            TipoContactoPadronSeeder::class,
         ]);
     }
 }

@@ -39,7 +39,7 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
                 Route::post('proveedores', [ProveedoresController::class, 'store'])
                     ->name('proveedores.store');
 
-                // Ruta para verificación en padrón (AJAX)
+                // Ruta para verificación en padrón
                 Route::get('compras/proveedores/verificar-padron', [ProveedoresController::class, 'verifyPadron'])
                 ->name('proveedores.verify-padron');    
             });
@@ -49,6 +49,14 @@ Route::middleware(['menu:ordenesCompras'])->group(function () {
                 Route::put('proveedores/{proveedor}', [ProveedoresController::class, 'update'])
                     ->name('proveedores.update');
             });
+
+            // Ruta para visualizar adjuntos requeridos
+            Route::get('proveedores/adjuntos/{adjunto}', [ProveedoresController::class, 'showAdjunto'])
+                ->name('proveedores.adjuntos.show');
+
+            // Ruta para visualizar adjuntos opcionales
+            Route::get('proveedores/adjuntos-opcionales/{adjunto}', [ProveedoresController::class, 'showAdjuntoOpcional'])
+                ->name('proveedores.adjuntosOpcionales.show');    
         });
 
     Route::middleware(['submenu:cotizacionesOrdenesCompras'])->prefix('compras/cotizaciones-ordenes')->group(function () {

@@ -32,12 +32,6 @@ class CondicionIva extends Model
         return $this->hasMany(\App\Models\Padron\Cliente\Cliente::class, 'condicion_iva_id');
     }
 
-    //Relación con proveedores (opcional, si necesitas esta relación)
-    public function proveedores()
-    {
-        return $this->hasMany(\App\Models\Padron\Proveedor\Proveedor::class, 'condicion_iva_id');
-    }
-
     //Agrega esta relación al modelo CondicionIva
     public function clientesCondicion()
     {

@@ -73,6 +73,35 @@ const secondPart = (c: string): number => {
 };
 /* CBU validation */
 
+/* CVU validation */
+export function validateCVU(cvu: string): boolean {
+    const value = (cvu ?? "").replace(/\D/g, "");
+  
+    if (!/^\d{22}$/.test(value)) return false;
+  
+    // misma lógica de checksum módulo 10 por bloques
+    const validarBloque = (bloque: string, pesos: number[]) => {
+      const nums = bloque.split("").map(Number);
+      const verificador = nums.pop();
+  
+      if (verificador == null) return false;
+  
+      const suma = nums.reduce((acc, n, i) => acc + n * pesos[i], 0);
+      const digito = (10 - (suma % 10)) % 10;
+  
+      return digito === verificador;
+    };
+  
+    const bloque1 = value.slice(0, 8);
+    const bloque2 = value.slice(8, 22);
+  
+    return (
+      validarBloque(bloque1, [7, 1, 3, 9, 7, 1, 3]) &&
+      validarBloque(bloque2, [3, 9, 7, 1, 3, 9, 7, 1, 3, 9, 7, 1, 3])
+    );
+}
+/* CVU validation */
+
 export const cuitValidator = (data: string): boolean => {
     const value = data.replace(/[-_]/g, "");
 

@@ -24,13 +24,13 @@ class RelacionClienteProveedor extends Model
         'fecha_creacion' => 'datetime',
     ];
 
-    // Relación con Cliente
+    //Relación con Cliente
     public function cliente()
     {
         return $this->belongsTo(\App\Models\Padron\Cliente\Cliente::class, 'id_cliente');
     }
 
-    // Relación con Proveedor
+    //Relación con Proveedor
     public function proveedor()
     {
         return $this->belongsTo(\App\Models\Padron\Proveedor\Proveedor::class, 'id_proveedor');

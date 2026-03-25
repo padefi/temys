@@ -10,10 +10,20 @@ class ProveedorFactory extends Factory
 {
     public function definition()
     {
-        // Asegurarse de que existan registros en padron
-        $padron = Padron::inRandomOrder()->first() ?? Padron::factory()->create();
         $tipoProveedor = ['Humana', 'Jurídica'];
         $usuarioId = User::inRandomOrder()->value('id');
+
+        //Buscar padron con CUIT
+        $padron = Padron::where('tipo_documento', 'CUIT')
+            ->inRandomOrder()
+            ->first();
+
+        //Si no existe, lo creamos FORZANDO CUIT
+        if (!$padron) {
+            $padron = Padron::factory()->create([
+                'tipo_documento' => 'CUIT',
+            ]);
+        }
 
         return [
             'id_padron' => $padron->id,
@@ -22,8 +32,6 @@ class ProveedorFactory extends Factory
             'tipo' => $this->faker->randomElement($tipoProveedor),
             'fecha_creacion' => now(),
             'usuario_creacion' => $usuarioId,
-            /* 'fecha_actualizacion' => now(),
-            'usuario_actualizacion' => $this->faker->boolean(50) ? $usuarioId : null, */
         ];
     }
 }

@@ -32,9 +32,11 @@ class PadronDatoBancarioFactory extends Factory
 
         $isCbu = strlen($entidad->clave_unica) === 3;
 
+        $tipo = $this->faker->randomElement(['Cliente', 'Proveedor']);
+
         return [
-            'tipo' => $this->faker->randomElement(['Cliente', 'Proveedor']),
-            'tipo_id' => $this->faker->randomElement([$proveedor->id, $cliente->id]),
+            'tipo' => $tipo,
+            'tipo_id' => $tipo === 'Proveedor' ? $proveedor->id : $cliente->id,
             'tipo_clave' => $isCbu ? 'Cbu' : 'Cvu',
             'clave' => $this->faker->unique()->numerify(str_repeat('#', 22)),
             'alias' => $this->faker->boolean(70)

@@ -1,5 +1,4 @@
-// types/proveedor.ts
-export type TipoDocumento = 'DNI' | 'Pasaporte' | 'CUIT' | 'CUIL' | 'LE' | 'LC';
+import type { TipoDocumento } from "@/types/Padron";
 
 export interface Padron {
     id: number;

@@ -8,8 +8,11 @@ use App\Models\Compras\OrdenCotizacion\OrdenCotizacion;
 use App\Models\Padron\Cliente\Cliente;
 use App\Models\Padron\CondicionIva;
 use App\Models\Padron\Padron;
-//use App\Models\Padron\PadronDatoBancario;
-use App\Models\Padron\Proveedor\ProveedorDatoBancario;
+use App\Models\Padron\PadronDatoBancario;
+use App\Models\Padron\PadronDomicilio;
+use App\Models\Padron\PadronContacto;
+use App\Models\Padron\PadronAdjuntoRequerido;
+use App\Models\Padron\PadronAdjuntoOpcional;
 use App\Models\Padron\Proveedor\ActividadEconomicaProveedor;
 
 class Proveedor extends Model
@@ -36,13 +39,11 @@ class Proveedor extends Model
         'fecha_actualizacion' => 'datetime',
     ];
 
-    // Relación con el padrón
     public function padron()
     {
         return $this->belongsTo(Padron::class, 'id_padron');
     }
 
-    // relación al modelo Proveedor
     public function clientes()
     {
         return $this->belongsToMany(Cliente::class, 'relacion_cliente_proveedor', 'id_proveedor', 'id_cliente');
@@ -50,17 +51,54 @@ class Proveedor extends Model
 
     public function actividadesEconomicas()
     {
-        return $this->belongsToMany(ActividadEconomicaProveedor::class, 'relacion_proveedor_actividad', 'id_proveedor', 'id_actividad')
-                    ->withPivot(['fecha_creacion', 'usuario_creacion']);
+        return $this->belongsToMany(
+            ActividadEconomicaProveedor::class,
+            'relacion_proveedor_actividad',
+            'id_proveedor',
+            'id_actividad'
+        )->withPivot(['fecha_creacion', 'usuario_creacion']);
     }
 
-    // Agrega esta relación al modelo Proveedor
     public function condicionesIva()
     {
-        return $this->belongsToMany(CondicionIva::class, 'relacion_proveedor_condicion', 'id_proveedor', 'id_iva')
-                    ->withPivot(['fecha_creacion', 'usuario_creacion']);/* ->withTimestamps(); */
+        return $this->belongsToMany(
+            CondicionIva::class,
+            'relacion_proveedor_condicion',
+            'id_proveedor',
+            'id_iva'
+        )->withPivot(['fecha_creacion', 'usuario_creacion']);
     }
-    ////ORDENES DE COTIZACION RELACIONADAS
+
+    public function datosBancarios()
+    {
+        return $this->hasMany(PadronDatoBancario::class, 'tipo_id', 'id')
+            ->where('tipo', 'Proveedor');
+    }
+
+    public function domicilios()
+    {
+        return $this->hasMany(PadronDomicilio::class, 'tipo_id', 'id')
+            ->where('tipo', 'Proveedor');
+    }
+
+    public function contactos()
+    {
+        return $this->hasMany(PadronContacto::class, 'tipo_id', 'id')
+            ->where('tipo', 'Proveedor');
+    }
+
+    public function adjuntosRequeridos()
+    {
+        return $this->hasMany(PadronAdjuntoRequerido::class, 'tipo_id', 'id')
+            ->where('tipo', 'Proveedor');
+    }
+
+    public function adjuntosOpcionales()
+    {
+        return $this->hasMany(PadronAdjuntoOpcional::class, 'tipo_id', 'id')
+            ->where('tipo', 'Proveedor');
+    }
+
     public function ordenesCotizacion()
     {
         return $this->hasMany(OrdenCotizacion::class, 'proveedor_id');
@@ -70,16 +108,9 @@ class Proveedor extends Model
     {
         return $this->hasMany(OrdenCotizacion::class, 'proveedor_id');
     }
-    ////CUENTAS BANCARIAS RELACIONADAS
-    public function datosBancarios()
-    {
-        //return $this->morphMany(PadronDatoBancario::class, 'titular', 'tipo', 'tipo_id');
-        return $this->hasMany(ProveedorDatoBancario::class, 'proveedor_id');
-    }
-    // Relación con ComprobantesProveedores
+
     public function comprobantes()
     {
         return $this->hasMany(Comprobante::class, 'tipo_id', 'id');
     }
-
 }

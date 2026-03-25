@@ -10,7 +10,7 @@ class ClienteFactory extends Factory
 {
     public function definition()
     {
-        // Asegurarse de que existan registros en padron
+        //Asegurarse de que existan registros en padron
         $padron = Padron::inRandomOrder()->first() ?? Padron::factory()->create();
         $usuarioId = User::inRandomOrder()->value('id');
 
@@ -20,8 +20,6 @@ class ClienteFactory extends Factory
             'nombre' => $this->faker->firstName,
             'fecha_creacion' => now(),
             'usuario_creacion' => $usuarioId,
-            /* 'fecha_actualizacion' => now(),
-            'usuario_actualizacion' => $this->faker->boolean(50) ? $usuarioId : null, */
         ];
     }
 }
