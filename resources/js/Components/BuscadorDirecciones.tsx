@@ -17,6 +17,18 @@ import { buscarDirecciones, buscarProvincias, buscarLocalidades, buscarCalles } 
 export interface DireccionSeleccionada {
   calle_id: string;
   altura: number;
+
+  //AGREGADO POR LEO
+  calle_nombre?: string;
+  localidad?: string;
+  provincia?: string;
+  departamento?: string;
+  nomenclatura?: string;
+  lat?: number;
+  lon?: number;
+  alturaManual?: boolean;
+  alturaOriginal?: number;
+  /////////////////////////////
 }
 
 /**
@@ -42,7 +54,8 @@ interface DireccionCompleta {
  */
 interface BuscadorDireccionesCompactoProps {
   /** Callback que se ejecuta cuando se selecciona una dirección válida */
-  onDireccionSeleccionada: (direccion: DireccionSeleccionada) => void;
+  //onDireccionSeleccionada: (direccion: DireccionSeleccionada) => void;
+  onDireccionSeleccionada: (direccion: DireccionSeleccionada | null) => void; //CAMBIADO POR LEO | SE AGREGÓ EL NULL
   /** Clase CSS adicional para el contenedor */
   className?: string;
   /** Deshabilitar el componente */
@@ -50,6 +63,24 @@ interface BuscadorDireccionesCompactoProps {
   mostrarBorde?:boolean;
   /** Mostrar el mapa de resultados */
   mostrarMapa?: boolean;
+
+  //AGREGADO POR LEO
+  /** ✅ control externo: selección actual (para edición) */
+  value?: DireccionSeleccionada | null;
+
+  /** ✅ precarga inputs (para edición) */
+  initialFilters?: {
+    provincia?: string | null;
+    localidad?: string | null;
+    calle?: string | null;
+    altura?: number | null;
+  };
+
+  /** ✅ al cambiar, resetea todo (ideal para "nuevo" / "cancelar") */
+  resetKey?: string | number;
+
+  mostrarResultados?: boolean; // default true
+  //////////////////////////////////////////////////////
 }
 
 /**
@@ -67,6 +98,13 @@ export default function BuscadorDireccionesCompacto({
   mostrarBorde,
   disabled = false,
   mostrarMapa = true,
+
+  //AGREGADO POR LEO
+  value = null,
+  initialFilters,
+  resetKey,
+  mostrarResultados = true,
+  ///////////////////
 }: BuscadorDireccionesCompactoProps) {
   // Estados principales
   const [calle, setCalle] = useState("");
@@ -155,6 +193,107 @@ export default function BuscadorDireccionesCompacto({
     }
   }, []);
 
+  //AGREGADO POR LEO
+  const emitSelected = useCallback(
+    (d: DireccionCompleta | null) => {
+      if (!d) {
+        onDireccionSeleccionada(null);
+        return;
+      }
+      onDireccionSeleccionada({
+        calle_id: d.calle_id,
+        altura: d.altura,
+        calle_nombre: d.calle_nombre,
+        localidad: d.localidad,
+        provincia: d.provincia,
+        departamento: d.departamento,
+        nomenclatura: d.nomenclatura,
+        lat: d.lat,
+        lon: d.lon,
+        alturaManual: d.alturaManual,
+        alturaOriginal: d.alturaOriginal,
+      });
+    },
+    [onDireccionSeleccionada]
+  );
+
+  const clearSelectionOnly = useCallback(() => {
+    setDireccionSeleccionada(null);
+    setSelectedIndex(undefined);
+    emitSelected(null);
+  }, [emitSelected]);
+
+
+  /** ✅ reset global (cuando cambia resetKey) */
+  useEffect(() => {
+    if (resetKey === undefined) return;
+
+    setCalle("");
+    setAltura("");
+    setProvincia("");
+    setLocalidad("");
+    setDirecciones([]);
+    setError(null);
+
+    setProvinciasSugeridas([]);
+    setLocalidadesSugeridas([]);
+    setCallesSugeridas([]);
+    setActiveProvinciaIndex(-1);
+    setActiveLocalidadIndex(-1);
+    setActiveCalleIndex(-1);
+
+    clearSelectionOnly();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetKey]);
+
+  /** ✅ precargar inputs al montar o si cambia initialFilters */
+  useEffect(() => {
+    if (!initialFilters) return;
+
+    const prov = initialFilters.provincia ?? "";
+    const loc = initialFilters.localidad ?? "";
+    const cal = initialFilters.calle ?? "";
+    const alt = initialFilters.altura != null ? String(initialFilters.altura) : "";
+
+    setProvincia(prov);
+    setLocalidad(loc);
+    setCalle(cal);
+    setAltura(alt);
+    // ojo: no emitimos selección acá; la selección solo se emite cuando hay click en un resultado
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialFilters?.provincia, initialFilters?.localidad, initialFilters?.calle, initialFilters?.altura]);
+
+  /** ✅ si viene value desde afuera, seteo selección visual (y busco index si está la lista) */
+  useEffect(() => {
+    if (!value) {
+      setDireccionSeleccionada(null);
+      setSelectedIndex(undefined);
+      return;
+    }
+
+    // Creamos una "DireccionCompleta" mínima para marcar seleccionado
+    const faux: DireccionCompleta = {
+      calle_id: value.calle_id,
+      altura: value.altura,
+      calle_nombre: value.calle_nombre ?? "Dirección seleccionada",
+      localidad: value.localidad ?? "",
+      provincia: value.provincia ?? "",
+      departamento: value.departamento,
+      nomenclatura: value.nomenclatura,
+      lat: value.lat,
+      lon: value.lon,
+      alturaManual: value.alturaManual,
+      alturaOriginal: value.alturaOriginal,
+    };
+
+    setDireccionSeleccionada(faux);
+
+    // si está en la lista, marco índice; si no, lo dejo undefined
+    const idx = direcciones.findIndex((d) => d.calle_id === value.calle_id && d.altura === value.altura);
+    setSelectedIndex(idx >= 0 ? idx : undefined);
+  }, [value, direcciones]);
+  ////////////////////////////////////////////////
+
   /**
    * Función para buscar direcciones con debounce
    */
@@ -203,15 +342,57 @@ export default function BuscadorDireccionesCompacto({
           if (response?.success && Array.isArray(response?.direcciones)) {
             // OPTIMIZADO: El backend ya maneja el fallback automáticamente
             // No es necesario hacer una segunda búsqueda desde el frontend
-            setDireccionSeleccionada(null);
+
+            //setDireccionSeleccionada(null); //COMENTADO POR LEO
+
             setSelectedIndex(undefined);
-            const dedupedDirecciones = dedupeDireccionesById(response.direcciones);
+
+            //AGREGADO POR LEO
+            let dedupedDirecciones = dedupeDireccionesById(response.direcciones);
+            // ✅ Fallback: si con altura no hay nada, buscamos sin altura
+            if (dedupedDirecciones.length === 0 && requestParams.altura) {
+              const fallbackParams = { ...requestParams };
+              delete fallbackParams.altura;
+
+              const fallbackKey = JSON.stringify(fallbackParams);
+              const cachedFallback = direccionesCacheRef.current.get(fallbackKey);
+
+              const fallbackResp: any =
+                cachedFallback ? { success: true, direcciones: cachedFallback } : await buscarDirecciones(fallbackParams);
+
+              if (requestSeq !== searchRequestSeqRef.current) return;
+
+              if (fallbackResp?.success && Array.isArray(fallbackResp?.direcciones)) {
+                dedupedDirecciones = dedupeDireccionesById(fallbackResp.direcciones).map((d) => ({
+                  ...d,
+                  // ✅ mantenemos la altura que escribió el usuario
+                  altura: Number(requestParams.altura),
+                  alturaManual: true,
+                  alturaOriginal: undefined,
+                }));
+
+                if (!cachedFallback && dedupedDirecciones.length > 0) {
+                  setCached(direccionesCacheRef.current, fallbackKey, dedupedDirecciones);
+                }
+              }
+            }
+            /////////////////////////////////////////////////////////
+            
             setDirecciones(dedupedDirecciones);
-            if (!cached) {
+            //COMENTADO POR LEO
+            /* if (!cached) {
+              setCached(direccionesCacheRef.current, cacheKey, dedupedDirecciones);
+            } */
+
+            //AGREGADO POR LEO
+            if (!cached && dedupedDirecciones.length > 0) {
               setCached(direccionesCacheRef.current, cacheKey, dedupedDirecciones);
             }
+            ///////////////////////////////
             if (dedupedDirecciones.length === 0) {
               setError("No se encontraron direcciones");
+            } else {
+              setError(null);
             }
           } else {
             setError("Error al buscar direcciones");
@@ -233,7 +414,8 @@ export default function BuscadorDireccionesCompacto({
 
       searchTimeoutRef.current = timeout;
     },
-    []
+    [dedupeDireccionesById, setCached] //AGREGADO POR LEO
+    //[] //COMENTADO POR LEO
   );
 
   /**
@@ -245,6 +427,7 @@ export default function BuscadorDireccionesCompacto({
     }
   }, [calle, altura, provincia, localidad, buscarDireccionesDebounced]);
 
+  //AGREGADO POR LEO
   /**
    * Handler para seleccionar una dirección
    */
@@ -252,11 +435,20 @@ export default function BuscadorDireccionesCompacto({
 
     setDireccionSeleccionada(direccion);
     setSelectedIndex(index);
-    onDireccionSeleccionada({
+
+    //COMENTADO POR LEO
+    /* onDireccionSeleccionada({
       calle_id: direccion.calle_id,
       altura: direccion.altura,
-    });
-  }, [onDireccionSeleccionada]);
+    }); */
+
+    //AGREGADO POR LEO
+    emitSelected(direccion);
+    ////////////////////////
+  }, 
+  [emitSelected] //AGREGADO POR LEO
+  //[onDireccionSeleccionada] //COMENTADO POR LEO
+  );
 
   /**
    * Buscar sugerencias de provincias
@@ -439,8 +631,8 @@ export default function BuscadorDireccionesCompacto({
     setProvincia("");
     setLocalidad("");
     setDirecciones([]);
-    setDireccionSeleccionada(null);
-    setSelectedIndex(undefined);
+    //setDireccionSeleccionada(null); //COMENTADO POR LEO
+    //setSelectedIndex(undefined); //COMENTADO POR LEO
     setError(null);
     setProvinciasSugeridas([]);
     setLocalidadesSugeridas([]);
@@ -448,6 +640,8 @@ export default function BuscadorDireccionesCompacto({
     setActiveProvinciaIndex(-1);
     setActiveLocalidadIndex(-1);
     setActiveCalleIndex(-1);
+
+    clearSelectionOnly(); //AGREGADO POR LEO
   };
 
   const handleMarkerClick = useCallback((index: number) => {
@@ -542,7 +736,8 @@ export default function BuscadorDireccionesCompacto({
    * Preparar coordenadas para el mapa
    */
   const coordenadasMapa = React.useMemo(() => {
-    return direcciones
+    //return direcciones //COMENTADO POR LEO
+    const fromResults = direcciones //AGREGADO POR LEO
       .filter((d) => d.lat != null && d.lon != null)
       .map((d, index) => ({
         lat: d.lat as number,
@@ -551,7 +746,38 @@ export default function BuscadorDireccionesCompacto({
         descripcion: `${d.localidad}, ${d.provincia}`,
         index,
       }));
-  }, [direcciones]);
+
+      //AGREGADO POR LEO
+      // ✅ fallback: si no hay resultados pero viene value con lat/lon, mostramos esa ubicación
+      if (fromResults.length === 0 && value?.lat != null && value?.lon != null) {
+        return [{
+          lat: value.lat,
+          lon: value.lon,
+          nombre: `${value.calle_nombre ?? "Dirección"} ${value.altura}`,
+          descripcion: `${value.localidad ?? ""}${value.provincia ? `, ${value.provincia}` : ""}`,
+          index: 0,
+        }];
+      }
+
+      return fromResults;
+      ///////////////////////////
+  }, 
+  [direcciones, value] //AGREGADO POR LEO
+  //[direcciones] //COMENTADO POR LEO
+  );
+
+  //AGREGADO POR LEO
+  const calleReady = calle.trim().length >= 3;
+
+  // Si querés exigir altura también, dejalo así.
+  // Si querés permitir buscar sin altura, sacá lo de altura.
+  const alturaReady = altura.trim() !== "" && !isNaN(Number(altura));
+  const canSearch = calleReady && alturaReady;
+
+  const shouldShowResultsPanel =
+    mostrarResultados &&
+    (loading || !!error || direcciones.length > 0) &&
+    canSearch;
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -571,6 +797,7 @@ export default function BuscadorDireccionesCompacto({
                 placeholder="Ej: Buenos Aires"
                 value={provincia}
                 onChange={(e) => {
+                  clearSelectionOnly(); //AGREGADO POR LEO
                   setProvincia(e.target.value);
                   buscarSugerenciasProvincia(e.target.value);
                   setMostrarSugerenciasProvincia(true);
@@ -580,11 +807,11 @@ export default function BuscadorDireccionesCompacto({
                 onBlur={() => setTimeout(() => setMostrarSugerenciasProvincia(false), 200)}
                 disabled={disabled}
                 className="text-sm"
-                role="combobox"
-                aria-autocomplete="list"
-                aria-expanded={mostrarSugerenciasProvincia}
-                aria-controls="provincia-sugerencias"
-                aria-activedescendant={activeProvinciaIndex >= 0 ? `provincia-option-${activeProvinciaIndex}` : undefined}
+                //role="combobox" //COMENTADO POR LEO
+                //aria-autocomplete="list" //COMENTADO POR LEO
+                //aria-expanded={mostrarSugerenciasProvincia} //COMENTADO POR LEO
+                //aria-controls="provincia-sugerencias" //COMENTADO POR LEO
+                //aria-activedescendant={activeProvinciaIndex >= 0 ? `provincia-option-${activeProvinciaIndex}` : undefined} //COMENTADO POR LEO
               />
               {mostrarSugerenciasProvincia && provinciasSugeridas.length > 0 && (
                 <div id="provincia-sugerencias" role="listbox" className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md">
@@ -598,9 +825,9 @@ export default function BuscadorDireccionesCompacto({
                           setMostrarSugerenciasProvincia(false);
                         }}
                         onMouseEnter={() => setActiveProvinciaIndex(index)}
-                        id={`provincia-option-${index}`}
-                        role="option"
-                        aria-selected={index === activeProvinciaIndex}
+                        //id={`provincia-option-${index}`} //COMENTADO POR LEO
+                        //role="option" //COMENTADO POR LEO
+                        //aria-selected={index === activeProvinciaIndex} //COMENTADO POR LEO
                         className={cn(
                           "w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent",
                           index === activeProvinciaIndex && "bg-accent"
@@ -623,6 +850,7 @@ export default function BuscadorDireccionesCompacto({
                 placeholder="Ej: CABA"
                 value={localidad}
                 onChange={(e) => {
+                  clearSelectionOnly(); //AGREGADO POR LEO
                   setLocalidad(e.target.value);
                   buscarSugerenciasLocalidad(e.target.value);
                   setMostrarSugerenciasLocalidad(true);
@@ -632,11 +860,11 @@ export default function BuscadorDireccionesCompacto({
                 onBlur={() => setTimeout(() => setMostrarSugerenciasLocalidad(false), 200)}
                 disabled={disabled}
                 className="text-sm"
-                role="combobox"
-                aria-autocomplete="list"
-                aria-expanded={mostrarSugerenciasLocalidad}
-                aria-controls="localidad-sugerencias"
-                aria-activedescendant={activeLocalidadIndex >= 0 ? `localidad-option-${activeLocalidadIndex}` : undefined}
+                //role="combobox" //COMENTADO POR LEO
+                //aria-autocomplete="list" //COMENTADO POR LEO
+                //aria-expanded={mostrarSugerenciasLocalidad} //COMENTADO POR LEO
+                //aria-controls="localidad-sugerencias" //COMENTADO POR LEO
+                //aria-activedescendant={activeLocalidadIndex >= 0 ? `localidad-option-${activeLocalidadIndex}` : undefined} //COMENTADO POR LEO
               />
               {mostrarSugerenciasLocalidad && localidadesSugeridas.length > 0 && (
                 <div id="localidad-sugerencias" role="listbox" className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md">
@@ -650,9 +878,9 @@ export default function BuscadorDireccionesCompacto({
                           setMostrarSugerenciasLocalidad(false);
                         }}
                         onMouseEnter={() => setActiveLocalidadIndex(index)}
-                        id={`localidad-option-${index}`}
-                        role="option"
-                        aria-selected={index === activeLocalidadIndex}
+                        //id={`localidad-option-${index}`} //COMENTADO POR LEO
+                        //role="option" //COMENTADO POR LEO 
+                        //aria-selected={index === activeLocalidadIndex} //COMENTADO POR LEO
                         className={cn(
                           "w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent",
                           index === activeLocalidadIndex && "bg-accent"
@@ -685,8 +913,9 @@ export default function BuscadorDireccionesCompacto({
                   placeholder="Buscar calle..."
                   value={calle}
                   onChange={(e) => {
+                    clearSelectionOnly(); //AGREGADO POR LEO
                     setCalle(e.target.value);
-                    setDireccionSeleccionada(null);
+                    //setDireccionSeleccionada(null); //COMENTADO POR LEO
                     buscarSugerenciasCalle(e.target.value);
                     setMostrarSugerenciasCalle(true);
                   }}
@@ -695,11 +924,11 @@ export default function BuscadorDireccionesCompacto({
                   onBlur={() => setTimeout(() => setMostrarSugerenciasCalle(false), 200)}
                   disabled={disabled}
                   className="pl-9 text-sm"
-                  role="combobox"
-                  aria-autocomplete="list"
-                  aria-expanded={mostrarSugerenciasCalle}
-                  aria-controls="calle-sugerencias"
-                  aria-activedescendant={activeCalleIndex >= 0 ? `calle-option-${activeCalleIndex}` : undefined}
+                  //role="combobox" //COMENTADO POR LEO
+                  //aria-autocomplete="list" //COMENTADO POR LEO
+                  //aria-expanded={mostrarSugerenciasCalle} //COMENTADO POR LEO
+                  //aria-controls="calle-sugerencias" //COMENTADO POR LEO
+                  //aria-activedescendant={activeCalleIndex >= 0 ? `calle-option-${activeCalleIndex}` : undefined} //COMENTADO POR LEO
                 />
               </div>
               {mostrarSugerenciasCalle && callesSugeridas.length > 0 && (
@@ -714,9 +943,9 @@ export default function BuscadorDireccionesCompacto({
                           setMostrarSugerenciasCalle(false);
                         }}
                         onMouseEnter={() => setActiveCalleIndex(index)}
-                        id={`calle-option-${index}`}
-                        role="option"
-                        aria-selected={index === activeCalleIndex}
+                        //id={`calle-option-${index}`} //COMENTADO POR LEO
+                        //role="option" //COMENTADO POR LEO
+                        //aria-selected={index === activeCalleIndex} //COMENTADO POR LEO
                         className={cn(
                           "w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent",
                           index === activeCalleIndex && "bg-accent"
@@ -743,8 +972,9 @@ export default function BuscadorDireccionesCompacto({
                 onChange={(e) => {
                   const value = e.target.value;
                   if (value === "" || /^\d+$/.test(value)) {
+                    clearSelectionOnly(); //AGREGADO POR LEO
                     setAltura(value);
-                    setDireccionSeleccionada(null);
+                    //setDireccionSeleccionada(null); //COMENTADO POR LEO
                   }
                 }}
                 disabled={disabled}
@@ -772,143 +1002,156 @@ export default function BuscadorDireccionesCompacto({
       </div>
 
       {/* Resultados: Lista y Mapa lado a lado */}
-      <AnimatePresence mode="wait">
-        {(direcciones.length > 0 || loading || error) && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className={cn("grid gap-3", mostrarMapa && "lg:grid-cols-2")}
-          >
-            {/* Lista de resultados */}
+      {mostrarResultados && ( //AGREGADO POR LEO    
+        <AnimatePresence mode="wait">
+          {shouldShowResultsPanel  && (
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.1, ease: "easeOut" }}
-              className="rounded-lg border bg-card shadow-sm"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className={cn("grid gap-3", mostrarMapa && "lg:grid-cols-2")}
             >
-            <div className="border-b p-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold">Resultados</h3>
-                {direcciones.length > 0 && (
-                  <Badge variant="secondary" className="text-xs">
-                    {direcciones.length}
-                  </Badge>
+              {/* Lista de resultados */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.1, ease: "easeOut" }}
+                className="rounded-lg border bg-card shadow-sm"
+              >
+              <div className="border-b p-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold">Resultados</h3>
+                  {direcciones.length > 0 && (
+                    <Badge variant="secondary" className="text-xs">
+                      {direcciones.length}
+                    </Badge>
+                  )}
+                </div>
+                {direcciones.length > 0 && direcciones[0]?.alturaManual && (
+                  <div className="mt-2 rounded-md bg-amber-50 px-2 py-1.5 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                    ⚠️ Altura no encontrada en la base de datos. Se usará la altura ingresada manualmente.
+                  </div>
                 )}
               </div>
-              {direcciones.length > 0 && direcciones[0]?.alturaManual && (
-                <div className="mt-2 rounded-md bg-amber-50 px-2 py-1.5 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-200">
-                  ⚠️ Altura no encontrada en la base de datos. Se usará la altura ingresada manualmente.
-                </div>
-              )}
-            </div>
 
-            <div className="p-2">
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : error ? (
-                <div className="rounded-md bg-destructive/10 p-3 text-xs text-destructive">
-                  {error}
-                </div>
-              ) : (
-                <ScrollArea className="h-75">
-                  <div className="space-y-1.5 pr-3">
-                    {direcciones.map((direccion, index) => (
-                      <button
-                        key={`${direccion.calle_id}-${direccion.altura}`}
-                        onClick={() => handleSelectDireccion(direccion, index)}
-                        className={cn(
-                          "w-full rounded-md border p-2.5 text-left transition-all hover:border-primary hover:bg-accent",
-                          direccionSeleccionada?.calle_id === direccion.calle_id &&
-                            direccionSeleccionada?.altura === direccion.altura &&
-                            "border-primary bg-primary/5"
-                        )}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5">
-                              <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                              <p className="truncate text-sm font-medium">
-                                {direccion.calle_nombre} {direccion.altura}
-                                {direccion.alturaManual && (
-                                  <Badge variant="outline" className="ml-1.5 text-[10px] text-amber-600">
-                                    Altura manual
-                                  </Badge>
-                                )}
+              <div className="p-2">
+                {loading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : error ? (
+                  <div className="rounded-md bg-destructive/10 p-3 text-xs text-destructive">
+                    {error}
+                  </div>
+                ) : (
+                  <ScrollArea className="h-75">
+                    <div className="space-y-1.5 pr-3">
+                      {direcciones.map((direccion, index) => (
+                        <button
+                          key={`${direccion.calle_id}-${direccion.altura}`}
+                          onClick={() => handleSelectDireccion(direccion, index)}
+                          className={cn(
+                            "w-full rounded-md border p-2.5 text-left transition-all hover:border-primary hover:bg-accent",
+                            direccionSeleccionada?.calle_id === direccion.calle_id &&
+                              direccionSeleccionada?.altura === direccion.altura &&
+                              "border-primary bg-primary/5"
+                          )}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                <p className="truncate text-sm font-medium">
+                                  {direccion.calle_nombre} {direccion.altura}
+
+                                  {/*COMENTADO POR LEO*/}
+                                  {/*{direccion.alturaManual && (
+                                    <Badge variant="outline" className="ml-1.5 text-[10px] text-amber-600">
+                                      Altura manual
+                                    </Badge>
+                                  )}*/}
+
+                                </p>
+                              </div>
+                              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                                {direccion.localidad}, {direccion.provincia}
                               </p>
+                              {direccion.lat && direccion.lon && (
+                                <p className="mt-1 text-[10px] text-muted-foreground">
+                                  📍 {direccion.lat.toFixed(4)}, {direccion.lon.toFixed(4)}
+                                </p>
+                              )}
                             </div>
-                            <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                              {direccion.localidad}, {direccion.provincia}
-                            </p>
-                            {direccion.lat && direccion.lon && (
-                              <p className="mt-1 text-[10px] text-muted-foreground">
-                                📍 {direccion.lat.toFixed(4)}, {direccion.lon.toFixed(4)}
-                              </p>
-                            )}
+                            {direccionSeleccionada?.calle_id === direccion.calle_id &&
+                              direccionSeleccionada?.altura === direccion.altura && (
+                                <Check className="h-4 w-4 shrink-0 text-primary" />
+                              )}
                           </div>
-                          {direccionSeleccionada?.calle_id === direccion.calle_id &&
-                            direccionSeleccionada?.altura === direccion.altura && (
-                              <Check className="h-4 w-4 shrink-0 text-primary" />
-                            )}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </ScrollArea>
-              )}
-            </div>
-          </motion.div>
-
-          {/* Mapa */}
-          {mostrarMapa && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.2, ease: "easeOut" }}
-              className="rounded-lg border bg-card shadow-sm"
-            >
-            <div className="border-b p-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold">Mapa</h3>
-                {coordenadasMapa.length > 0 && (
-                  <Badge variant="secondary" className="text-xs">
-                    {coordenadasMapa.length} ubicaciones
-                  </Badge>
+                        </button>
+                      ))}
+                    </div>
+                  </ScrollArea>
                 )}
               </div>
-            </div>
+            </motion.div>
 
-            <div className="p-2">
-              {coordenadasMapa.length > 0 ? (
-                <MapaDirecciones
-                  coordenadas={coordenadasMapa}
-                  altura="300px"
-                  zoomInicial={13}
-                  onMarkerClick={handleMarkerClick}
-                  selectedIndex={selectedIndex}
-                />
-              ) : (
-                <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
-                  <div className="text-center text-xs text-muted-foreground">
-                    <MapPin className="mx-auto mb-2 h-8 w-8 opacity-30" />
-                    <p>No hay coordenadas disponibles</p>
-                  </div>
+            {/* Mapa */}
+            {mostrarMapa && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.2, ease: "easeOut" }}
+                className="rounded-lg border bg-card shadow-sm"
+              >
+              <div className="border-b p-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold">Mapa</h3>
+                  {coordenadasMapa.length > 0 && (
+                    <Badge variant="secondary" className="text-xs">
+                      {coordenadasMapa.length} ubicaciones
+                    </Badge>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+
+              <div className="p-2">
+                {coordenadasMapa.length > 0 ? (
+                  <MapaDirecciones
+                    coordenadas={coordenadasMapa}
+                    altura="300px"
+                    zoomInicial={13}
+                    onMarkerClick={handleMarkerClick}
+                    selectedIndex={selectedIndex}
+                  />
+                ) : (
+                  <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed">
+                    <div className="text-center text-xs text-muted-foreground">
+                      <MapPin className="mx-auto mb-2 h-8 w-8 opacity-30" />
+                      <p>No hay coordenadas disponibles</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+            )}
           </motion.div>
-          )}
-        </motion.div>
-      )}
-      </AnimatePresence>
+        )}
+        </AnimatePresence>
+      )} {/*AGREGADO POR LEO*/}
 
       {/* Mensaje inicial */}
-      {!loading && !error && direcciones.length === 0 && calle.length > 0 && calle.length < 3 && (
+      {/*COMENTADO POR LEO*/}
+      {/* {!loading && !error && direcciones.length === 0 && calle.length > 0 && calle.length < 3 && (
         <div className="rounded-lg border border-dashed p-4 text-center text-xs text-muted-foreground">
           Ingrese al menos 3 caracteres para buscar
+        </div>
+      )} */}
+
+      {/*AGREGADO POR LEO*/}
+      {mostrarResultados && !shouldShowResultsPanel && (calle.length > 0 || altura.length > 0) && (
+        <div className="rounded-lg border border-dashed p-4 text-center text-xs text-muted-foreground">
+          Ingresá al menos 3 caracteres en calle y una altura para ver resultados.
         </div>
       )}
     </div>

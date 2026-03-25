@@ -3,16 +3,20 @@ import { Input } from "@/Components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/Components/ui/tooltip";
 import { usePermissions } from "@/composables/permissions";
 import { ColumnDef } from "@tanstack/react-table"
-import { Funnel, FunnelX, Waypoints, CreditCard  } from "lucide-react";
+import { Funnel, FunnelX, Waypoints, CreditCard, ClipboardPen, Receipt  } from "lucide-react";
 import { ArrowUpDown } from "lucide-react"
 import { useEffect, useState } from "react";
 
-import { ProveedoresEditar } from "./ProveedoresEditar";
-import { Proveedor } from '@/types/Proveedor'; // Cambia la ruta según tu estructura
+import ProveedoresEditar from "./ProveedoresEditar";
+import { Proveedor } from '@/types/Proveedor';
 import CuentaCorrienteModal from "@/Pages/Contabilidad/CuentaCorrienteProveedores"
 
-
-
+import type { Nacionalidad } from "@/types/Nacionalidad";
+import type { CondicionIva } from "@/types/CondicionIva";
+import type { ActividadEconomica } from "@/types/ActividadEconomica";
+import type { EntidadFinanciera } from "@/types/EntidadFinanciera";
+import type { TipoMoneda } from "@/types/TipoMoneda";
+import type { TipoContacto } from "@/types/TipoContacto";
 
 export const columns: ColumnDef<Proveedor>[] = [
     {
@@ -251,7 +255,24 @@ export const columns: ColumnDef<Proveedor>[] = [
         header: 'Acciones',
         cell: ({ row, table }) => {
             const user = row.original;
-            const { module } = table.options.meta as { module: number };
+            //const { module } = table.options.meta as { module: number };
+            const {
+                //module,
+                nacionalidades,
+                condicionesIva,
+                actividades,
+                entidadesFinancieras,
+                tiposMoneda,
+                tipoContactos,
+            } = table.options.meta as {
+                //module: number;
+                nacionalidades: Nacionalidad[];
+                condicionesIva: CondicionIva[];
+                actividades: ActividadEconomica[];
+                entidadesFinancieras: EntidadFinanciera[];
+                tiposMoneda: TipoMoneda[];
+                tipoContactos: TipoContacto[];
+            };
             const { userAuth } = usePermissions();
             const [isDialogOpen, setIsDialogOpen] = useState(false);
             const [isModalCCOpen, setIsModalCCOpen] = useState(false);
@@ -268,17 +289,26 @@ export const columns: ColumnDef<Proveedor>[] = [
                                         className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
                                         onClick={() => setIsDialogOpen(true)}
                                     >
-                                        <Waypoints className='w-6! h-6! text-emerald-500' />
+                                        <ClipboardPen className='w-6! h-6! text-emerald-500' />
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>Permisos</p>
+                                    <p>Ver / Editar</p>
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
 
-                        <ProveedoresEditar open={isDialogOpen} setOpen={setIsDialogOpen} proveedor={row.original} module={module} />
-
+                        <ProveedoresEditar
+                            open={isDialogOpen}
+                            setOpen={setIsDialogOpen}
+                            proveedor={row.original}
+                            nacionalidades={nacionalidades}
+                            condicionesIva={condicionesIva}
+                            actividades={actividades}
+                            entidadesFinancieras={entidadesFinancieras}
+                            tiposMoneda={tiposMoneda}
+                            tipoContactos={tipoContactos}
+                        />
 
                         <TooltipProvider>
                             <Tooltip>
@@ -288,7 +318,7 @@ export const columns: ColumnDef<Proveedor>[] = [
                                         className="p-0! hover:bg-gray-0 hover:[&>svg]:drop-shadow-[0_0_1px_rgba(217,119,6,0.5)]"
                                         onClick={() => setIsModalCCOpen(true)}
                                     >
-                                        <CreditCard className='w-6! h-6! text-emerald-500' />
+                                        <Receipt className='w-6! h-6! text-emerald-500' />
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>

@@ -3,6 +3,7 @@ import { Check, X, Search, ChevronDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
 import { Command, CommandItem } from "@/Components/ui/command";
 import { Button } from "@/Components/ui/button";
+import { cn } from "@/lib/utils";
 
 type Option = {
   id: number;
@@ -72,15 +73,25 @@ export default function MultiSelectSearchable({
       }}
     >
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          type="button"
-          className="
-            w-full justify-between
-            min-h-[42px] h-auto
-            rounded-lg px-3 py-2
-            text-left
-          "
+        <div
+          role="button"
+          tabIndex={0}
+          className={cn(
+            "w-full justify-between",
+            "min-h-[42px] h-auto",
+            "rounded-lg px-3 py-2",
+            "text-left",
+            "border border-input bg-background",
+            "flex items-center gap-3",
+            "outline-none",
+            "focus:ring-1 focus:ring-ring"
+          )}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setOpen(true);
+            }
+          }}
         >
           <div className="flex-1 min-w-0">
             {selectedOptions.length === 0 ? (
@@ -90,27 +101,27 @@ export default function MultiSelectSearchable({
                 {selectedOptions.map((opt) => (
                   <span
                     key={opt.id}
-                    className="
-                      inline-flex items-center gap-1.5
-                      rounded-md border bg-muted/60
-                      px-2 py-0.5
-                      text-xs text-foreground
-                      shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]
-                    "
+                    className={cn(
+                      "inline-flex items-center gap-1.5",
+                      "rounded-md border bg-muted/60",
+                      "px-2 py-0.5",
+                      "text-xs text-foreground",
+                      "shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
+                    )}
                     title={opt.label}
                   >
                     <span className="max-w-[220px] truncate">{opt.label}</span>
 
                     <button
                       type="button"
-                      className="
-                        ml-0.5 inline-flex h-4 w-4 items-center justify-center
-                        rounded-sm
-                        text-muted-foreground
-                        hover:text-foreground
-                        hover:bg-background/70
-                        transition
-                      "
+                      className={cn(
+                        "ml-0.5 inline-flex h-4 w-4 items-center justify-center",
+                        "rounded-sm",
+                        "text-muted-foreground",
+                        "hover:text-foreground",
+                        "hover:bg-background/70",
+                        "transition"
+                      )}
                       onClick={(e) => {
                         e.stopPropagation();
                         toggle(opt.id);
@@ -126,20 +137,21 @@ export default function MultiSelectSearchable({
           </div>
 
           <ChevronDown
-            className={`ml-3 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
+            className={cn(
+              "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
               open ? "rotate-180" : ""
-            }`}
+            )}
           />
-        </Button>
+        </div>
       </PopoverTrigger>
 
       <PopoverContent
         align="start"
-        className="
-          p-0 rounded-xl shadow-lg overflow-hidden
-          w-[--radix-popover-trigger-width]
-          max-w-[460px]
-        "
+        className={cn(
+          "p-0 rounded-xl shadow-lg overflow-hidden",
+          "w-[--radix-popover-trigger-width]",
+          "max-w-[460px]"
+        )}
         onWheelCapture={(e) => e.stopPropagation()}
       >
         <Command shouldFilter={false} className="p-0">
@@ -152,35 +164,28 @@ export default function MultiSelectSearchable({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="
-                    h-9 w-full
-                    pl-9 pr-3
-                    rounded-md
-                    border border-input
-                    bg-background
-                    text-sm
-                    outline-none
-                    focus:ring-1 focus:ring-ring
-                  "
+                  className={cn(
+                    "h-9 w-full",
+                    "pl-9 pr-3",
+                    "rounded-md",
+                    "border border-input",
+                    "bg-background",
+                    "text-sm",
+                    "outline-none",
+                    "focus:ring-1 focus:ring-ring"
+                  )}
                 />
               </div>
 
               {clearable && values.length > 0 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="h-9 px-2 text-xs"
-                  onClick={clearAll}
-                >
+                <Button type="button" variant="ghost" className="h-9 px-2 text-xs" onClick={clearAll}>
                   Limpiar
                 </Button>
               )}
             </div>
 
-            {/* Línea divisora */}
             <div className="mt-3 h-px bg-border/70" />
 
-            {/* Resumen integrado */}
             <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
               <span>Seleccionadas: {values.length}</span>
               <span>Resultados: {totalResults}</span>
@@ -188,26 +193,14 @@ export default function MultiSelectSearchable({
           </div>
 
           {/* Lista con scroll */}
-          <div
-            className="
-              max-h-[300px] overflow-y-auto
-              overscroll-contain
-              p-1
-            "
-            onWheelCapture={(e) => e.stopPropagation()}
-          >
+          <div className="max-h-[300px] overflow-y-auto overscroll-contain p-1" onWheelCapture={(e) => e.stopPropagation()}>
             {totalResults === 0 ? (
-              <div className="px-3 py-3 text-sm text-muted-foreground">
-                No hay resultados
-              </div>
+              <div className="px-3 py-3 text-sm text-muted-foreground">No hay resultados</div>
             ) : (
               <>
-                {/* Opciones seleccionadas */}
                 {filteredSelected.length > 0 && (
                   <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b">
-                    <div className="px-3 py-2 text-xs font-medium text-foreground">
-                      Seleccionadas
-                    </div>
+                    <div className="px-3 py-2 text-xs font-medium text-foreground">Seleccionadas</div>
                   </div>
                 )}
 
@@ -215,24 +208,21 @@ export default function MultiSelectSearchable({
                   <CommandItem
                     key={opt.id}
                     onSelect={() => toggle(opt.id)}
-                    className="
-                      mx-1 my-0.5 rounded-md px-3 py-2 text-sm
-                      cursor-pointer transition-colors
-                      bg-green-50 text-green-800
-                      hover:bg-green-100
-                    "
+                    className={cn(
+                      "mx-1 my-0.5 rounded-md px-3 py-2 text-sm",
+                      "cursor-pointer transition-colors",
+                      "bg-green-50 text-green-800",
+                      "hover:bg-green-100"
+                    )}
                   >
                     <span className="truncate">{opt.label}</span>
                     <Check className="ml-auto h-4 w-4 text-green-600" />
                   </CommandItem>
                 ))}
 
-                {/* Opciones no seleccionadas */}
                 {filteredUnselected.length > 0 && (
                   <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b mt-2">
-                    <div className="px-3 py-2 text-xs font-medium text-foreground">
-                      Opciones
-                    </div>
+                    <div className="px-3 py-2 text-xs font-medium text-foreground">Opciones</div>
                   </div>
                 )}
 
@@ -240,11 +230,11 @@ export default function MultiSelectSearchable({
                   <CommandItem
                     key={opt.id}
                     onSelect={() => toggle(opt.id)}
-                    className="
-                      mx-1 my-0.5 rounded-md px-3 py-2 text-sm
-                      cursor-pointer transition-colors
-                      hover:bg-muted
-                    "
+                    className={cn(
+                      "mx-1 my-0.5 rounded-md px-3 py-2 text-sm",
+                      "cursor-pointer transition-colors",
+                      "hover:bg-muted"
+                    )}
                   >
                     <span className="truncate">{opt.label}</span>
                   </CommandItem>

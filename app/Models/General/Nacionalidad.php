@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Nacionalidad extends Model
 {
     protected $table = 'nacionalidades';
-    protected $primaryKey = 'id_nac';
+    protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
 

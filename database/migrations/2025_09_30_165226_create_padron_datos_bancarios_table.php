@@ -12,12 +12,12 @@ return new class extends Migration {
             $table->enum('tipo', ['Cliente', 'Proveedor']);
             $table->unsignedBigInteger('tipo_id');
             $table->enum('tipo_clave', ['Cbu', 'Cvu', 'Undefined'])->default('Undefined');
-            $table->string('clave', 22);
+            $table->string('clave', 22)->nullable();
             $table->string('alias', 255)->nullable();
             $table->unsignedBigInteger('entidad_financiera');
             $table->unsignedBigInteger('moneda');
             $table->enum('tipo_cuenta', ['Caja de Ahorro', 'Cuenta Corriente', 'Undefined'])->default('Undefined');
-            $table->boolean('predeterminado')->default(true);
+            $table->boolean('predeterminado')->default(false);
             $table->timestamp('fecha_creacion')->useCurrent();
             $table->unsignedBigInteger('usuario_creacion');
             $table->dateTime('fecha_actualizacion')->nullable();

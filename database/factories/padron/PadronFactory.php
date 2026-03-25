@@ -20,8 +20,6 @@ class PadronFactory extends Factory
             'nacionalidad' => $this->faker->boolean(70) ? $nacionalidadId : null,
             'fecha_creacion' => now(),
             'usuario_creacion' => $usuarioId,
-            /* 'fecha_actualizacion' => now(),
-            'usuario_actualizacion' => $this->faker->boolean(50) ? $usuarioId : null, */
         ];
     }
 }

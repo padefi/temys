@@ -38,14 +38,4 @@ class EntidadFinanciera extends Model
     {
         return $this->belongsTo(Nacionalidad::class, 'nacionalidad');
     }
-
-    /* public function usuarioCreacion()
-    {
-        return $this->belongsTo(User::class, 'usuario_creacion');
-    }
-
-    public function usuarioActualizacion()
-    {
-        return $this->belongsTo(User::class, 'usuario_actualizacion');
-    } */
 }

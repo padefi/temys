@@ -50,7 +50,9 @@ export default function SearchableSelect({
     estimateSize: () => 36,
   });
 
-  const selectedLabel = options.find((o) => String(o.id) === String(value))?.label;
+  const stringValue = value === null || value === undefined ? "" : String(value);
+  const hasValue = stringValue !== "";
+  const selectedLabel = options.find((o) => String(o.id) === stringValue)?.label;
 
   return (
     <Select
@@ -62,7 +64,8 @@ export default function SearchableSelect({
         if (o) onOpen?.();
         if (!o) setSearch("");
       }}
-      value={value ? String(value) : ""}
+      value={stringValue}
+      //value={value ? String(value) : ""}
     >
       <SelectTrigger className="min-h-10.5 rounded-lg" disabled={disabled}>
         <span className="truncate text-sm">{selectedLabel ?? placeholder}</span>
@@ -97,7 +100,8 @@ export default function SearchableSelect({
                   />
                 </div>
 
-                {clearable && value && (
+                {/*{clearable && value && (*/}
+                {clearable && hasValue && (
                   <button
                     type="button"
                     className="
@@ -106,7 +110,9 @@ export default function SearchableSelect({
                       hover:text-foreground hover:bg-background/70
                       transition
                     "
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       onChange("");
                       setOpen(false);
                     }}
@@ -134,7 +140,7 @@ export default function SearchableSelect({
                 >
                   {virtualizer.getVirtualItems().map((vr) => {
                     const item = filtered[vr.index];
-                    const selected = String(item.id) === String(value);
+                    const selected = String(item.id) === stringValue;
 
                     return (
                       <div

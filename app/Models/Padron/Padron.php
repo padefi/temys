@@ -29,13 +29,14 @@ class Padron extends Model
         'fecha_creacion' => 'datetime',
         'fecha_actualizacion' => 'datetime',
     ];
-    ////CLIENTE RELACIONADO
+
+    //Cliente relacionado
     public function cliente()
     {
         return $this->hasOne(\App\Models\Padron\Cliente\Cliente::class, 'id_padron');
     }
 
-    //NACIONALIDAD
+    //Nacionalidad
     public function nacionalidad()
     {
         return $this->belongsTo(Nacionalidad::class, 'nacionalidad');

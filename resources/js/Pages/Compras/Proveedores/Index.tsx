@@ -10,6 +10,7 @@ import { CondicionIva } from "@/types/CondicionIva";
 import { ActividadEconomica } from "@/types/ActividadEconomica";
 import { EntidadFinanciera } from "@/types/EntidadFinanciera";
 import { TipoMoneda } from "@/types/TipoMoneda";
+import { TipoContacto } from "@/types/TipoContacto";
 import { Button } from "@/Components/ui/button"
 import ProveedoresCrear from "./ProveedoresCrear";
 
@@ -22,6 +23,7 @@ type PageProps = InertiaPageProps & {
     actividades: ActividadEconomica[];
     entidadesFinancieras: EntidadFinanciera[];
     tiposMoneda: TipoMoneda[];
+    tipoContactos: TipoContacto[];
     module: number;
 };
 
@@ -33,7 +35,8 @@ export default function Index() {
         condicionesIva, 
         actividades, 
         entidadesFinancieras, 
-        tiposMoneda, 
+        tiposMoneda,
+        tipoContactos, 
         module
     } = usePage<PageProps>().props;
     const [openCrear, setOpenCrear] = useState(false);
@@ -53,12 +56,22 @@ export default function Index() {
                         <div className="p-6 text-gray-900">
                             <div className="flex justify-between items-center mb-4">
                                 <h1 className="text-2xl my-3 font-bold">Proveedores</h1>
-                                <Button onClick={() => setOpenCrear(true)}>
+                                <Button className='bg-green-600 hover:bg-green-700' onClick={() => setOpenCrear(true)}>
                                     Nuevo Proveedor
                                 </Button>
                             </div>
 
-                            <DataTable columns={columns} data={proveedores} module={module} />
+                            <DataTable 
+                                columns={columns} 
+                                data={proveedores} 
+                                module={module} 
+                                nacionalidades={nacionalidades}
+                                condicionesIva={condicionesIva}
+                                actividades={actividades}
+                                entidadesFinancieras={entidadesFinancieras}
+                                tiposMoneda={tiposMoneda}
+                                tipoContactos={tipoContactos}
+                            />
                         </div>
                     </div>
                 </div>
@@ -71,6 +84,7 @@ export default function Index() {
                 actividades={actividades}  
                 entidadesFinancieras={entidadesFinancieras}
                 tiposMoneda={tiposMoneda}
+                tipoContactos={tipoContactos}
             />
         </AuthenticatedLayout>
     );

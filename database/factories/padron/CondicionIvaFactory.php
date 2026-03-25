@@ -23,8 +23,6 @@ class CondicionIvaFactory extends Factory
             'descripcion' => $this->faker->unique()->randomElement($condiciones),
             'fecha_creacion' => now(),
             'usuario_creacion' => $usuarioId,
-            /* 'fecha_actualizacion' => now(),
-            'usuario_actualizacion' => $this->faker->boolean(50) ? $usuarioId : null, */
         ];
     }
 }
